@@ -1,7 +1,30 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import {
+		Sheet,
+		SheetContent,
+		SheetHeader,
+		SheetTitle,
+		SheetTrigger
+	} from '$lib/components/ui/sheet/index.js';
+	import {
+		DropdownMenu,
+		DropdownMenuContent,
+		DropdownMenuItem,
+		DropdownMenuLabel,
+		DropdownMenuSeparator,
+		DropdownMenuTrigger
+	} from '$lib/components/ui/dropdown-menu/index.js';
+	import { Avatar, AvatarFallback } from '$lib/components/ui/avatar/index.js';
 	import type { Reader } from '$lib/types';
+	import { firstName } from '$lib/format';
+	import MenuIcon from '@lucide/svelte/icons/menu';
+	import SearchIcon from '@lucide/svelte/icons/search';
+	import BookOpenIcon from '@lucide/svelte/icons/book-open';
+	import LogOutIcon from '@lucide/svelte/icons/log-out';
 
 	let { user }: { user: Reader } = $props();
 
@@ -18,49 +41,126 @@
 		if (path === '/') return page.url.pathname === '/';
 		return page.url.pathname.startsWith(path);
 	}
+
+	const initials = $derived(
+		(user?.name ?? 'Š')
+			.split(/\s+/)
+			.map((part) => part[0])
+			.join('')
+			.slice(0, 2)
+			.toUpperCase()
+	);
+
+	function submitLogout() {
+		const form = document.getElementById('logout-form');
+		if (form instanceof HTMLFormElement) form.requestSubmit();
+	}
 </script>
 
 <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
 
-<header class="site-header">
-	<div class="flex flex-col gap-3 px-3 py-3 md:px-4">
-		<div class="flex items-center gap-3">
-			<a href={resolve('/')} class="badge-logo" aria-label="SPŠT knižnica">Š</a>
+<header class="bg-card/90 sticky top-0 z-50 border-b backdrop-blur-md">
+	<div class="wrap flex items-center gap-3 py-3">
+		<a href={resolve('/')} class="flex items-center gap-2 font-bold no-underline">
+			<span
+				class="bg-secondary text-secondary-foreground ring-border grid size-9 place-items-center rounded-full ring-1"
+			>
+				Š
+			</span>
+			<span class="hidden sm:inline">SPŠT knižnica</span>
+		</a>
 
-			<form class="search hidden min-w-0 flex-1 md:flex" method="GET" action={resolve('/knihy')}>
-				<label class="sr-only" for="q-desk">Hľadať knihu</label>
-				<input id="q-desk" type="search" name="q" value={query} placeholder="Hľadaj v skrinkách…" />
-				<button class="btn btn-navy min-h-9 px-4 text-[0.95rem] shadow-none" type="submit">Hľadaj</button>
-			</form>
-
-			<nav class="ml-auto hidden lg:flex" aria-label="Hlavná navigácia">
-				{#each links as link (link.path)}
-					<a href={link.href} class="nav-link {active(link.path) ? 'is-on' : ''}">{link.label}</a>
-				{/each}
-			</nav>
-
-			<div class="ml-auto flex items-center gap-2 lg:ml-2">
-				{#if user}
-					<a href={resolve('/vypozicky')} class="btn btn-butter">Moje</a>
-					<form method="POST" action={resolve('/odhlasenie')}>
-						<button class="btn btn-ghost" type="submit">Von</button>
-					</form>
-				{:else}
-					<a href={resolve('/prihlasenie')} class="btn">Prihlás sa</a>
-				{/if}
-			</div>
-		</div>
-
-		<form class="search md:hidden" method="GET" action={resolve('/knihy')}>
-			<label class="sr-only" for="q-mob">Hľadať knihu</label>
-			<input id="q-mob" type="search" name="q" value={query} placeholder="Hľadaj knihu…" />
-			<button class="btn btn-navy px-3 text-sm" type="submit">OK</button>
+		<form
+			class="relative mx-auto hidden min-w-0 flex-1 md:block"
+			method="GET"
+			action={resolve('/knihy')}
+		>
+			<SearchIcon
+				class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
+			/>
+			<label class="sr-only" for="q-desk">Hľadať knihu</label>
+			<Input
+				id="q-desk"
+				class="h-9 pl-8"
+				type="search"
+				name="q"
+				value={query}
+				placeholder="Hľadaj názov, autora, signatúru…"
+			/>
 		</form>
 
-		<nav class="-mx-1 flex gap-1 overflow-x-auto lg:hidden" aria-label="Sekcie">
-			{#each [...links, { href: resolve('/vypozicky'), path: '/vypozicky', label: 'Moje' }] as link (link.path)}
-				<a href={link.href} class="nav-link shrink-0 {active(link.path) ? 'is-on' : ''}">{link.label}</a>
+		<nav class="ml-auto hidden items-center gap-1 lg:flex" aria-label="Hlavná navigácia">
+			{#each links as link (link.path)}
+				<Button href={link.href} variant={active(link.path) ? 'secondary' : 'ghost'} size="sm">
+					{link.label}
+				</Button>
 			{/each}
 		</nav>
+
+		<div class="flex items-center gap-2">
+			{#if user}
+				<form id="logout-form" method="POST" action={resolve('/odhlasenie')} class="hidden"></form>
+				<DropdownMenu>
+					<DropdownMenuTrigger>
+						{#snippet child({ props })}
+							<Button variant="ghost" size="icon" class="rounded-full" aria-label="Účet" {...props}>
+								<Avatar class="size-8">
+									<AvatarFallback>{initials}</AvatarFallback>
+								</Avatar>
+							</Button>
+						{/snippet}
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuLabel>{firstName(user.name)}</DropdownMenuLabel>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem>
+							{#snippet child({ props })}
+								<a href={resolve('/vypozicky')} {...props}>
+									<BookOpenIcon />
+									Moje knihy
+								</a>
+							{/snippet}
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem onSelect={submitLogout}>
+							<LogOutIcon />
+							Odhlásiť
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			{:else}
+				<Button href={resolve('/prihlasenie')} size="sm">Prihlásiť sa</Button>
+			{/if}
+
+			<Sheet>
+				<SheetTrigger>
+					{#snippet child({ props })}
+						<Button variant="outline" size="icon" class="lg:hidden" aria-label="Menu" {...props}>
+							<MenuIcon />
+						</Button>
+					{/snippet}
+				</SheetTrigger>
+				<SheetContent side="right">
+					<SheetHeader>
+						<SheetTitle>Navigácia</SheetTitle>
+					</SheetHeader>
+					<nav class="mt-4 flex flex-col gap-1 px-4">
+						{#each [...links, { href: resolve('/vypozicky'), path: '/vypozicky', label: 'Moje knihy' }] as link (link.path)}
+							<Button
+								href={link.href}
+								variant={active(link.path) ? 'secondary' : 'ghost'}
+								class="justify-start"
+							>
+								{link.label}
+							</Button>
+						{/each}
+					</nav>
+				</SheetContent>
+			</Sheet>
+		</div>
 	</div>
+	<form class="wrap pb-3 md:hidden" method="GET" action={resolve('/knihy')}>
+		<label class="sr-only" for="q-mob">Hľadať knihu</label>
+		<Input id="q-mob" class="h-9" type="search" name="q" value={query} placeholder="Hľadaj knihu…" />
+	</form>
 </header>

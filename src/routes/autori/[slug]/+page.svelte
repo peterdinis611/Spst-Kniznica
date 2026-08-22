@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import BookRow from '$lib/components/BookRow.svelte';
+	import LockerCard from '$lib/components/LockerCard.svelte';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -10,22 +12,23 @@
 	<title>{data.author.name} · SPŠT Knižnica</title>
 </svelte:head>
 
-<section class="wrap pt-8 md:pt-10">
-	<p class="kicker reveal">
-		<a href={resolve('/autori')} class="hover:text-brass">Autori</a>
-		· {data.author.role}
-	</p>
-	<div class="mt-3 grid gap-6 md:grid-cols-[1.3fr_0.7fr] md:items-end">
-		<div>
-			<h1 class="display text-5xl md:text-6xl">{data.author.name}</h1>
-			<p class="kicker mt-3">{data.author.lifespan}</p>
-		</div>
-		<p class="text-mute">{data.author.bio}</p>
-	</div>
+<Breadcrumb.Root>
+	<Breadcrumb.List>
+		<Breadcrumb.Item>
+			<Breadcrumb.Link href={resolve('/autori')}>Autori</Breadcrumb.Link>
+		</Breadcrumb.Item>
+		<Breadcrumb.Separator />
+		<Breadcrumb.Item>
+			<Breadcrumb.Page>{data.author.name}</Breadcrumb.Page>
+		</Breadcrumb.Item>
+	</Breadcrumb.List>
+</Breadcrumb.Root>
 
-	<div class="mt-10 space-y-3">
-		{#each data.books as book, i (book.id)}
-			<BookRow {book} index={i} />
-		{/each}
-	</div>
-</section>
+<Badge class="mt-5" variant="outline">{data.author.role}</Badge>
+<h2 class="mt-2 font-serif text-4xl font-bold md:text-5xl">{data.author.name}</h2>
+<p class="text-muted-foreground mt-3 max-w-xl font-serif text-lg">{data.author.bio}</p>
+<div class="cover-grid mt-10">
+	{#each data.books as book (book.id)}
+		<LockerCard {book} />
+	{/each}
+</div>

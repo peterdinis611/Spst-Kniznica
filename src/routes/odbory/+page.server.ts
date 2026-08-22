@@ -1,6 +1,12 @@
 import type { PageServerLoad } from './$types';
-import { listCategories } from '$lib/server/library';
+import { listBooks, listCategories } from '$lib/server/library';
 
 export const load: PageServerLoad = async () => {
-	return { categories: listCategories() };
+	const books = listBooks();
+	const categories = listCategories().map((category) => ({
+		...category,
+		cover: books.find((book) => book.category.slug === category.slug)
+	}));
+
+	return { categories };
 };

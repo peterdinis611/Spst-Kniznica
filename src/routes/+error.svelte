@@ -1,17 +1,29 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Alert from '$lib/components/ui/alert/index.js';
 
-	const message = $derived(page.error?.message ?? 'Túto stránku sa nepodarilo nájsť.');
+	const message = $derived(page.error?.message ?? 'Túto stránku sme nenašli.');
 </script>
 
 <svelte:head>
 	<title>Chyba · SPŠT Knižnica</title>
 </svelte:head>
 
-<section class="wrap py-24">
-	<p class="kicker">Niečo sa pokazilo</p>
-	<p class="display mt-3 text-7xl text-ember">{page.status}</p>
-	<h1 class="mt-3 max-w-xl text-2xl">{message}</h1>
-	<a href={resolve('/')} class="btn mt-8">Späť na prehľad</a>
-</section>
+<Card.Root class="max-w-lg">
+	<Card.Header>
+		<p class="text-muted-foreground text-sm">Chýbajúca strana</p>
+		<Card.Title class="font-serif text-7xl">{page.status}</Card.Title>
+	</Card.Header>
+	<Card.Content>
+		<Alert.Root>
+			<Alert.Title>Kniha nie je na polici</Alert.Title>
+			<Alert.Description>{message}</Alert.Description>
+		</Alert.Root>
+	</Card.Content>
+	<Card.Footer>
+		<Button href={resolve('/')}>Späť na Objavovať</Button>
+	</Card.Footer>
+</Card.Root>
