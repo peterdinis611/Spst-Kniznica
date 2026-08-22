@@ -10,6 +10,9 @@
 	import { fly } from 'svelte/transition';
 	import CatalogSearch from '$lib/components/CatalogSearch.svelte';
 	import OptimizedImage from '$lib/components/OptimizedImage.svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -37,9 +40,23 @@
 	}
 </script>
 
-<svelte:head>
-	<title>SPŠT knižnica</title>
-</svelte:head>
+<Seo
+	title="SPŠT knižnica"
+	description="Školská knižnica SPŠT — katalóg učebníc, noriem a literatúry. Výpožička na 21 dní, naraz 5 kníh. Pavilón B, Po—Pia 7:30—15:30."
+	jsonLd={{
+		'@context': 'https://schema.org',
+		'@type': 'Library',
+		name: 'SPŠT knižnica',
+		description:
+			'Školský fond učebníc, noriem a povinnej literatúry pre žiakov a učiteľov SPŠT.',
+		openingHours: 'Mo-Fr 07:30-15:30',
+		address: {
+			'@type': 'PostalAddress',
+			streetAddress: 'Pavilón B',
+			addressCountry: 'SK'
+		}
+	}}
+/>
 
 <div class="landing">
 	<div class="landing-body" class:is-blurred={searchOpen}>
@@ -61,6 +78,7 @@
 				<span>Hľadať knihu</span>
 				<kbd>{searchShortcut}</kbd>
 			</button>
+			<ThemeToggle variant="hall" />
 			{#if data.user}
 				<a class="hall-login no-underline" href={resolve('/vypozicky')}>Moje knihy</a>
 			{:else}
@@ -262,6 +280,8 @@
 			<a class="hall-ghost no-underline" href={resolve('/discover')}>Prezrieť fond</a>
 		</div>
 	</section>
+
+	<Footer tone="hall" />
 	</div>
 
 	<CatalogSearch items={data.searchIndex} bind:open={searchOpen} />

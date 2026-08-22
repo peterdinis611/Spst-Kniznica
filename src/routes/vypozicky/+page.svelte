@@ -11,14 +11,17 @@
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import type { ActionData, PageProps } from './$types';
+	import Seo from '$lib/components/Seo.svelte';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const progress = $derived((data.activeCount / data.maxLoans) * 100);
 </script>
 
-<svelte:head>
-	<title>Moja knižnica · SPŠT Knižnica</title>
-</svelte:head>
+<Seo
+	title="Moja knižnica"
+	description="Aktívne výpožičky a vrátenia v školskej knižnici SPŠT."
+	index={false}
+/>
 
 {#if form && 'stamp' in form && form.stamp}
 	<StampBurst label={form.stamp} sub={form.sub} />

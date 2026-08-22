@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import CoverRail from '$lib/components/CoverRail.svelte';
 	import CategoryTile from '$lib/components/CategoryTile.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { PageProps } from './$types';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
@@ -22,9 +23,10 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Objavovať · SPŠT knižnica</title>
-</svelte:head>
+<Seo
+	title="Objavovať"
+	description="Odporúčané knihy, police odborov a novinky vo fonde školskej knižnice SPŠT."
+/>
 
 <section>
 	<div class="mb-5 flex items-center justify-between">

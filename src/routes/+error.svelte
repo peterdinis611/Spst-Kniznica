@@ -4,13 +4,12 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Alert from '$lib/components/ui/alert/index.js';
+	import Seo from '$lib/components/Seo.svelte';
 
 	const message = $derived(page.error?.message ?? 'Túto stránku sme nenašli.');
 </script>
 
-<svelte:head>
-	<title>Chyba · SPŠT Knižnica</title>
-</svelte:head>
+<Seo title="Chyba" description="Túto stránku sme v katalógu SPŠT nenašli." index={false} />
 
 <Card.Root class="max-w-lg">
 	<Card.Header>

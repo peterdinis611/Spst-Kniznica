@@ -1,13 +1,15 @@
 <script lang="ts">
 	import CategoryTile from '$lib/components/CategoryTile.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title>Odbory · SPŠT Knižnica</title>
-</svelte:head>
+<Seo
+	title="Odbory"
+	description="Police školskej knižnice SPŠT podľa odborov. Nájdite učebnice a príručky pre svoj smer."
+/>
 
 <p class="text-muted-foreground max-w-lg font-serif text-lg">
 	Každý odbor má vlastnú policu. Ťukni na obálku a uvidíš, čo z nej môžeš brať.

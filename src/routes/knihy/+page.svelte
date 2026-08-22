@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import LockerCard from '$lib/components/LockerCard.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Alert from '$lib/components/ui/alert/index.js';
@@ -10,9 +11,10 @@
 	const activeName = $derived(data.categories.find((cat) => cat.slug === data.odbor)?.name);
 </script>
 
-<svelte:head>
-	<title>Katalóg · SPŠT Knižnica</title>
-</svelte:head>
+<Seo
+	title="Katalóg"
+	description="Prehľadaj školský fond SPŠT podľa názvu, autora, signatúry alebo odboru. Voľné výtlačky uvidíš hneď."
+/>
 
 <p class="text-muted-foreground text-sm">
 	{data.books.length} kníh

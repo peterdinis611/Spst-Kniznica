@@ -4,6 +4,8 @@
 	import BookCover from '$lib/components/BookCover.svelte';
 	import LockerCard from '$lib/components/LockerCard.svelte';
 	import StampBurst from '$lib/components/StampBurst.svelte';
+	import Seo from '$lib/components/Seo.svelte';
+	import { jacketFor } from '$lib/cover';
 	import { copiesLabel, shortDate } from '$lib/format';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
@@ -17,9 +19,20 @@
 	const available = $derived(book.copiesAvailable > 0);
 </script>
 
-<svelte:head>
-	<title>{book.title} · SPŠT Knižnica</title>
-</svelte:head>
+<Seo
+	title={book.title}
+	description={book.description}
+	type="book"
+	image={jacketFor(book).photo}
+	jsonLd={{
+		'@context': 'https://schema.org',
+		'@type': 'Book',
+		name: book.title,
+		isbn: book.isbn,
+		numberOfPages: book.pages,
+		author: book.authors.map((person) => ({ '@type': 'Person', name: person.name }))
+	}}
+/>
 
 {#if form && 'stamp' in form && form.stamp}
 	<StampBurst label={form.stamp} sub={form.sub} />

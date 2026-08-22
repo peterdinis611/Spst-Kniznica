@@ -4,6 +4,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Alert from '$lib/components/ui/alert/index.js';
+	import Seo from '$lib/components/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -17,9 +18,10 @@
 	);
 </script>
 
-<svelte:head>
-	<title>Autori · SPŠT Knižnica</title>
-</svelte:head>
+<Seo
+	title="Autori"
+	description="Autori vo fonde školskej knižnice SPŠT — učebnice, príručky a povinná literatúra."
+/>
 
 <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 	<p class="text-muted-foreground text-sm">{data.authors.length} mien v katalógu</p>

@@ -164,7 +164,15 @@
 
 	html,
 	body {
-		@apply min-h-dvh bg-[#1f262c] font-sans text-foreground antialiased;
+		@apply min-h-dvh bg-background font-sans text-foreground antialiased;
+	}
+
+	html {
+		color-scheme: light;
+	}
+
+	html.dark {
+		color-scheme: dark;
 	}
 
 	h1,
@@ -195,7 +203,7 @@
 	display: grid;
 	min-height: 100dvh;
 	grid-template-columns: 1fr;
-	background: #1f262c;
+	background: var(--sidebar);
 }
 
 @media (min-width: 1024px) {
@@ -207,7 +215,7 @@
 .desk-shell {
 	min-width: 0;
 	padding: 0.7rem;
-	background: #1f262c;
+	background: var(--sidebar);
 }
 
 @media (min-width: 1024px) {

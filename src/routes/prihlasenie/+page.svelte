@@ -7,14 +7,17 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import type { ActionData, PageProps } from './$types';
+	import Seo from '$lib/components/Seo.svelte';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const register = $derived(form?.mode === 'novy' || data.mode === 'novy');
 </script>
 
-<svelte:head>
-	<title>{register ? 'Registrácia' : 'Prihlásenie'} · SPŠT Knižnica</title>
-</svelte:head>
+<Seo
+	title={register ? 'Registrácia' : 'Prihlásenie'}
+	description="Prihlás sa do školskej knižnice SPŠT a požičaj si až 5 kníh na 21 dní."
+	index={false}
+/>
 
 <section class="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
 	<div>

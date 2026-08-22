@@ -5,13 +5,15 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import type { PageProps } from './$types';
+	import Seo from '$lib/components/Seo.svelte';
 
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title>{data.category.name} · SPŠT Knižnica</title>
-</svelte:head>
+<Seo
+	title={data.category.name}
+	description={`Knihy odboru ${data.category.name} vo fonde školskej knižnice SPŠT.`}
+/>
 
 <Breadcrumb.Root>
 	<Breadcrumb.List>

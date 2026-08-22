@@ -28,6 +28,7 @@
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
+	import ThemeToggle from './ThemeToggle.svelte';
 
 	let {
 		user,
@@ -79,6 +80,7 @@
 			<h1 class="font-display text-[2.15rem] leading-none font-extrabold md:text-[2.5rem]">{title}</h1>
 		</div>
 		<div class="flex items-center gap-2 lg:hidden">
+			<ThemeToggle />
 			<Button href={user ? resolve('/vypozicky') : resolve('/prihlasenie')} variant="ghost" size="icon" class="rounded-full">
 				<Avatar class="size-9">
 					<AvatarFallback class="bg-accent text-accent-foreground text-xs font-semibold">
@@ -129,6 +131,7 @@
 				{/if}
 			</DropdownMenuContent>
 		</DropdownMenu>
+		<ThemeToggle />
 		<a
 			href={resolve('/vypozicky')}
 			class="relative grid size-10 place-items-center rounded-full no-underline"

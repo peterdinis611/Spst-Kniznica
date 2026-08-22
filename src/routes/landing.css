@@ -17,6 +17,8 @@
 	--ok-ink: #1b3d32;
 	--out: #ece3d2;
 	--out-ink: #6d6458;
+	--line: #e4d7bf;
+	--wash: #ece3d2;
 	--radius: 1.05rem;
 	--display: 'Fraunces', serif;
 	--body: 'Newsreader', serif;
@@ -34,6 +36,31 @@
 		var(--page);
 	font-family: var(--body);
 	font-optical-sizing: auto;
+}
+
+.dark .landing-shell {
+	background: #12110e;
+}
+
+.dark .landing {
+	--forest: #16352c;
+	--forest-deep: #0e231d;
+	--copper: #e0893a;
+	--copper-deep: #c46e22;
+	--page: #161410;
+	--card: #221e18;
+	--ink: #f4ead8;
+	--muted: #b7ab98;
+	--ok: #1e3328;
+	--ok-ink: #d5ead4;
+	--out: #2a2620;
+	--out-ink: #b7ab98;
+	--line: #3a342c;
+	--wash: #2a2620;
+}
+
+.dark .landing::before {
+	opacity: 0.14;
 }
 
 .landing::before {
@@ -181,7 +208,7 @@
 
 .hall-drawer a {
 	padding: 0.8rem 0;
-	border-bottom: 1px solid #e4d7bf;
+	border-bottom: 1px solid var(--line);
 	color: var(--ink);
 	font-size: 1.05rem;
 	font-weight: 700;
@@ -221,7 +248,7 @@
 	display: none;
 	padding: 0.12rem 0.38rem;
 	border-radius: 0.35rem;
-	background: #ece3d2;
+	background: var(--wash);
 	color: var(--muted);
 	font-family: inherit;
 	font-size: 0.68rem;
@@ -243,6 +270,23 @@
 	display: inline;
 }
 
+.hall-theme-btn {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: 1px solid rgb(28 23 18 / 0.14);
+	border-radius: 999px;
+	background: var(--card);
+	color: var(--ink);
+	cursor: pointer;
+}
+
+.hall-theme-btn:hover {
+	border-color: var(--copper);
+	color: var(--copper);
+}
+
 .hall-menu-btn {
 	display: grid;
 	place-items: center;
@@ -252,7 +296,7 @@
 	padding: 0;
 	border: 0;
 	border-radius: 999px;
-	background: #ece3d2;
+	background: var(--wash);
 	color: var(--ink);
 	cursor: pointer;
 }
@@ -429,7 +473,7 @@
 	gap: 0.7rem;
 	padding: 0.55rem 0;
 	color: inherit;
-	border-top: 1px solid #e4d7bf;
+	border-top: 1px solid var(--line);
 }
 
 .hall-side li:first-child .hall-author {
@@ -569,7 +613,7 @@
 	width: 100%;
 	height: 11.4rem;
 	aspect-ratio: auto;
-	background: #e4d7bf;
+	background: var(--line);
 }
 
 .hall-card-body {
@@ -660,6 +704,58 @@
 	gap: 0.75rem;
 }
 
+.hall-foot {
+	display: grid;
+	justify-items: center;
+	margin-top: 3.2rem;
+	padding: 2.4rem 1rem 0.4rem;
+	text-align: center;
+}
+
+.hall-foot-brand {
+	margin: 0.15rem 0 0.55rem;
+	color: var(--ink);
+	font-family: var(--display);
+	font-size: clamp(1.7rem, 4vw, 2.35rem);
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	font-variation-settings: 'SOFT' 45, 'WONK' 1;
+}
+
+.hall-foot-lead {
+	max-width: 34ch;
+	margin: 0;
+	color: var(--muted);
+	font-size: 1.02rem;
+	line-height: 1.5;
+}
+
+.hall-foot nav {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.35rem 1.3rem;
+	margin-top: 1.15rem;
+}
+
+.hall-foot a {
+	color: var(--ink);
+	font-family: var(--display);
+	font-size: 0.95rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.hall-foot a:hover {
+	color: var(--copper);
+}
+
+.hall-foot-copy {
+	margin: 1.35rem 0 0;
+	color: var(--muted);
+	font-size: 0.78rem;
+}
+
 .hall-btn:focus-visible,
 .hall-login:focus-visible,
 .hall-author:focus-visible,
@@ -667,6 +763,7 @@
 .hall-desk-links a:focus-visible,
 .hall-drawer a:focus-visible,
 .hall-menu-btn:focus-visible,
+.hall-theme-btn:focus-visible,
 .hall-search-btn:focus-visible,
 .hall-ghost:focus-visible {
 	outline: 2px solid var(--copper);
