@@ -12,7 +12,7 @@
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 
 	let { children, data } = $props();
-	const isLanding = $derived(page.route.id === '/');
+	const isHall = $derived(page.route.id === '/');
 </script>
 
 <svelte:head>
@@ -31,7 +31,7 @@
 <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
 <form id="logout-form" method="POST" action={resolve('/odhlasenie')} class="hidden"></form>
 
-{#if isLanding}
+{#if isHall}
 	<main id="obsah" class="landing-shell">{@render children()}</main>
 {:else}
 	<div class="desk">

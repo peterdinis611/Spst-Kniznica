@@ -11,6 +11,7 @@
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import type { Component } from 'svelte';
+	import { cn } from '$lib/utils.js';
 
 	let { user, compact = false }: { user: Reader; compact?: boolean } = $props();
 
@@ -46,7 +47,7 @@
 		<span class="text-xl font-extrabold tracking-tight">knižnica</span>
 	</a>
 
-	<p class="mt-10 font-mono text-[0.62rem] tracking-[0.18em] text-[#8a99a4] uppercase">
+	<p class="text-sidebar-foreground/55 mt-10 font-display text-[0.62rem] tracking-[0.18em] uppercase">
 		Fond
 	</p>
 	<nav class="mt-3 flex flex-col gap-1" aria-label="Hlavná navigácia">
@@ -55,15 +56,16 @@
 			{@const on = active(item.path)}
 			<a
 				href={resolve(item.path)}
-				class="flex items-center gap-3 rounded-sm py-1.5 text-sm no-underline"
-				class:font-semibold={on}
-				class:text-accent={on}
-				class:text-[#9aa7b0]={!on}
+				class={cn(
+					'flex items-center gap-3 rounded-full py-1.5 text-sm no-underline',
+					on ? 'text-sidebar-primary font-semibold' : 'text-sidebar-foreground/55'
+				)}
 			>
 				<span
-					class="grid size-8 place-items-center rounded-sm"
-					class:bg-accent={on}
-					class:text-accent-foreground={on}
+					class={cn(
+						'grid size-8 place-items-center rounded-full',
+						on && 'bg-sidebar-primary text-sidebar-primary-foreground'
+					)}
 				>
 					<Icon class="size-4" />
 				</span>
@@ -73,14 +75,14 @@
 	</nav>
 
 	<div class="mt-auto">
-		<p class="font-mono text-[0.68rem] tracking-[0.08em] text-[#8a99a4] uppercase">
+		<p class="text-sidebar-foreground/55 font-display text-[0.68rem] tracking-[0.08em] uppercase">
 			Po—pia 7:30—15:30
 		</p>
 		<div class="mt-3">
 			{#if user}
 				<Button
 					variant="ghost"
-					class="h-auto justify-start px-0 py-1.5 font-normal text-[#9aa7b0]"
+					class="text-sidebar-foreground/55 h-auto justify-start px-0 py-1.5 font-normal"
 					onclick={submitLogout}
 				>
 					<LogOutIcon />
@@ -90,7 +92,7 @@
 				<Button
 					href={resolve('/prihlasenie')}
 					variant="ghost"
-					class="h-auto justify-start px-0 py-1.5 font-normal text-[#9aa7b0]"
+					class="text-sidebar-foreground/55 h-auto justify-start px-0 py-1.5 font-normal"
 				>
 					<LogInIcon />
 					Prihlásiť sa

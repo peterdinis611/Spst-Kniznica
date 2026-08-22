@@ -70,7 +70,7 @@
 						</Button>
 					{/snippet}
 				</SheetTrigger>
-				<SheetContent side="left" class="w-[18rem] p-0">
+				<SheetContent side="left" class="bg-sidebar w-[18rem] p-0">
 					<SheetHeader class="sr-only">
 						<SheetTitle>Menu</SheetTitle>
 					</SheetHeader>
@@ -102,7 +102,7 @@
 							</AvatarFallback>
 						</Avatar>
 						<span class="text-sm font-semibold">{displayName}</span>
-						<ChevronDownIcon class="size-4 text-[#8a8a8a]" />
+						<ChevronDownIcon class="text-muted-foreground size-4" />
 					</button>
 				{/snippet}
 			</DropdownMenuTrigger>
@@ -151,7 +151,7 @@
 					<option value={cat.slug}>{cat.name}</option>
 				{/each}
 			</select>
-			<SearchIcon class="ml-1 size-4 shrink-0 text-[#b0b0b0]" />
+			<SearchIcon class="text-muted-foreground ml-1 size-4 shrink-0" />
 			<label class="sr-only" for="q-desk">Hľadať</label>
 			<Input
 				id="q-desk"
@@ -161,7 +161,7 @@
 				value={query}
 				placeholder="názov, autor, signatúra…"
 			/>
-			<Button class="m-1.5 h-10 rounded-sm px-6 text-[0.82rem] font-semibold" type="submit">
+			<Button class="m-1.5 h-10 rounded-full px-6 text-[0.82rem] font-semibold" type="submit">
 				Hľadať
 			</Button>
 		</form>

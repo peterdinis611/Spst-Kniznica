@@ -1,0 +1,117 @@
+<script lang="ts">
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	import { cubicOut } from 'svelte/easing';
+	import { fly } from 'svelte/transition';
+	import SearchIcon from '@lucide/svelte/icons/search';
+	import CatalogSearch from '$lib/components/CatalogSearch.svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import type { CatalogSearchItem } from '$lib/search';
+	import type { Reader } from '$lib/types';
+	import type { Snippet } from 'svelte';
+
+	let {
+		user,
+		searchIndex,
+		children
+	}: {
+		user: Reader;
+		searchIndex: CatalogSearchItem[];
+		children: Snippet;
+	} = $props();
+
+	let menuOpen = $state(false);
+	let searchOpen = $state(false);
+	let searchShortcut = $state('Ctrl K');
+	const path = $derived(page.url.pathname);
+
+	onMount(() => {
+		if (/Mac|iPhone|iPad/.test(navigator.platform)) searchShortcut = '⌘K';
+	});
+
+	function closeMenu() {
+		menuOpen = false;
+	}
+
+	function openSearch() {
+		menuOpen = false;
+		searchOpen = true;
+	}
+</script>
+
+<div class="landing">
+	<div class="landing-body" class:is-blurred={searchOpen}>
+		<header class="hall-nav">
+			<a href={resolve('/')} class="hall-logo no-underline">
+				<span class="hall-mark" aria-hidden="true"></span>
+				SPŠT knižnica
+			</a>
+			<nav class="hall-desk-links" aria-label="Hlavná navigácia">
+				<a href={resolve('/')} aria-current={path === '/' ? 'page' : undefined}>Domov</a>
+				<a href={resolve('/discover')} aria-current={path.startsWith('/discover') ? 'page' : undefined}>
+					Objavovať
+				</a>
+				<a href={resolve('/knihy')}>Katalóg</a>
+				<a href={resolve('/odbory')}>Odbory</a>
+				<a href={resolve('/autori')}>Autori</a>
+			</nav>
+			<div class="hall-tools">
+				<button type="button" class="hall-search-btn" onclick={openSearch}>
+					<SearchIcon class="size-4" />
+					<span>Hľadať knihu</span>
+					<kbd>{searchShortcut}</kbd>
+				</button>
+				<ThemeToggle variant="hall" />
+				{#if user}
+					<a class="hall-login no-underline" href={resolve('/vypozicky')}>Moje knihy</a>
+				{:else}
+					<a class="hall-login no-underline" href={resolve('/prihlasenie')}>Prihlásiť sa</a>
+				{/if}
+				<button
+					type="button"
+					class="hall-menu-btn"
+					class:is-open={menuOpen}
+					aria-controls="landing-menu"
+					aria-expanded={menuOpen}
+					aria-label={menuOpen ? 'Zavrieť menu' : 'Otvoriť menu'}
+					onclick={() => (menuOpen = !menuOpen)}
+				>
+					<span></span>
+					<span></span>
+					<span></span>
+				</button>
+			</div>
+		</header>
+
+		{#if menuOpen}
+			<nav
+				class="hall-drawer"
+				id="landing-menu"
+				aria-label="Mobilné menu"
+				transition:fly={{ y: -18, duration: 380, easing: cubicOut }}
+			>
+				<a href={resolve('/')} onclick={closeMenu}>Domov</a>
+				<a href={resolve('/discover')} onclick={closeMenu}>Objavovať</a>
+				<a href={resolve('/knihy')} onclick={closeMenu}>Katalóg</a>
+				<a href={resolve('/odbory')} onclick={closeMenu}>Odbory</a>
+				<a href={resolve('/autori')} onclick={closeMenu}>Autori</a>
+				{#if user}
+					<a href={resolve('/vypozicky')} onclick={closeMenu}>Moje knihy</a>
+				{:else}
+					<a href={resolve('/prihlasenie')} onclick={closeMenu}>Prihlásiť sa</a>
+				{/if}
+				<button type="button" class="hall-search-btn is-mobile" onclick={openSearch}>
+					<SearchIcon class="size-4" />
+					<span>Hľadať knihu</span>
+				</button>
+			</nav>
+		{/if}
+
+		{@render children()}
+		<Footer tone="hall" />
+	</div>
+
+	<CatalogSearch items={searchIndex} bind:open={searchOpen} />
+</div>

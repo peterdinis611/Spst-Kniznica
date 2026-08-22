@@ -2,41 +2,19 @@
 	import { resolve } from '$app/paths';
 	import { authorLine, booksLabel, initials } from '$lib/format';
 	import { authorSwatch, jacketFor } from '$lib/cover';
-	import SearchIcon from '@lucide/svelte/icons/search';
 	import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-	import { onMount } from 'svelte';
-	import { cubicOut } from 'svelte/easing';
-	import { fly } from 'svelte/transition';
-	import CatalogSearch from '$lib/components/CatalogSearch.svelte';
 	import OptimizedImage from '$lib/components/OptimizedImage.svelte';
-	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import Footer from '$lib/components/Footer.svelte';
+	import HallChrome from '$lib/components/HallChrome.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 	const featured = $derived(data.featured);
 	let rail: HTMLDivElement | undefined = $state();
-	let menuOpen = $state(false);
-	let searchOpen = $state(false);
-	let searchShortcut = $state('Ctrl K');
-
-	onMount(() => {
-		if (/Mac|iPhone|iPad/.test(navigator.platform)) searchShortcut = '⌘K';
-	});
 
 	function move(dir: number) {
 		rail?.scrollBy({ left: dir * 280, behavior: 'smooth' });
-	}
-
-	function closeMenu() {
-		menuOpen = false;
-	}
-
-	function openSearch() {
-		menuOpen = false;
-		searchOpen = true;
 	}
 </script>
 
@@ -58,71 +36,7 @@
 	}}
 />
 
-<div class="landing">
-	<div class="landing-body" class:is-blurred={searchOpen}>
-	<header class="hall-nav">
-		<a href={resolve('/')} class="hall-logo no-underline">
-			<span class="hall-mark" aria-hidden="true"></span>
-			SPŠT knižnica
-		</a>
-		<nav class="hall-desk-links" aria-label="Hlavná navigácia">
-			<a href={resolve('/')} aria-current="page">Domov</a>
-			<a href={resolve('/discover')}>Objavovať</a>
-			<a href={resolve('/knihy')}>Katalóg</a>
-			<a href={resolve('/odbory')}>Odbory</a>
-			<a href={resolve('/autori')}>Autori</a>
-		</nav>
-		<div class="hall-tools">
-			<button type="button" class="hall-search-btn" onclick={openSearch}>
-				<SearchIcon class="size-4" />
-				<span>Hľadať knihu</span>
-				<kbd>{searchShortcut}</kbd>
-			</button>
-			<ThemeToggle variant="hall" />
-			{#if data.user}
-				<a class="hall-login no-underline" href={resolve('/vypozicky')}>Moje knihy</a>
-			{:else}
-				<a class="hall-login no-underline" href={resolve('/prihlasenie')}>Prihlásiť sa</a>
-			{/if}
-			<button
-				type="button"
-				class="hall-menu-btn"
-				class:is-open={menuOpen}
-				aria-controls="landing-menu"
-				aria-expanded={menuOpen}
-				aria-label={menuOpen ? 'Zavrieť menu' : 'Otvoriť menu'}
-				onclick={() => (menuOpen = !menuOpen)}
-			>
-				<span></span>
-				<span></span>
-				<span></span>
-			</button>
-		</div>
-	</header>
-
-	{#if menuOpen}
-		<nav
-			class="hall-drawer"
-			id="landing-menu"
-			aria-label="Mobilné menu"
-			transition:fly={{ y: -18, duration: 380, easing: cubicOut }}
-		>
-			<a href={resolve('/discover')} onclick={closeMenu}>Objavovať</a>
-			<a href={resolve('/knihy')} onclick={closeMenu}>Katalóg</a>
-			<a href={resolve('/odbory')} onclick={closeMenu}>Odbory</a>
-			<a href={resolve('/autori')} onclick={closeMenu}>Autori</a>
-			{#if data.user}
-				<a href={resolve('/vypozicky')} onclick={closeMenu}>Moje knihy</a>
-			{:else}
-				<a href={resolve('/prihlasenie')} onclick={closeMenu}>Prihlásiť sa</a>
-			{/if}
-			<button type="button" class="hall-search-btn is-mobile" onclick={openSearch}>
-				<SearchIcon class="size-4" />
-				<span>Hľadať knihu</span>
-			</button>
-		</nav>
-	{/if}
-
+<HallChrome user={data.user} searchIndex={data.searchIndex}>
 	<section class="hall-stage">
 		<div class="hall-banner">
 			<div class="hall-copy">
@@ -280,9 +194,4 @@
 			<a class="hall-ghost no-underline" href={resolve('/discover')}>Prezrieť fond</a>
 		</div>
 	</section>
-
-	<Footer tone="hall" />
-	</div>
-
-	<CatalogSearch items={data.searchIndex} bind:open={searchOpen} />
-</div>
+</HallChrome>
