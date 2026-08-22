@@ -9,6 +9,7 @@
 	import { cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import CatalogSearch from '$lib/components/CatalogSearch.svelte';
+	import OptimizedImage from '$lib/components/OptimizedImage.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -220,9 +221,17 @@
 				<ChevronLeftIcon />
 			</button>
 			<div class="hall-rail" bind:this={rail}>
-				{#each data.books as book (book.id)}
+				{#each data.books as book, i (book.id)}
+					{@const jacket = jacketFor(book)}
 					<a class="hall-card no-underline" href={resolve('/knihy/[id]', { id: book.id })}>
-						<img src={jacketFor(book).photo} alt="" />
+						<OptimizedImage
+							src={jacket.photo}
+							preset="rail"
+							eager={i === 0}
+							fallbackLabel={book.title}
+							fallbackBg={jacket.bg}
+							fallbackFg={jacket.fg}
+						/>
 						<div class="hall-card-body">
 							<h3>{book.title}</h3>
 							<p>od <span>{authorLine(book.authors)}</span></p>

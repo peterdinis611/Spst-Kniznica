@@ -4,6 +4,7 @@
 	import { authorLine } from '$lib/format';
 	import { authorLast, jacketFor } from '$lib/cover';
 	import { cn } from '$lib/utils.js';
+	import OptimizedImage from './OptimizedImage.svelte';
 
 	let {
 		book,
@@ -33,7 +34,15 @@
 	style="background: {tone.bg}"
 	title="{book.title} — {authorLine(book.authors)}"
 >
-	<img src={tone.photo} alt="" class="absolute inset-0 size-full object-cover" />
+	<OptimizedImage
+		src={tone.photo}
+		preset={size === 'hero' ? 'hero' : size === 'thumb' ? 'thumb' : size === 'tile' ? 'tile' : 'rail'}
+		eager={size === 'hero'}
+		class="absolute inset-0 size-full"
+		fallbackLabel={book.title}
+		fallbackBg={tone.bg}
+		fallbackFg={tone.fg}
+	/>
 	<div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/5"></div>
 	{#if size !== 'thumb'}
 		<div class="absolute inset-x-0 bottom-0 p-3 text-white">

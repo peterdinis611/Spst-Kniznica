@@ -6,6 +6,7 @@
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { jacketFor } from '$lib/cover';
+	import OptimizedImage from '$lib/components/OptimizedImage.svelte';
 	import type { CatalogSearchItem } from '$lib/search';
 
 	let {
@@ -136,6 +137,7 @@
 			</p>
 			<ul class="search-list">
 				{#each results as book, i (book.id)}
+					{@const jacket = jacketFor(book)}
 					<li>
 						<a
 							class="search-hit"
@@ -143,7 +145,13 @@
 							href={resolve('/knihy/[id]', { id: book.id })}
 							onmouseenter={() => (active = i)}
 						>
-							<img src={jacketFor(book).photo} alt="" />
+							<OptimizedImage
+								src={jacket.photo}
+								preset="search"
+								fallbackLabel={book.title}
+								fallbackBg={jacket.bg}
+								fallbackFg={jacket.fg}
+							/>
 							<span class="search-hit-copy">
 								<strong>{book.title}</strong>
 								<em>{book.authors} · {book.callNumber}</em>
@@ -278,12 +286,12 @@
 		background: #f3e4d2;
 	}
 
-	.search-hit img {
+	.search-hit :global(.opt-image) {
 		width: 2.4rem;
 		height: 3.2rem;
-		object-fit: cover;
 		border-radius: 0.35rem;
-		background: #e4e7ee;
+		aspect-ratio: auto;
+		background: #e4d7bf;
 	}
 
 	.search-hit-copy {

@@ -564,11 +564,11 @@
 	color: inherit;
 }
 
-.hall-card img {
+.hall-card .opt-image {
 	display: block;
 	width: 100%;
 	height: 11.4rem;
-	object-fit: cover;
+	aspect-ratio: auto;
 	background: #e4d7bf;
 }
 
