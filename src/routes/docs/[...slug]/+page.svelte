@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-	import { flattenPageTree, DocsLayout } from 'fumadocs-svelte';
+	import { flattenPageTree } from 'fumadocs-svelte';
+	import { docsHref } from '$lib/docs/href';
+	import Handbook from '$lib/components/Handbook.svelte';
 	import Seo from '$lib/components/Seo.svelte';
-	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();
@@ -15,50 +15,35 @@
 
 <Seo title={data.page.data.title} description={data.page.data.description ?? 'Príručka SPŠT knižnice.'} />
 
-<div class="docs-folio" id="obsah">
-	<div class="docs-rail">
-		<a class="docs-mark no-underline" href={resolve('/')}>
-			<span>SPŠT</span>
-			knižnica
-		</a>
-		<div class="docs-rail-tools">
-			<a class="docs-ghost no-underline" href={resolve('/discover')}>Do fondu</a>
-			<ThemeToggle />
-		</div>
-	</div>
-
-	<DocsLayout tree={data.pageTree} title="Príručka" class="docs-layout">
-		<article class="docs-leaf">
-			<p class="docs-kicker">Príručka fondu</p>
-			<header>
-				<h1>{data.page.data.title}</h1>
-				{#if data.page.data.description}
-					<p class="docs-lead">{data.page.data.description}</p>
-				{/if}
-			</header>
-
-			<div class="docs-prose prose max-w-none">
-				<Content />
-			</div>
-
-			{#if previous || next}
-				<nav class="docs-pager" aria-label="Ďalšie kapitoly">
-					{#if previous}
-						<a class="no-underline" href={previous.url}>
-							<span>Predchádzajúca</span>
-							<strong>{previous.data.title}</strong>
-						</a>
-					{:else}
-						<span></span>
-					{/if}
-					{#if next}
-						<a class="is-next no-underline" href={next.url}>
-							<span>Ďalšia</span>
-							<strong>{next.data.title}</strong>
-						</a>
-					{/if}
-				</nav>
+<Handbook tree={data.pageTree}>
+	<article class="docs-leaf">
+		<p class="docs-kicker">Príručka fondu</p>
+		<header>
+			<h1>{data.page.data.title}</h1>
+			{#if data.page.data.description}
+				<p class="docs-lead">{data.page.data.description}</p>
 			{/if}
-		</article>
-	</DocsLayout>
-</div>
+		</header>
+
+		<div class="docs-prose">
+			<Content />
+		</div>
+
+		{#if previous || next}
+			<nav class="docs-pager" aria-label="Ďalšie kapitoly">
+				{#if previous}
+					<a class="no-underline" href={docsHref(previous.url)}>
+						<span>Predchádzajúca</span>
+						<strong>{previous.data.title}</strong>
+					</a>
+				{/if}
+				{#if next}
+					<a class="is-next no-underline" href={docsHref(next.url)}>
+						<span>Ďalšia</span>
+						<strong>{next.data.title}</strong>
+					</a>
+				{/if}
+			</nav>
+		{/if}
+	</article>
+</Handbook>

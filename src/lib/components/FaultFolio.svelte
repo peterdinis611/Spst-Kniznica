@@ -14,12 +14,15 @@
 	const stamp = $derived(jammed ? 'PORUCHA' : 'CHÝBA');
 	const kicker = $derived(jammed ? 'Porucha pultu' : 'Katalógová poznámka');
 	const title = $derived(jammed ? 'Zásuvka sa zasekla.' : 'Karta nie je v zásuvke.');
+	const leaked = $derived(
+		!!message && /ENOENT|EACCES|EPERM|\.svelte-kit|node_modules|\/Users\/|\/home\/|Not Found|Internal Error/.test(message)
+	);
 	const lead = $derived(
-		message && message !== 'Not Found' && message !== 'Internal Error'
-			? message
-			: jammed
+		jammed || leaked || !message
+			? jammed
 				? 'Fond túto kartu teraz neotvorí. Skús znova, alebo sa vráť na sieň.'
 				: 'Signatúra v registri nie je — alebo ju niekto vrátil do nesprávneho šuplíka.'
+			: message
 	);
 
 	function retry() {

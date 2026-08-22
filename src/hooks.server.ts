@@ -1,4 +1,4 @@
-import { redirect, type Handle } from '@sveltejs/kit';
+import { redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { building } from '$app/environment';
 import { auth } from '$lib/server/auth';
@@ -44,3 +44,18 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 };
 
 export const handle: Handle = sequence(handleAliases, handleBetterAuth);
+
+export const handleError: HandleServerError = ({ error, status }) => {
+	const raw = error instanceof Error ? error.message : String(error);
+	const internal = /ENOENT|EACCES|EPERM|\.svelte-kit|node_modules|\/Users\/|\/home\/|\\\\/.test(raw);
+
+	if (status === 404) {
+		return { message: 'Túto stránku sme v katalógu nenašli.' };
+	}
+
+	if (internal || status >= 500) {
+		return { message: 'Fond túto kartu teraz neotvorí.' };
+	}
+
+	return { message: raw };
+};
