@@ -21,5 +21,9 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Storybook
+/storybook-static
+debug-storybook.log
 # SQLite
 *.db
