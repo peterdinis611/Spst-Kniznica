@@ -30,6 +30,29 @@ export function authorLine(authors: { name: string }[]) {
 	return `${authors[0].name} a kol.`;
 }
 
+export function initials(name: string) {
+	const cleaned = name.replace(/^(Prof|Mgr|Ing|PaedDr|PhDr)\.\s+/i, '');
+	const parts = cleaned.trim().split(/\s+/).filter(Boolean);
+	if (parts.length === 0) return '??';
+	if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+	return `${parts[0][0]}${parts.at(-1)?.[0] ?? ''}`.toUpperCase();
+}
+
+export function booksLabel(count: number) {
+	if (count === 1) return '1 kniha vo fonde';
+	if (count >= 2 && count <= 4) return `${count} knihy vo fonde`;
+	return `${count} kníh vo fonde`;
+}
+
+export function splitCallNumber(value: string) {
+	const parts = value.trim().split(/\s+/);
+	return {
+		dept: parts[0] ?? '',
+		number: parts[1] ?? '',
+		cutter: parts.slice(2).join(' ')
+	};
+}
+
 export function copiesLabel(available: number, total: number) {
 	if (available === 0) return 'Nedostupné';
 	if (available === 1) return `1 voľný z ${total}`;

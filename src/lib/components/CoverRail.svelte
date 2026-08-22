@@ -25,7 +25,7 @@
 			size="icon-lg"
 			class="absolute top-[42%] right-1 z-10 size-11 -translate-y-1/2 rounded-full bg-white shadow-md"
 			onclick={next}
-			aria-label="Next books"
+			aria-label="Ďalšie knihy"
 		>
 			<ChevronRightIcon />
 		</Button>

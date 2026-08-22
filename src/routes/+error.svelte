@@ -24,6 +24,6 @@
 		</Alert.Root>
 	</Card.Content>
 	<Card.Footer>
-		<Button href={resolve('/')}>Späť na Objavovať</Button>
+		<Button href={resolve('/discover')}>Späť do katalógu</Button>
 	</Card.Footer>
 </Card.Root>

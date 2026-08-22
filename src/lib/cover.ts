@@ -73,3 +73,9 @@ export function jacketFor(book: Pick<CatalogBook, 'id' | 'title'>) {
 export function authorLast(name: string) {
 	return name.trim().split(/\s+/).at(-1) ?? name;
 }
+
+const swatches = ['#e31b6d', '#1c2230', '#c45c12', '#2a6b5a', '#3d4ea3'];
+
+export function authorSwatch(id: string) {
+	return swatches[hash(id) % swatches.length];
+}

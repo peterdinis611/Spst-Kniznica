@@ -13,7 +13,7 @@
 		DropdownMenuSeparator,
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu/index.js';
-	import { Avatar, AvatarFallback, AvatarImage } from '$lib/components/ui/avatar/index.js';
+	import { Avatar, AvatarFallback } from '$lib/components/ui/avatar/index.js';
 	import {
 		Sheet,
 		SheetContent,
@@ -41,10 +41,7 @@
 	const query = $derived(page.url.searchParams.get('q') ?? '');
 	const odbor = $derived(page.url.searchParams.get('odbor') ?? '');
 	const hideSearch = $derived(page.url.pathname.startsWith('/prihlasenie'));
-	const displayName = $derived(user?.name ?? 'Guest');
-	const photo = $derived(
-		user ? `https://i.pravatar.cc/80?u=${encodeURIComponent(user.id)}` : undefined
-	);
+	const displayName = $derived(user?.name ?? 'Hosť');
 
 	const initials = $derived(
 		displayName
@@ -79,15 +76,14 @@
 					<AppSidebar {user} compact />
 				</SheetContent>
 			</Sheet>
-			<h1 class="text-[2.35rem] leading-none font-extrabold md:text-[2.75rem]">{title}</h1>
+			<h1 class="font-display text-[2.15rem] leading-none font-extrabold md:text-[2.5rem]">{title}</h1>
 		</div>
 		<div class="flex items-center gap-2 lg:hidden">
 			<Button href={user ? resolve('/vypozicky') : resolve('/prihlasenie')} variant="ghost" size="icon" class="rounded-full">
 				<Avatar class="size-9">
-					{#if photo}
-						<AvatarImage src={photo} alt={displayName} />
-					{/if}
-					<AvatarFallback class="text-xs font-semibold">{initials}</AvatarFallback>
+					<AvatarFallback class="bg-accent text-accent-foreground text-xs font-semibold">
+						{initials}
+					</AvatarFallback>
 				</Avatar>
 			</Button>
 		</div>
@@ -99,10 +95,9 @@
 				{#snippet child({ props })}
 					<button type="button" class="flex items-center gap-2.5 no-underline" {...props}>
 						<Avatar class="size-10">
-							{#if photo}
-								<AvatarImage src={photo} alt={displayName} />
-							{/if}
-							<AvatarFallback class="font-semibold">{initials}</AvatarFallback>
+							<AvatarFallback class="bg-accent text-accent-foreground font-semibold">
+								{initials}
+							</AvatarFallback>
 						</Avatar>
 						<span class="text-sm font-semibold">{displayName}</span>
 						<ChevronDownIcon class="size-4 text-[#8a8a8a]" />
@@ -117,18 +112,18 @@
 						{#snippet child({ props })}
 							<a href={resolve('/vypozicky')} {...props}>
 								<BookOpenIcon />
-								My Library
+								Moje knihy
 							</a>
 						{/snippet}
 					</DropdownMenuItem>
 					<DropdownMenuItem onSelect={submitLogout}>
 						<LogOutIcon />
-						Log out
+						Odhlásiť
 					</DropdownMenuItem>
 				{:else}
 					<DropdownMenuItem>
 						{#snippet child({ props })}
-							<a href={resolve('/prihlasenie')} {...props}>Log in</a>
+							<a href={resolve('/prihlasenie')} {...props}>Prihlásiť sa</a>
 						{/snippet}
 					</DropdownMenuItem>
 				{/if}
@@ -137,7 +132,7 @@
 		<a
 			href={resolve('/vypozicky')}
 			class="relative grid size-10 place-items-center rounded-full no-underline"
-			aria-label="Notifications"
+			aria-label="Moje knihy"
 		>
 			<BellIcon class="size-[1.15rem]" />
 			<span class="absolute top-1.5 right-2 size-2 rounded-full bg-[#ef4444]"></span>
@@ -146,25 +141,25 @@
 
 	{#if !hideSearch}
 		<form class="search-bar mt-7" method="GET" action={resolve('/knihy')}>
-			<label class="sr-only" for="odbor">Category</label>
+			<label class="sr-only" for="odbor">Odbor</label>
 			<select id="odbor" name="odbor" value={odbor}>
-				<option value="">All Categories</option>
+				<option value="">Všetky odbory</option>
 				{#each categories as cat (cat.id)}
 					<option value={cat.slug}>{cat.name}</option>
 				{/each}
 			</select>
 			<SearchIcon class="ml-1 size-4 shrink-0 text-[#b0b0b0]" />
-			<label class="sr-only" for="q-desk">Search</label>
+			<label class="sr-only" for="q-desk">Hľadať</label>
 			<Input
 				id="q-desk"
 				class="h-12 min-w-0 flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0"
 				type="search"
 				name="q"
 				value={query}
-				placeholder="find the book you like..."
+				placeholder="názov, autor, signatúra…"
 			/>
-			<Button class="m-1.5 h-10 rounded-xl px-6 text-[0.82rem] font-semibold" type="submit">
-				Search
+			<Button class="m-1.5 h-10 rounded-sm px-6 text-[0.82rem] font-semibold" type="submit">
+				Hľadať
 			</Button>
 		</form>
 	{/if}
