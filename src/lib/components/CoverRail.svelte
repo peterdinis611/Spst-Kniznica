@@ -8,7 +8,7 @@
 	let rail: HTMLDivElement | undefined = $state();
 
 	function next() {
-		rail?.scrollBy({ left: 280, behavior: 'smooth' });
+		rail?.scrollBy({ left: 320, behavior: 'smooth' });
 	}
 </script>
 
@@ -23,9 +23,9 @@
 			type="button"
 			variant="secondary"
 			size="icon-lg"
-			class="absolute top-1/2 right-0 z-10 size-11 -translate-y-1/2 rounded-full bg-card shadow-lg"
+			class="absolute top-[42%] right-1 z-10 size-11 -translate-y-1/2 rounded-full bg-white shadow-md"
 			onclick={next}
-			aria-label="Ďalšie knihy"
+			aria-label="Next books"
 		>
 			<ChevronRightIcon />
 		</Button>

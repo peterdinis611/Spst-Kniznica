@@ -12,7 +12,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>SPŠT Knižnica</title>
+	<title>THE BOOKS</title>
 	<meta
 		name="description"
 		content="Školská knižnica SPŠT — katalóg, autori, odbory, výpožičky a vrátenia."
@@ -22,15 +22,17 @@
 <ModeWatcher defaultMode="light" />
 <Toaster />
 
-<a class="skip-link" href="#obsah">Preskočiť na obsah</a>
+<a class="skip-link" href="#obsah">Skip to content</a>
 <form id="logout-form" method="POST" action={resolve('/odhlasenie')} class="hidden"></form>
 
 <div class="desk">
 	<div class="hidden h-dvh lg:sticky lg:top-0 lg:block">
 		<AppSidebar user={data.user} />
 	</div>
-	<div class="desk-stage">
-		<AppTopbar user={data.user} categories={data.categories} loanCount={data.loanCount} />
-		<main id="obsah" class="desk-main pt-8">{@render children()}</main>
+	<div class="desk-shell">
+		<div class="desk-panel">
+			<AppTopbar user={data.user} categories={data.categories} />
+			<main id="obsah" class="desk-main pt-7">{@render children()}</main>
+		</div>
 	</div>
 </div>
