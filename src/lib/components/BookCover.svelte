@@ -9,11 +9,13 @@
 	let {
 		book,
 		size = 'rail',
-		linked = true
+		linked = true,
+		plain = false
 	}: {
 		book: CatalogBook;
 		size?: 'rail' | 'tile' | 'thumb' | 'hero';
 		linked?: boolean;
+		plain?: boolean;
 	} = $props();
 
 	const tone = $derived(jacketFor(book));
@@ -44,7 +46,7 @@
 		fallbackFg={tone.fg}
 	/>
 	<div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/5"></div>
-	{#if size !== 'thumb'}
+	{#if size !== 'thumb' && !plain}
 		<div class="absolute inset-x-0 bottom-0 p-3 text-white">
 			<p
 				class={cn(

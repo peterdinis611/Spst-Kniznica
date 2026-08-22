@@ -7,6 +7,8 @@
 	import XIcon from '@lucide/svelte/icons/x';
 	import { jacketFor } from '$lib/cover';
 	import OptimizedImage from '$lib/components/OptimizedImage.svelte';
+	import * as Empty from '$lib/components/ui/empty/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import type { CatalogSearchItem } from '$lib/search';
 
 	let {
@@ -162,7 +164,38 @@
 						</a>
 					</li>
 				{:else}
-					<li class="search-empty">V fonde nič nesedí. Skús iný názov alebo signatúru.</li>
+					<li in:fly={{ y: 14, duration: 420, easing: cubicOut }}>
+						<Empty.Root class="border-0 p-4 md:p-6">
+							<Empty.Header>
+								<Empty.Media variant="default" class="mb-3">
+									<div class="empty-shelf" aria-hidden="true">
+										<span></span>
+										<span></span>
+										<span></span>
+										<span></span>
+										<em></em>
+									</div>
+								</Empty.Media>
+								<Empty.Title class="font-display text-[1.15rem]">V fonde nič nesedí</Empty.Title>
+								<Empty.Description>
+									Pre „{query.trim()}“ sa nenašiel názov, autor ani signatúra.
+								</Empty.Description>
+							</Empty.Header>
+							<Empty.Content>
+								<Button
+									variant="outline"
+									size="sm"
+									class="rounded-full"
+									onclick={() => {
+										query = '';
+										inputEl?.focus();
+									}}
+								>
+									Vymazať hľadanie
+								</Button>
+							</Empty.Content>
+						</Empty.Root>
+					</li>
 				{/each}
 			</ul>
 		</div>
@@ -328,15 +361,90 @@
 		color: var(--muted, #6d6458);
 	}
 
-	.search-empty {
-		padding: 1.2rem 0.7rem 1.4rem;
-		color: var(--muted, #6d6458);
-		font-size: 0.9rem;
+	.empty-shelf {
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		gap: 0.28rem;
+		width: 7.2rem;
+		height: 4.4rem;
+		padding: 0 0.55rem 0.45rem;
+		border-radius: 0.7rem;
+		background:
+			linear-gradient(180deg, rgb(255 255 255 / 0.04), transparent 40%),
+			color-mix(in srgb, var(--wash, #ece3d2) 88%, #3c2a21);
+		box-shadow: inset 0 -7px 0 color-mix(in srgb, var(--ink, #3c2a21) 18%, transparent);
+	}
+
+	.empty-shelf span,
+	.empty-shelf em {
+		display: block;
+		border-radius: 2px 2px 0 0;
+		transform-origin: bottom center;
+	}
+
+	.empty-shelf span:nth-child(1) {
+		width: 0.62rem;
+		height: 2.35rem;
+		background: #c56a4a;
+		animation: empty-lift 1.8s ease-in-out infinite;
+	}
+
+	.empty-shelf span:nth-child(2) {
+		width: 0.72rem;
+		height: 2.85rem;
+		background: #7d96a8;
+		animation: empty-lift 1.8s ease-in-out 0.12s infinite;
+	}
+
+	.empty-shelf span:nth-child(3) {
+		width: 0.58rem;
+		height: 2.1rem;
+		background: #d4a24a;
+		animation: empty-lift 1.8s ease-in-out 0.24s infinite;
+	}
+
+	.empty-shelf span:nth-child(4) {
+		width: 0.68rem;
+		height: 2.6rem;
+		background: #8fa37a;
+		animation: empty-lift 1.8s ease-in-out 0.36s infinite;
+	}
+
+	.empty-shelf em {
+		width: 0.85rem;
+		height: 1.15rem;
+		border: 1.5px dashed color-mix(in srgb, var(--ink, #3c2a21) 35%, transparent);
+		animation: empty-gap 1.8s ease-in-out 0.2s infinite;
+	}
+
+	@keyframes empty-lift {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		40% {
+			transform: translateY(-7px);
+		}
+	}
+
+	@keyframes empty-gap {
+		0%,
+		100% {
+			opacity: 0.35;
+			transform: scaleY(0.86);
+		}
+		50% {
+			opacity: 1;
+			transform: scaleY(1);
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
 		.search-backdrop,
-		.search-panel {
+		.search-panel,
+		.empty-shelf span,
+		.empty-shelf em {
 			transition: none !important;
 			animation: none !important;
 			backdrop-filter: none;

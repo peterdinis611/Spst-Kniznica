@@ -11,7 +11,9 @@
 
 <button
 	type="button"
-	class={variant === 'hall' ? 'hall-theme-btn' : 'desk-theme-btn'}
+	class={variant === 'hall'
+		? 'hall-theme-btn'
+		: 'grid size-10 cursor-pointer place-items-center rounded-full bg-primary text-primary-foreground hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring'}
 	onclick={toggleMode}
 	aria-label={label}
 	title={label}
@@ -24,24 +26,24 @@
 </button>
 
 <style>
-	.desk-theme-btn {
+	.hall-theme-btn {
 		display: grid;
 		place-items: center;
-		width: 2.5rem;
-		height: 2.5rem;
-		border: 1px solid var(--border);
+		width: 2.35rem;
+		height: 2.35rem;
+		border: 0;
 		border-radius: 999px;
-		background: var(--card);
-		color: var(--foreground);
+		background: var(--ink);
+		color: var(--page);
 		cursor: pointer;
 	}
 
-	.desk-theme-btn:hover {
-		background: var(--muted);
+	.hall-theme-btn:hover {
+		opacity: 0.82;
 	}
 
-	.desk-theme-btn:focus-visible {
-		outline: 2px solid var(--ring);
+	.hall-theme-btn:focus-visible {
+		outline: 2px solid var(--ink);
 		outline-offset: 3px;
 	}
 </style>

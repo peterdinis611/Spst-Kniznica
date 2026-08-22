@@ -24,7 +24,7 @@
 
 <ModeWatcher
 	defaultMode="system"
-	themeColors={{ light: '#efe4cc', dark: '#161410' }}
+	themeColors={{ light: '#f6f0e6', dark: '#16120e' }}
 />
 <Toaster />
 
@@ -41,7 +41,7 @@
 		<div class="desk-shell">
 			<div class="desk-panel">
 				<AppTopbar user={data.user} categories={data.categories} />
-				<main id="obsah" class="desk-main pt-7">{@render children()}</main>
+				<main id="obsah" class="desk-main pt-8">{@render children()}</main>
 				<div class="desk-main pt-0">
 					<Footer tone="desk" />
 				</div>

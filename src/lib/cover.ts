@@ -80,6 +80,27 @@ export function authorSwatch(id: string) {
 	return swatches[hash(id) % swatches.length];
 }
 
+export type ClothTone = {
+	bg: string;
+	ink: string;
+	band: string;
+};
+
+const cloths: ClothTone[] = [
+	{ bg: '#3c2a21', ink: '#f6f0e6', band: '#d4a24a' },
+	{ bg: '#c56a4a', ink: '#fff6ee', band: '#f3eadf' },
+	{ bg: '#7d96a8', ink: '#f4f7f8', band: '#3c2a21' },
+	{ bg: '#8fa37a', ink: '#243018', band: '#f6f0e6' },
+	{ bg: '#d4a24a', ink: '#2a1c10', band: '#3c2a21' },
+	{ bg: '#5c3d2e', ink: '#f6f0e6', band: '#c56a4a' },
+	{ bg: '#e8d3b0', ink: '#3c2a21', band: '#c56a4a' },
+	{ bg: '#4f6d7a', ink: '#f3eae0', band: '#d4a24a' }
+];
+
+export function clothFor(id: string) {
+	return cloths[hash(id) % cloths.length];
+}
+
 const PRESETS = {
 	rail: { width: 360, height: 456, sizes: '(max-width: 720px) 74vw, 218px', widths: [240, 360, 540] },
 	tile: { width: 400, height: 600, sizes: '(max-width: 720px) 46vw, 280px', widths: [280, 400, 640] },

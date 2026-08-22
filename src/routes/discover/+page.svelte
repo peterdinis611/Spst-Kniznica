@@ -1,19 +1,32 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { authorLine, booksLabel, initials } from '$lib/format';
-	import { authorSwatch, jacketFor } from '$lib/cover';
-	import CoverRail from '$lib/components/CoverRail.svelte';
-	import OptimizedImage from '$lib/components/OptimizedImage.svelte';
+	import { authorLine, booksLabel, copiesLabel, initials, splitCallNumber } from '$lib/format';
+	import { authorSwatch } from '$lib/cover';
+	import { cn } from '$lib/utils.js';
+	import PrintJacket from '$lib/components/PrintJacket.svelte';
 	import Seo from '$lib/components/Seo.svelte';
-	import { Avatar, AvatarFallback } from '$lib/components/ui/avatar/index.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	const featured = $derived(data.featured);
-	const authors = $derived(
-		[...data.authors].sort((a, b) => b.bookCount - a.bookCount).slice(0, 5)
+	const featured = $derived(
+		data.featured?.id === 'book-modlitbicky' ? data.books[0] : data.featured
 	);
-	const railBooks = $derived(data.books.slice(0, 10));
+	const featuredCall = $derived(featured ? splitCallNumber(featured.callNumber) : null);
+	const catalog = $derived(
+		data.books.filter((book) => book.id !== 'book-modlitbicky' && book.id !== featured?.id)
+	);
+	const ready = $derived(catalog.filter((book) => book.copiesAvailable > 0));
+	const shelf = $derived(ready.slice(0, 7));
+	const rest = $derived(catalog.filter((book) => !shelf.some((item) => item.id === book.id)).slice(0, 6));
+	const authors = $derived(
+		[...data.authors].sort((a, b) => b.bookCount - a.bookCount).slice(0, 8)
+	);
+
+	const heights = [13.8, 12.2, 15, 12.8, 14.4, 12.5, 14.8];
+	const display =
+		'font-display m-0 font-semibold tracking-[-0.03em] leading-[1.06] [font-variation-settings:"SOFT"_28,"WONK"_0]';
+	const rise =
+		'animate-in fade-in slide-in-from-bottom-3 fill-mode-both duration-700 motion-reduce:animate-none';
 </script>
 
 <Seo
@@ -21,449 +34,204 @@
 	description="Odporúčané knihy, police odborov a novinky vo fonde školskej knižnice SPŠT."
 />
 
-<div class="discover">
-	<p class="discover-ticker">
-		{data.stats.available} voľných výtlačkov
-		<span aria-hidden="true">·</span>
-		{data.stats.books} zväzkov vo fonde
-	</p>
-
-	<section class="discover-stage">
-		{#if featured}
-			{@const jacket = jacketFor(featured)}
-			<article class="discover-hero">
-				<div class="discover-copy">
-					<p class="discover-kicker">Dnes vo fonde · {featured.callNumber}</p>
-					<h2>{featured.title}</h2>
-					<p class="discover-lead">
-						<span>{authorLine(featured.authors)}</span>
+<div class="text-foreground">
+	{#if featured && featuredCall}
+		<section
+			class={cn(
+				'relative overflow-hidden rounded-[1.7rem] bg-primary text-primary-foreground',
+				'bg-[radial-gradient(ellipse_at_18%_0%,rgb(255_248_230/0.16),transparent_42%),linear-gradient(180deg,transparent_70%,rgb(0_0_0/0.12))]',
+				rise
+			)}
+		>
+			<div
+				class="grid items-center gap-8 px-6 py-8 md:grid-cols-[auto_minmax(0,1fr)] md:gap-12 md:px-10 md:py-10 lg:grid-cols-[auto_minmax(0,1fr)_11.5rem]"
+			>
+				<a
+					class="group justify-self-center no-underline md:justify-self-start"
+					href={resolve('/knihy/[id]', { id: featured.id })}
+				>
+					<span class="block origin-bottom transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:-rotate-2 motion-reduce:transform-none">
+						<PrintJacket
+							book={featured}
+							size="feature"
+							linked={false}
+							class="shadow-[12px_18px_0_rgb(0_0_0/0.18)] ring-0 hover:!transform-none"
+						/>
+					</span>
+					<span class="mx-auto mt-3 block h-2 w-[10.5rem] rounded-full bg-[rgb(0_0_0/0.22)] blur-[2px]"></span>
+				</a>
+				<div class="min-w-0">
+					<p class="m-0 font-sans text-[0.72rem] font-semibold tracking-[0.18em] uppercase opacity-65">
+						Dnes na pulte
+					</p>
+					<h2 class={cn(display, 'mt-3 max-w-[12ch] text-[clamp(2.2rem,4.6vw,3.5rem)]')}>
+						<a
+							class="text-inherit no-underline decoration-from-font hover:underline"
+							href={resolve('/knihy/[id]', { id: featured.id })}
+						>
+							{featured.title}
+						</a>
+					</h2>
+					<p class="mt-4 m-0 font-body text-[1.12rem] leading-snug opacity-85">
+						{authorLine(featured.authors)}
+						<span class="mx-1.5">·</span>
 						{featured.category.name}
 					</p>
-					<div class="discover-cta">
-						<a class="hall-btn no-underline" href={resolve('/knihy/[id]', { id: featured.id })}>
-							Otvoriť kartu
+					<p class="mt-4 m-0 max-w-[38ch] font-body text-[1.05rem] leading-relaxed opacity-75">
+						{featured.description}
+					</p>
+					<div class="mt-7 flex flex-wrap items-center gap-3">
+						<a
+							class="inline-flex h-11 items-center rounded-full bg-card px-6 font-sans text-[0.9rem] font-semibold text-card-foreground no-underline hover:opacity-90"
+							href={resolve('/knihy/[id]', { id: featured.id })}
+						>
+							Pozrieť knihu
 						</a>
-						<a class="hall-ghost no-underline" href={resolve('/knihy')}>Celý katalóg</a>
+						<span
+							class="inline-flex h-11 items-center rounded-full bg-[rgb(255_248_230/0.14)] px-4 font-sans text-[0.78rem] font-semibold tracking-wide"
+						>
+							{copiesLabel(featured.copiesAvailable, featured.copiesTotal)}
+						</span>
 					</div>
-					<span class="discover-stamp" class:is-out={featured.copiesAvailable === 0}>
-						{featured.copiesAvailable > 0 ? 'Voľná' : 'Vonku'}
-					</span>
 				</div>
-				<a class="discover-art no-underline" href={resolve('/knihy/[id]', { id: featured.id })}>
-					<OptimizedImage
-						src={jacket.photo}
-						preset="hero"
-						eager
-						class="size-full min-h-52"
-						fallbackLabel={featured.title}
-						fallbackBg={jacket.bg}
-						fallbackFg={jacket.fg}
-					/>
-				</a>
-			</article>
-		{/if}
-
-		<aside class="discover-side">
-			<p class="discover-kicker">Menný katalóg</p>
-			<h2>Autori vo fonde</h2>
-			<ul>
-				{#each authors as author, i (author.id)}
-					<li>
-						<a class="discover-author no-underline" href={resolve('/autori/[slug]', { slug: author.slug })}>
-							<span class="discover-rank">{String(i + 1).padStart(2, '0')}</span>
-							<Avatar class="size-9">
-								<AvatarFallback
-									class="text-[0.7rem] font-bold text-[#fffaf3]"
-									style="background: {authorSwatch(author.id)}"
-								>
-									{initials(author.name)}
-								</AvatarFallback>
-							</Avatar>
-							<span class="discover-author-copy">
-								<strong>{author.name}</strong>
-								<em>{booksLabel(author.bookCount)}</em>
-							</span>
-						</a>
-					</li>
-				{/each}
-			</ul>
-			<a class="hall-btn hall-btn-block no-underline" href={resolve('/autori')}>Celý zoznam autorov</a>
-		</aside>
-	</section>
-
-	<section class="discover-block">
-		<div class="discover-head">
-			<div>
-				<p class="discover-kicker">Signatúry</p>
-				<h2>Odbory na polici</h2>
+				<aside
+					class="hidden min-h-[14rem] flex-col justify-between border-l border-[rgb(255_248_230/0.16)] pl-7 lg:flex"
+				>
+					<div>
+						<p class="m-0 font-mono text-[0.68rem] font-semibold tracking-[0.16em] uppercase opacity-55">
+							Signatúra
+						</p>
+						<p class="mt-3 m-0 font-mono text-[1.35rem] leading-none font-semibold tracking-tight">
+							{featuredCall.dept}
+						</p>
+						<p class="mt-2 m-0 font-mono text-[0.95rem] opacity-75">
+							{featuredCall.number}
+							{featuredCall.cutter}
+						</p>
+					</div>
+					<p class="m-0 font-body text-[0.95rem] leading-snug opacity-70">
+						{featured.category.name}<br />
+						{featured.pages} strán · {featured.year}
+					</p>
+				</aside>
 			</div>
-			<a class="hall-btn no-underline" href={resolve('/odbory')}>Všetky odbory</a>
+		</section>
+	{/if}
+
+	<nav
+		class={cn(
+			'mt-7 flex flex-wrap items-baseline gap-x-5 gap-y-2 border-b border-border pb-4 delay-75',
+			rise
+		)}
+		aria-label="Odbory"
+	>
+		<a
+			class="font-sans text-[0.78rem] font-semibold tracking-[0.08em] text-foreground uppercase no-underline hover:opacity-55"
+			href={resolve('/odbory')}
+		>
+			Všetky
+		</a>
+		{#each data.categories as cat (cat.id)}
+			<a
+				class="font-mono text-[0.78rem] font-semibold tracking-[0.08em] text-foreground no-underline hover:opacity-55"
+				href={resolve('/odbory/[slug]', { slug: cat.slug })}
+			>
+				{cat.code}
+				<span class="ml-1 text-muted-foreground">{cat.bookCount}</span>
+			</a>
+		{/each}
+		<span class="ml-auto font-body text-[0.92rem] text-muted-foreground">
+			{data.stats.available} voľných · {data.stats.books} zväzkov
+		</span>
+	</nav>
+
+	<section class={cn('mt-9 delay-150', rise)}>
+		<div class="mb-5 flex items-end justify-between gap-4">
+			<h2 class={cn(display, 'text-[clamp(1.6rem,3vw,2.2rem)]')}>Voľné na polici.</h2>
+			<a
+				class="font-sans text-[0.82rem] font-semibold tracking-[0.04em] text-foreground no-underline hover:opacity-55"
+				href={resolve('/knihy')}
+			>
+				Celý katalóg
+			</a>
 		</div>
-		<div class="discover-depts">
-			{#each data.categories as cat (cat.id)}
-				<a class="discover-dept no-underline" href={resolve('/odbory/[slug]', { slug: cat.slug })}>
-					<span class="discover-dept-spine" style="background: {cat.accent}"></span>
-					<b>{cat.code}</b>
-					<strong>{cat.name}</strong>
-					<em>{booksLabel(cat.bookCount)}</em>
+		<div class="-mx-1 flex items-end gap-3 overflow-x-auto px-1 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+			{#each shelf as book, i (book.id)}
+				<a class="shrink-0 no-underline" href={resolve('/knihy/[id]', { id: book.id })}>
+					<PrintJacket {book} linked={false} height="{heights[i % heights.length]}rem" />
 				</a>
 			{/each}
 		</div>
 	</section>
 
-	<section class="discover-block">
-		<div class="discover-head">
+	{#if rest.length}
+		<section class={cn('mt-10 delay-150', rise)}>
+			<ol class="m-0 grid list-none gap-x-10 gap-y-0 p-0 md:grid-cols-2">
+				{#each rest as book (book.id)}
+					<li class="border-t border-border">
+						<a
+							class="group grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 py-4 text-inherit no-underline"
+							href={resolve('/knihy/[id]', { id: book.id })}
+						>
+							<em class="font-sans text-[0.68rem] font-semibold tracking-[0.1em] text-muted-foreground not-italic uppercase">
+								{book.category.code}
+							</em>
+							<span class="min-w-0">
+								<strong class="block font-display text-[1.15rem] leading-tight font-semibold group-hover:underline group-hover:underline-offset-[0.16em]">
+									{book.title}
+								</strong>
+								<span class="mt-1 block font-body text-[0.95rem] text-muted-foreground">
+									{authorLine(book.authors)}
+									<span class="mx-1.5 text-foreground">·</span>
+									{copiesLabel(book.copiesAvailable, book.copiesTotal)}
+								</span>
+							</span>
+						</a>
+					</li>
+				{/each}
+			</ol>
+		</section>
+	{/if}
+
+	<section class={cn('mt-12 delay-150', rise)}>
+		<div class="mb-5 flex items-end justify-between gap-4">
 			<div>
-				<p class="discover-kicker">Novinky vo fonde</p>
-				<h2>Učebnice, príručky a normy.</h2>
+				<p class="m-0 font-sans text-[0.72rem] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+					Menný katalóg
+				</p>
+				<h2 class={cn(display, 'mt-1 text-[clamp(1.6rem,3vw,2.2rem)]')}>Autori vo fonde.</h2>
 			</div>
-			<a class="hall-btn no-underline" href={resolve('/knihy')}>Celý katalóg</a>
+			<a
+				class="font-sans text-[0.82rem] font-semibold text-foreground no-underline hover:opacity-55"
+				href={resolve('/autori')}
+			>
+				Všetci autori
+			</a>
 		</div>
-		<CoverRail books={railBooks} />
+		<ul class="m-0 grid list-none gap-x-10 p-0 sm:grid-cols-2">
+			{#each authors as author (author.id)}
+				<li class="border-t border-border">
+					<a
+						class="group flex items-center gap-3.5 py-4 text-inherit no-underline"
+						href={resolve('/autori/[slug]', { slug: author.slug })}
+					>
+						<span
+							class="grid size-10 shrink-0 place-items-center rounded-full font-sans text-[0.7rem] font-bold text-[#fffaf3]"
+							style="background: {authorSwatch(author.id)}"
+						>
+							{initials(author.name)}
+						</span>
+						<span class="min-w-0 flex-1">
+							<strong class="block truncate font-display text-[1.08rem] leading-tight font-semibold group-hover:underline group-hover:underline-offset-[0.16em]">
+								{author.name}
+							</strong>
+							<em class="mt-0.5 block font-body text-[0.88rem] text-muted-foreground italic">
+								{booksLabel(author.bookCount)}
+							</em>
+						</span>
+					</a>
+				</li>
+			{/each}
+		</ul>
 	</section>
 </div>
-
-<style>
-	.discover {
-		--rise: cubic-bezier(0.22, 1, 0.36, 1);
-	}
-
-	.discover-ticker {
-		margin: 0 0 1.5rem;
-		color: var(--muted-foreground);
-		font-family: var(--font-display);
-		font-size: 0.82rem;
-		font-weight: 600;
-		font-style: italic;
-		letter-spacing: 0.02em;
-		animation: discover-rise 0.55s var(--rise) both;
-	}
-
-	.discover-ticker span {
-		margin: 0 0.45rem;
-		font-style: normal;
-		color: var(--copper);
-	}
-
-	.discover-stage {
-		display: grid;
-		gap: 1.15rem;
-		animation: discover-rise 0.7s var(--rise) 0.06s both;
-	}
-
-	.discover-hero {
-		display: grid;
-		overflow: hidden;
-		min-height: 19rem;
-		border-radius: 1.15rem;
-		background: var(--forest);
-		color: #fffaf3;
-		box-shadow: 0 22px 48px rgb(27 61 50 / 0.16);
-	}
-
-	.discover-copy {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
-		gap: 0.85rem;
-		padding: 1.7rem 1.5rem 1.55rem;
-		padding-right: 6rem;
-		background:
-			radial-gradient(circle at 0% 110%, rgb(212 106 30 / 0.22), transparent 46%),
-			var(--forest);
-	}
-
-	.discover-kicker {
-		margin: 0;
-		color: var(--copper);
-		font-family: var(--font-display);
-		font-size: 0.8rem;
-		font-weight: 600;
-		font-style: italic;
-		letter-spacing: 0.02em;
-	}
-
-	.discover-copy h2 {
-		margin: 0;
-		max-width: 12ch;
-		font-size: clamp(2rem, 4vw, 3.15rem);
-		font-weight: 700;
-		letter-spacing: -0.03em;
-		line-height: 1.02;
-		font-variation-settings: 'SOFT' 45, 'WONK' 1;
-	}
-
-	.discover-lead {
-		margin: 0;
-		max-width: 32ch;
-		color: #c5d4cc;
-		font-size: 0.95rem;
-		line-height: 1.5;
-	}
-
-	.discover-lead span {
-		display: block;
-		color: #f0c14b;
-		font-weight: 600;
-	}
-
-	.discover-cta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.65rem;
-		margin-top: 0.45rem;
-	}
-
-	.discover-stamp {
-		position: absolute;
-		top: 1.15rem;
-		right: 1.1rem;
-		display: grid;
-		place-items: center;
-		width: 4.35rem;
-		height: 4.35rem;
-		border: 2px solid #f0c14b;
-		border-radius: 999px;
-		color: #f0c14b;
-		font-family: var(--font-display);
-		font-size: 0.68rem;
-		font-weight: 800;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		transform: rotate(-14deg);
-		box-shadow: inset 0 0 0 3px rgb(240 193 75 / 0.35);
-	}
-
-	.discover-stamp.is-out {
-		border-color: #c5d4cc;
-		color: #c5d4cc;
-		box-shadow: inset 0 0 0 3px rgb(197 212 204 / 0.28);
-	}
-
-	.discover-art {
-		position: relative;
-		display: block;
-		overflow: hidden;
-		min-height: 14rem;
-		background: var(--forest-deep);
-	}
-
-	.discover-art::before {
-		content: '';
-		position: absolute;
-		inset: 0 auto 0 0;
-		z-index: 1;
-		width: 5.5rem;
-		background: linear-gradient(90deg, var(--forest), transparent);
-		pointer-events: none;
-	}
-
-	.discover-art :global(.opt-image) {
-		height: 100%;
-		min-height: 14rem;
-		aspect-ratio: auto;
-		transition: transform 0.75s var(--rise);
-	}
-
-	.discover-art:hover :global(.opt-image) {
-		transform: scale(1.06);
-	}
-
-	.discover-side {
-		padding: 1.25rem 1.15rem 1.2rem;
-		border-radius: 1.15rem;
-		background: var(--card);
-		box-shadow: 0 18px 40px rgb(28 34 48 / 0.06);
-	}
-
-	.discover-side h2,
-	.discover-head h2 {
-		margin: 0.2rem 0 0;
-		font-size: 1.5rem;
-		font-weight: 700;
-		letter-spacing: -0.02em;
-		font-variation-settings: 'SOFT' 45, 'WONK' 1;
-	}
-
-	.discover-side ul {
-		display: grid;
-		margin: 0.7rem 0 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.discover-author {
-		display: grid;
-		grid-template-columns: 1.5rem auto minmax(0, 1fr);
-		align-items: center;
-		gap: 0.7rem;
-		padding: 0.62rem 0.1rem;
-		border-bottom: 1px solid var(--line);
-		color: inherit;
-	}
-
-	.discover-author:hover strong {
-		color: var(--copper);
-	}
-
-	.discover-rank {
-		color: var(--copper);
-		font-family: var(--font-display);
-		font-size: 0.72rem;
-		font-weight: 800;
-		letter-spacing: 0.06em;
-	}
-
-	.discover-author-copy {
-		display: grid;
-		min-width: 0;
-	}
-
-	.discover-author strong {
-		overflow: hidden;
-		font-size: 0.88rem;
-		font-weight: 700;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		transition: color 0.2s ease;
-	}
-
-	.discover-author em {
-		color: var(--muted-foreground);
-		font-size: 0.72rem;
-		font-style: italic;
-	}
-
-	.discover-block {
-		margin-top: 2.4rem;
-		animation: discover-rise 0.7s var(--rise) 0.14s both;
-	}
-
-	.discover-block:last-child {
-		animation-delay: 0.22s;
-	}
-
-	.discover-head {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: 0.9rem 1.2rem;
-		margin-bottom: 1.15rem;
-	}
-
-	.discover-head h2 {
-		max-width: 18ch;
-		font-size: clamp(1.55rem, 2.8vw, 2.05rem);
-	}
-
-	.discover-depts {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.85rem;
-	}
-
-	.discover-dept {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		gap: 0.28rem;
-		overflow: hidden;
-		min-height: 8.4rem;
-		padding: 1.05rem 1rem 1rem 1.2rem;
-		border-radius: 1.05rem;
-		background: var(--card);
-		color: inherit;
-		box-shadow: 0 12px 28px rgb(28 34 48 / 0.05);
-		transition:
-			transform 0.28s var(--rise),
-			box-shadow 0.28s var(--rise);
-	}
-
-	.discover-dept-spine {
-		position: absolute;
-		top: 0.7rem;
-		bottom: 0.7rem;
-		left: 0;
-		width: 0.38rem;
-		border-radius: 0 999px 999px 0;
-	}
-
-	.discover-dept b {
-		color: var(--copper);
-		font-family: var(--font-display);
-		font-size: 1.35rem;
-		font-weight: 800;
-		letter-spacing: -0.03em;
-		line-height: 1;
-	}
-
-	.discover-dept strong {
-		margin-top: auto;
-		font-size: 0.95rem;
-		font-weight: 700;
-	}
-
-	.discover-dept em {
-		color: var(--muted-foreground);
-		font-size: 0.75rem;
-		font-style: italic;
-	}
-
-	.discover-dept:hover {
-		transform: translateY(-4px);
-		box-shadow: 0 18px 36px rgb(28 34 48 / 0.1);
-	}
-
-	@keyframes discover-rise {
-		from {
-			opacity: 0;
-			transform: translateY(16px);
-		}
-		to {
-			opacity: 1;
-			transform: none;
-		}
-	}
-
-	@media (max-width: 779px) {
-		.discover-copy {
-			padding-top: 5.8rem;
-			padding-right: 1.5rem;
-		}
-	}
-
-	@media (min-width: 720px) {
-		.discover-depts {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-		}
-	}
-
-	@media (min-width: 780px) {
-		.discover-hero {
-			grid-template-columns: 1.08fr 0.92fr;
-		}
-
-		.discover-art {
-			min-height: 100%;
-		}
-	}
-
-	@media (min-width: 1100px) {
-		.discover-stage {
-			grid-template-columns: minmax(0, 1fr) 17.4rem;
-			align-items: stretch;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.discover-ticker,
-		.discover-stage,
-		.discover-block,
-		.discover-art :global(.opt-image) {
-			animation: none;
-			transition: none;
-		}
-	}
-</style>

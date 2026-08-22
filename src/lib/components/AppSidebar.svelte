@@ -43,11 +43,11 @@
 	class:px-5={compact}
 >
 	<a href={resolve('/')} class="font-display no-underline">
-		<span class="text-accent block text-[0.7rem] font-extrabold tracking-[0.22em] uppercase">SPŠT</span>
+		<span class="text-primary block text-[0.7rem] font-extrabold tracking-[0.22em] uppercase">SPŠT</span>
 		<span class="text-xl font-extrabold tracking-tight">knižnica</span>
 	</a>
 
-	<p class="text-sidebar-foreground/55 mt-10 font-display text-[0.62rem] tracking-[0.18em] uppercase">
+	<p class="text-muted-foreground mt-10 font-sans text-[0.62rem] tracking-[0.18em] uppercase">
 		Fond
 	</p>
 	<nav class="mt-3 flex flex-col gap-1" aria-label="Hlavná navigácia">
@@ -57,16 +57,13 @@
 			<a
 				href={resolve(item.path)}
 				class={cn(
-					'flex items-center gap-3 rounded-full py-1.5 text-sm no-underline',
-					on ? 'text-sidebar-primary font-semibold' : 'text-sidebar-foreground/55'
+					'flex items-center gap-3 rounded-full px-3 py-2 text-sm no-underline',
+					on
+						? 'bg-primary text-primary-foreground font-semibold'
+						: 'text-muted-foreground hover:bg-secondary'
 				)}
 			>
-				<span
-					class={cn(
-						'grid size-8 place-items-center rounded-full',
-						on && 'bg-sidebar-primary text-sidebar-primary-foreground'
-					)}
-				>
+				<span class="grid size-8 place-items-center">
 					<Icon class="size-4" />
 				</span>
 				{item.label}
@@ -75,14 +72,14 @@
 	</nav>
 
 	<div class="mt-auto">
-		<p class="text-sidebar-foreground/55 font-display text-[0.68rem] tracking-[0.08em] uppercase">
+		<p class="text-muted-foreground font-sans text-[0.68rem] tracking-[0.08em] uppercase">
 			Po—pia 7:30—15:30
 		</p>
 		<div class="mt-3">
 			{#if user}
 				<Button
 					variant="ghost"
-					class="text-sidebar-foreground/55 h-auto justify-start px-0 py-1.5 font-normal"
+					class="text-muted-foreground h-auto justify-start px-3 py-1.5 font-normal"
 					onclick={submitLogout}
 				>
 					<LogOutIcon />
@@ -92,7 +89,7 @@
 				<Button
 					href={resolve('/prihlasenie')}
 					variant="ghost"
-					class="text-sidebar-foreground/55 h-auto justify-start px-0 py-1.5 font-normal"
+					class="text-muted-foreground h-auto justify-start px-3 py-1.5 font-normal"
 				>
 					<LogInIcon />
 					Prihlásiť sa

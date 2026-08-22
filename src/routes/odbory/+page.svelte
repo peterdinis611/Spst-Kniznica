@@ -1,5 +1,7 @@
 <script lang="ts">
-	import CategoryTile from '$lib/components/CategoryTile.svelte';
+	import { resolve } from '$app/paths';
+	import { booksLabel } from '$lib/format';
+	import PrintJacket from '$lib/components/PrintJacket.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import type { PageProps } from './$types';
 
@@ -11,12 +13,46 @@
 	description="Police školskej knižnice SPŠT podľa odborov. Nájdite učebnice a príručky pre svoj smer."
 />
 
-<p class="text-muted-foreground max-w-lg font-serif text-lg">
-	Každý odbor má vlastnú policu. Ťukni na obálku a uvidíš, čo z nej môžeš brať.
+<p class="max-w-[40ch] font-body text-[1.08rem] leading-relaxed text-muted-foreground">
+	Každý odbor má vlastnú policu. Otvor značku, alebo siahni rovno po chrbte.
 </p>
 
-<div class="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
+<ol class="mt-10 m-0 grid list-none gap-10 p-0">
 	{#each data.categories as cat (cat.id)}
-		<CategoryTile category={cat} book={cat.cover} />
+		<li class="border-t border-border pt-6">
+			<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+				<a class="group min-w-0 text-inherit no-underline" href={resolve('/odbory/[slug]', { slug: cat.slug })}>
+					<p class="m-0 font-mono text-[0.72rem] font-semibold tracking-[0.16em] text-muted-foreground">
+						{cat.code}
+					</p>
+					<h2
+						class="font-display mt-1 text-[clamp(1.7rem,3vw,2.25rem)] leading-none font-semibold tracking-[-0.03em] [font-variation-settings:'SOFT'_28,'WONK'_0] group-hover:underline group-hover:underline-offset-[0.14em]"
+					>
+						{cat.name}
+					</h2>
+				</a>
+				<p class="m-0 font-body text-[0.95rem] text-muted-foreground italic">
+					{booksLabel(cat.bookCount)}
+				</p>
+			</div>
+			<p class="mb-5 max-w-[46ch] font-body text-[1rem] leading-relaxed text-muted-foreground">
+				{cat.description}
+			</p>
+			{#if cat.books.length}
+				<div class="flex items-end gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+					{#each cat.books as book (book.id)}
+						<a class="shrink-0 no-underline" href={resolve('/knihy/[id]', { id: book.id })}>
+							<PrintJacket {book} linked={false} />
+						</a>
+					{/each}
+					<a
+						class="mb-1 inline-flex h-11 shrink-0 items-center rounded-full px-4 font-sans text-[0.82rem] font-semibold text-foreground no-underline hover:opacity-55"
+						href={resolve('/odbory/[slug]', { slug: cat.slug })}
+					>
+						Celá polica
+					</a>
+				</div>
+			{/if}
+		</li>
 	{/each}
-</div>
+</ol>
