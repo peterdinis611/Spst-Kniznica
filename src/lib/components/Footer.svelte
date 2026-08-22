@@ -6,9 +6,9 @@
 	const year = new Date().getFullYear();
 	const links = [
 		{ href: resolve('/discover'), label: 'Objavovať' },
-		{ href: resolve('/knihy'), label: 'Katalóg' },
-		{ href: resolve('/odbory'), label: 'Odbory' },
-		{ href: resolve('/autori'), label: 'Autori' }
+		{ href: resolve('/books'), label: 'Katalóg' },
+		{ href: resolve('/departments'), label: 'Odbory' },
+		{ href: resolve('/authors'), label: 'Autori' }
 	] as const;
 </script>
 

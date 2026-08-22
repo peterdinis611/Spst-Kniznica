@@ -60,8 +60,8 @@
 				<a href={resolve('/discover')} aria-current={path.startsWith('/discover') ? 'page' : undefined}>
 					Objavovať
 				</a>
-				<a href={resolve('/knihy')}>Katalóg</a>
-				<a href={resolve('/autori')}>Autori</a>
+				<a href={resolve('/books')}>Katalóg</a>
+				<a href={resolve('/authors')}>Autori</a>
 			</nav>
 			<div class="hall-tools">
 				<button type="button" class="hall-search-btn" onclick={openSearch} aria-label="Hľadať knihu">
@@ -71,7 +71,7 @@
 				<ThemeToggle variant="hall" />
 				<a
 					class="hall-login no-underline"
-					href={user ? resolve('/vypozicky') : resolve('/prihlasenie')}
+					href={user ? resolve('/loans') : resolve('/login')}
 					aria-label={user ? 'Moje knihy' : 'Prihlásiť sa'}
 				>
 					<UserIcon class="size-4" />
@@ -102,13 +102,13 @@
 			>
 				<a href={resolve('/')} onclick={closeMenu}>Fond</a>
 				<a href={resolve('/discover')} onclick={closeMenu}>Objavovať</a>
-				<a href={resolve('/knihy')} onclick={closeMenu}>Katalóg</a>
-				<a href={resolve('/odbory')} onclick={closeMenu}>Odbory</a>
-				<a href={resolve('/autori')} onclick={closeMenu}>Autori</a>
+				<a href={resolve('/books')} onclick={closeMenu}>Katalóg</a>
+				<a href={resolve('/departments')} onclick={closeMenu}>Odbory</a>
+				<a href={resolve('/authors')} onclick={closeMenu}>Autori</a>
 				{#if user}
-					<a href={resolve('/vypozicky')} onclick={closeMenu}>Moje knihy</a>
+					<a href={resolve('/loans')} onclick={closeMenu}>Moje knihy</a>
 				{:else}
-					<a href={resolve('/prihlasenie')} onclick={closeMenu}>Prihlásiť sa</a>
+					<a href={resolve('/login')} onclick={closeMenu}>Prihlásiť sa</a>
 				{/if}
 				<div class="hall-drawer-tools">
 					<ThemeToggle variant="hall" />

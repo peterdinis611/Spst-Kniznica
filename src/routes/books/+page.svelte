@@ -23,12 +23,12 @@
 </p>
 
 <div class="mt-4 flex flex-wrap gap-2">
-	<Badge href={resolve('/knihy')} variant={!data.odbor ? 'default' : 'outline'} class="h-8">
+	<Badge href={resolve('/books')} variant={!data.odbor ? 'default' : 'outline'} class="h-8">
 		Všetko
 	</Badge>
 	{#each data.categories as cat (cat.id)}
 		<Badge
-			href="{resolve('/knihy')}?odbor={cat.slug}{data.q ? `&q=${encodeURIComponent(data.q)}` : ''}"
+			href="{resolve('/books')}?odbor={cat.slug}{data.q ? `&q=${encodeURIComponent(data.q)}` : ''}"
 			variant={data.odbor === cat.slug ? 'default' : 'outline'}
 			class="h-8"
 		>
@@ -42,7 +42,7 @@
 		<Alert.Title>Nič sa nenašlo</Alert.Title>
 		<Alert.Description>Skús iné slovo, alebo zruš filter.</Alert.Description>
 		<Alert.Action>
-			<Button href={resolve('/knihy')} variant="outline" size="sm">Zrušiť filter</Button>
+			<Button href={resolve('/books')} variant="outline" size="sm">Zrušiť filter</Button>
 		</Alert.Action>
 	</Alert.Root>
 {:else}

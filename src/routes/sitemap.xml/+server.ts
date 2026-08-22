@@ -8,21 +8,21 @@ export const GET: RequestHandler = async ({ url }) => {
 	const routes = [
 		{ path: '/', changefreq: 'weekly', priority: '1.0' },
 		{ path: '/discover', changefreq: 'weekly', priority: '0.9' },
-		{ path: '/knihy', changefreq: 'weekly', priority: '0.9' },
-		{ path: '/odbory', changefreq: 'monthly', priority: '0.7' },
-		{ path: '/autori', changefreq: 'monthly', priority: '0.7' },
+		{ path: '/books', changefreq: 'weekly', priority: '0.9' },
+		{ path: '/departments', changefreq: 'monthly', priority: '0.7' },
+		{ path: '/authors', changefreq: 'monthly', priority: '0.7' },
 		...listBooks().map((book) => ({
-			path: `/knihy/${book.id}`,
+			path: `/books/${book.id}`,
 			changefreq: 'monthly',
 			priority: '0.8'
 		})),
 		...listCategories().map((category) => ({
-			path: `/odbory/${category.slug}`,
+			path: `/departments/${category.slug}`,
 			changefreq: 'monthly',
 			priority: '0.6'
 		})),
 		...listAuthors().map((author) => ({
-			path: `/autori/${author.slug}`,
+			path: `/authors/${author.slug}`,
 			changefreq: 'monthly',
 			priority: '0.6'
 		}))

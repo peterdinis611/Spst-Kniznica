@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 export const actions: Actions = {
 	borrow: async ({ locals, params }) => {
 		if (!locals.user) {
-			redirect(302, '/prihlasenie');
+			redirect(302, '/login');
 		}
 
 		const result = borrowBook(locals.user.id, params.id);

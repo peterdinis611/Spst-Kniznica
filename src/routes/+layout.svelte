@@ -10,6 +10,7 @@
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
+	import AppTour from '$lib/components/AppTour.svelte';
 
 	let { children, data } = $props();
 	const isHall = $derived(page.route.id === '/');
@@ -29,7 +30,7 @@
 <Toaster />
 
 <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
-<form id="logout-form" method="POST" action={resolve('/odhlasenie')} class="hidden"></form>
+<form id="logout-form" method="POST" action={resolve('/logout')} class="hidden"></form>
 
 {#if isHall}
 	<main id="obsah" class="landing-shell">{@render children()}</main>
@@ -50,4 +51,5 @@
 	</div>
 {/if}
 
+<AppTour />
 <ScrollToTop />

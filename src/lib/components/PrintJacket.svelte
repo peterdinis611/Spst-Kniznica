@@ -20,7 +20,7 @@
 	} = $props();
 
 	const cloth = $derived(clothFor(book.id));
-	const href = $derived(resolve('/knihy/[id]', { id: book.id }));
+	const href = $derived(resolve('/books/[id]', { id: book.id }));
 	const author = $derived(authorLast(authorLine(book.authors)));
 </script>
 

@@ -5,7 +5,7 @@ import { APIError } from 'better-auth/api';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (locals.user) {
-		redirect(302, '/vypozicky');
+		redirect(302, '/loans');
 	}
 
 	return {
@@ -31,7 +31,7 @@ export const actions: Actions = {
 			return fail(500, { message: 'Nečakaná chyba.', mode: 'vstup' });
 		}
 
-		redirect(302, '/vypozicky');
+		redirect(302, '/loans');
 	},
 	signUp: async (event) => {
 		const formData = await event.request.formData();
@@ -55,6 +55,6 @@ export const actions: Actions = {
 			return fail(500, { message: 'Nečakaná chyba.', mode: 'novy' });
 		}
 
-		redirect(302, '/vypozicky');
+		redirect(302, '/loans');
 	}
 };

@@ -1,0 +1,143 @@
+.driver-popover.folio-tour {
+	all: unset;
+	box-sizing: border-box;
+	position: fixed;
+	z-index: 1000000000;
+	display: block;
+	width: min(21rem, calc(100vw - 2rem));
+	padding: 1.2rem 1.25rem 1.1rem;
+	border-radius: 1.35rem;
+	background: var(--card);
+	color: var(--foreground);
+	box-shadow:
+		0 0 0 1px var(--border),
+		0 22px 48px rgb(60 42 33 / 0.16);
+}
+
+.driver-popover.folio-tour .driver-popover-title {
+	margin: 0 1.6rem 0 0;
+	font-family: var(--font-display);
+	font-size: 1.35rem;
+	font-weight: 650;
+	letter-spacing: -0.03em;
+	line-height: 1.12;
+	color: var(--foreground);
+	font-variation-settings: 'SOFT' 28, 'WONK' 0;
+}
+
+.driver-popover.folio-tour .driver-popover-description {
+	margin: 0.65rem 0 0;
+	font-family: var(--font-body, 'Newsreader', serif);
+	font-size: 1.02rem;
+	line-height: 1.5;
+	color: var(--muted-foreground);
+}
+
+.driver-popover.folio-tour .driver-popover-close-btn {
+	all: unset;
+	position: absolute;
+	top: 0.85rem;
+	right: 0.85rem;
+	display: grid;
+	place-items: center;
+	width: 1.85rem;
+	height: 1.85rem;
+	border-radius: 999px;
+	color: var(--muted-foreground);
+	font-size: 1.15rem;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.driver-popover.folio-tour .driver-popover-close-btn:hover,
+.driver-popover.folio-tour .driver-popover-close-btn:focus-visible {
+	background: var(--wash);
+	color: var(--foreground);
+}
+
+.driver-popover.folio-tour .driver-popover-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin-top: 1.15rem;
+}
+
+.driver-popover.folio-tour .driver-popover-progress-text {
+	font-family: var(--font-sans);
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+
+.driver-popover.folio-tour .driver-popover-navigation-btns {
+	display: flex;
+	gap: 0.45rem;
+}
+
+.driver-popover.folio-tour .driver-popover-footer-btn {
+	all: unset;
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 2.35rem;
+	padding: 0 1.05rem;
+	border: 0;
+	border-radius: 999px;
+	font-family: var(--font-sans);
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1;
+	cursor: pointer;
+	text-shadow: none;
+}
+
+.driver-popover.folio-tour .driver-popover-prev-btn {
+	background: var(--wash);
+	color: var(--foreground);
+}
+
+.driver-popover.folio-tour .driver-popover-next-btn {
+	background: var(--primary);
+	color: var(--primary-foreground);
+}
+
+.driver-popover.folio-tour .driver-popover-prev-btn:hover,
+.driver-popover.folio-tour .driver-popover-next-btn:hover {
+	opacity: 0.86;
+}
+
+.driver-popover.folio-tour .driver-popover-btn-disabled {
+	opacity: 0.35;
+}
+
+.driver-popover.folio-tour .driver-popover-arrow {
+	border: 7px solid var(--card);
+}
+
+.driver-popover.folio-tour .driver-popover-arrow-side-left {
+	border-top-color: transparent;
+	border-bottom-color: transparent;
+	border-right-color: transparent;
+}
+
+.driver-popover.folio-tour .driver-popover-arrow-side-right {
+	border-top-color: transparent;
+	border-bottom-color: transparent;
+	border-left-color: transparent;
+}
+
+.driver-popover.folio-tour .driver-popover-arrow-side-top {
+	border-bottom-color: transparent;
+	border-left-color: transparent;
+	border-right-color: transparent;
+}
+
+.driver-popover.folio-tour .driver-popover-arrow-side-bottom {
+	border-top-color: transparent;
+	border-left-color: transparent;
+	border-right-color: transparent;
+}

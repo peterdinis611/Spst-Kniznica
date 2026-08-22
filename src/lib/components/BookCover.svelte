@@ -19,7 +19,7 @@
 	} = $props();
 
 	const tone = $derived(jacketFor(book));
-	const href = $derived(resolve('/knihy/[id]', { id: book.id }));
+	const href = $derived(resolve('/books/[id]', { id: book.id }));
 	const author = $derived(authorLast(authorLine(book.authors)));
 	const sizes = {
 		rail: 'h-[16.8rem] w-[11.2rem] md:h-[18.4rem] md:w-[12.2rem]',

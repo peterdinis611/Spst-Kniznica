@@ -18,7 +18,7 @@
 <Breadcrumb.Root>
 	<Breadcrumb.List>
 		<Breadcrumb.Item>
-			<Breadcrumb.Link href={resolve('/odbory')}>Odbory</Breadcrumb.Link>
+			<Breadcrumb.Link href={resolve('/departments')}>Odbory</Breadcrumb.Link>
 		</Breadcrumb.Item>
 		<Breadcrumb.Separator />
 		<Breadcrumb.Item>

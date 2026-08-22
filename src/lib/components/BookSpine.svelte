@@ -7,7 +7,7 @@
 </script>
 
 <a
-	href={resolve('/knihy/[id]', { id: book.id })}
+	href={resolve('/books/[id]', { id: book.id })}
 	class="spine"
 	style="--spine: {book.category.accent}"
 	title="{book.title} — {authorLine(book.authors)}"

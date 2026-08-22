@@ -5,7 +5,7 @@ import { stampDate } from '$lib/format';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
-		redirect(302, '/prihlasenie');
+		redirect(302, '/login');
 	}
 
 	const loans = listLoans(locals.user.id);
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
 	return: async ({ locals, request }) => {
 		if (!locals.user) {
-			redirect(302, '/prihlasenie');
+			redirect(302, '/login');
 		}
 
 		const formData = await request.formData();

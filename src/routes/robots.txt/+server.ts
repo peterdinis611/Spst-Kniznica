@@ -3,9 +3,9 @@ import type { RequestHandler } from './$types';
 export const GET: RequestHandler = async ({ url }) => {
 	const body = `User-agent: *
 Allow: /
-Disallow: /vypozicky
-Disallow: /prihlasenie
-Disallow: /odhlasenie
+Disallow: /loans
+Disallow: /login
+Disallow: /logout
 Disallow: /demo
 
 Sitemap: ${url.origin}/sitemap.xml

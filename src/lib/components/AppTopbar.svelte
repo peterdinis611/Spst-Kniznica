@@ -42,8 +42,8 @@
 	const title = $derived(deskTitle(page.url.pathname));
 	const query = $derived(page.url.searchParams.get('q') ?? '');
 	const odbor = $derived(page.url.searchParams.get('odbor') ?? '');
-	const hideSearch = $derived(page.url.pathname.startsWith('/prihlasenie'));
-	const authorSearch = $derived(page.url.pathname.startsWith('/autori'));
+	const hideSearch = $derived(page.url.pathname.startsWith('/login'));
+	const authorSearch = $derived(page.url.pathname.startsWith('/authors'));
 	let chosen = $state('all');
 	const odborLabel = $derived(
 		categories.find((cat) => cat.slug === chosen)?.name ?? 'Všetky odbory'
@@ -100,7 +100,7 @@
 			</h1>
 		</div>
 
-		<div class="order-3 flex items-center gap-2.5 lg:order-3">
+		<div class="order-3 flex items-center gap-2.5 lg:order-3" data-tour="account">
 			<ThemeToggle />
 			<DropdownMenu>
 				<DropdownMenuTrigger>
@@ -121,7 +121,7 @@
 					{#if user}
 						<DropdownMenuItem>
 							{#snippet child({ props })}
-								<a href={resolve('/vypozicky')} {...props}>
+								<a href={resolve('/loans')} {...props}>
 									<BookOpenIcon />
 									Moje knihy
 								</a>
@@ -134,7 +134,7 @@
 					{:else}
 						<DropdownMenuItem>
 							{#snippet child({ props })}
-								<a href={resolve('/prihlasenie')} {...props}>
+								<a href={resolve('/login')} {...props}>
 									<LogInIcon />
 									Prihlásiť sa
 								</a>
@@ -149,50 +149,53 @@
 			<form
 				class="order-4 flex h-12 w-full min-w-0 flex-nowrap items-center gap-2 rounded-full bg-wash pr-1.5 pl-2 lg:order-2 lg:min-w-[28rem] lg:flex-1 lg:w-auto"
 				method="GET"
-				action={resolve('/knihy')}
+				action={authorSearch ? resolve('/authors') : resolve('/books')}
+				data-tour="search"
 			>
-				<input type="hidden" name="odbor" value={chosen === 'all' ? '' : chosen} />
-				<DropdownMenu>
-					<DropdownMenuTrigger>
-						{#snippet child({ props })}
-							<button
-								type="button"
-								class="flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 font-sans text-[0.78rem] font-semibold text-foreground outline-none hover:bg-card focus-visible:ring-2 focus-visible:ring-ring"
-								aria-label="Odbor"
-								{...props}
-							>
-								{odborLabel}
-								<ChevronDownIcon class="size-3.5 text-muted-foreground" />
-							</button>
-						{/snippet}
-					</DropdownMenuTrigger>
-					<DropdownMenuContent
-						align="start"
-						sideOffset={10}
-						class="min-w-56 rounded-2xl border-0 bg-card p-2 text-card-foreground shadow-[0_18px_40px_rgb(60_42_33/0.14)] ring-1 ring-border"
-					>
-						<DropdownMenuRadioGroup bind:value={chosen}>
-							<DropdownMenuRadioItem
-								value="all"
-								class="rounded-full px-3 py-2 font-sans text-[0.82rem] whitespace-nowrap focus:bg-primary focus:text-primary-foreground"
-							>
-								Všetky odbory
-							</DropdownMenuRadioItem>
-							{#each categories as cat (cat.id)}
+				{#if !authorSearch}
+					<input type="hidden" name="odbor" value={chosen === 'all' ? '' : chosen} />
+					<DropdownMenu>
+						<DropdownMenuTrigger>
+							{#snippet child({ props })}
+								<button
+									type="button"
+									class="flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 font-sans text-[0.78rem] font-semibold text-foreground outline-none hover:bg-card focus-visible:ring-2 focus-visible:ring-ring"
+									aria-label="Odbor"
+									{...props}
+								>
+									{odborLabel}
+									<ChevronDownIcon class="size-3.5 text-muted-foreground" />
+								</button>
+							{/snippet}
+						</DropdownMenuTrigger>
+						<DropdownMenuContent
+							align="start"
+							sideOffset={10}
+							class="min-w-56 rounded-2xl border-0 bg-card p-2 text-card-foreground shadow-[0_18px_40px_rgb(60_42_33/0.14)] ring-1 ring-border"
+						>
+							<DropdownMenuRadioGroup bind:value={chosen}>
 								<DropdownMenuRadioItem
-									value={cat.slug}
+									value="all"
 									class="rounded-full px-3 py-2 font-sans text-[0.82rem] whitespace-nowrap focus:bg-primary focus:text-primary-foreground"
 								>
-									<span class="mr-2 font-mono text-[0.68rem] font-semibold tracking-wider opacity-70">
-										{cat.code}
-									</span>
-									{cat.name}
+									Všetky odbory
 								</DropdownMenuRadioItem>
-							{/each}
-						</DropdownMenuRadioGroup>
-					</DropdownMenuContent>
-				</DropdownMenu>
-				<SearchIcon class="ml-1 size-4 shrink-0 text-muted-foreground" />
+								{#each categories as cat (cat.id)}
+									<DropdownMenuRadioItem
+										value={cat.slug}
+										class="rounded-full px-3 py-2 font-sans text-[0.82rem] whitespace-nowrap focus:bg-primary focus:text-primary-foreground"
+									>
+										<span class="mr-2 font-mono text-[0.68rem] font-semibold tracking-wider opacity-70">
+											{cat.code}
+										</span>
+										{cat.name}
+									</DropdownMenuRadioItem>
+								{/each}
+							</DropdownMenuRadioGroup>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				{/if}
+				<SearchIcon class="ml-3 size-4 shrink-0 text-muted-foreground" />
 				<label class="sr-only" for="q-desk">Hľadať</label>
 				<Input
 					id="q-desk"
@@ -200,7 +203,7 @@
 					type="search"
 					name="q"
 					value={query}
-					placeholder="názov, autor alebo signatúra"
+					placeholder={authorSearch ? 'priezvisko alebo meno' : 'názov, autor alebo signatúra'}
 				/>
 				<Button class="h-10 shrink-0 rounded-full px-5 text-[0.78rem] font-semibold" type="submit">
 					Hľadať

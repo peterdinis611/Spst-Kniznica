@@ -92,7 +92,7 @@
 		}
 		if (event.key === 'Enter' && results[active]) {
 			event.preventDefault();
-			window.location.assign(resolve('/knihy/[id]', { id: results[active].id }));
+			window.location.assign(resolve('/books/[id]', { id: results[active].id }));
 		}
 	}
 </script>
@@ -144,7 +144,7 @@
 						<a
 							class="search-hit"
 							class:is-active={i === active}
-							href={resolve('/knihy/[id]', { id: book.id })}
+							href={resolve('/books/[id]', { id: book.id })}
 							onmouseenter={() => (active = i)}
 						>
 							<OptimizedImage

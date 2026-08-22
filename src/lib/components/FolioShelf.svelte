@@ -54,7 +54,7 @@
 										class="folio-spine no-underline"
 										class:is-tip={isTip}
 										class:is-on={active === book.id}
-										href={resolve('/knihy/[id]', { id: book.id })}
+										href={resolve('/books/[id]', { id: book.id })}
 										style="--w: {widths[index % widths.length]}rem; --h: {heights[index % heights.length]}rem; --c: {palette[index % palette.length]}"
 										title={book.title}
 										onmouseenter={() => (active = book.id)}
@@ -80,7 +80,7 @@
 			<a
 				class="folio-tip no-underline tip-{i}"
 				class:is-on={active === book.id}
-				href={resolve('/knihy/[id]', { id: book.id })}
+				href={resolve('/books/[id]', { id: book.id })}
 				onmouseenter={() => (active = book.id)}
 				onfocus={() => (active = book.id)}
 			>

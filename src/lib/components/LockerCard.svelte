@@ -6,7 +6,7 @@
 	let { book }: { book: CatalogBook } = $props();
 </script>
 
-<a href={resolve('/knihy/[id]', { id: book.id })} class="block no-underline">
+<a href={resolve('/books/[id]', { id: book.id })} class="block no-underline">
 	<BookCover {book} size="tile" linked={false} />
 	<p class="mt-3 line-clamp-2 text-sm font-semibold">{book.title}</p>
 </a>

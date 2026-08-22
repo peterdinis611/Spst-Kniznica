@@ -6,7 +6,7 @@
 	let { category, book }: { category: CategoryRecord; book?: CatalogBook } = $props();
 </script>
 
-<a href={resolve('/odbory/[slug]', { slug: category.slug })} class="block no-underline">
+<a href={resolve('/departments/[slug]', { slug: category.slug })} class="block no-underline">
 	<div class="category-tile">
 		{#if book}
 			<BookCover {book} size="thumb" linked={false} />

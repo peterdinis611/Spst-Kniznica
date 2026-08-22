@@ -49,7 +49,7 @@
 				<Alert.Title>Zatiaľ nič nepožičiavaš</Alert.Title>
 				<Alert.Description>Vyber knihu z katalógu a vypožičaj si ju na 21 dní.</Alert.Description>
 				<Alert.Action>
-					<Button href={resolve('/knihy')} size="sm">Otvoriť katalóg</Button>
+					<Button href={resolve('/books')} size="sm">Otvoriť katalóg</Button>
 				</Alert.Action>
 			</Alert.Root>
 		{:else}
@@ -63,7 +63,7 @@
 								<div>
 									<Badge variant={due.tone === 'ok' ? 'secondary' : 'destructive'}>{due.label}</Badge>
 									<Card.Title class="mt-2 text-xl">
-										<a href={resolve('/knihy/[id]', { id: item.book.id })} class="hover:text-primary">
+										<a href={resolve('/books/[id]', { id: item.book.id })} class="hover:text-primary">
 											{item.book.title}
 										</a>
 									</Card.Title>
@@ -87,7 +87,7 @@
 			<ul class="divide-border divide-y">
 				{#each data.history as item (item.id)}
 					<li class="flex flex-wrap justify-between gap-2 py-3">
-						<a class="hover:text-primary font-medium" href={resolve('/knihy/[id]', { id: item.book.id })}>
+						<a class="hover:text-primary font-medium" href={resolve('/books/[id]', { id: item.book.id })}>
 							{item.book.title}
 						</a>
 						<span class="text-muted-foreground text-sm">

@@ -2,20 +2,18 @@
 	import { resolve } from '$app/paths';
 	import { booksLabel, familyName, initials } from '$lib/format';
 	import { authorSwatch } from '$lib/cover';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import Seo from '$lib/components/Seo.svelte';
 	import type { PageProps } from './$types';
 	import type { AuthorRecord } from '$lib/types';
 
 	let { data }: PageProps = $props();
-	let q = $state('');
 
 	const filtered = $derived(
-		q.trim()
+		data.q.trim()
 			? data.authors.filter((person) =>
 					`${person.name} ${person.role} ${familyName(person.name)}`
 						.toLowerCase()
-						.includes(q.trim().toLowerCase())
+						.includes(data.q.trim().toLowerCase())
 				)
 			: data.authors
 	);
@@ -40,19 +38,13 @@
 	description="Autori vo fonde školskej knižnice SPŠT — učebnice, príručky a povinná literatúra."
 />
 
-<div class="flex flex-wrap items-end justify-between gap-4">
-	<p class="m-0 font-body text-[1.05rem] text-muted-foreground">
-		{data.authors.length} mien v katalógu
-	</p>
-	<label class="sr-only" for="author-q">Filter podľa mena</label>
-	<Input
-		id="author-q"
-		class="h-11 w-full max-w-xs rounded-full border-0 bg-wash px-4 shadow-none focus-visible:ring-2 focus-visible:ring-ring"
-		type="search"
-		bind:value={q}
-		placeholder="priezvisko alebo meno"
-	/>
-</div>
+<p class="m-0 font-body text-[1.05rem] text-muted-foreground">
+	{filtered.length}
+	{filtered.length === 1 ? 'meno' : filtered.length < 5 ? 'mená' : 'mien'} v katalógu
+	{#if data.q.trim()}
+		pre „{data.q.trim()}“
+	{/if}
+</p>
 
 {#if grouped.length === 0}
 	<p class="mt-12 max-w-[32ch] font-body text-[1.1rem] text-muted-foreground">
@@ -72,7 +64,7 @@
 						<li class="border-t border-border">
 							<a
 								class="group flex items-center gap-3.5 py-3.5 text-inherit no-underline"
-								href={resolve('/autori/[slug]', { slug: person.slug })}
+								href={resolve('/authors/[slug]', { slug: person.slug })}
 							>
 								<span
 									class="grid size-10 shrink-0 place-items-center rounded-full font-sans text-[0.7rem] font-bold text-[#fffaf3]"

@@ -37,6 +37,7 @@
 <div class="text-foreground">
 	{#if featured && featuredCall}
 		<section
+			data-tour="featured"
 			class={cn(
 				'relative overflow-hidden rounded-[1.7rem] bg-primary text-primary-foreground',
 				'bg-[radial-gradient(ellipse_at_18%_0%,rgb(255_248_230/0.16),transparent_42%),linear-gradient(180deg,transparent_70%,rgb(0_0_0/0.12))]',
@@ -48,7 +49,7 @@
 			>
 				<a
 					class="group justify-self-center no-underline md:justify-self-start"
-					href={resolve('/knihy/[id]', { id: featured.id })}
+					href={resolve('/books/[id]', { id: featured.id })}
 				>
 					<span class="block origin-bottom transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:-rotate-2 motion-reduce:transform-none">
 						<PrintJacket
@@ -67,7 +68,7 @@
 					<h2 class={cn(display, 'mt-3 max-w-[12ch] text-[clamp(2.2rem,4.6vw,3.5rem)]')}>
 						<a
 							class="text-inherit no-underline decoration-from-font hover:underline"
-							href={resolve('/knihy/[id]', { id: featured.id })}
+							href={resolve('/books/[id]', { id: featured.id })}
 						>
 							{featured.title}
 						</a>
@@ -83,7 +84,7 @@
 					<div class="mt-7 flex flex-wrap items-center gap-3">
 						<a
 							class="inline-flex h-11 items-center rounded-full bg-card px-6 font-sans text-[0.9rem] font-semibold text-card-foreground no-underline hover:opacity-90"
-							href={resolve('/knihy/[id]', { id: featured.id })}
+							href={resolve('/books/[id]', { id: featured.id })}
 						>
 							Pozrieť knihu
 						</a>
@@ -119,6 +120,7 @@
 	{/if}
 
 	<nav
+		data-tour="odbory"
 		class={cn(
 			'mt-7 flex flex-wrap items-baseline gap-x-5 gap-y-2 border-b border-border pb-4 delay-75',
 			rise
@@ -127,14 +129,14 @@
 	>
 		<a
 			class="font-sans text-[0.78rem] font-semibold tracking-[0.08em] text-foreground uppercase no-underline hover:opacity-55"
-			href={resolve('/odbory')}
+			href={resolve('/departments')}
 		>
 			Všetky
 		</a>
 		{#each data.categories as cat (cat.id)}
 			<a
 				class="font-mono text-[0.78rem] font-semibold tracking-[0.08em] text-foreground no-underline hover:opacity-55"
-				href={resolve('/odbory/[slug]', { slug: cat.slug })}
+				href={resolve('/departments/[slug]', { slug: cat.slug })}
 			>
 				{cat.code}
 				<span class="ml-1 text-muted-foreground">{cat.bookCount}</span>
@@ -145,19 +147,19 @@
 		</span>
 	</nav>
 
-	<section class={cn('mt-9 delay-150', rise)}>
+	<section class={cn('mt-9 delay-150', rise)} data-tour="shelf">
 		<div class="mb-5 flex items-end justify-between gap-4">
 			<h2 class={cn(display, 'text-[clamp(1.6rem,3vw,2.2rem)]')}>Voľné na polici.</h2>
 			<a
 				class="font-sans text-[0.82rem] font-semibold tracking-[0.04em] text-foreground no-underline hover:opacity-55"
-				href={resolve('/knihy')}
+				href={resolve('/books')}
 			>
 				Celý katalóg
 			</a>
 		</div>
 		<div class="-mx-1 flex items-end gap-3 overflow-x-auto px-1 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 			{#each shelf as book, i (book.id)}
-				<a class="shrink-0 no-underline" href={resolve('/knihy/[id]', { id: book.id })}>
+				<a class="shrink-0 no-underline" href={resolve('/books/[id]', { id: book.id })}>
 					<PrintJacket {book} linked={false} height="{heights[i % heights.length]}rem" />
 				</a>
 			{/each}
@@ -171,7 +173,7 @@
 					<li class="border-t border-border">
 						<a
 							class="group grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 py-4 text-inherit no-underline"
-							href={resolve('/knihy/[id]', { id: book.id })}
+							href={resolve('/books/[id]', { id: book.id })}
 						>
 							<em class="font-sans text-[0.68rem] font-semibold tracking-[0.1em] text-muted-foreground not-italic uppercase">
 								{book.category.code}
@@ -203,7 +205,7 @@
 			</div>
 			<a
 				class="font-sans text-[0.82rem] font-semibold text-foreground no-underline hover:opacity-55"
-				href={resolve('/autori')}
+				href={resolve('/authors')}
 			>
 				Všetci autori
 			</a>
@@ -213,7 +215,7 @@
 				<li class="border-t border-border">
 					<a
 						class="group flex items-center gap-3.5 py-4 text-inherit no-underline"
-						href={resolve('/autori/[slug]', { slug: author.slug })}
+						href={resolve('/authors/[slug]', { slug: author.slug })}
 					>
 						<span
 							class="grid size-10 shrink-0 place-items-center rounded-full font-sans text-[0.7rem] font-bold text-[#fffaf3]"

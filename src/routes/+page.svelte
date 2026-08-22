@@ -70,11 +70,11 @@
 				<p class="folio-kicker">Vo fonde teraz</p>
 				<h2>Knihy, ktoré môžeš otvoriť hneď.</h2>
 			</div>
-			<a class="folio-cta folio-cta-sm no-underline" href={resolve('/knihy')}>Celý katalóg</a>
+			<a class="folio-cta folio-cta-sm no-underline" href={resolve('/books')}>Celý katalóg</a>
 		</div>
 		<div class="folio-picks">
 			{#each picks as book (book.id)}
-				<a class="folio-pick no-underline" href={resolve('/knihy/[id]', { id: book.id })}>
+				<a class="folio-pick no-underline" href={resolve('/books/[id]', { id: book.id })}>
 					<em>{book.category}</em>
 					<strong>{book.title}</strong>
 					<span>{book.authors}</span>
@@ -92,12 +92,12 @@
 				<p class="folio-kicker">Menný katalóg</p>
 				<h2>Autori, ktorých držíme na polici.</h2>
 			</div>
-			<a class="folio-cta folio-cta-sm no-underline" href={resolve('/autori')}>Všetci autori</a>
+			<a class="folio-cta folio-cta-sm no-underline" href={resolve('/authors')}>Všetci autori</a>
 		</div>
 		<ul class="folio-authors">
 			{#each data.authors as author (author.id)}
 				<li>
-					<a class="folio-author no-underline" href={resolve('/autori/[slug]', { slug: author.slug })}>
+					<a class="folio-author no-underline" href={resolve('/authors/[slug]', { slug: author.slug })}>
 						<span class="folio-avatar" style="background: {authorSwatch(author.id)}">
 							{initials(author.name)}
 						</span>
@@ -124,9 +124,9 @@
 		</div>
 		<div class="folio-close-actions">
 			{#if data.user}
-				<a class="folio-cta no-underline" href={resolve('/vypozicky')}>Moje výpožičky</a>
+				<a class="folio-cta no-underline" href={resolve('/loans')}>Moje výpožičky</a>
 			{:else}
-				<a class="folio-cta no-underline" href={resolve('/prihlasenie')}>Prihlásiť sa</a>
+				<a class="folio-cta no-underline" href={resolve('/login')}>Prihlásiť sa</a>
 			{/if}
 			<a class="folio-ghost no-underline" href={resolve('/discover')}>Prezrieť fond</a>
 		</div>

@@ -14,7 +14,7 @@
 <Breadcrumb.Root>
 	<Breadcrumb.List>
 		<Breadcrumb.Item>
-			<Breadcrumb.Link href={resolve('/autori')}>Autori</Breadcrumb.Link>
+			<Breadcrumb.Link href={resolve('/authors')}>Autori</Breadcrumb.Link>
 		</Breadcrumb.Item>
 		<Breadcrumb.Separator />
 		<Breadcrumb.Item>

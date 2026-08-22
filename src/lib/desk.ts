@@ -1,9 +1,9 @@
 export function deskTitle(pathname: string) {
 	if (pathname.startsWith('/discover')) return 'Objavovať';
-	if (pathname.startsWith('/knihy')) return 'Katalóg';
-	if (pathname.startsWith('/odbory')) return 'Odbory';
-	if (pathname.startsWith('/autori')) return 'Autori';
-	if (pathname.startsWith('/vypozicky')) return 'Moje knihy';
-	if (pathname.startsWith('/prihlasenie')) return 'Účet';
+	if (pathname.startsWith('/books')) return 'Katalóg';
+	if (pathname.startsWith('/departments')) return 'Odbory';
+	if (pathname.startsWith('/authors')) return 'Autori';
+	if (pathname.startsWith('/loans')) return 'Moje knihy';
+	if (pathname.startsWith('/login')) return 'Účet';
 	return 'SPŠT knižnica';
 }

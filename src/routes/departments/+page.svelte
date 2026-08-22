@@ -21,7 +21,7 @@
 	{#each data.categories as cat (cat.id)}
 		<li class="border-t border-border pt-6">
 			<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
-				<a class="group min-w-0 text-inherit no-underline" href={resolve('/odbory/[slug]', { slug: cat.slug })}>
+				<a class="group min-w-0 text-inherit no-underline" href={resolve('/departments/[slug]', { slug: cat.slug })}>
 					<p class="m-0 font-mono text-[0.72rem] font-semibold tracking-[0.16em] text-muted-foreground">
 						{cat.code}
 					</p>
@@ -41,13 +41,13 @@
 			{#if cat.books.length}
 				<div class="flex items-end gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 					{#each cat.books as book (book.id)}
-						<a class="shrink-0 no-underline" href={resolve('/knihy/[id]', { id: book.id })}>
+						<a class="shrink-0 no-underline" href={resolve('/books/[id]', { id: book.id })}>
 							<PrintJacket {book} linked={false} />
 						</a>
 					{/each}
 					<a
 						class="mb-1 inline-flex h-11 shrink-0 items-center rounded-full px-4 font-sans text-[0.82rem] font-semibold text-foreground no-underline hover:opacity-55"
-						href={resolve('/odbory/[slug]', { slug: cat.slug })}
+						href={resolve('/departments/[slug]', { slug: cat.slug })}
 					>
 						Celá polica
 					</a>

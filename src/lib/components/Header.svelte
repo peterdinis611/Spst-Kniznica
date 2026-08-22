@@ -30,9 +30,9 @@
 
 	const links = [
 		{ href: resolve('/'), path: '/', label: 'Domov' },
-		{ href: resolve('/knihy'), path: '/knihy', label: 'Knihy' },
-		{ href: resolve('/odbory'), path: '/odbory', label: 'Odbory' },
-		{ href: resolve('/autori'), path: '/autori', label: 'Autori' }
+		{ href: resolve('/books'), path: '/books', label: 'Knihy' },
+		{ href: resolve('/departments'), path: '/departments', label: 'Odbory' },
+		{ href: resolve('/authors'), path: '/authors', label: 'Autori' }
 	];
 
 	const query = $derived(page.url.searchParams.get('q') ?? '');
@@ -73,7 +73,7 @@
 		<form
 			class="relative mx-auto hidden min-w-0 flex-1 md:block"
 			method="GET"
-			action={resolve('/knihy')}
+			action={resolve('/books')}
 		>
 			<SearchIcon
 				class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
@@ -99,7 +99,7 @@
 
 		<div class="flex items-center gap-2">
 			{#if user}
-				<form id="logout-form" method="POST" action={resolve('/odhlasenie')} class="hidden"></form>
+				<form id="logout-form" method="POST" action={resolve('/logout')} class="hidden"></form>
 				<DropdownMenu>
 					<DropdownMenuTrigger>
 						{#snippet child({ props })}
@@ -115,7 +115,7 @@
 						<DropdownMenuSeparator />
 						<DropdownMenuItem>
 							{#snippet child({ props })}
-								<a href={resolve('/vypozicky')} {...props}>
+								<a href={resolve('/loans')} {...props}>
 									<BookOpenIcon />
 									Moje knihy
 								</a>
@@ -129,7 +129,7 @@
 					</DropdownMenuContent>
 				</DropdownMenu>
 			{:else}
-				<Button href={resolve('/prihlasenie')} size="sm">Prihlásiť sa</Button>
+				<Button href={resolve('/login')} size="sm">Prihlásiť sa</Button>
 			{/if}
 
 			<Sheet>
@@ -145,7 +145,7 @@
 						<SheetTitle>Navigácia</SheetTitle>
 					</SheetHeader>
 					<nav class="mt-4 flex flex-col gap-1 px-4">
-						{#each [...links, { href: resolve('/vypozicky'), path: '/vypozicky', label: 'Moje knihy' }] as link (link.path)}
+						{#each [...links, { href: resolve('/loans'), path: '/loans', label: 'Moje knihy' }] as link (link.path)}
 							<Button
 								href={link.href}
 								variant={active(link.path) ? 'secondary' : 'ghost'}
@@ -159,7 +159,7 @@
 			</Sheet>
 		</div>
 	</div>
-	<form class="wrap pb-3 md:hidden" method="GET" action={resolve('/knihy')}>
+	<form class="wrap pb-3 md:hidden" method="GET" action={resolve('/books')}>
 		<label class="sr-only" for="q-mob">Hľadať knihu</label>
 		<Input id="q-mob" class="h-9" type="search" name="q" value={query} placeholder="Hľadaj knihu…" />
 	</form>

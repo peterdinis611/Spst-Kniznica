@@ -10,21 +10,23 @@
 	import UsersIcon from '@lucide/svelte/icons/users';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
+	import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+	import { startTour, markTourSeen } from '$lib/tour';
 	import type { Component } from 'svelte';
 	import { cn } from '$lib/utils.js';
 
 	let { user, compact = false }: { user: Reader; compact?: boolean } = $props();
 
 	const items: {
-		path: '/discover' | '/odbory' | '/vypozicky' | '/knihy' | '/autori';
+		path: '/discover' | '/departments' | '/loans' | '/books' | '/authors';
 		label: string;
 		icon: Component;
 	}[] = [
 		{ path: '/discover', label: 'Objavovať', icon: HouseIcon },
-		{ path: '/odbory', label: 'Odbory', icon: LayoutGridIcon },
-		{ path: '/vypozicky', label: 'Moje knihy', icon: BookmarkIcon },
-		{ path: '/knihy', label: 'Katalóg', icon: BookOpenIcon },
-		{ path: '/autori', label: 'Autori', icon: UsersIcon }
+		{ path: '/departments', label: 'Odbory', icon: LayoutGridIcon },
+		{ path: '/loans', label: 'Moje knihy', icon: BookmarkIcon },
+		{ path: '/books', label: 'Katalóg', icon: BookOpenIcon },
+		{ path: '/authors', label: 'Autori', icon: UsersIcon }
 	];
 
 	function active(path: string) {
@@ -42,7 +44,7 @@
 	class="bg-sidebar text-sidebar-foreground flex h-full flex-col px-6 py-7"
 	class:px-5={compact}
 >
-	<a href={resolve('/')} class="font-display no-underline">
+	<a href={resolve('/')} class="font-display no-underline" data-tour={compact ? undefined : 'brand'}>
 		<span class="text-primary block text-[0.7rem] font-extrabold tracking-[0.22em] uppercase">SPŠT</span>
 		<span class="text-xl font-extrabold tracking-tight">knižnica</span>
 	</a>
@@ -50,7 +52,7 @@
 	<p class="text-muted-foreground mt-10 font-sans text-[0.62rem] tracking-[0.18em] uppercase">
 		Fond
 	</p>
-	<nav class="mt-3 flex flex-col gap-1" aria-label="Hlavná navigácia">
+	<nav class="mt-3 flex flex-col gap-1" aria-label="Hlavná navigácia" data-tour={compact ? undefined : 'nav'}>
 		{#each items as item (item.path)}
 			{@const Icon = item.icon}
 			{@const on = active(item.path)}
@@ -76,6 +78,14 @@
 			Po—pia 7:30—15:30
 		</p>
 		<div class="mt-3">
+			<Button
+				variant="ghost"
+				class="text-muted-foreground mb-1 h-auto justify-start px-3 py-1.5 font-normal"
+				onclick={() => startTour(markTourSeen)}
+			>
+				<CircleHelpIcon />
+				Prehliadka
+			</Button>
 			{#if user}
 				<Button
 					variant="ghost"
@@ -87,7 +97,7 @@
 				</Button>
 			{:else}
 				<Button
-					href={resolve('/prihlasenie')}
+					href={resolve('/login')}
 					variant="ghost"
 					class="text-muted-foreground h-auto justify-start px-3 py-1.5 font-normal"
 				>

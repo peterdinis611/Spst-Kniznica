@@ -30,11 +30,11 @@
 	<Card.Root>
 		<Card.Header>
 			<div class="flex gap-2">
-				<Button href={resolve('/prihlasenie')} variant={register ? 'outline' : 'secondary'} size="sm">
+				<Button href={resolve('/login')} variant={register ? 'outline' : 'secondary'} size="sm">
 					Mám účet
 				</Button>
 				<Button
-					href="{resolve('/prihlasenie')}?mod=novy"
+					href="{resolve('/login')}?mod=novy"
 					variant={register ? 'secondary' : 'outline'}
 					size="sm"
 				>

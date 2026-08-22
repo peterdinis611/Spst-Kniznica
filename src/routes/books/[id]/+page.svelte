@@ -41,11 +41,11 @@
 <Breadcrumb.Root>
 	<Breadcrumb.List>
 		<Breadcrumb.Item>
-			<Breadcrumb.Link href={resolve('/knihy')}>Katalóg</Breadcrumb.Link>
+			<Breadcrumb.Link href={resolve('/books')}>Katalóg</Breadcrumb.Link>
 		</Breadcrumb.Item>
 		<Breadcrumb.Separator />
 		<Breadcrumb.Item>
-			<Breadcrumb.Link href={resolve('/odbory/[slug]', { slug: book.category.slug })}>
+			<Breadcrumb.Link href={resolve('/departments/[slug]', { slug: book.category.slug })}>
 				{book.category.name}
 			</Breadcrumb.Link>
 		</Breadcrumb.Item>
@@ -70,7 +70,7 @@
 			{#each book.authors as person, i (person.id)}
 				<a
 					class="font-semibold underline-offset-4 hover:underline"
-					href={resolve('/autori/[slug]', { slug: person.slug })}
+					href={resolve('/authors/[slug]', { slug: person.slug })}
 				>
 					{person.name}
 				</a>{#if i < book.authors.length - 1}, {/if}
@@ -92,10 +92,10 @@
 		<div class="flex flex-wrap items-center justify-between gap-3">
 			{#if data.userLoan}
 				<p class="text-sm">U teba do <strong>{shortDate(data.userLoan.dueAt)}</strong></p>
-				<Button href={resolve('/vypozicky')}>Vrátiť v Moja knižnica</Button>
+				<Button href={resolve('/loans')}>Vrátiť v Moja knižnica</Button>
 			{:else if !data.user}
 				<p class="text-muted-foreground text-sm">Na výpožičku treba účet.</p>
-				<Button href={resolve('/prihlasenie')}>Prihlásiť sa</Button>
+				<Button href={resolve('/login')}>Prihlásiť sa</Button>
 			{:else}
 				<p class="text-muted-foreground text-sm">
 					{#if !available}
