@@ -1,0 +1,29 @@
+---
+title: Katalóg
+description: Ako hľadať knihu podľa názvu, autora, odboru alebo signatúry.
+---
+
+Fond má jednu vyhľadávaciu lištu — v hlavičke pultu. Druhé pole na stránke nehľadaj.
+
+## Kde začať
+
+- [Objavovať](/discover) — pulpit s výberom, police a zoznam podľa odborov
+- [Katalóg](/books) — celý zoznam zväzkov
+- [Autori](/authors) — register A—Z podľa priezviska
+- [Odbory](/departments) — police podľa zamerania
+
+Na vstupnej sieni sú chrbty zväzkov. Klik na chrbát otvorí kartu knihy.
+
+## Hľadanie
+
+V katalógu a na objavovaní píšeš do lišty **názov, autora alebo signatúru**. Vedľa je filter **odboru**.
+
+Na stránke autorov lišta hľadá **priezvisko alebo meno**. Filter odboru tam nie je.
+
+Klávesová skratka na vstupnej sieni: **⌘K** alebo **Ctrl+K**.
+
+## Karta knihy
+
+Každý zväzok má odbor, autorov, stav výtlačkov a tlačidlo výpožičky. Ak je kniha voľná a máš účet, berieš ju na 21 dní.
+
+Prehľad podľa zamerania je v [odboroch](/docs/odbory). Pravidlá výpožičky sú v kapitole [Výpožičky](/docs/vypozicky).

@@ -11,6 +11,7 @@
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+	import ScrollTextIcon from '@lucide/svelte/icons/scroll-text';
 	import { startTour, markTourSeen } from '$lib/tour';
 	import type { Component } from 'svelte';
 	import { cn } from '$lib/utils.js';
@@ -18,7 +19,7 @@
 	let { user, compact = false }: { user: Reader; compact?: boolean } = $props();
 
 	const items: {
-		path: '/discover' | '/departments' | '/loans' | '/books' | '/authors';
+		path: '/discover' | '/departments' | '/loans' | '/books' | '/authors' | '/docs';
 		label: string;
 		icon: Component;
 	}[] = [
@@ -26,7 +27,8 @@
 		{ path: '/departments', label: 'Odbory', icon: LayoutGridIcon },
 		{ path: '/loans', label: 'Moje knihy', icon: BookmarkIcon },
 		{ path: '/books', label: 'Katalóg', icon: BookOpenIcon },
-		{ path: '/authors', label: 'Autori', icon: UsersIcon }
+		{ path: '/authors', label: 'Autori', icon: UsersIcon },
+		{ path: '/docs', label: 'Príručka', icon: ScrollTextIcon }
 	];
 
 	function active(path: string) {

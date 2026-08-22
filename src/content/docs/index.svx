@@ -1,0 +1,23 @@
+---
+title: Príručka fondu
+description: Ako sa v SPŠT knižnici hľadá, požičiava a vracia.
+---
+
+Školský fond učebníc, noriem a literatúry. Sídli v **pavilóne B, 1. poschodie**. Otvorené je **pondelok až piatok, 7:30—15:30**.
+
+Výpožička je bez poplatku: **21 dní**, naraz **najviac 5 kníh**.
+
+## Tri kroky
+
+1. **Nájdi vo fonde** — podľa názvu, autora, signatúry alebo odboru. Voľné výtlačky uvidíš hneď.
+2. **Požičaj na účet** — prihlás sa a vezmi knihu z karty zväzku.
+3. **Vráť v pavilóne B** — odnes výtlačok na pult a v účte označ vrátenie.
+
+## Čo tu nájdeš
+
+- [Katalóg](/docs/katalog) — hľadanie, objavovanie a karty kníh
+- [Odbory](/docs/odbory) — police podľa študijných zameraní
+- [Výpožičky](/docs/vypozicky) — lehota, limit a vrátenie
+- [Účet](/docs/ucet) — registrácia, prihlásenie a odhlásenie
+
+Prehliadku pultu spustíš v katalógu tlačidlom **Prehliadka**, alebo otvorením [Objavovať](/discover?tour=1).

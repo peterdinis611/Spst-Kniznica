@@ -1,0 +1,23 @@
+---
+title: Odbory
+description: Police fondu podľa študijných zameraní SPŠT.
+---
+
+Každý zväzok patrí do jedného odboru. Na pulte sú označené kódom — INF, STR, ELE a ďalšie. Filter v hlavičke berie ten istý kód.
+
+## Zamerania
+
+| Kód | Odbor | Čo tam hľadáš |
+| --- | --- | --- |
+| INF | Informatika | Algoritmy, databázy, siete, programovanie |
+| STR | Strojárstvo | Technické kreslenie, časti strojov, materiály |
+| ELE | Elektrotechnika | Obvody, číslicová technika, merania |
+| MAT | Matematika | Analýza a zväzky pred maturitou |
+| FYZ | Fyzika | Mechanika, pole, príklady |
+| LIT | Literatúra | Povinné čítanie, sloh, poézia |
+| HIS | História | Dejiny techniky a Slovenska |
+| JAZ | Jazyky | Technická angličtina a nemčina |
+
+Celé police sú na [Odboroch](/departments). Jednotlivý odbor otvoríš z dlaždice alebo z filtra v katalógu.
+
+Autori majú vlastný [register A—Z](/authors). Nesúvisia s odborom priamo — kniha môže mať viac autorov a jeden odbor.

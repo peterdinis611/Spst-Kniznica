@@ -1,28 +1,18 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Alert from '$lib/components/ui/alert/index.js';
+	import FaultFolio from '$lib/components/FaultFolio.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 
-	const message = $derived(page.error?.message ?? 'Túto stránku sme nenašli.');
+	const status = $derived(page.status);
+	const jammed = $derived(status >= 500);
+	const title = $derived(jammed ? 'Porucha pultu' : 'Karta chýba');
+	const description = $derived(
+		jammed
+			? 'Fond túto kartu teraz neotvorí. Skús znova, alebo sa vráť na sieň.'
+			: 'Túto stránku sme v katalógu SPŠT nenašli.'
+	);
 </script>
 
-<Seo title="Chyba" description="Túto stránku sme v katalógu SPŠT nenašli." index={false} />
+<Seo {title} {description} index={false} />
 
-<Card.Root class="max-w-lg">
-	<Card.Header>
-		<p class="text-muted-foreground text-sm">Chýbajúca strana</p>
-		<Card.Title class="font-serif text-7xl">{page.status}</Card.Title>
-	</Card.Header>
-	<Card.Content>
-		<Alert.Root>
-			<Alert.Title>Kniha nie je na polici</Alert.Title>
-			<Alert.Description>{message}</Alert.Description>
-		</Alert.Root>
-	</Card.Content>
-	<Card.Footer>
-		<Button href={resolve('/discover')}>Späť do katalógu</Button>
-	</Card.Footer>
-</Card.Root>
+<FaultFolio {status} message={page.error?.message} />

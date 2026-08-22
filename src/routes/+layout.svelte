@@ -13,7 +13,9 @@
 	import AppTour from '$lib/components/AppTour.svelte';
 
 	let { children, data } = $props();
-	const isHall = $derived(page.route.id === '/');
+	const isHall = $derived(page.route.id === '/' && !page.error);
+	const isDocs = $derived(page.url.pathname.startsWith('/docs') && !page.error);
+	const isFault = $derived(Boolean(page.error));
 </script>
 
 <svelte:head>
@@ -34,6 +36,10 @@
 
 {#if isHall}
 	<main id="obsah" class="landing-shell">{@render children()}</main>
+{:else if isDocs}
+	{@render children()}
+{:else if isFault}
+	{@render children()}
 {:else}
 	<div class="desk">
 		<div class="hidden h-dvh lg:sticky lg:top-0 lg:block">

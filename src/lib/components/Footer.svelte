@@ -8,7 +8,8 @@
 		{ href: resolve('/discover'), label: 'Objavovať' },
 		{ href: resolve('/books'), label: 'Katalóg' },
 		{ href: resolve('/departments'), label: 'Odbory' },
-		{ href: resolve('/authors'), label: 'Autori' }
+		{ href: resolve('/authors'), label: 'Autori' },
+		{ href: resolve('/docs'), label: 'Príručka' }
 	] as const;
 </script>
 

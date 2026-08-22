@@ -1,0 +1,237 @@
+.docs-folio {
+	--sidebar-accent: #efe6d8;
+	--sidebar-accent-foreground: #3c2a21;
+	--sidebar-primary: #3c2a21;
+	position: relative;
+	min-height: 100dvh;
+	background: var(--background);
+	color: var(--foreground);
+}
+
+.docs-folio::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	opacity: 0.22;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+}
+
+.dark .docs-folio {
+	--sidebar-accent: #2a2620;
+	--sidebar-accent-foreground: #f3eadf;
+	--sidebar-primary: #f3eadf;
+}
+
+.docs-rail {
+	position: relative;
+	z-index: 45;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.85rem 1.15rem;
+	border-bottom: 1px solid var(--border);
+	background: color-mix(in srgb, var(--background) 88%, transparent);
+	backdrop-filter: blur(10px);
+}
+
+.docs-mark {
+	display: flex;
+	align-items: baseline;
+	gap: 0.45rem;
+	color: inherit;
+	font-family: var(--font-display), 'Fraunces', serif;
+	font-size: 1.05rem;
+	font-weight: 800;
+	letter-spacing: -0.03em;
+}
+
+.docs-mark span {
+	font-family: var(--font-sans), 'IBM Plex Sans', sans-serif;
+	font-size: 0.62rem;
+	font-weight: 700;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+
+.docs-rail-tools {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+}
+
+.docs-ghost {
+	border-radius: 999px;
+	padding: 0.4rem 0.85rem;
+	background: var(--primary);
+	color: var(--primary-foreground);
+	font-size: 0.78rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+}
+
+.docs-folio :global(.docs-layout) {
+	position: relative;
+	z-index: 1;
+	min-height: calc(100dvh - 3.4rem);
+	background: transparent;
+}
+
+.docs-folio :global(.docs-layout > header) {
+	top: 3.4rem;
+}
+
+.docs-folio :global(aside) {
+	background: color-mix(in srgb, var(--sidebar) 94%, transparent);
+}
+
+.docs-folio :global(aside a[href='/docs']) {
+	font-family: var(--font-display), 'Fraunces', serif;
+	font-size: 1.05rem;
+	font-weight: 750;
+	letter-spacing: -0.03em;
+}
+
+.docs-leaf {
+	animation: docs-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.docs-kicker {
+	margin: 0 0 0.55rem;
+	color: var(--muted-foreground);
+	font-family: var(--font-sans), 'IBM Plex Sans', sans-serif;
+	font-size: 0.68rem;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.docs-leaf header {
+	margin-bottom: 2rem;
+	padding-bottom: 1.35rem;
+	border-bottom: 1px solid var(--border);
+}
+
+.docs-leaf h1 {
+	margin: 0;
+	max-width: 14ch;
+	font-size: clamp(2.3rem, 5vw, 3.6rem);
+	line-height: 0.95;
+}
+
+.docs-lead {
+	margin: 0.85rem 0 0;
+	max-width: 36rem;
+	color: var(--muted-foreground);
+	font-family: var(--font-body), 'Newsreader', serif;
+	font-size: 1.2rem;
+	line-height: 1.45;
+}
+
+.docs-prose {
+	color: var(--foreground);
+	font-family: var(--font-body), 'Newsreader', serif;
+	font-size: 1.12rem;
+	line-height: 1.65;
+}
+
+.docs-prose :global(h1),
+.docs-prose :global(h2),
+.docs-prose :global(h3) {
+	color: var(--foreground);
+	font-family: var(--font-display), 'Fraunces', serif;
+	font-weight: 700;
+	letter-spacing: -0.03em;
+}
+
+.docs-prose :global(a) {
+	color: var(--foreground);
+	text-decoration-color: color-mix(in srgb, var(--foreground) 35%, transparent);
+	text-underline-offset: 0.18em;
+}
+
+.docs-prose :global(code) {
+	font-family: var(--font-mono), 'IBM Plex Mono', monospace;
+	font-size: 0.86em;
+}
+
+.docs-prose :global(pre) {
+	border: 1px solid var(--border);
+	background: var(--secondary);
+	color: var(--secondary-foreground);
+}
+
+.docs-prose :global(table) {
+	font-family: var(--font-sans), 'IBM Plex Sans', sans-serif;
+	font-size: 0.92rem;
+}
+
+.docs-prose :global(th),
+.docs-prose :global(td) {
+	border-color: var(--border);
+}
+
+.docs-pager {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.75rem;
+	margin-top: 3rem;
+	padding-top: 1.4rem;
+	border-top: 1px solid var(--border);
+}
+
+@media (min-width: 640px) {
+	.docs-pager {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.docs-pager a {
+	display: grid;
+	gap: 0.2rem;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--border);
+	border-radius: 1rem;
+	background: var(--card);
+	color: inherit;
+	transition:
+		transform 0.25s ease,
+		border-color 0.25s ease;
+}
+
+.docs-pager a:hover {
+	transform: translateY(-3px);
+	border-color: var(--foreground);
+}
+
+.docs-pager .is-next {
+	text-align: right;
+}
+
+.docs-pager span {
+	color: var(--muted-foreground);
+	font-family: var(--font-sans), 'IBM Plex Sans', sans-serif;
+	font-size: 0.68rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.docs-pager strong {
+	font-family: var(--font-display), 'Fraunces', serif;
+	font-size: 1.15rem;
+	font-weight: 700;
+}
+
+@keyframes docs-rise {
+	from {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}

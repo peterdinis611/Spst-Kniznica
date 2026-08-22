@@ -1,0 +1,26 @@
+---
+title: Účet
+description: Registrácia, prihlásenie a odhlásenie v školskom fonde.
+---
+
+Bez účtu si môžeš fond prehliadať. Výpožička ide až po prihlásení.
+
+## Registrácia
+
+Na [prihlásení](/login) vyplníš meno, e-mail a heslo (najmenej 8 znakov). Účet je interný — slúži len na výpožičky v tejto knižnici.
+
+## Prihlásenie
+
+Po registrácii ťa fond vráti tam, odkiaľ si prišiel, alebo na [Moje knihy](/loans). V bočnom paneli uvidíš svoje meno a tlačidlo **Odhlásiť**.
+
+## Odhlásenie
+
+Odhlásenie je v bočnom paneli. Po odhlásení ostane katalóg čitateľný, ale výpožičku nespustíš.
+
+## Čo účet drží
+
+- aktívne výpožičky a dátum vrátenia
+- počet obsadených miest z limitu 5
+- históriu vrátených zväzkov na stránke [Moje knihy](/loans)
+
+Heslo neposielaj nikomu. Ak účet nefunguje, ozvi sa na pulte v pavilóne B.

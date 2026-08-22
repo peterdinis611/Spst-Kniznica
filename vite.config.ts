@@ -3,15 +3,22 @@ import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import adapter from '@sveltejs/adapter-auto';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { mdsvex } from 'mdsvex';
 
 export default defineConfig({
 	plugins: [
 		tailwindcss(),
 		sveltekit({
+			extensions: ['.svelte', '.svx'],
+			preprocess: [vitePreprocess(), mdsvex({ extensions: ['.svx'] })],
 			compilerOptions: {
 				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
-				runes: ({ filename }) =>
-					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
+				runes: ({ filename }) => {
+					if (filename.split(/[/\\]/).includes('node_modules')) return undefined;
+					if (filename.endsWith('.svx')) return undefined;
+					return true;
+				}
 			},
 
 			// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.

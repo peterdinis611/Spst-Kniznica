@@ -1,3 +1,4 @@
+import { docsSource } from '$lib/docs/source';
 import { listAuthors, listBooks, listCategories } from '$lib/server/library';
 import type { RequestHandler } from './$types';
 
@@ -11,6 +12,11 @@ export const GET: RequestHandler = async ({ url }) => {
 		{ path: '/books', changefreq: 'weekly', priority: '0.9' },
 		{ path: '/departments', changefreq: 'monthly', priority: '0.7' },
 		{ path: '/authors', changefreq: 'monthly', priority: '0.7' },
+		...docsSource.getPages().map((doc) => ({
+			path: doc.url,
+			changefreq: 'monthly',
+			priority: '0.5'
+		})),
 		...listBooks().map((book) => ({
 			path: `/books/${book.id}`,
 			changefreq: 'monthly',

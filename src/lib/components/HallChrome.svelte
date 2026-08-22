@@ -62,6 +62,9 @@
 				</a>
 				<a href={resolve('/books')}>Katalóg</a>
 				<a href={resolve('/authors')}>Autori</a>
+				<a href={resolve('/docs')} aria-current={path.startsWith('/docs') ? 'page' : undefined}>
+					Príručka
+				</a>
 			</nav>
 			<div class="hall-tools">
 				<button type="button" class="hall-search-btn" onclick={openSearch} aria-label="Hľadať knihu">
@@ -105,6 +108,7 @@
 				<a href={resolve('/books')} onclick={closeMenu}>Katalóg</a>
 				<a href={resolve('/departments')} onclick={closeMenu}>Odbory</a>
 				<a href={resolve('/authors')} onclick={closeMenu}>Autori</a>
+				<a href={resolve('/docs')} onclick={closeMenu}>Príručka</a>
 				{#if user}
 					<a href={resolve('/loans')} onclick={closeMenu}>Moje knihy</a>
 				{:else}
