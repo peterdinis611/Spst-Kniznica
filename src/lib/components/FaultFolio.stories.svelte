@@ -12,4 +12,8 @@
 
 <Story name="Missing" args={{ status: 404 }} />
 
+<Story name="Forbidden" args={{ status: 403 }} />
+
 <Story name="Jammed" args={{ status: 500 }} />
+
+<Story name="Unavailable" args={{ status: 503 }} />

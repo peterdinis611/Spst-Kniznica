@@ -13,3 +13,5 @@
 </script>
 
 <Story name="Police" />
+
+<Story name="Krátka" args={{ books: shelfBooks.slice(0, 3) }} />

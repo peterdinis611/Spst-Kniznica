@@ -11,4 +11,10 @@
 
 <Story name="Desk" args={{ variant: 'desk' }} />
 
-<Story name="Hall" args={{ variant: 'hall' }} />
+<Story name="Hall">
+	{#snippet template(args)}
+		<div class="landing rounded-full p-3">
+			<ThemeToggle {...args} variant="hall" />
+		</div>
+	{/snippet}
+</Story>

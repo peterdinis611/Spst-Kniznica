@@ -26,3 +26,18 @@
 		<Badge {...args}>21 dní</Badge>
 	{/snippet}
 </Story>
+
+<Story name="Destructive" args={{ variant: 'destructive' }}>
+	{#snippet template(args)}
+		<Badge {...args}>Po lehote</Badge>
+	{/snippet}
+</Story>
+
+<Story name="Odbory" asChild>
+	<div class="flex flex-wrap gap-2">
+		<Badge>INF</Badge>
+		<Badge variant="secondary">STR</Badge>
+		<Badge variant="outline">ELE</Badge>
+		<Badge variant="ghost">LIT</Badge>
+	</div>
+</Story>
