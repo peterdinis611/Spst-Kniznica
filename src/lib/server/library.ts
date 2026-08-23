@@ -1,6 +1,7 @@
-import { and, count, desc, eq, isNull, like, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull, like, or, sql } from 'drizzle-orm';
 import { db } from './db';
-import { author, book, bookAuthor, category, loan } from './db/schema';
+import { author, book, bookAuthor, category, holding, loan } from './db/schema';
+import { ftsBookIds } from './db/catalog-fts';
 import { authorLine } from '$lib/format';
 import type { CatalogSearchItem } from '$lib/search';
 import type {
@@ -20,6 +21,7 @@ type BookRow = {
 	book: typeof book.$inferSelect;
 	category: typeof category.$inferSelect;
 	author: typeof author.$inferSelect | null;
+	authorPosition: number | null;
 };
 
 function assembleBooks(rows: BookRow[]): CatalogBook[] {
@@ -57,9 +59,14 @@ function assembleBooks(rows: BookRow[]): CatalogBook[] {
 			item.authors.push({
 				id: row.author.id,
 				name: row.author.name,
-				slug: row.author.slug
+				slug: row.author.slug,
+				position: row.authorPosition ?? item.authors.length
 			});
 		}
+	}
+
+	for (const item of map.values()) {
+		item.authors.sort((a, b) => a.position - b.position);
 	}
 
 	return [...map.values()];
@@ -126,7 +133,25 @@ export function listCategoryChips(): CategoryChip[] {
 }
 
 export function searchCatalog(query: string, limit = 8): CatalogSearchItem[] {
-	return listBooks(query).slice(0, limit).map(toSearchItem);
+	const q = query.trim();
+	if (!q) return [];
+
+	const ftsIds = ftsBookIds(q, limit);
+	if (ftsIds.length > 0) {
+		const found = listBooksByIds(ftsIds);
+		const rank = new Map(ftsIds.map((id, i) => [id, i]));
+		return found
+			.sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99))
+			.slice(0, limit)
+			.map(toSearchItem);
+	}
+
+	return listBooks(q).slice(0, limit).map(toSearchItem);
+}
+
+function listBooksByIds(ids: string[]): CatalogBook[] {
+	if (ids.length === 0) return [];
+	return assembleBooks(bookQuery().where(inArray(book.id, ids)).all());
 }
 
 function bookQuery() {
@@ -134,7 +159,8 @@ function bookQuery() {
 		.select({
 			book,
 			category,
-			author
+			author,
+			authorPosition: bookAuthor.position
 		})
 		.from(book)
 		.innerJoin(category, eq(book.categoryId, category.id))
@@ -221,8 +247,10 @@ export function listCategories(): CategoryRecord[] {
 			category.slug,
 			category.description,
 			category.code,
-			category.accent
+			category.accent,
+			category.sortOrder
 		)
+		.orderBy(asc(category.sortOrder), asc(category.name))
 		.all();
 
 	return rows;
@@ -293,7 +321,8 @@ export function listLoans(userId: string): LoanRecord[] {
 			loan,
 			book,
 			category,
-			author
+			author,
+			authorPosition: bookAuthor.position
 		})
 		.from(loan)
 		.innerJoin(book, eq(loan.bookId, book.id))
@@ -305,7 +334,12 @@ export function listLoans(userId: string): LoanRecord[] {
 		.all();
 
 	const booksById = assembleBooks(
-		rows.map((row) => ({ book: row.book, category: row.category, author: row.author }))
+		rows.map((row) => ({
+			book: row.book,
+			category: row.category,
+			author: row.author,
+			authorPosition: row.authorPosition
+		}))
 	);
 	const bookMap = new Map(booksById.map((item) => [item.id, item]));
 	const loans = new Map<string, LoanRecord>();
@@ -334,7 +368,12 @@ export function borrowBook(userId: string, bookId: string): BorrowResult {
 	return db.transaction((tx) => {
 		const current = tx.select().from(book).where(eq(book.id, bookId)).get();
 		if (!current) return { ok: false, message: 'Kniha v katalógu nie je.' };
-		if (current.copiesAvailable < 1) {
+		const copy = tx
+			.select()
+			.from(holding)
+			.where(and(eq(holding.bookId, bookId), eq(holding.status, 'available')))
+			.get();
+		if (!copy || current.copiesAvailable < 1) {
 			return { ok: false, message: 'Žiadny voľný výtlačok. Skúste neskôr.' };
 		}
 
@@ -361,14 +400,17 @@ export function borrowBook(userId: string, bookId: string): BorrowResult {
 		tx.insert(loan)
 			.values({
 				bookId,
+				holdingId: copy.id,
 				userId,
 				borrowedAt: now,
 				dueAt
 			})
 			.run();
 
+		tx.update(holding).set({ status: 'loaned' }).where(eq(holding.id, copy.id)).run();
+
 		tx.update(book)
-			.set({ copiesAvailable: current.copiesAvailable - 1 })
+			.set({ copiesAvailable: Math.max(0, current.copiesAvailable - 1) })
 			.where(eq(book.id, bookId))
 			.run();
 
@@ -393,8 +435,22 @@ export function returnBook(userId: string, loanId: string): ReturnResult {
 		if (!held) return { ok: false, message: 'Kniha v katalógu nie je.' };
 
 		tx.update(loan).set({ returnedAt: new Date() }).where(eq(loan.id, loanId)).run();
+
+		if (current.holdingId) {
+			tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId)).run();
+		} else {
+			const loaned = tx
+				.select()
+				.from(holding)
+				.where(and(eq(holding.bookId, current.bookId), eq(holding.status, 'loaned')))
+				.get();
+			if (loaned) {
+				tx.update(holding).set({ status: 'available' }).where(eq(holding.id, loaned.id)).run();
+			}
+		}
+
 		tx.update(book)
-			.set({ copiesAvailable: held.copiesAvailable + 1 })
+			.set({ copiesAvailable: Math.min(held.copiesTotal, held.copiesAvailable + 1) })
 			.where(eq(book.id, current.bookId))
 			.run();
 

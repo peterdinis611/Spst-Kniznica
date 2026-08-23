@@ -1,7 +1,8 @@
-import { count } from 'drizzle-orm';
+import { count, eq } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
-import { db } from './index';
-import { author, book, bookAuthor, category } from './schema';
+import { db, sqlite } from './index';
+import { author, book, bookAuthor, category, holding } from './schema';
+import { ensureCatalogFts, rebuildCatalogFts } from './catalog-fts';
 import { authorVolume, bookVolume, seedTarget } from './volume';
 
 const categories = [
@@ -11,6 +12,7 @@ const categories = [
 		slug: 'informatika',
 		code: 'INF',
 		accent: '#2c4a3e',
+		sortOrder: 1,
 		description:
 			'Algoritmy, databázy, siete a programovanie — fond pre študentov informačných technológií.'
 	},
@@ -20,6 +22,7 @@ const categories = [
 		slug: 'strojarstvo',
 		code: 'STR',
 		accent: '#3d4a5c',
+		sortOrder: 2,
 		description: 'Technické kreslenie, časti strojov a náuka o materiáloch z dielne pavilónu A.'
 	},
 	{
@@ -28,6 +31,7 @@ const categories = [
 		slug: 'elektrotechnika',
 		code: 'ELE',
 		accent: '#8a5a12',
+		sortOrder: 3,
 		description: 'Obvody, číslicová technika a merania. Výtlačky označené mosadzným hrebeňom.'
 	},
 	{
@@ -36,6 +40,7 @@ const categories = [
 		slug: 'matematika',
 		code: 'MAT',
 		accent: '#4a3a28',
+		sortOrder: 4,
 		description: 'Od stredoškolskej analýzy po zväzky, ktoré sa požičiavajú pred maturitou ako prvé.'
 	},
 	{
@@ -44,6 +49,7 @@ const categories = [
 		slug: 'fyzika',
 		code: 'FYZ',
 		accent: '#1e3a5f',
+		sortOrder: 5,
 		description: 'Mechanika, pole a príklady. Knižnica ich drží pri okne, lebo väzba znáša svetlo.'
 	},
 	{
@@ -52,6 +58,7 @@ const categories = [
 		slug: 'literatura',
 		code: 'LIT',
 		accent: '#6b2d3c',
+		sortOrder: 6,
 		description: 'Povinné čítanie, sloh a poézia. Karty sú ošúchané od triednych výpožičiek.'
 	},
 	{
@@ -60,6 +67,7 @@ const categories = [
 		slug: 'historia',
 		code: 'HIS',
 		accent: '#3f4a32',
+		sortOrder: 7,
 		description: 'Dejiny techniky a Slovenska — zväzky, ktoré sa berú na referáty v piatok popoludní.'
 	},
 	{
@@ -68,6 +76,7 @@ const categories = [
 		slug: 'jazyky',
 		code: 'JAZ',
 		accent: '#4a5560',
+		sortOrder: 8,
 		description: 'Technická angličtina a nemčina pre dielňu, laboratórium aj maturitu.'
 	}
 ];
@@ -539,6 +548,34 @@ function chunk<T>(items: T[], size: number) {
 	return batches;
 }
 
+function categoryCode(categoryId: string) {
+	return categories.find((item) => item.id === categoryId)?.code ?? 'FON';
+}
+
+function inventoryNo(code: string, bookId: string, index: number) {
+	const token = bookId
+		.replace(/^book-/, '')
+		.replace(/[^a-z0-9]+/gi, '')
+		.slice(0, 10)
+		.toUpperCase();
+	return `${code}-${token}-${String(index).padStart(2, '0')}`;
+}
+
+function holdingRows(catalog: CatalogRow[]) {
+	return catalog.flatMap((item) => {
+		const code = categoryCode(item.categoryId);
+		return Array.from({ length: item.copiesTotal }, (_, i) => {
+			const n = i + 1;
+			return {
+				id: `${item.id}-h${String(n).padStart(2, '0')}`,
+				bookId: item.id,
+				inventoryNo: inventoryNo(code, item.id, n),
+				status: (n <= item.copiesAvailable ? 'available' : 'loaned') as 'available' | 'loaned'
+			};
+		});
+	});
+}
+
 function insertCatalog(tx: { insert: typeof db.insert }, catalog: CatalogRow[]) {
 	if (catalog.length === 0) return;
 	for (const batch of chunk(catalog, 60)) {
@@ -551,15 +588,65 @@ function insertCatalog(tx: { insert: typeof db.insert }, catalog: CatalogRow[]) 
 			)
 			.run();
 		tx.insert(bookAuthor)
-			.values(batch.flatMap((item) => item.authorIds.map((authorId) => ({ bookId: item.id, authorId }))))
+			.values(
+				batch.flatMap((item) =>
+					item.authorIds.map((authorId, position) => ({ bookId: item.id, authorId, position }))
+				)
+			)
 			.run();
+		const copies = holdingRows(batch);
+		if (copies.length) tx.insert(holding).values(copies).run();
+	}
+}
+
+function ensureHoldings() {
+	const existing = db.select({ c: count() }).from(holding).get()?.c ?? 0;
+	if (existing > 0) return;
+
+	const rows = db
+		.select({
+			id: book.id,
+			copiesTotal: book.copiesTotal,
+			copiesAvailable: book.copiesAvailable,
+			code: category.code
+		})
+		.from(book)
+		.innerJoin(category, eq(book.categoryId, category.id))
+		.all();
+
+	const copies = rows.flatMap((item) =>
+		Array.from({ length: item.copiesTotal }, (_, i) => {
+			const n = i + 1;
+			return {
+				id: `${item.id}-h${String(n).padStart(2, '0')}`,
+				bookId: item.id,
+				inventoryNo: inventoryNo(item.code, item.id, n),
+				status: (n <= item.copiesAvailable ? 'available' : 'loaned') as 'available' | 'loaned'
+			};
+		})
+	);
+
+	for (const batch of chunk(copies, 200)) {
+		db.insert(holding).values(batch).run();
+	}
+}
+
+function ensureLoanGuards() {
+	sqlite.exec(
+		`CREATE UNIQUE INDEX IF NOT EXISTS loan_one_active_uidx ON loan(user_id, book_id) WHERE returned_at IS NULL`
+	);
+}
+
+function ensureCategoryOrder() {
+	for (const item of categories) {
+		db.update(category).set({ sortOrder: item.sortOrder }).where(eq(category.id, item.id)).run();
 	}
 }
 
 export function ensureSeeded() {
 	if (seeded) return;
-	seeded = true;
 
+	let catalogChanged = false;
 	const categoryCount = db.select({ c: count() }).from(category).get()?.c ?? 0;
 	if (categoryCount === 0) {
 		db.transaction((tx) => {
@@ -567,47 +654,56 @@ export function ensureSeeded() {
 			tx.insert(author).values(authors).run();
 			insertCatalog(tx, books);
 		});
+		catalogChanged = true;
 	}
 
 	const target = seedTarget(env.SEED_VOLUME, books.length);
 	const current = db.select({ c: count() }).from(book).get()?.c ?? 0;
-	if (current >= target) return;
+	if (current < target) {
+		const extraBooks = Math.max(0, target - books.length);
+		const extraAuthors = authorVolume(Math.max(24, Math.ceil(extraBooks / 8)));
+		const generated = bookVolume(extraBooks, extraAuthors);
 
-	const extraBooks = Math.max(0, target - books.length);
-	const extraAuthors = authorVolume(Math.max(24, Math.ceil(extraBooks / 8)));
-	const generated = bookVolume(extraBooks, extraAuthors);
-
-	const haveAuthors = new Set(
-		db
-			.select({ id: author.id })
-			.from(author)
-			.all()
-			.map((row) => row.id)
-	);
-	const haveBooks = new Set(
-		db
-			.select({ id: book.id })
-			.from(book)
-			.all()
-			.map((row) => row.id)
-	);
-
-	const authorsToAdd = extraAuthors.filter((person) => !haveAuthors.has(person.id));
-	const booksToAdd = generated.filter((item) => !haveBooks.has(item.id));
-	if (authorsToAdd.length === 0 && booksToAdd.length === 0) return;
-
-	const knownAuthors = new Set([...haveAuthors, ...authorsToAdd.map((person) => person.id)]);
-
-	db.transaction((tx) => {
-		for (const batch of chunk(authorsToAdd, 80)) {
-			tx.insert(author).values(batch).run();
-		}
-		insertCatalog(
-			tx,
-			booksToAdd.map((item) => ({
-				...item,
-				authorIds: item.authorIds.filter((id) => knownAuthors.has(id))
-			}))
+		const haveAuthors = new Set(
+			db
+				.select({ id: author.id })
+				.from(author)
+				.all()
+				.map((row) => row.id)
 		);
-	});
+		const haveBooks = new Set(
+			db
+				.select({ id: book.id })
+				.from(book)
+				.all()
+				.map((row) => row.id)
+		);
+
+		const authorsToAdd = extraAuthors.filter((person) => !haveAuthors.has(person.id));
+		const booksToAdd = generated.filter((item) => !haveBooks.has(item.id));
+		if (authorsToAdd.length || booksToAdd.length) {
+			const knownAuthors = new Set([...haveAuthors, ...authorsToAdd.map((person) => person.id)]);
+
+			db.transaction((tx) => {
+				for (const batch of chunk(authorsToAdd, 80)) {
+					tx.insert(author).values(batch).run();
+				}
+				insertCatalog(
+					tx,
+					booksToAdd.map((item) => ({
+						...item,
+						authorIds: item.authorIds.filter((id) => knownAuthors.has(id))
+					}))
+				);
+			});
+			catalogChanged = true;
+		}
+	}
+
+	ensureHoldings();
+	ensureCategoryOrder();
+	ensureCatalogFts();
+	ensureLoanGuards();
+	if (catalogChanged) rebuildCatalogFts();
+	seeded = true;
 }

@@ -60,7 +60,7 @@ function book(
 		copiesAvailable: 2,
 		publisher: 'SPŠT',
 		featured: false,
-		authors: [{ id: 'auth-belko', name: 'Prof. Ján Belko', slug: 'jan-belko' }],
+		authors: [{ id: 'auth-belko', name: 'Prof. Ján Belko', slug: 'jan-belko', position: 0 }],
 		...partial,
 		category: {
 			id: category.id,
@@ -86,20 +86,20 @@ export const catalogBooks: CatalogBook[] = [
 		id: 'book-stroje',
 		title: 'Časti strojov',
 		category: categories[1],
-		authors: [{ id: 'auth-kovac', name: 'Ing. Eva Kováčová', slug: 'eva-kovacova' }],
+		authors: [{ id: 'auth-kovac', name: 'Ing. Eva Kováčová', slug: 'eva-kovacova', position: 0 }],
 		copiesAvailable: 0
 	}),
 	book({
 		id: 'book-obvody',
 		title: 'Číslicové obvody',
 		category: categories[2],
-		authors: [{ id: 'auth-horvath', name: 'Mgr. Peter Horváth', slug: 'peter-horvath' }]
+		authors: [{ id: 'auth-horvath', name: 'Mgr. Peter Horváth', slug: 'peter-horvath', position: 0 }]
 	}),
 	book({
 		id: 'book-sloh',
 		title: 'Sloh v dielni',
 		category: categories[3],
-		authors: [{ id: 'auth-nova', name: 'PhDr. Anna Nováková', slug: 'anna-novakova' }]
+		authors: [{ id: 'auth-nova', name: 'PhDr. Anna Nováková', slug: 'anna-novakova', position: 0 }]
 	}),
 	book({
 		id: 'book-siete',

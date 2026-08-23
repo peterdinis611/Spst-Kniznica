@@ -66,6 +66,7 @@ export type CatalogBook = {
 		id: string;
 		name: string;
 		slug: string;
+		position: number;
 	}[];
 };
 
