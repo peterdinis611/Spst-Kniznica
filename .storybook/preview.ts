@@ -7,6 +7,15 @@ const preview: Preview = {
 	decorators: [() => Decorator],
 	parameters: {
 		layout: 'centered',
+		sveltekit_experimental: {
+			state: {
+				page: {
+					url: new URL('https://kniznica.local/discover'),
+					route: { id: '/discover' },
+					status: 200
+				}
+			}
+		},
 		controls: { matchers: { color: /(background|color)$/i, date: /Date$/i } },
 		backgrounds: {
 			default: 'page',
