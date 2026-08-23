@@ -10,6 +10,7 @@
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
+	import OfflineSlip from '$lib/components/OfflineSlip.svelte';
 	import AppTour from '$lib/components/AppTour.svelte';
 
 	let { children, data } = $props();
@@ -58,4 +59,5 @@
 {/if}
 
 <AppTour />
+<OfflineSlip />
 <ScrollToTop />
