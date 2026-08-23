@@ -7,8 +7,9 @@ Fond má jednu vyhľadávaciu lištu — v hlavičke pultu. Druhé pole na strá
 
 ## Kde začať
 
-- [Objavovať](/discover) — pulpit s výberom, police a zoznam podľa odborov
-- [Katalóg](/books) — celý zoznam zväzkov
+- [Objavovať](/discover) — pulpit s výberom a voľnými chrbticami
+- [Všetky knihy](/holdings) — register fondu podľa odborov
+- [Katalóg](/books) — karty zväzkov s filtrami
 - [Autori](/authors) — register A—Z podľa priezviska
 - [Odbory](/departments) — police podľa zamerania
 

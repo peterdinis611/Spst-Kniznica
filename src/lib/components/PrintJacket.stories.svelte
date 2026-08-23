@@ -18,6 +18,8 @@
 
 <Story name="Feature" args={{ size: 'feature' }} />
 
+<Story name="Thumb" args={{ size: 'thumb' }} />
+
 <Story name="Vypredaná" args={{ book: catalogBooks[1], size: 'shelf', linked: false }} />
 
 <Story name="Police" asChild>

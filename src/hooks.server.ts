@@ -6,6 +6,7 @@ import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { ensureSeeded } from '$lib/server/db/seed';
 
 const aliases = [
+	['/vsetky-knihy', '/holdings'],
 	['/knihy', '/books'],
 	['/odbory', '/departments'],
 	['/autori', '/authors'],

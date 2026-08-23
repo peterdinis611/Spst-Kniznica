@@ -20,4 +20,4 @@ Výpožička je bez poplatku: **21 dní**, naraz **najviac 5 kníh**.
 - [Výpožičky](/docs/vypozicky) — lehota, limit a vrátenie
 - [Účet](/docs/ucet) — registrácia, prihlásenie a odhlásenie
 
-Prehliadku pultu spustíš v katalógu tlačidlom **Prehliadka**, alebo otvorením [Objavovať](/discover?tour=1).
+Prehliadku pultu spustíš v katalógu tlačidlom **Prehliadka**.

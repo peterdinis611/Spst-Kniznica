@@ -17,7 +17,6 @@
 	);
 	const ready = $derived(catalog.filter((book) => book.copiesAvailable > 0));
 	const shelf = $derived(ready.slice(0, 7));
-	const rest = $derived(catalog.filter((book) => !shelf.some((item) => item.id === book.id)).slice(0, 6));
 	const authors = $derived(
 		[...data.authors].sort((a, b) => b.bookCount - a.bookCount).slice(0, 8)
 	);
@@ -152,9 +151,9 @@
 			<h2 class={cn(display, 'text-[clamp(1.6rem,3vw,2.2rem)]')}>Voľné na polici.</h2>
 			<a
 				class="font-sans text-[0.82rem] font-semibold tracking-[0.04em] text-foreground no-underline hover:opacity-55"
-				href={resolve('/books')}
+				href={resolve('/holdings')}
 			>
-				Celý katalóg
+				Všetky knihy
 			</a>
 		</div>
 		<div class="-mx-1 flex items-end gap-3 overflow-x-auto px-1 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -165,35 +164,6 @@
 			{/each}
 		</div>
 	</section>
-
-	{#if rest.length}
-		<section class={cn('mt-10 delay-150', rise)}>
-			<ol class="m-0 grid list-none gap-x-10 gap-y-0 p-0 md:grid-cols-2">
-				{#each rest as book (book.id)}
-					<li class="border-t border-border">
-						<a
-							class="group grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 py-4 text-inherit no-underline"
-							href={resolve('/books/[id]', { id: book.id })}
-						>
-							<em class="font-sans text-[0.68rem] font-semibold tracking-[0.1em] text-muted-foreground not-italic uppercase">
-								{book.category.code}
-							</em>
-							<span class="min-w-0">
-								<strong class="block font-display text-[1.15rem] leading-tight font-semibold group-hover:underline group-hover:underline-offset-[0.16em]">
-									{book.title}
-								</strong>
-								<span class="mt-1 block font-body text-[0.95rem] text-muted-foreground">
-									{authorLine(book.authors)}
-									<span class="mx-1.5 text-foreground">·</span>
-									{copiesLabel(book.copiesAvailable, book.copiesTotal)}
-								</span>
-							</span>
-						</a>
-					</li>
-				{/each}
-			</ol>
-		</section>
-	{/if}
 
 	<section class={cn('mt-12 delay-150', rise)}>
 		<div class="mb-5 flex items-end justify-between gap-4">

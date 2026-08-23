@@ -9,6 +9,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const routes = [
 		{ path: '/', changefreq: 'weekly', priority: '1.0' },
 		{ path: '/discover', changefreq: 'weekly', priority: '0.9' },
+		{ path: '/holdings', changefreq: 'weekly', priority: '0.85' },
 		{ path: '/books', changefreq: 'weekly', priority: '0.9' },
 		{ path: '/departments', changefreq: 'monthly', priority: '0.7' },
 		{ path: '/authors', changefreq: 'monthly', priority: '0.7' },

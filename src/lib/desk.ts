@@ -1,5 +1,6 @@
 export function deskTitle(pathname: string) {
 	if (pathname.startsWith('/discover')) return 'Objavovať';
+	if (pathname.startsWith('/holdings')) return 'Všetky knihy';
 	if (pathname.startsWith('/books')) return 'Katalóg';
 	if (pathname.startsWith('/departments')) return 'Odbory';
 	if (pathname.startsWith('/authors')) return 'Autori';

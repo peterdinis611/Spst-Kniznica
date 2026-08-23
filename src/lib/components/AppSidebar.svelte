@@ -7,28 +7,27 @@
 	import LayoutGridIcon from '@lucide/svelte/icons/layout-grid';
 	import BookmarkIcon from '@lucide/svelte/icons/bookmark';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
+	import LibraryIcon from '@lucide/svelte/icons/library';
 	import UsersIcon from '@lucide/svelte/icons/users';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
-	import ScrollTextIcon from '@lucide/svelte/icons/scroll-text';
-	import { startTour, markTourSeen } from '$lib/tour';
 	import type { Component } from 'svelte';
 	import { cn } from '$lib/utils.js';
 
 	let { user, compact = false }: { user: Reader; compact?: boolean } = $props();
 
 	const items: {
-		path: '/discover' | '/departments' | '/loans' | '/books' | '/authors' | '/docs';
+		path: '/discover' | '/holdings' | '/departments' | '/loans' | '/books' | '/authors';
 		label: string;
 		icon: Component;
 	}[] = [
 		{ path: '/discover', label: 'Objavovať', icon: HouseIcon },
+		{ path: '/holdings', label: 'Všetky knihy', icon: LibraryIcon },
 		{ path: '/departments', label: 'Odbory', icon: LayoutGridIcon },
 		{ path: '/loans', label: 'Moje knihy', icon: BookmarkIcon },
 		{ path: '/books', label: 'Katalóg', icon: BookOpenIcon },
-		{ path: '/authors', label: 'Autori', icon: UsersIcon },
-		{ path: '/docs', label: 'Príručka', icon: ScrollTextIcon }
+		{ path: '/authors', label: 'Autori', icon: UsersIcon }
 	];
 
 	function active(path: string) {
@@ -39,6 +38,11 @@
 	function submitLogout() {
 		const form = document.getElementById('logout-form');
 		if (form instanceof HTMLFormElement) form.requestSubmit();
+	}
+
+	async function openTour() {
+		const { startTour, markTourSeen } = await import('$lib/tour');
+		await startTour(markTourSeen);
 	}
 </script>
 
@@ -83,7 +87,7 @@
 			<Button
 				variant="ghost"
 				class="text-muted-foreground mb-1 h-auto justify-start px-3 py-1.5 font-normal"
-				onclick={() => startTour(markTourSeen)}
+				onclick={openTour}
 			>
 				<CircleHelpIcon />
 				Prehliadka
