@@ -89,7 +89,7 @@
 			</Alert.Root>
 		{/if}
 
-		<div class="flex flex-wrap items-center justify-between gap-3">
+		<div class="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
 			{#if data.userLoan}
 				<p class="text-sm">U teba do <strong>{shortDate(data.userLoan.dueAt)}</strong></p>
 				<Button href={resolve('/loans')}>Vrátiť v Moja knižnica</Button>

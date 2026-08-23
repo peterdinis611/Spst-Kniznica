@@ -23,7 +23,7 @@
 			type="button"
 			variant="secondary"
 			size="icon-lg"
-			class="bg-card absolute top-[42%] right-1 z-10 size-11 -translate-y-1/2 rounded-full shadow-md"
+			class="bg-card absolute top-[42%] right-1 z-10 hidden size-11 -translate-y-1/2 rounded-full shadow-md sm:inline-flex"
 			onclick={next}
 			aria-label="Ďalšie knihy"
 		>

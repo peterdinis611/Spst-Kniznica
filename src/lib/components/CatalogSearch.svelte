@@ -281,6 +281,7 @@
 	}
 
 	.search-field input {
+		min-width: 0;
 		width: 100%;
 		border: 0;
 		background: transparent;

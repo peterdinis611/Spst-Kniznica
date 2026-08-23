@@ -28,7 +28,7 @@
 <h2 class="mt-2 font-serif text-[clamp(1.85rem,8vw,3.1rem)] leading-[1.05] font-bold break-words">{data.author.name}</h2>
 <p class="text-muted-foreground mt-3 max-w-xl font-serif text-lg">{data.author.bio}</p>
 <div class="mt-10">
-	<VirtualWindow count={data.books.length} estimateSize={() => 76}>
+	<VirtualWindow count={data.books.length} estimateSize={() => 88}>
 		{#snippet children({ row })}
 			{@const book = data.books[row.index]}
 			{#if book}

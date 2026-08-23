@@ -98,21 +98,27 @@
 		position: relative;
 		display: flex;
 		justify-content: center;
-		gap: 1.4rem;
-		width: min(46rem, 100%);
-		margin: 2.8rem auto 0;
-		padding: 3rem 0 1.4rem;
-		filter: drop-shadow(-20px 24px 0 rgb(60 42 33 / 0.09));
+		gap: 0;
+		width: 100%;
+		margin: 1.1rem auto 0;
+		padding: 0.2rem 0 0.6rem;
+		filter: drop-shadow(-8px 10px 0 rgb(60 42 33 / 0.08));
 	}
 
 	.folio-bay {
 		display: grid;
 		grid-template-columns: 0.85rem 1fr 0.85rem;
-		width: min(18.5rem, 46vw);
-		min-height: 19.5rem;
+		width: 100%;
+		min-width: 0;
+		min-height: 13.4rem;
 		padding-bottom: 0.6rem;
 		background: var(--wood-deep);
 		animation: folio-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--delay) both;
+	}
+
+	.folio-bay + .folio-bay,
+	.folio-tip {
+		display: none;
 	}
 
 	.folio-rail {
@@ -135,7 +141,7 @@
 		flex: 1;
 		flex-direction: column;
 		justify-content: flex-end;
-		min-height: 5.8rem;
+		min-height: 3.9rem;
 	}
 
 	.folio-books {
@@ -272,26 +278,30 @@
 		}
 	}
 
-	@media (max-width: 720px) {
+	@media (min-width: 721px) {
 		.folio-shelf {
-			gap: 0;
-			margin-top: 1.1rem;
-			padding: 0.2rem 0 0.6rem;
-			filter: drop-shadow(-8px 10px 0 rgb(60 42 33 / 0.08));
+			gap: 1.4rem;
+			width: min(46rem, 100%);
+			margin-top: 2.8rem;
+			padding: 3rem 0 1.4rem;
+			filter: drop-shadow(-20px 24px 0 rgb(60 42 33 / 0.09));
 		}
 
 		.folio-bay {
-			width: 100%;
-			min-height: 13.4rem;
+			width: min(18.5rem, 46vw);
+			min-height: 19.5rem;
 		}
 
 		.folio-row {
-			min-height: 3.9rem;
+			min-height: 5.8rem;
 		}
 
-		.folio-bay + .folio-bay,
+		.folio-bay + .folio-bay {
+			display: grid;
+		}
+
 		.folio-tip {
-			display: none;
+			display: block;
 		}
 	}
 

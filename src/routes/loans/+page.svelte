@@ -87,7 +87,7 @@
 			<ul class="divide-border divide-y">
 				{#each data.history as item (item.id)}
 					<li class="flex flex-wrap justify-between gap-2 py-3">
-						<a class="hover:text-primary font-medium" href={resolve('/books/[id]', { id: item.book.id })}>
+						<a class="hover:text-primary min-w-0 break-words font-medium" href={resolve('/books/[id]', { id: item.book.id })}>
 							{item.book.title}
 						</a>
 						<span class="text-muted-foreground text-sm">

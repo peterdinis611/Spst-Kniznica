@@ -42,8 +42,12 @@
 				<div class="shelf-rail">
 					{#each cat.books as book (book.id)}
 						<a class="no-underline" href={resolve('/books/[id]', { id: book.id })}>
-							<PrintJacket {book} linked={false} size="thumb" class="sm:hidden" />
-							<PrintJacket {book} linked={false} class="hidden sm:block" />
+							<span class="sm:hidden">
+								<PrintJacket {book} linked={false} size="thumb" />
+							</span>
+							<span class="hidden sm:block">
+								<PrintJacket {book} linked={false} />
+							</span>
 						</a>
 					{/each}
 					<a

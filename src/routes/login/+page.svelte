@@ -19,7 +19,7 @@
 	index={false}
 />
 
-<section class="mx-auto grid max-w-4xl gap-6 md:grid-cols-2 md:gap-8">
+<section class="mx-auto grid min-w-0 max-w-4xl gap-6 md:grid-cols-2 md:gap-8">
 	<div>
 		<p class="text-muted-foreground text-sm font-medium tracking-wide uppercase">Čitateľský účet</p>
 		<p class="mt-3 max-w-sm font-serif text-lg">

@@ -41,10 +41,11 @@
 
 .handbook-bind {
 	display: flex;
+	min-width: 0;
 	align-items: center;
-	gap: 0.55rem;
-	padding: max(0.7rem, env(safe-area-inset-top)) max(0.85rem, env(safe-area-inset-right)) 0.7rem
-		max(0.85rem, env(safe-area-inset-left));
+	gap: 0.45rem;
+	padding: max(0.7rem, env(safe-area-inset-top)) max(0.7rem, env(safe-area-inset-right)) 0.7rem
+		max(0.7rem, env(safe-area-inset-left));
 	border-bottom: 1px solid var(--hb-line);
 	background: color-mix(in srgb, var(--hb-page) 90%, transparent);
 }
@@ -99,6 +100,7 @@
 
 .handbook-tools {
 	display: flex;
+	flex-shrink: 0;
 	align-items: center;
 	gap: 0.45rem;
 }

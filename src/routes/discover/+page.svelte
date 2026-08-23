@@ -49,18 +49,22 @@
 					href={resolve('/books/[id]', { id: featured.id })}
 				>
 					<span class="block origin-bottom transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:-rotate-2 motion-reduce:transform-none">
-						<PrintJacket
-							book={featured}
-							size="thumb"
-							linked={false}
-							class="shadow-[6px_10px_0_rgb(0_0_0/0.16)] ring-0 hover:!transform-none sm:hidden"
-						/>
-						<PrintJacket
-							book={featured}
-							size="feature"
-							linked={false}
-							class="hidden shadow-[12px_18px_0_rgb(0_0_0/0.18)] ring-0 hover:!transform-none sm:block"
-						/>
+						<span class="sm:hidden">
+							<PrintJacket
+								book={featured}
+								size="thumb"
+								linked={false}
+								class="shadow-[6px_10px_0_rgb(0_0_0/0.16)] ring-0 hover:!transform-none"
+							/>
+						</span>
+						<span class="hidden sm:block">
+							<PrintJacket
+								book={featured}
+								size="feature"
+								linked={false}
+								class="shadow-[12px_18px_0_rgb(0_0_0/0.18)] ring-0 hover:!transform-none"
+							/>
+						</span>
 					</span>
 					<span class="mx-auto mt-3 hidden h-2 w-[10.5rem] rounded-full bg-[rgb(0_0_0/0.22)] blur-[2px] sm:block"></span>
 				</a>

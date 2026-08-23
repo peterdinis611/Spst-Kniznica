@@ -132,7 +132,7 @@
 									>
 										{person.name}
 									</strong>
-									<em class="mt-0.5 block font-body text-[0.88rem] text-muted-foreground italic">
+									<em class="mt-0.5 block truncate font-body text-[0.88rem] text-muted-foreground italic">
 										{person.role} · {person.lifespan} · {booksLabel(person.bookCount)}
 									</em>
 								</span>

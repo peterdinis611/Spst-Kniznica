@@ -96,7 +96,7 @@
 		position: relative;
 		overflow: clip;
 		min-height: 100dvh;
-		padding: 1.4rem 1.3rem 2.4rem;
+		padding: 1.1rem 0.9rem 2.2rem;
 		color: var(--fault-ink);
 		background: var(--fault-page);
 	}
@@ -161,8 +161,15 @@
 
 	.fault-stage {
 		position: relative;
-		min-height: 22rem;
-		margin-left: -0.6rem;
+		min-height: 16rem;
+		margin-left: 0;
+	}
+
+	@media (min-width: 640px) {
+		.fault-stage {
+			min-height: 22rem;
+			margin-left: -0.6rem;
+		}
 	}
 
 	.fault-drawer {
@@ -260,7 +267,7 @@
 		display: flex;
 		gap: 0.08em;
 		font-family: 'Big Shoulders Display', 'Fraunces', serif;
-		font-size: clamp(6.4rem, 18vw, 11rem);
+		font-size: clamp(4.2rem, 22vw, 11rem);
 		font-weight: 800;
 		line-height: 0.72;
 		letter-spacing: -0.06em;

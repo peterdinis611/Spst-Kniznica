@@ -85,15 +85,15 @@
 <style>
 	.slip {
 		position: fixed;
-		top: 0.85rem;
-		right: 0.85rem;
-		left: 0.85rem;
+		top: max(0.7rem, env(safe-area-inset-top));
+		right: 0.7rem;
+		left: 0.7rem;
 		z-index: 70;
 		display: grid;
 		gap: 0.2rem;
 		max-width: 34rem;
 		margin-inline: auto;
-		padding: 0.95rem 6.2rem 1rem 1.15rem;
+		padding: 0.9rem 1rem 1rem;
 		border: 1px solid var(--border, #e6dccb);
 		background: var(--card, #fffaf3);
 		color: var(--foreground, #3c2a21);
@@ -129,19 +129,17 @@
 	}
 
 	.slip-stamp {
-		position: absolute;
-		top: 0.85rem;
-		right: 0.85rem;
+		justify-self: start;
+		margin-top: 0.45rem;
 		padding: 0.18rem 0.45rem;
 		border: 2px solid var(--chart-2, #c56a4a);
 		color: var(--chart-2, #c56a4a);
 		font-family: 'Fraunces', serif;
-		font-size: 0.78rem;
+		font-size: 0.72rem;
 		font-style: italic;
 		font-weight: 800;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
-		transform: rotate(-8deg);
 	}
 
 	.slip.is-on {
@@ -155,6 +153,16 @@
 			left: auto;
 			width: min(34rem, calc(100vw - 2.4rem));
 			margin-inline: 0;
+			padding: 0.95rem 6.2rem 1rem 1.15rem;
+		}
+
+		.slip-stamp {
+			position: absolute;
+			top: 0.85rem;
+			right: 0.85rem;
+			margin-top: 0;
+			font-size: 0.78rem;
+			transform: rotate(-8deg);
 		}
 	}
 

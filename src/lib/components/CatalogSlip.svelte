@@ -33,8 +33,8 @@
 <style>
 	.slip {
 		display: grid;
-		grid-template-columns: 0.28rem 2.15rem minmax(0, 1fr) auto;
-		gap: 0.35rem 0.55rem;
+		grid-template-columns: 0.28rem minmax(1.7rem, auto) minmax(0, 1fr) auto;
+		gap: 0.3rem 0.45rem;
 		align-items: center;
 		min-width: 0;
 		height: 100%;
@@ -90,14 +90,15 @@
 	}
 
 	.slip-body strong {
+		display: -webkit-box;
 		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
 		font-family: var(--font-display, Fraunces, serif);
-		font-size: 0.98rem;
+		font-size: 0.92rem;
 		font-weight: 650;
 		letter-spacing: -0.03em;
 		line-height: 1.15;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
 	.slip:hover .slip-body strong {
@@ -176,7 +177,12 @@
 		}
 
 		.slip-body strong {
+			display: block;
 			font-size: 1.12rem;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			-webkit-line-clamp: unset;
 		}
 
 		.slip-body span {

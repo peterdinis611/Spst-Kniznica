@@ -72,8 +72,10 @@
 <header
 	class="sticky top-0 z-20 border-b border-border bg-paper/92 px-3 pt-[max(0.55rem,env(safe-area-inset-top))] pb-2.5 backdrop-blur-md sm:static sm:z-10 sm:bg-transparent sm:px-8 sm:pt-8 sm:pb-7 sm:backdrop-blur-none md:px-12 md:pt-9 md:pb-8"
 >
-	<div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2 sm:gap-x-5 sm:gap-y-4 lg:flex-nowrap lg:gap-x-8">
-		<div class="flex min-w-0 flex-1 items-center gap-1 sm:gap-3 lg:flex-none">
+	<div
+		class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-2 sm:gap-x-4 sm:gap-y-3 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-x-8"
+	>
+		<div class="flex min-w-0 items-center gap-1 sm:gap-3">
 			<Sheet>
 				<SheetTrigger>
 					{#snippet child({ props })}
@@ -102,10 +104,7 @@
 			</h1>
 		</div>
 
-		<div
-			class="flex shrink-0 items-center gap-1.5 sm:gap-2.5 lg:order-3"
-			data-tour="account"
-		>
+		<div class="flex shrink-0 items-center gap-1.5 sm:gap-2.5 lg:col-start-3" data-tour="account">
 			<ThemeToggle />
 			<DropdownMenu>
 				<DropdownMenuTrigger>
@@ -152,19 +151,20 @@
 
 		{#if !hideSearch}
 			<form
-				class="flex h-10 w-full min-w-0 flex-1 basis-full flex-nowrap items-center gap-1 rounded-full bg-wash pr-1 pl-2 sm:h-12 sm:gap-2 sm:pr-1.5 sm:pl-2 lg:order-2 lg:basis-0 lg:w-auto"
+				class="col-span-2 flex h-10 min-w-0 w-full items-center gap-1 rounded-full bg-wash pr-1 pl-2 sm:h-12 sm:gap-2 sm:pr-1.5 sm:pl-2 lg:col-span-1 lg:col-start-2 lg:row-start-1"
 				method="GET"
 				action={authorSearch ? resolve('/authors') : resolve('/books')}
 				data-tour="search"
 			>
 				{#if !authorSearch}
 					<input type="hidden" name="odbor" value={chosen === 'all' ? '' : chosen} />
+					<div class="hidden md:block">
 					<DropdownMenu>
 						<DropdownMenuTrigger>
 							{#snippet child({ props })}
 								<button
 									type="button"
-									class="hidden h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 font-sans text-[0.78rem] font-semibold text-foreground outline-none hover:bg-card focus-visible:ring-2 focus-visible:ring-ring sm:flex"
+									class="flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 font-sans text-[0.78rem] font-semibold text-foreground outline-none hover:bg-card focus-visible:ring-2 focus-visible:ring-ring"
 									aria-label="Odbor"
 									{...props}
 								>
@@ -199,6 +199,7 @@
 							</DropdownMenuRadioGroup>
 						</DropdownMenuContent>
 					</DropdownMenu>
+					</div>
 				{/if}
 				<SearchIcon class="size-4 shrink-0 text-muted-foreground sm:ml-1" />
 				<label class="sr-only" for="q-desk">Hľadať</label>
@@ -211,12 +212,12 @@
 					placeholder={authorSearch ? 'priezvisko' : 'názov alebo autor'}
 				/>
 				<Button
-					class="size-8 shrink-0 rounded-full px-0 sm:h-10 sm:w-auto sm:px-5 sm:text-[0.78rem] sm:font-semibold"
+					class="size-8 shrink-0 rounded-full px-0 md:h-10 md:w-auto md:px-5 md:text-[0.78rem] md:font-semibold"
 					type="submit"
 					aria-label="Hľadať"
 				>
-					<SearchIcon class="size-3.5 sm:hidden" />
-					<span class="hidden sm:inline">Hľadať</span>
+					<SearchIcon class="size-3.5 md:hidden" />
+					<span class="hidden md:inline">Hľadať</span>
 				</Button>
 			</form>
 		{/if}

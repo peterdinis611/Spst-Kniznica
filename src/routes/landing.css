@@ -267,7 +267,8 @@
 .folio h1 {
 	max-width: 16ch;
 	margin: 0;
-	font-size: clamp(2.3rem, 6vw, 4.15rem);
+	overflow-wrap: anywhere;
+	font-size: clamp(2.05rem, 9vw, 4.15rem);
 	font-weight: 650;
 	letter-spacing: -0.035em;
 	line-height: 1.08;
@@ -328,7 +329,8 @@
 .folio-close h2 {
 	max-width: 18ch;
 	margin: 0.35rem 0 0;
-	font-size: clamp(1.7rem, 3.4vw, 2.45rem);
+	overflow-wrap: anywhere;
+	font-size: clamp(1.45rem, 6vw, 2.45rem);
 	font-weight: 650;
 	letter-spacing: -0.03em;
 	line-height: 1.12;
@@ -655,7 +657,7 @@
 @media (max-width: 859px) {
 	.hall-login,
 	.hall-tools :global(.hall-theme-btn) {
-		display: none;
+		display: none !important;
 	}
 }
 

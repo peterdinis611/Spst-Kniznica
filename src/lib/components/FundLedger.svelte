@@ -41,12 +41,12 @@
 	);
 
 	function rowSize(index: number) {
-		return rows[index]?.kind === 'head' ? 72 : 76;
+		return rows[index]?.kind === 'head' ? 72 : 88;
 	}
 </script>
 
 <header class="mast">
-	<div class="mast-copy">
+	<div class="mast-copy hidden md:block">
 		<p class="kicker">Register fondu</p>
 		<h1>Všetky knihy.</h1>
 		<p class="lede">
@@ -404,9 +404,9 @@
 
 	.lane-head {
 		display: grid;
-		grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+		grid-template-columns: auto minmax(0, 1fr) auto;
 		align-items: end;
-		gap: 0.45rem;
+		gap: 0.45rem 0.65rem;
 		min-width: 0;
 		height: 100%;
 		padding-bottom: 0.35rem;
@@ -416,8 +416,9 @@
 	}
 
 	.lane-head strong {
+		min-width: 0;
 		font-family: var(--font-display, Fraunces, serif);
-		font-size: 1.55rem;
+		font-size: 1.35rem;
 		font-weight: 800;
 		line-height: 0.8;
 		letter-spacing: -0.05em;
@@ -448,6 +449,12 @@
 	}
 
 	@media (min-width: 768px) {
+		.folio-meta em {
+			max-width: none;
+			font-size: 0.72rem;
+			letter-spacing: 0.14em;
+		}
+
 		.folio {
 			padding: 1.15rem 1.15rem 0.4rem;
 		}

@@ -37,7 +37,7 @@
 </div>
 
 <div class="mt-8">
-	<VirtualWindow count={data.books.length} estimateSize={() => 76}>
+	<VirtualWindow count={data.books.length} estimateSize={() => 88}>
 		{#snippet children({ row })}
 			{@const book = data.books[row.index]}
 			{#if book}

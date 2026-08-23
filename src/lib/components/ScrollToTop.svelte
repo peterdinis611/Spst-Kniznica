@@ -37,8 +37,8 @@
 <style>
 	.to-top {
 		position: fixed;
-		right: 1.1rem;
-		bottom: 1.1rem;
+		right: max(0.85rem, env(safe-area-inset-right));
+		bottom: max(0.85rem, env(safe-area-inset-bottom));
 		z-index: 60;
 		display: grid;
 		place-items: center;

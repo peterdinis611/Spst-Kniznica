@@ -222,6 +222,10 @@
 		@apply font-display font-bold tracking-tight;
 		font-variation-settings: 'SOFT' 45, 'WONK' 1;
 	}
+
+	input[type='search'] {
+		min-width: 0;
+	}
 }
 
 .skip-link {
@@ -300,7 +304,7 @@
 	min-width: 0;
 	max-width: 100%;
 	overflow-x: clip;
-	padding: 0 0.95rem 1.7rem;
+	padding: 0 0.8rem 1.7rem;
 }
 
 .shelf-rail {
@@ -387,12 +391,13 @@
 .cover-grid {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 1.6rem 1.1rem;
+	gap: 1.2rem 0.85rem;
 }
 
 @media (min-width: 768px) {
 	.cover-grid {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1.6rem 1.1rem;
 	}
 }
 
