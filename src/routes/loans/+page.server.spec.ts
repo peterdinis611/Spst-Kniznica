@@ -1,0 +1,137 @@
+import { isActionFailure, isRedirect } from '@sveltejs/kit';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { LoanRecord } from '$lib/types';
+import { countActiveLoans, listLoans, returnBook } from '$lib/server/library';
+import { actions, load } from './+page.server';
+
+vi.mock('$lib/server/library', () => ({
+	MAX_ACTIVE_LOANS: 5,
+	listLoans: vi.fn(),
+	countActiveLoans: vi.fn(),
+	returnBook: vi.fn()
+}));
+
+const reader = {
+	id: 'user-509a',
+	name: 'Peter Dinis',
+	email: 'peter@spst.sk'
+};
+
+const book = {
+	id: 'stroje-1',
+	title: 'Stroje',
+	callNumber: 'STR 12',
+	copiesTotal: 2,
+	copiesAvailable: 1,
+	category: {
+		id: 'cat-str',
+		name: 'Strojárstvo',
+		slug: 'strojarstvo',
+		code: 'STR',
+		accent: '#3d2a1c'
+	},
+	authors: [{ id: 'a1', name: 'Ján Test', slug: 'jan-test', position: 0 }]
+};
+
+function loan(partial: Partial<LoanRecord> & Pick<LoanRecord, 'id' | 'returnedAt'>): LoanRecord {
+	return {
+		borrowedAt: new Date(2026, 7, 1),
+		dueAt: new Date(2026, 7, 22),
+		book,
+		...partial
+	};
+}
+
+function localsOf(user: typeof reader | undefined) {
+	return { locals: { user } } as Parameters<typeof load>[0];
+}
+
+describe('loans load', () => {
+	beforeEach(() => {
+		vi.mocked(listLoans).mockReset();
+		vi.mocked(countActiveLoans).mockReset();
+	});
+
+	it('sends anonymous readers to login', async () => {
+		try {
+			await load(localsOf(undefined));
+			throw new Error('expected redirect');
+		} catch (error) {
+			expect(isRedirect(error)).toBe(true);
+			if (isRedirect(error)) {
+				expect(error.status).toBe(302);
+				expect(error.location).toBe('/login');
+			}
+		}
+	});
+
+	it('splits active loans from history and exposes the reader pass', async () => {
+		vi.mocked(listLoans).mockReturnValue([
+			loan({ id: 'open', returnedAt: null }),
+			loan({ id: 'closed', returnedAt: new Date(2026, 7, 10), book: { ...book, title: 'Vrátená' } })
+		]);
+		vi.mocked(countActiveLoans).mockReturnValue(1);
+
+		const data = await load(localsOf(reader));
+
+		expect(listLoans).toHaveBeenCalledWith(reader.id);
+		expect(data.reader).toEqual(reader);
+		expect(data.maxLoans).toBe(5);
+		expect(data.activeCount).toBe(1);
+		expect(data.loans.map((item) => item.id)).toEqual(['open']);
+		expect(data.history.map((item) => item.book.title)).toEqual(['Vrátená']);
+	});
+});
+
+describe('loans return action', () => {
+	beforeEach(() => {
+		vi.mocked(returnBook).mockReset();
+	});
+
+	function event(user: typeof reader | undefined, loanId = 'open') {
+		return {
+			locals: { user },
+			request: {
+				formData: async () => {
+					const body = new FormData();
+					body.set('loanId', loanId);
+					return body;
+				}
+			}
+		} as unknown as Parameters<NonNullable<typeof actions.return>>[0];
+	}
+
+	it('sends anonymous returns to login', async () => {
+		try {
+			await actions.return?.(event(undefined));
+			throw new Error('expected redirect');
+		} catch (error) {
+			expect(isRedirect(error)).toBe(true);
+			if (isRedirect(error)) expect(error.location).toBe('/login');
+		}
+	});
+
+	it('returns the library error as a form failure', async () => {
+		vi.mocked(returnBook).mockReturnValue({ ok: false, message: 'Výpožička sa nenašla.' });
+
+		const result = await actions.return?.(event(reader, 'missing'));
+
+		expect(returnBook).toHaveBeenCalledWith(reader.id, 'missing');
+		expect(isActionFailure(result)).toBe(true);
+		if (isActionFailure(result)) {
+			expect(result.status).toBe(400);
+			expect(result.data).toEqual({ message: 'Výpožička sa nenašla.' });
+		}
+	});
+
+	it('stamps a successful return', async () => {
+		vi.mocked(returnBook).mockReturnValue({ ok: true });
+
+		const result = await actions.return?.(event(reader));
+
+		expect(result).toEqual({
+			stamp: 'Vrátené',
+			sub: expect.stringMatching(/\d{1,2}\.\s?\d{1,2}\.\s?2026/)
+		});
+	});
+});
