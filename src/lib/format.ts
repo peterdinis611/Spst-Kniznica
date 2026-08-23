@@ -51,6 +51,12 @@ export function booksLabel(count: number) {
 	return `${count} kníh vo fonde`;
 }
 
+export function volumesLabel(count: number) {
+	if (count === 1) return 'zväzok';
+	if (count < 5) return 'zväzky';
+	return 'zväzkov';
+}
+
 export function splitCallNumber(value: string) {
 	const parts = value.trim().split(/\s+/);
 	return {

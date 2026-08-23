@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { authorLine, copiesLabel, splitCallNumber } from '$lib/format';
-	import { clothFor } from '$lib/cover';
+	import { volumesLabel } from '$lib/format';
 	import PrintJacket from './PrintJacket.svelte';
+	import CatalogSlip from './CatalogSlip.svelte';
+	import VirtualWindow from './VirtualWindow.svelte';
 	import type { CatalogBook, CategoryRecord } from '$lib/types';
 
 	let { books, categories }: { books: CatalogBook[]; categories: CategoryRecord[] } = $props();
@@ -22,7 +23,26 @@
 			.filter((group) => group.books.length > 0)
 	);
 	const count = $derived(books.length);
+	const virtual = $derived(count > 48);
 	const tilts = [-7, 4, -3, 6, -5, 3];
+	const rows = $derived(
+		ledger.flatMap((group) => [
+			{
+				kind: 'head' as const,
+				id: `head-${group.id}`,
+				code: group.code,
+				name: group.name,
+				slug: group.slug,
+				accent: group.accent,
+				count: group.books.length
+			},
+			...group.books.map((item) => ({ kind: 'book' as const, id: item.id, book: item }))
+		])
+	);
+
+	function rowSize(index: number) {
+		return rows[index]?.kind === 'head' ? 72 : 76;
+	}
 </script>
 
 <header class="mast">
@@ -34,62 +54,67 @@
 		</p>
 	</div>
 	<aside class="mast-count">
-		<strong>{String(count).padStart(2, '0')}</strong>
-		<span>{count === 1 ? 'zväzok' : count < 5 ? 'zväzky' : 'zväzkov'}</span>
+		<strong>{count < 100 ? String(count).padStart(2, '0') : count.toLocaleString('sk-SK')}</strong>
+		<span>{volumesLabel(count)}</span>
+		{#if virtual}
+			<em>virtualizovaný register</em>
+		{/if}
 		<a href={resolve('/books')}>Do katalógu →</a>
 	</aside>
 </header>
 
-<div class="folios">
-	{#each ledger as group, gi (group.id)}
-		<section
-			class="folio"
-			style="--accent: {group.accent}; --delay: {0.08 + gi * 0.07}s"
-			aria-labelledby="folio-{group.id}"
-		>
-			<a class="folio-head" href={resolve('/departments/[slug]', { slug: group.slug })}>
-				<span class="folio-code" id="folio-{group.id}">{group.code}</span>
-				<span class="folio-meta">
-					<em>{group.name}</em>
-					<b>{group.books.length}</b>
-				</span>
-			</a>
+{#if virtual}
+	<VirtualWindow count={rows.length} estimateSize={rowSize}>
+		{#snippet children({ row })}
+			{@const item = rows[row.index]}
+			{#if item?.kind === 'head'}
+				<a
+					class="lane-head"
+					style="--accent: {item.accent}"
+					href={resolve('/departments/[slug]', { slug: item.slug })}
+				>
+					<strong>{item.code}</strong>
+					<span>{item.name}</span>
+					<b>{item.count}</b>
+				</a>
+			{:else if item?.kind === 'book'}
+				<CatalogSlip book={item.book} />
+			{/if}
+		{/snippet}
+	</VirtualWindow>
+{:else}
+	<div class="folios">
+		{#each ledger as group, gi (group.id)}
+			<section
+				class="folio"
+				style="--accent: {group.accent}; --delay: {0.08 + gi * 0.07}s"
+				aria-labelledby="folio-{group.id}"
+			>
+				<a class="folio-head" href={resolve('/departments/[slug]', { slug: group.slug })}>
+					<span class="folio-code" id="folio-{group.id}">{group.code}</span>
+					<span class="folio-meta">
+						<em>{group.name}</em>
+						<b>{group.books.length}</b>
+					</span>
+				</a>
 
-			<div class="folio-fan" aria-hidden="true">
-				{#each group.books as book, i (book.id)}
-					<div class="fan-item" style="--tilt: {tilts[i % tilts.length]}deg">
-						<PrintJacket {book} linked={false} size="thumb" class="hover:!transform-none" />
-					</div>
-				{/each}
-			</div>
+				<div class="folio-fan" aria-hidden="true">
+					{#each group.books as book, i (book.id)}
+						<div class="fan-item" style="--tilt: {tilts[i % tilts.length]}deg">
+							<PrintJacket {book} linked={false} size="thumb" class="hover:!transform-none" />
+						</div>
+					{/each}
+				</div>
 
-			<ol class="slips">
-				{#each group.books as book (book.id)}
-					{@const call = splitCallNumber(book.callNumber)}
-					{@const cloth = clothFor(book.id)}
-					{@const out = book.copiesAvailable === 0}
-					<li>
-						<a class="slip" href={resolve('/books/[id]', { id: book.id })}>
-							<span class="slip-tab" style="background: {cloth.bg}"></span>
-							<span class="slip-call">
-								<i>{call.dept}</i>
-								<b>{call.number}</b>
-								<em>{call.cutter}</em>
-							</span>
-							<span class="slip-body">
-								<strong>{book.title}</strong>
-								<span>{authorLine(book.authors)}</span>
-							</span>
-							<span class="slip-mark" class:is-out={out}>
-								{copiesLabel(book.copiesAvailable, book.copiesTotal)}
-							</span>
-						</a>
-					</li>
-				{/each}
-			</ol>
-		</section>
-	{/each}
-</div>
+				<div class="slips">
+					{#each group.books as book (book.id)}
+						<CatalogSlip {book} />
+					{/each}
+				</div>
+			</section>
+		{/each}
+	</div>
+{/if}
 
 <style>
 	.mast {
@@ -157,6 +182,16 @@
 		font-weight: 800;
 		line-height: 0.8;
 		letter-spacing: -0.06em;
+	}
+
+	.mast-count em {
+		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		font-size: 0.68rem;
+		font-style: normal;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted-foreground);
 	}
 
 	.mast-count span,
@@ -309,112 +344,52 @@
 	.slips {
 		position: relative;
 		z-index: 1;
-		margin: 0;
-		padding: 0;
-		list-style: none;
 	}
 
-	.slip {
+	.slips :global(.slip) {
+		height: auto;
+		padding-block: 0.85rem;
+	}
+
+	.lane-head {
 		display: grid;
-		grid-template-columns: 0.42rem 5.6rem minmax(0, 1fr);
-		gap: 0.85rem 1rem;
-		align-items: center;
-		padding: 0.85rem 0.2rem 0.9rem 0;
-		border-top: 1px dashed color-mix(in srgb, var(--foreground) 16%, transparent);
+		grid-template-columns: 4.2rem minmax(0, 1fr) auto;
+		align-items: end;
+		gap: 0.85rem;
+		height: 100%;
+		padding-bottom: 0.45rem;
+		border-bottom: 2px solid var(--accent);
 		text-decoration: none;
 		color: inherit;
 	}
 
-	.slip-tab {
-		align-self: stretch;
-		width: 0.42rem;
-		border-radius: 999px;
-	}
-
-	.slip-call {
-		display: grid;
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-		line-height: 1.15;
-	}
-
-	.slip-call i,
-	.slip-call em {
-		font-style: normal;
-		font-size: 0.62rem;
-		font-weight: 600;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--muted-foreground);
-	}
-
-	.slip-call b {
-		font-size: 0.98rem;
-		font-weight: 600;
-	}
-
-	.slip-body {
-		display: grid;
-		gap: 0.2rem;
-		min-width: 0;
-	}
-
-	.slip-body strong {
+	.lane-head strong {
 		font-family: var(--font-display, Fraunces, serif);
-		font-size: 1.18rem;
-		font-weight: 650;
-		letter-spacing: -0.03em;
-		line-height: 1.15;
+		font-size: 2.1rem;
+		font-weight: 800;
+		line-height: 0.8;
+		letter-spacing: -0.05em;
+		color: var(--accent);
 	}
 
-	.slip:hover .slip-body strong {
-		text-decoration: underline;
-		text-underline-offset: 0.14em;
-	}
-
-	.slip-body span {
-		font-family: var(--font-body, Newsreader, serif);
-		font-size: 0.95rem;
+	.lane-head span {
+		padding-bottom: 0.2rem;
+		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
 		color: var(--muted-foreground);
 	}
 
-	.slip-mark {
-		grid-column: 3;
-		justify-self: start;
-		padding: 0.22rem 0.55rem;
-		border-radius: 999px;
-		background: color-mix(in srgb, #1e6b3c 16%, var(--card));
-		color: #1e6b3c;
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
-		font-size: 0.68rem;
-		font-weight: 700;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+	.lane-head b {
+		padding-bottom: 0.15rem;
+		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-size: 1rem;
 	}
 
-	.slip-mark.is-out {
-		background: color-mix(in srgb, #c43a2a 16%, var(--card));
-		color: #c43a2a;
-	}
-
-	:global(.dark) .slip-mark {
-		background: color-mix(in srgb, #2f8a4f 28%, transparent);
-		color: #b7e0c2;
-	}
-
-	:global(.dark) .slip-mark.is-out {
-		background: color-mix(in srgb, #e25a48 26%, transparent);
-		color: #f3c2ba;
-	}
-
-	@media (min-width: 640px) {
-		.slip {
-			grid-template-columns: 0.42rem 5.8rem minmax(0, 1fr) auto;
-		}
-
-		.slip-mark {
-			grid-column: auto;
-			justify-self: end;
-		}
+	:global(.dark) .lane-head strong {
+		color: color-mix(in srgb, var(--accent) 55%, #f3eadf);
 	}
 
 	@keyframes rise {

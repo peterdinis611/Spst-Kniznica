@@ -4,11 +4,14 @@ import { catalogStats, getFeaturedBook, listAuthors, listBooks, listCategories }
 export const load: PageServerLoad = async () => {
 	const featured = getFeaturedBook();
 
+	const catalog = listBooks().filter((item) => item.id !== featured?.id);
+	const authors = [...listAuthors()].sort((a, b) => b.bookCount - a.bookCount);
+
 	return {
 		featured,
-		books: listBooks().filter((item) => item.id !== featured?.id),
+		books: catalog.slice(0, 16),
 		categories: listCategories(),
-		authors: listAuthors(),
+		authors: authors.slice(0, 12),
 		stats: catalogStats()
 	};
 };

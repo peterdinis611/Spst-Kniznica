@@ -1,6 +1,8 @@
 import { count } from 'drizzle-orm';
+import { env } from '$env/dynamic/private';
 import { db } from './index';
 import { author, book, bookAuthor, category } from './schema';
+import { authorVolume, bookVolume, seedTarget } from './volume';
 
 const categories = [
 	{
@@ -514,32 +516,98 @@ const books = [
 
 let seeded = false;
 
-export function ensureSeeded() {
-	if (seeded) return;
+type CatalogRow = {
+	authorIds: string[];
+	id: string;
+	title: string;
+	subtitle: string | null;
+	year: number;
+	pages: number;
+	isbn: string;
+	callNumber: string;
+	categoryId: string;
+	copiesTotal: number;
+	copiesAvailable: number;
+	publisher: string;
+	featured: boolean;
+	description: string;
+};
 
-	const existing = db.select({ c: count() }).from(book).get();
-	if (existing && existing.c > 0) {
-		seeded = true;
-		return;
-	}
+function chunk<T>(items: T[], size: number) {
+	const batches: T[][] = [];
+	for (let i = 0; i < items.length; i += size) batches.push(items.slice(i, i + size));
+	return batches;
+}
 
-	db.transaction((tx) => {
-		tx.insert(category).values(categories).run();
-		tx.insert(author).values(authors).run();
+function insertCatalog(tx: { insert: typeof db.insert }, catalog: CatalogRow[]) {
+	if (catalog.length === 0) return;
+	for (const batch of chunk(catalog, 60)) {
 		tx.insert(book)
-			.values(books.map(({ authorIds, ...rest }) => {
-				void authorIds;
-				return rest;
-			}))
-			.run();
-		tx.insert(bookAuthor)
 			.values(
-				books.flatMap((item) =>
-					item.authorIds.map((authorId) => ({ bookId: item.id, authorId }))
-				)
+				batch.map(({ authorIds, ...rest }) => {
+					void authorIds;
+					return rest;
+				})
 			)
 			.run();
-	});
+		tx.insert(bookAuthor)
+			.values(batch.flatMap((item) => item.authorIds.map((authorId) => ({ bookId: item.id, authorId }))))
+			.run();
+	}
+}
 
+export function ensureSeeded() {
+	if (seeded) return;
 	seeded = true;
+
+	const categoryCount = db.select({ c: count() }).from(category).get()?.c ?? 0;
+	if (categoryCount === 0) {
+		db.transaction((tx) => {
+			tx.insert(category).values(categories).run();
+			tx.insert(author).values(authors).run();
+			insertCatalog(tx, books);
+		});
+	}
+
+	const target = seedTarget(env.SEED_VOLUME, books.length);
+	const current = db.select({ c: count() }).from(book).get()?.c ?? 0;
+	if (current >= target) return;
+
+	const extraBooks = Math.max(0, target - books.length);
+	const extraAuthors = authorVolume(Math.max(24, Math.ceil(extraBooks / 8)));
+	const generated = bookVolume(extraBooks, extraAuthors);
+
+	const haveAuthors = new Set(
+		db
+			.select({ id: author.id })
+			.from(author)
+			.all()
+			.map((row) => row.id)
+	);
+	const haveBooks = new Set(
+		db
+			.select({ id: book.id })
+			.from(book)
+			.all()
+			.map((row) => row.id)
+	);
+
+	const authorsToAdd = extraAuthors.filter((person) => !haveAuthors.has(person.id));
+	const booksToAdd = generated.filter((item) => !haveBooks.has(item.id));
+	if (authorsToAdd.length === 0 && booksToAdd.length === 0) return;
+
+	const knownAuthors = new Set([...haveAuthors, ...authorsToAdd.map((person) => person.id)]);
+
+	db.transaction((tx) => {
+		for (const batch of chunk(authorsToAdd, 80)) {
+			tx.insert(author).values(batch).run();
+		}
+		insertCatalog(
+			tx,
+			booksToAdd.map((item) => ({
+				...item,
+				authorIds: item.authorIds.filter((id) => knownAuthors.has(id))
+			}))
+		);
+	});
 }

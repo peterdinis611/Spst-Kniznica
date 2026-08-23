@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import CatalogSlip from '$lib/components/CatalogSlip.svelte';
 	import CoverRail from '$lib/components/CoverRail.svelte';
-	import LockerCard from '$lib/components/LockerCard.svelte';
+	import VirtualWindow from '$lib/components/VirtualWindow.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import type { PageProps } from './$types';
@@ -32,11 +33,16 @@
 <p class="text-muted-foreground mt-3 max-w-xl font-serif">{data.category.description}</p>
 
 <div class="mt-8">
-	<CoverRail books={data.books} />
+	<CoverRail books={data.books.slice(0, 8)} />
 </div>
 
-<div class="cover-grid mt-8">
-	{#each data.books as book (book.id)}
-		<LockerCard {book} />
-	{/each}
+<div class="mt-8">
+	<VirtualWindow count={data.books.length} estimateSize={() => 76}>
+		{#snippet children({ row })}
+			{@const book = data.books[row.index]}
+			{#if book}
+				<CatalogSlip {book} />
+			{/if}
+		{/snippet}
+	</VirtualWindow>
 </div>

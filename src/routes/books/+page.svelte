@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import LockerCard from '$lib/components/LockerCard.svelte';
+	import CatalogSlip from '$lib/components/CatalogSlip.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import VirtualWindow from '$lib/components/VirtualWindow.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Alert from '$lib/components/ui/alert/index.js';
@@ -17,9 +18,12 @@
 />
 
 <p class="text-muted-foreground text-sm">
-	{data.books.length} kníh
+	{data.books.length.toLocaleString('sk-SK')} kníh
 	{#if data.q}pre „{data.q}“{/if}
 	{#if activeName}· {activeName}{/if}
+	{#if data.books.length > 48}
+		· virtualizovaný register
+	{/if}
 </p>
 
 <div class="mt-4 flex flex-wrap gap-2">
@@ -46,9 +50,14 @@
 		</Alert.Action>
 	</Alert.Root>
 {:else}
-	<div class="cover-grid mt-8">
-		{#each data.books as book (book.id)}
-			<LockerCard {book} />
-		{/each}
+	<div class="mt-8">
+		<VirtualWindow count={data.books.length} estimateSize={() => 76}>
+			{#snippet children({ row })}
+				{@const book = data.books[row.index]}
+				{#if book}
+					<CatalogSlip {book} />
+				{/if}
+			{/snippet}
+		</VirtualWindow>
 	</div>
 {/if}
