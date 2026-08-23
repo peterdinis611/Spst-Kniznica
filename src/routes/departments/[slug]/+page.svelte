@@ -32,7 +32,11 @@
 <h2 class="mt-2 font-serif text-[clamp(1.85rem,8vw,3.1rem)] leading-[1.05] font-bold break-words">{data.category.name}</h2>
 <p class="text-muted-foreground mt-3 max-w-xl font-serif">{data.category.description}</p>
 
-<div class="mt-8">
+<p class="text-muted-foreground mt-6 max-w-xl font-serif text-[0.95rem] dark:text-[#d2c6b4]">
+	Otoč zväzok šípami alebo ťahaním. Vybraný sa vysunie.
+</p>
+
+<div class="mt-4">
 	<CoverRail books={data.books.slice(0, 8)} />
 </div>
 

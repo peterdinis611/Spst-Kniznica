@@ -53,7 +53,7 @@ const steps: DriveStep[] = [
 		element: '[data-tour="shelf"]',
 		popover: {
 			title: 'Voľné na polici',
-			description: 'Chrbtice, ktoré si môžeš požičať hneď. Celý katalóg je o krok ďalej.',
+			description: 'Otoč zväzky na polici a vyber knihu, ktorú si môžeš požičať hneď.',
 			side: 'top',
 			align: 'start'
 		}

@@ -4,6 +4,7 @@ import { building } from '$app/environment';
 import { auth } from '$lib/server/auth';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { ensureSeeded } from '$lib/server/db/seed';
+import { warmCatalog } from '$lib/server/library';
 
 const aliases = [
 	['/vsetky-knihy', '/holdings'],
@@ -29,8 +30,9 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	if (!building) {
 		try {
 			ensureSeeded();
+			warmCatalog();
 		} catch {
-			// Tables may not exist until drizzle push; pages will surface the error.
+			// Tables may not exist until `bun run db:migrate`.
 		}
 	}
 

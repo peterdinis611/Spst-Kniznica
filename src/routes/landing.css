@@ -72,7 +72,7 @@
 	--page: #16120e;
 	--card: #221c16;
 	--ink: #f3eadf;
-	--muted: #b7ab98;
+	--muted: #e6d9c8;
 	--ok: #2a2620;
 	--ok-ink: #f3eadf;
 	--out: #2a2620;
@@ -637,6 +637,18 @@
 
 .hall-foot-copy {
 	margin: 0;
+}
+
+.folio-shelf-hint {
+	max-width: 36ch;
+	margin: 0 0 1.35rem;
+	color: var(--muted);
+	font-size: 1.02rem;
+	line-height: 1.5;
+}
+
+.dark .folio-shelf-hint {
+	color: #eee4d6;
 }
 
 .hall-logo:focus-visible,

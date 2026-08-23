@@ -11,6 +11,6 @@
 	});
 </script>
 
-<Story name="Police" args={{ books: catalogBooks }} />
+<Story name="Pracovné zväzky" args={{ books: catalogBooks }} />
 
 <Story name="Krátka" args={{ books: catalogBooks.slice(0, 2) }} />

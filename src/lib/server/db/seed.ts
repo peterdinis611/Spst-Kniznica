@@ -3,6 +3,7 @@ import { env } from '$env/dynamic/private';
 import { db, sqlite } from './index';
 import { author, book, bookAuthor, category, holding } from './schema';
 import { ensureCatalogFts, rebuildCatalogFts } from './catalog-fts';
+import { invalidateCatalogCache } from '../catalog-cache';
 import { authorVolume, bookVolume, seedTarget } from './volume';
 
 const categories = [
@@ -705,5 +706,6 @@ export function ensureSeeded() {
 	ensureCatalogFts();
 	ensureLoanGuards();
 	if (catalogChanged) rebuildCatalogFts();
+	invalidateCatalogCache();
 	seeded = true;
 }

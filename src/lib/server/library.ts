@@ -1,7 +1,14 @@
-import { and, asc, count, desc, eq, inArray, isNull, like, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, isNull } from 'drizzle-orm';
 import { db } from './db';
 import { author, book, bookAuthor, category, holding, loan } from './db/schema';
 import { ftsBookIds } from './db/catalog-fts';
+import {
+	getCatalogCache,
+	invalidateCatalogCache,
+	patchCachedCopies,
+	setCatalogCache,
+	type CatalogSnapshot
+} from './catalog-cache';
 import { authorLine } from '$lib/format';
 import type { CatalogSearchItem } from '$lib/search';
 import type {
@@ -70,6 +77,41 @@ function assembleBooks(rows: BookRow[]): CatalogBook[] {
 	}
 
 	return [...map.values()];
+}
+
+function catalog(): CatalogSnapshot {
+	const hit = getCatalogCache();
+	if (hit) return hit;
+
+	const books = assembleBooks(bookQuery().all());
+	const authors = loadAuthors();
+	const next: CatalogSnapshot = {
+		books,
+		byId: new Map(books.map((item) => [item.id, item])),
+		categories: loadCategories(),
+		authors,
+		stats: {
+			books: books.length,
+			authors: authors.length,
+			available: books.reduce((sum, item) => sum + item.copiesAvailable, 0)
+		}
+	};
+	setCatalogCache(next);
+	return next;
+}
+
+export function warmCatalog() {
+	catalog();
+}
+
+function matchesQuery(item: CatalogBook, query: string) {
+	const needle = query.toLowerCase();
+	return (
+		item.title.toLowerCase().includes(needle) ||
+		item.callNumber.toLowerCase().includes(needle) ||
+		item.isbn.toLowerCase().includes(needle) ||
+		item.authors.some((person) => person.name.toLowerCase().includes(needle))
+	);
 }
 
 export function toSlip(item: CatalogBook): BookSlip {
@@ -151,7 +193,11 @@ export function searchCatalog(query: string, limit = 8): CatalogSearchItem[] {
 
 function listBooksByIds(ids: string[]): CatalogBook[] {
 	if (ids.length === 0) return [];
-	return assembleBooks(bookQuery().where(inArray(book.id, ids)).all());
+	const { byId } = catalog();
+	return ids.flatMap((id) => {
+		const item = byId.get(id);
+		return item ? [item] : [];
+	});
 }
 
 function bookQuery() {
@@ -168,68 +214,8 @@ function bookQuery() {
 		.leftJoin(author, eq(author.id, bookAuthor.authorId));
 }
 
-export function listBooks(query?: string): CatalogBook[] {
-	const q = query?.trim();
-	const rows = q
-		? bookQuery()
-				.where(
-					or(
-						like(book.title, `%${q}%`),
-						like(book.callNumber, `%${q}%`),
-						like(book.isbn, `%${q}%`),
-						like(author.name, `%${q}%`)
-					)
-				)
-				.all()
-		: bookQuery().all();
-
-	return assembleBooks(rows);
-}
-
-export function getBook(id: string): CatalogBook | undefined {
-	const rows = bookQuery().where(eq(book.id, id)).all();
-	return assembleBooks(rows)[0];
-}
-
-export function getFeaturedBook(): CatalogBook | undefined {
-	const featured = assembleBooks(bookQuery().where(eq(book.featured, true)).all()).find(
-		(item) => item.id !== 'book-modlitbicky'
-	);
-	if (featured) return featured;
-	return assembleBooks(bookQuery().limit(12).all()).find((item) => item.id !== 'book-modlitbicky');
-}
-
-export function listBooksByCategory(slug: string): CatalogBook[] {
-	const rows = bookQuery().where(eq(category.slug, slug)).all();
-	return assembleBooks(rows);
-}
-
-export function listBookSlipsByCategory(slug: string): BookSlip[] {
-	return listBooksByCategory(slug).map(toSlip);
-}
-
-export function listBooksByAuthor(slug: string): CatalogBook[] {
-	const rows = bookQuery().where(eq(author.slug, slug)).all();
-	return assembleBooks(rows);
-}
-
-export function listBookSlipsByAuthor(slug: string): BookSlip[] {
-	return listBooksByAuthor(slug).map(toSlip);
-}
-
-export function relatedBooks(bookId: string, categoryId: string, limit = 4): CatalogBook[] {
-	const rows = bookQuery().where(eq(book.categoryId, categoryId)).all();
-	return assembleBooks(rows)
-		.filter((item) => item.id !== bookId)
-		.slice(0, limit);
-}
-
-export function relatedBookSlips(bookId: string, categoryId: string, limit = 4): BookSlip[] {
-	return relatedBooks(bookId, categoryId, limit).map(toSlip);
-}
-
-export function listCategories(): CategoryRecord[] {
-	const rows = db
+function loadCategories(): CategoryRecord[] {
+	return db
 		.select({
 			id: category.id,
 			name: category.name,
@@ -252,16 +238,10 @@ export function listCategories(): CategoryRecord[] {
 		)
 		.orderBy(asc(category.sortOrder), asc(category.name))
 		.all();
-
-	return rows;
 }
 
-export function getCategory(slug: string): CategoryRecord | undefined {
-	return listCategories().find((item) => item.slug === slug);
-}
-
-export function listAuthors(): AuthorRecord[] {
-	const rows = db
+function loadAuthors(): AuthorRecord[] {
+	return db
 		.select({
 			id: author.id,
 			name: author.name,
@@ -275,8 +255,62 @@ export function listAuthors(): AuthorRecord[] {
 		.leftJoin(bookAuthor, eq(bookAuthor.authorId, author.id))
 		.groupBy(author.id, author.name, author.slug, author.bio, author.lifespan, author.role)
 		.all();
+}
 
-	return rows;
+export function listBooks(query?: string): CatalogBook[] {
+	const q = query?.trim();
+	const books = catalog().books;
+	if (!q) return books;
+	return books.filter((item) => matchesQuery(item, q));
+}
+
+export function getBook(id: string): CatalogBook | undefined {
+	return catalog().byId.get(id);
+}
+
+export function getFeaturedBook(): CatalogBook | undefined {
+	const books = catalog().books;
+	const featured = books.find((item) => item.featured && item.id !== 'book-modlitbicky');
+	if (featured) return featured;
+	return books.find((item) => item.id !== 'book-modlitbicky');
+}
+
+export function listBooksByCategory(slug: string): CatalogBook[] {
+	return catalog().books.filter((item) => item.category.slug === slug);
+}
+
+export function listBookSlipsByCategory(slug: string): BookSlip[] {
+	return listBooksByCategory(slug).map(toSlip);
+}
+
+export function listBooksByAuthor(slug: string): CatalogBook[] {
+	return catalog().books.filter((item) => item.authors.some((person) => person.slug === slug));
+}
+
+export function listBookSlipsByAuthor(slug: string): BookSlip[] {
+	return listBooksByAuthor(slug).map(toSlip);
+}
+
+export function relatedBooks(bookId: string, categoryId: string, limit = 4): CatalogBook[] {
+	return catalog()
+		.books.filter((item) => item.category.id === categoryId && item.id !== bookId)
+		.slice(0, limit);
+}
+
+export function relatedBookSlips(bookId: string, categoryId: string, limit = 4): BookSlip[] {
+	return relatedBooks(bookId, categoryId, limit).map(toSlip);
+}
+
+export function listCategories(): CategoryRecord[] {
+	return catalog().categories;
+}
+
+export function getCategory(slug: string): CategoryRecord | undefined {
+	return listCategories().find((item) => item.slug === slug);
+}
+
+export function listAuthors(): AuthorRecord[] {
+	return catalog().authors;
 }
 
 export function getAuthor(slug: string): AuthorRecord | undefined {
@@ -284,17 +318,11 @@ export function getAuthor(slug: string): AuthorRecord | undefined {
 }
 
 export function catalogStats() {
-	const books = db.select({ c: count() }).from(book).get()?.c ?? 0;
-	const authors = db.select({ c: count() }).from(author).get()?.c ?? 0;
-	const available =
-		db
-			.select({ c: sql<number>`coalesce(sum(${book.copiesAvailable}), 0)` })
-			.from(book)
-			.get()?.c ?? 0;
+	const { stats } = catalog();
 	const openLoans =
 		db.select({ c: count() }).from(loan).where(isNull(loan.returnedAt)).get()?.c ?? 0;
 
-	return { books, authors, available: Number(available), openLoans };
+	return { ...stats, openLoans };
 }
 
 export function getActiveLoan(userId: string, bookId: string) {
@@ -365,7 +393,7 @@ export type BorrowResult =
 	| { ok: false; message: string };
 
 export function borrowBook(userId: string, bookId: string): BorrowResult {
-	return db.transaction((tx) => {
+	const result = db.transaction((tx) => {
 		const current = tx.select().from(book).where(eq(book.id, bookId)).get();
 		if (!current) return { ok: false, message: 'Kniha v katalógu nie je.' };
 		const copy = tx
@@ -414,14 +442,25 @@ export function borrowBook(userId: string, bookId: string): BorrowResult {
 			.where(eq(book.id, bookId))
 			.run();
 
-		return { ok: true, dueAt };
+		return { ok: true as const, dueAt };
 	});
+
+	if (result.ok) {
+		const cached = getCatalogCache()?.byId.get(bookId);
+		const next = Math.max(0, (cached?.copiesAvailable ?? 1) - 1);
+		if (!cached || !patchCachedCopies(bookId, next)) invalidateCatalogCache();
+	}
+
+	return result;
 }
 
 export type ReturnResult = { ok: true } | { ok: false; message: string };
 
 export function returnBook(userId: string, loanId: string): ReturnResult {
-	return db.transaction((tx) => {
+	let bookId: string | null = null;
+	let copiesAvailable: number | null = null;
+
+	const result = db.transaction((tx) => {
 		const current = tx
 			.select()
 			.from(loan)
@@ -449,11 +488,20 @@ export function returnBook(userId: string, loanId: string): ReturnResult {
 			}
 		}
 
+		const copies = Math.min(held.copiesTotal, held.copiesAvailable + 1);
 		tx.update(book)
-			.set({ copiesAvailable: Math.min(held.copiesTotal, held.copiesAvailable + 1) })
+			.set({ copiesAvailable: copies })
 			.where(eq(book.id, current.bookId))
 			.run();
 
-		return { ok: true };
+		bookId = current.bookId;
+		copiesAvailable = copies;
+		return { ok: true as const };
 	});
+
+	if (result.ok && bookId && copiesAvailable !== null) {
+		if (!patchCachedCopies(bookId, copiesAvailable)) invalidateCatalogCache();
+	}
+
+	return result;
 }

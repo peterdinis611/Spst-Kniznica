@@ -8,7 +8,7 @@ export const load: PageServerLoad = async () => {
 
 	return {
 		featured,
-		books: catalog.slice(0, 16),
+		books: catalog.filter((item) => item.copiesAvailable > 0).slice(0, 16),
 		authors: authors.slice(0, 12).map((author) => ({
 			id: author.id,
 			name: author.name,

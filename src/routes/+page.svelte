@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { booksLabel, initials } from '$lib/format';
 	import { authorSwatch } from '$lib/cover';
+	import CoverRail from '$lib/components/CoverRail.svelte';
 	import FolioShelf from '$lib/components/FolioShelf.svelte';
 	import HallChrome from '$lib/components/HallChrome.svelte';
 	import Seo from '$lib/components/Seo.svelte';
@@ -65,23 +66,15 @@
 	<section class="folio-block">
 		<div class="folio-head">
 			<div>
-				<p class="folio-kicker">Vo fonde teraz</p>
-				<h2>Knihy, ktoré môžeš otvoriť hneď.</h2>
+				<p class="folio-kicker">Pracovné zväzky</p>
+				<h2>Otoč policu a vyber knihu, ktorú otvoríš hneď.</h2>
 			</div>
 			<a class="folio-cta folio-cta-sm no-underline" href={resolve('/books')}>Celý katalóg</a>
 		</div>
-		<div class="folio-picks">
-			{#each picks as book (book.id)}
-				<a class="folio-pick no-underline" href={resolve('/books/[id]', { id: book.id })}>
-					<em>{book.category}</em>
-					<strong>{book.title}</strong>
-					<span>{book.authors}</span>
-					<b class:is-out={book.copiesAvailable === 0}>
-						{book.copiesAvailable > 0 ? 'Voľná vo fonde' : 'Práve vypožičaná'}
-					</b>
-				</a>
-			{/each}
-		</div>
+		<p class="folio-shelf-hint">
+			Otoč zväzok šípami alebo ťahaním.
+		</p>
+		<CoverRail books={picks} />
 	</section>
 
 	<section class="folio-block">
