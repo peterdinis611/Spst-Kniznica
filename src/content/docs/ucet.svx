@@ -12,7 +12,7 @@ Hosť vidí katalóg, register, odbory a autorov. V kruhu vpravo hore je písmen
 
 ## Registrácia
 
-Na [prihlásení](/login) vyplníš meno, e-mail a heslo (najmenej 8 znakov). Účet je interný — slúži len na výpožičky v tejto knižnici.
+Na [prihlásení](/login) vyplníš meno, e-mail a heslo (najmenej 8 znakov). Účet overuje **Supabase**. Ak je zapnuté potvrdenie e-mailu, najprv otvor odkaz v správe, až potom sa prihlás.
 
 Meno sa ukáže v paneli a v pečiatke výpožičky. E-mail je kľúč k účtu, nie verejný zoznam.
 
@@ -21,6 +21,10 @@ Meno sa ukáže v paneli a v pečiatke výpožičky. E-mail je kľúč k účtu,
 Po registrácii ťa fond vráti tam, odkiaľ si prišiel, alebo na [Moje knihy](/loans). V bočnom paneli uvidíš svoje meno a tlačidlo **Odhlásiť**.
 
 Ak prídeš z karty knihy, po prihlásení sa na ňu vráť a výpožičku potvrď.
+
+## Zabudnuté heslo
+
+Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mail. Nové heslo nastavíš na stránke, kam ťa odkaz privedie.
 
 ## Odhlásenie
 

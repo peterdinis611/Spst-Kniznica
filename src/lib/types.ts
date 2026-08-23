@@ -1,8 +1,10 @@
-export type Reader = {
+export type SignedReader = {
 	id: string;
 	name: string;
 	email: string;
-} | null;
+};
+
+export type Reader = SignedReader | null;
 
 export type CategoryRecord = {
 	id: string;

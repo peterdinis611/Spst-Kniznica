@@ -120,6 +120,7 @@
 
 .hall-logo {
 	display: grid;
+	grid-column: 1;
 	place-items: center;
 	width: 2.4rem;
 	height: 2.4rem;
@@ -129,6 +130,7 @@
 
 .hall-desk-links {
 	display: none;
+	grid-column: 2;
 	justify-content: center;
 	gap: 1.7rem;
 }
@@ -147,7 +149,9 @@
 
 .hall-tools {
 	display: flex;
+	grid-column: 3;
 	align-items: center;
+	justify-self: end;
 	gap: 0.45rem;
 }
 

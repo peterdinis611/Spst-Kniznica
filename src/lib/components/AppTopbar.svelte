@@ -9,10 +9,8 @@
 		DropdownMenu,
 		DropdownMenuContent,
 		DropdownMenuItem,
-		DropdownMenuLabel,
 		DropdownMenuRadioGroup,
 		DropdownMenuRadioItem,
-		DropdownMenuSeparator,
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu/index.js';
 	import {
@@ -30,6 +28,7 @@
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import ThemeToggle from './ThemeToggle.svelte';
+	import { readerNumber } from '$lib/format';
 
 	let {
 		user,
@@ -42,7 +41,9 @@
 	const title = $derived(deskTitle(page.url.pathname));
 	const query = $derived(page.url.searchParams.get('q') ?? '');
 	const odbor = $derived(page.url.searchParams.get('odbor') ?? '');
-	const hideSearch = $derived(page.url.pathname.startsWith('/login'));
+	const hideSearch = $derived(
+		page.url.pathname.startsWith('/login') || page.url.pathname.startsWith('/auth')
+	);
 	const authorSearch = $derived(page.url.pathname.startsWith('/authors'));
 	let chosen = $state('all');
 	const odborLabel = $derived(
@@ -111,7 +112,7 @@
 					{#snippet child({ props })}
 						<button
 							type="button"
-							class="grid size-9 cursor-pointer place-items-center rounded-full bg-primary font-sans text-[0.68rem] font-bold text-primary-foreground sm:size-10 sm:text-[0.72rem]"
+							class="account-mark grid size-9 cursor-pointer place-items-center rounded-full bg-primary font-sans text-[0.68rem] font-bold text-primary-foreground sm:size-10 sm:text-[0.72rem]"
 							aria-label={displayName}
 							{...props}
 						>
@@ -119,9 +120,15 @@
 						</button>
 					{/snippet}
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end">
-					<DropdownMenuLabel>{displayName}</DropdownMenuLabel>
-					<DropdownMenuSeparator />
+				<DropdownMenuContent align="end" sideOffset={12} class="account-pass">
+					<div class="account-pass-head">
+						<span class="account-pass-initials">{initials}</span>
+						<div>
+							<strong>{displayName}</strong>
+							<em>{user ? `preukaz ${readerNumber(user.id)}` : 'hosť v sieni'}</em>
+						</div>
+						<span class="account-pass-stamp" aria-hidden="true">SPŠT</span>
+					</div>
 					{#if user}
 						<DropdownMenuItem>
 							{#snippet child({ props })}
@@ -131,7 +138,7 @@
 								</a>
 							{/snippet}
 						</DropdownMenuItem>
-						<DropdownMenuItem onSelect={submitLogout}>
+						<DropdownMenuItem variant="destructive" onSelect={submitLogout}>
 							<LogOutIcon />
 							Odhlásiť
 						</DropdownMenuItem>

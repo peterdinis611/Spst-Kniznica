@@ -40,6 +40,10 @@ Skús **autora**, **odbor** alebo kúsok **signatúry**. Na Objavovať sú voľn
 
 Adresu na polici. INF je informatika, 004.4 číslo, BEL rez autora. Viac v kapitole [Register](/docs/register).
 
+## Zabudol som heslo
+
+Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mail. Heslo na pulte nehlásime.
+
 ## Ide to na telefóne?
 
 Áno. Menu je za ikonou, hľadanie ostáva v hlavičke, lístky sa zmestia do jedného riadku.

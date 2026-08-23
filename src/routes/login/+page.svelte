@@ -1,16 +1,49 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Alert from '$lib/components/ui/alert/index.js';
 	import type { ActionData, PageProps } from './$types';
 	import Seo from '$lib/components/Seo.svelte';
+	import AuthPass from '$lib/components/AuthPass.svelte';
+	import PassSecret from '$lib/components/PassSecret.svelte';
+	import {
+		hasFieldErrors,
+		validateSignIn,
+		validateSignUp,
+		type FieldErrors
+	} from '$lib/auth-fields';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const register = $derived(form?.mode === 'novy' || data.mode === 'novy');
+	const noteOk = $derived(Boolean(form && 'ok' in form && form.ok));
+
+	let name = $state('');
+	let email = $state('');
+	let password = $state('');
+	let confirm = $state('');
+	let submitted = $state(false);
+
+	$effect(() => {
+		const values = form && 'values' in form ? form.values : undefined;
+		if (values?.email) email = values.email;
+		if (values?.name) name = values.name;
+	});
+
+	const errors = $derived.by((): FieldErrors => {
+		if (submitted) {
+			return register
+				? validateSignUp({ name, email, password, confirm })
+				: validateSignIn({ email, password });
+		}
+		return form && 'errors' in form ? (form.errors ?? {}) : {};
+	});
+
+	function check(event: SubmitEvent) {
+		submitted = true;
+		const next = register
+			? validateSignUp({ name, email, password, confirm })
+			: validateSignIn({ email, password });
+		if (hasFieldErrors(next)) event.preventDefault();
+	}
 </script>
 
 <Seo
@@ -19,60 +52,96 @@
 	index={false}
 />
 
-<section class="mx-auto grid min-w-0 max-w-4xl gap-6 md:grid-cols-2 md:gap-8">
-	<div>
-		<p class="text-muted-foreground text-sm font-medium tracking-wide uppercase">Čitateľský účet</p>
-		<p class="mt-3 max-w-sm font-serif text-lg">
-			Meno, e-mail, heslo (8+). Potom môžeš brať knihy — 21 dní, max päť.
-		</p>
-	</div>
+<AuthPass
+	kicker="Čitateľský účet"
+	title={register ? 'Nový preukaz.' : 'Polož preukaz.'}
+	lede={register
+		? 'Meno, e-mail, heslo (8+, písmeno a číslica). Ak fond potvrdzuje e-mail, najprv otvor odkaz v správe.'
+		: 'E-mail a heslo. Potom môžeš brať knihy — dvadsaťjeden dní, najviac päť.'}
+	serial={register ? 'NOVÝ · PREUKAZ · SPŠT' : 'PREUKAZ · PAV. B · 21 D'}
+>
+	{#snippet tabs()}
+		<a href={resolve('/login')} class:is-on={!register}>Mám účet</a>
+		<a href="{resolve('/login')}?mod=novy" class:is-on={register}>Som nový</a>
+	{/snippet}
 
-	<Card.Root>
-		<Card.Header>
-			<div class="flex gap-2">
-				<Button href={resolve('/login')} variant={register ? 'outline' : 'secondary'} size="sm">
-					Mám účet
-				</Button>
-				<Button
-					href="{resolve('/login')}?mod=novy"
-					variant={register ? 'secondary' : 'outline'}
-					size="sm"
-				>
-					Som nový
-				</Button>
+	<form
+		method="POST"
+		action={register ? '?/signUp' : '?/signIn'}
+		use:enhance
+		class="pass-form"
+		novalidate
+		onsubmit={check}
+	>
+		{#if register}
+			<div class="pass-field" class:is-bad={Boolean(errors.name)}>
+				<label for="name">Meno</label>
+				<input
+					id="name"
+					name="name"
+					autocomplete="name"
+					bind:value={name}
+					required
+					minlength={2}
+					maxlength={80}
+					aria-invalid={errors.name ? 'true' : undefined}
+					aria-describedby={errors.name ? 'name-chyba' : undefined}
+				/>
+				{#if errors.name}
+					<p class="pass-error" id="name-chyba">{errors.name}</p>
+				{/if}
 			</div>
-		</Card.Header>
-		<Card.Content>
-			<form method="POST" action={register ? '?/signUp' : '?/signIn'} use:enhance class="space-y-4">
-				{#if register}
-					<div class="space-y-2">
-						<Label for="name">Meno</Label>
-						<Input id="name" class="h-10" name="name" autocomplete="name" required />
-					</div>
-				{/if}
-				<div class="space-y-2">
-					<Label for="email">E-mail</Label>
-					<Input id="email" class="h-10" type="email" name="email" autocomplete="email" required />
-				</div>
-				<div class="space-y-2">
-					<Label for="password">Heslo</Label>
-					<Input
-						id="password"
-						class="h-10"
-						type="password"
-						name="password"
-						autocomplete={register ? 'new-password' : 'current-password'}
-						required
-						minlength={8}
-					/>
-				</div>
-				{#if form?.message}
-					<Alert.Root variant="destructive">
-						<Alert.Description>{form.message}</Alert.Description>
-					</Alert.Root>
-				{/if}
-				<Button class="w-full" type="submit">{register ? 'Vytvoriť účet' : 'Prihlásiť sa'}</Button>
-			</form>
-		</Card.Content>
-	</Card.Root>
-</section>
+		{/if}
+		<div class="pass-field" class:is-bad={Boolean(errors.email)}>
+			<label for="email">E-mail</label>
+			<input
+				id="email"
+				type="email"
+				name="email"
+				autocomplete="email"
+				bind:value={email}
+				required
+				maxlength={254}
+				aria-invalid={errors.email ? 'true' : undefined}
+				aria-describedby={errors.email ? 'email-chyba' : undefined}
+			/>
+			{#if errors.email}
+				<p class="pass-error" id="email-chyba">{errors.email}</p>
+			{/if}
+		</div>
+		<PassSecret
+			id="password"
+			label="Heslo"
+			autocomplete={register ? 'new-password' : 'current-password'}
+			bind:value={password}
+			error={errors.password}
+			meter={register}
+		/>
+		{#if register}
+			<PassSecret
+				id="confirm"
+				name="confirm"
+				label="Heslo znova"
+				autocomplete="new-password"
+				bind:value={confirm}
+				error={errors.confirm}
+			/>
+		{/if}
+		{#if !register}
+			<p class="pass-help">
+				<a href={resolve('/login/obnova')}>Zabudnuté heslo?</a>
+			</p>
+		{/if}
+		{#if !data.configured}
+			<p class="pass-note">
+				Pult ešte nemá kľúč od skrine. Doplň <code>PUBLIC_SUPABASE_URL</code> a kľúč do
+				<code>.env</code>.
+			</p>
+		{:else if form?.message}
+			<p class="pass-note" class:is-ok={noteOk}>{form.message}</p>
+		{/if}
+		<button class="pass-go" type="submit" disabled={!data.configured}>
+			{register ? 'Vytvoriť preukaz' : 'Prihlásiť sa'}
+		</button>
+	</form>
+</AuthPass>

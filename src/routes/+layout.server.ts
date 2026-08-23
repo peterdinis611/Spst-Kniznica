@@ -9,7 +9,8 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	if (
 		url.pathname === '/' ||
 		url.pathname.startsWith('/docs') ||
-		url.pathname.startsWith('/login')
+		url.pathname.startsWith('/login') ||
+		url.pathname.startsWith('/auth')
 	) {
 		return { user, categories: [] };
 	}
