@@ -6,7 +6,7 @@ order: 1
 
 Školský fond učebníc, noriem a literatúry. Sídli v **pavilóne B, 1. poschodie**. Otvorené je **pondelok až piatok, 7:30—15:30**.
 
-Výpožička je bez poplatku: **21 dní**, naraz **najviac 5 kníh**.
+Výpožička je bez poplatku: **21 dní**, naraz **koľko treba** — strop na počet kníh nie je.
 
 Táto príručka je interný zošit pultu. V hlavnom menu ju nehľadaj — otvoríš ju z pätičky, alebo priamou adresou.
 
@@ -26,16 +26,16 @@ Táto príručka je interný zošit pultu. V hlavnom menu ju nehľadaj — otvor
 | [Katalóg](/books) | Filter odboru a list celého fondu |
 | [Odbory](/departments) | Dlaždice zameraní INF, STR, ELE… |
 | [Autori](/authors) | Register A—Z podľa priezviska |
-| [Moje knihy](/loans) | Aktívne výpožičky a vrátenie (po prihlásení) |
+| [Moje knihy](/loans) | Výpožičný lístok — čo máš vonku a čo si vrátil (po prihlásení) |
 
 ## Kapitoly
 
 - [Katalóg](/docs/katalog) — hľadanie, objavovanie a karty kníh
 - [Register](/docs/register) — všetky knihy, signatúra a voľné výtlačky
 - [Odbory](/docs/odbory) — police podľa študijných zameraní
-- [Výpožičky](/docs/vypozicky) — lehota, limit, pečiatky a vrátenie
+- [Výpožičky](/docs/vypozicky) — lehota, pečiatky a vrátenie
 - [Účet](/docs/ucet) — registrácia, prihlásenie a odhlásenie
-- [Pult](/docs/pult) — menu, téma, prehliadka a offline lístok
+- [Pult](/docs/pult) — menu, téma, prehliadka pultu aj príručky
 - [Časté otázky](/docs/otazky) — krátke odpovede z pultu
 
-Prehliadku pultu spustíš v katalógu tlačidlom **Prehliadka**. Sama sa nespustí.
+Prehliadku **pultu** spustíš v bočnom paneli tlačidlom **Prehliadka**. Prehliadku **príručky** spustíš v hlavičke tohto zošita. Ani jedna sa nespustí sama.

@@ -9,10 +9,10 @@
 	});
 </script>
 
-<Story name="Limit" asChild>
+<Story name="Výtlačok" asChild>
 	<Alert.Root class="w-[28rem]">
-		<Alert.Title>Limit výpožičiek</Alert.Title>
-		<Alert.Description>Máš 5 kníh. Ďalšiu vezmeš až po vrátení.</Alert.Description>
+		<Alert.Title>Žiadny voľný výtlačok</Alert.Title>
+		<Alert.Description>Kniha nie je stratená, len vonku. Skús neskôr.</Alert.Description>
 	</Alert.Root>
 </Story>
 

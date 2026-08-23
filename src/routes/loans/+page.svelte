@@ -3,14 +3,16 @@
 	import { enhance } from '$app/forms';
 	import BookCover from '$lib/components/BookCover.svelte';
 	import StampBurst from '$lib/components/StampBurst.svelte';
-	import { authorLine, dueStatus, readerNumber, shortDate } from '$lib/format';
+	import { authorLine, dueStatus, firstName, loanedLabel, readerNumber, shortDate } from '$lib/format';
 	import type { ActionData, PageProps } from './$types';
 	import Seo from '$lib/components/Seo.svelte';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	let pane = $state<'aktivne' | 'historia'>('aktivne');
 	const serial = $derived(readerNumber(data.reader.id));
-	const slots = $derived(Array.from({ length: data.maxLoans }, (_, i) => i < data.activeCount));
+	const shownSlots = $derived(Math.min(data.activeCount, 8));
+	const slots = $derived(Array.from({ length: shownSlots }, () => true));
+	const given = $derived(firstName(data.reader.name));
 </script>
 
 <Seo
@@ -23,119 +25,138 @@
 	<StampBurst label={form.stamp} sub={form.sub} />
 {/if}
 
-<article class="folio">
-	<header class="folio-id">
-		<span class="folio-spine" aria-hidden="true"></span>
-		<div class="folio-holes" aria-hidden="true">
-			<span></span><span></span><span></span>
-		</div>
-		<p class="folio-kicker">výpožičný lístok</p>
-		<div class="folio-who">
-			<h2>{data.reader.name}</h2>
-			<p>preukaz {serial} · pavilón B</p>
-		</div>
-		<ol class="folio-slots" aria-label="{data.activeCount} z {data.maxLoans} miest">
-			{#each slots as taken, i (i)}
-				<li class:taken data-n={i + 1}></li>
-			{/each}
-		</ol>
-		<p class="folio-quota">{data.activeCount} / {data.maxLoans}</p>
-		<span class="folio-stamp" aria-hidden="true">SPŠT</span>
-	</header>
-
-	{#if form && 'message' in form && form.message}
-		<p class="folio-note" role="alert">{form.message}</p>
-	{/if}
-
-	<div class="folio-tabs" role="tablist" aria-label="Výpožičky">
-		<button
-			type="button"
-			role="tab"
-			id="tab-aktivne"
-			aria-selected={pane === 'aktivne'}
-			aria-controls="panel-aktivne"
-			onclick={() => (pane = 'aktivne')}
-		>
-			Požičané <em>{data.loans.length}</em>
-		</button>
-		<button
-			type="button"
-			role="tab"
-			id="tab-historia"
-			aria-selected={pane === 'historia'}
-			aria-controls="panel-historia"
-			onclick={() => (pane = 'historia')}
-		>
-			Vrátené <em>{data.history.length}</em>
-		</button>
+<section class="folio">
+	<div class="folio-copy">
+		<p class="folio-kicker">pavilón B · 21 dní</p>
+		<p class="folio-display">Koľko treba.</p>
+		<p class="folio-lede">
+			{given}, kniha ostane u teba tri týždne. Ber si toľko zväzkov, koľko potrebuješ — strop na preukaze nie je.
+		</p>
+		<ul class="folio-facts">
+			<li>21 dní</li>
+			<li>bez stropu</li>
+			<li>pav. B</li>
+		</ul>
 	</div>
 
-	{#if pane === 'aktivne'}
-		<div
-			class="folio-pane"
-			id="panel-aktivne"
-			role="tabpanel"
-			aria-labelledby="tab-aktivne"
-		>
-			{#if data.loans.length === 0}
-				<div class="folio-empty">
-					<div>
-						<h3>Zatiaľ nič nepožičiavaš</h3>
-						<p>Vyber knihu z katalógu a vypožičaj si ju na 21 dní. Na preukaze máš päť miest.</p>
-					</div>
-					<a class="folio-go" href={resolve('/books')}>Otvoriť katalóg</a>
-					<p class="folio-empty-mark" aria-hidden="true">prázdne</p>
-				</div>
-			{:else}
-				<ul class="folio-slips">
-					{#each data.loans as item (item.id)}
-						{@const due = dueStatus(item.dueAt)}
-						<li class="slip" data-tone={due.tone}>
-							<BookCover book={item.book} size="thumb" />
-							<div class="slip-copy">
-								<p class="slip-due">{due.label}</p>
-								<a href={resolve('/books/[id]', { id: item.book.id })}>{item.book.title}</a>
-								<p class="slip-meta">{authorLine(item.book.authors)}</p>
-								<p class="slip-when">Od {shortDate(item.borrowedAt)}</p>
-							</div>
-							<form method="POST" action="?/return" use:enhance>
-								<input type="hidden" name="loanId" value={item.id} />
-								<button type="submit">Vrátiť</button>
-							</form>
-						</li>
-					{/each}
-				</ul>
-			{/if}
+	<article class="folio-card">
+		<span class="folio-spine" aria-hidden="true"></span>
+		<div class="folio-holes" aria-hidden="true">
+			<span></span><span></span><span></span><span></span>
 		</div>
-	{:else}
-		<div
-			class="folio-pane"
-			id="panel-historia"
-			role="tabpanel"
-			aria-labelledby="tab-historia"
-		>
-			{#if data.history.length === 0}
-				<div class="folio-empty is-quiet">
-					<div>
-						<h3>Ešte žiadna vrátená kniha</h3>
-						<p>Keď knihu vrátiš, ostane tu ako záznam v denníku pultu.</p>
-					</div>
-					<p class="folio-empty-mark" aria-hidden="true">archív</p>
-				</div>
-			{:else}
-				<ol class="folio-ledger">
-					{#each data.history as item (item.id)}
-						<li>
-							<a href={resolve('/books/[id]', { id: item.book.id })}>{item.book.title}</a>
-							<span></span>
-							<time>{item.returnedAt ? shortDate(item.returnedAt) : ''}</time>
-						</li>
-					{/each}
+
+		<header class="folio-id">
+			<p class="folio-mark">výpožičný lístok</p>
+			<span class="folio-stamp" aria-hidden="true">SPŠT</span>
+			<div class="folio-who">
+				<h2>{data.reader.name}</h2>
+				<p>preukaz {serial} · pavilón B</p>
+			</div>
+			<div class="folio-shelf">
+				<ol class="folio-slots" aria-label={loanedLabel(data.activeCount)}>
+					{#if data.activeCount === 0}
+						<li data-n="+"></li>
+					{:else}
+						{#each slots as _, i (i)}
+							<li class="taken" data-n={i + 1}></li>
+						{/each}
+					{/if}
 				</ol>
-			{/if}
+				<p class="folio-quota">{loanedLabel(data.activeCount)}</p>
+			</div>
+		</header>
+
+		{#if form && 'message' in form && form.message}
+			<p class="folio-note" role="alert">{form.message}</p>
+		{/if}
+
+		<div class="folio-tabs" role="tablist" aria-label="Výpožičky">
+			<button
+				type="button"
+				role="tab"
+				id="tab-aktivne"
+				aria-selected={pane === 'aktivne'}
+				aria-controls="panel-aktivne"
+				onclick={() => (pane = 'aktivne')}
+			>
+				Požičané <em>{data.loans.length}</em>
+			</button>
+			<button
+				type="button"
+				role="tab"
+				id="tab-historia"
+				aria-selected={pane === 'historia'}
+				aria-controls="panel-historia"
+				onclick={() => (pane = 'historia')}
+			>
+				Vrátené <em>{data.history.length}</em>
+			</button>
 		</div>
-	{/if}
-</article>
+
+		<div class="folio-perf" aria-hidden="true"></div>
+
+		{#if pane === 'aktivne'}
+			<div class="folio-pane" id="panel-aktivne" role="tabpanel" aria-labelledby="tab-aktivne">
+				{#if data.loans.length === 0}
+					<div class="folio-empty">
+						<div class="folio-ghosts" aria-hidden="true">
+							<span style="--n: 0"></span>
+							<span style="--n: 1"></span>
+							<span style="--n: 2"></span>
+						</div>
+						<div class="folio-empty-copy">
+							<h3>Zatiaľ nič nepožičiavaš</h3>
+							<p>Vyber knihu z katalógu a vypožičaj si ju na 21 dní. Ďalšiu môžeš vziať hneď, kým je voľný výtlačok.</p>
+						</div>
+						<a class="folio-go" href={resolve('/books')}>Otvoriť katalóg</a>
+					</div>
+				{:else}
+					<ul class="folio-slips">
+						{#each data.loans as item (item.id)}
+							{@const due = dueStatus(item.dueAt)}
+							<li class="slip" data-tone={due.tone}>
+								<BookCover book={item.book} size="thumb" />
+								<div class="slip-copy">
+									<p class="slip-due">{due.label}</p>
+									<a href={resolve('/books/[id]', { id: item.book.id })}>{item.book.title}</a>
+									<p class="slip-meta">{authorLine(item.book.authors)}</p>
+									<p class="slip-when">Od {shortDate(item.borrowedAt)}</p>
+								</div>
+								<form method="POST" action="?/return" use:enhance>
+									<input type="hidden" name="loanId" value={item.id} />
+									<button type="submit">Vrátiť</button>
+								</form>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</div>
+		{:else}
+			<div class="folio-pane" id="panel-historia" role="tabpanel" aria-labelledby="tab-historia">
+				{#if data.history.length === 0}
+					<div class="folio-empty is-quiet">
+						<div class="folio-empty-copy">
+							<h3>Ešte žiadna vrátená kniha</h3>
+							<p>Keď knihu vrátiš, ostane tu ako záznam v denníku pultu.</p>
+						</div>
+					</div>
+				{:else}
+					<ol class="folio-ledger">
+						{#each data.history as item (item.id)}
+							<li>
+								<a href={resolve('/books/[id]', { id: item.book.id })}>{item.book.title}</a>
+								<span></span>
+								<time>{item.returnedAt ? shortDate(item.returnedAt) : ''}</time>
+							</li>
+						{/each}
+					</ol>
+				{/if}
+			</div>
+		{/if}
+
+		<p class="folio-serial">lístok {serial} · pav. B</p>
+	</article>
+</section>
 
 <style>
 	.folio {
@@ -144,10 +165,14 @@
 		--rule: #d7c4ae;
 		--stamp: #c45a38;
 		--ticket: #fff8ee;
+		--shadow: 0 1.6rem 2.8rem -1.4rem color-mix(in srgb, #2c1d16 42%, transparent);
 		position: relative;
-		max-width: 46rem;
-		margin: 0 auto 2.5rem;
-		animation: folio-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+		isolation: isolate;
+		display: grid;
+		min-width: 0;
+		max-width: 64rem;
+		margin: 0 auto 1.5rem;
+		gap: 1.75rem;
 	}
 
 	:global(html.dark) .folio {
@@ -155,53 +180,113 @@
 		--muted: #6d5848;
 		--rule: #cbb79f;
 		--ticket: #f4eadc;
+		--shadow: 0 2.2rem 3.4rem -1.2rem rgb(0 0 0 / 0.55);
 	}
 
-	.folio-id {
+	.folio-copy {
 		position: relative;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto auto;
-		grid-template-areas:
-			'kicker kicker stamp'
-			'who slots quota';
-		align-items: end;
-		gap: 0.35rem 1rem;
+		z-index: 1;
+		max-width: 28rem;
+		padding-top: 0.2rem;
+		animation: folio-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+	}
+
+	.folio-kicker {
+		margin: 0;
+		color: var(--muted-foreground);
+		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+	}
+
+	.folio-display {
+		margin: 0.85rem 0 0;
+		max-width: 9ch;
+		color: var(--foreground);
+		font-family: var(--font-display, Fraunces, serif);
+		font-size: clamp(2.6rem, 8vw, 4.5rem);
+		font-weight: 700;
+		line-height: 0.9;
+		letter-spacing: -0.045em;
+		text-wrap: balance;
+		font-variation-settings: 'SOFT' 28, 'WONK' 1;
+	}
+
+	.folio-lede {
+		margin: 1.15rem 0 0;
+		max-width: 22rem;
+		color: var(--muted-foreground);
+		font-family: var(--font-body, Newsreader, serif);
+		font-size: 1.12rem;
+		line-height: 1.45;
+	}
+
+	.folio-facts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin: 1.35rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.folio-facts li {
+		border: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent);
+		border-radius: 999px;
+		padding: 0.28rem 0.7rem;
+		color: var(--foreground);
+		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.folio-card {
+		position: relative;
+		z-index: 2;
 		overflow: hidden;
-		min-height: 7.2rem;
-		padding: 1.2rem 1.25rem 1.15rem 2.05rem;
+		min-width: 0;
+		padding: 1.3rem 1.3rem 1rem 2.15rem;
 		border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
 		border-radius: 1.15rem;
 		background:
-			radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--stamp) 11%, transparent), transparent 48%),
+			radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--stamp) 11%, transparent), transparent 46%),
 			var(--ticket);
 		color: var(--ink);
-		box-shadow: 0 1.4rem 2.4rem -1.4rem color-mix(in srgb, var(--ink) 38%, transparent);
+		box-shadow: var(--shadow);
+		transform: rotate(-1.35deg);
+		transform-origin: 72% 86%;
+		transition: transform 0.4s ease;
+		animation: folio-card-in 0.9s 0.08s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 	}
 
-	.folio-id::before {
+	.folio-card::before {
 		content: '';
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
-		opacity: 0.2;
+		opacity: 0.22;
 		mix-blend-mode: multiply;
 		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
 	}
 
 	.folio-spine {
 		position: absolute;
-		top: 0.85rem;
-		bottom: 0.85rem;
+		top: 0.9rem;
+		bottom: 0.9rem;
 		left: 0;
-		width: 0.38rem;
+		width: 0.42rem;
 		background: linear-gradient(180deg, #c45a38, #3c2a21 62%, #c45a38);
 	}
 
 	.folio-holes {
 		position: absolute;
-		top: 1.15rem;
-		bottom: 1.15rem;
-		left: 0.68rem;
+		top: 1.25rem;
+		bottom: 1.25rem;
+		left: 0.72rem;
 		z-index: 2;
 		display: flex;
 		flex-direction: column;
@@ -210,36 +295,75 @@
 
 	.folio-holes span {
 		display: block;
-		width: 0.68rem;
-		height: 0.68rem;
+		width: 0.72rem;
+		height: 0.72rem;
 		border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
 		border-radius: 999px;
 		background: var(--paper);
 		box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.18);
 	}
 
-	.folio-kicker {
-		grid-area: kicker;
+	.folio-id,
+	.folio-tabs,
+	.folio-note,
+	.folio-pane,
+	.folio-serial,
+	.folio-perf {
+		position: relative;
 		z-index: 1;
+	}
+
+	.folio-id {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 0.35rem 1rem;
+		margin: 0 0 1.1rem;
+		align-items: start;
+	}
+
+	.folio-mark {
+		grid-column: 1;
 		margin: 0;
 		color: var(--muted);
 		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
-		letter-spacing: 0.18em;
+		letter-spacing: 0.16em;
 		text-transform: uppercase;
 	}
 
+	.folio-stamp {
+		grid-column: 2;
+		grid-row: 1 / 3;
+		justify-self: end;
+		align-self: start;
+		margin: 0.1rem 0 0;
+		padding: 0.38rem 0.48rem 0.28rem;
+		border: 2px solid color-mix(in srgb, var(--stamp) 78%, var(--ink));
+		border-radius: 999px;
+		color: var(--stamp);
+		font-family: var(--font-display, Fraunces, serif);
+		font-size: 0.72rem;
+		font-style: italic;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		line-height: 1;
+		text-transform: uppercase;
+		transform: rotate(8deg);
+		opacity: 0.88;
+		mix-blend-mode: multiply;
+		pointer-events: none;
+	}
+
 	.folio-who {
-		grid-area: who;
-		z-index: 1;
+		grid-column: 1;
 		min-width: 0;
 	}
 
 	.folio-who h2 {
-		margin: 0;
+		margin: 0.15rem 0 0;
 		font-family: var(--font-display, Fraunces, serif);
-		font-size: clamp(1.55rem, 4.2vw, 2.15rem);
+		font-size: clamp(1.55rem, 4vw, 2.05rem);
 		font-weight: 650;
 		line-height: 1.05;
 		letter-spacing: -0.035em;
@@ -250,85 +374,95 @@
 		margin: 0.28rem 0 0;
 		color: var(--muted);
 		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-		font-size: 0.68rem;
+		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
 
-	.folio-slots {
-		grid-area: slots;
-		z-index: 1;
+	.folio-shelf {
+		grid-column: 1 / -1;
 		display: flex;
-		gap: 0.32rem;
-		margin: 0 0 0.15rem;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 0.8rem;
+		margin-top: 0.85rem;
+		padding-top: 0.85rem;
+		border-top: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+	}
+
+	.folio-slots {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 0.28rem;
+		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
 	.folio-slots li {
-		width: 0.72rem;
-		height: 0.92rem;
-		border: 1.5px solid color-mix(in srgb, var(--ink) 28%, transparent);
-		border-radius: 2px 2px 1px 1px;
-		background: color-mix(in srgb, var(--ink) 6%, transparent);
-		transform: skewX(-8deg);
+		position: relative;
+		width: 1.05rem;
+		height: 2.35rem;
+		border: 1.5px solid color-mix(in srgb, var(--ink) 22%, transparent);
+		border-radius: 1px 4px 3px 1px;
+		background:
+			linear-gradient(90deg, color-mix(in srgb, var(--ink) 10%, transparent), transparent 40%),
+			color-mix(in srgb, var(--ink) 5%, transparent);
+		transform: skewX(-7deg);
+		box-shadow: inset -1px 0 0 color-mix(in srgb, var(--ink) 8%, transparent);
+	}
+
+	.folio-slots li::after {
+		content: attr(data-n);
+		position: absolute;
+		inset: auto 0 0.18rem;
+		color: var(--muted);
+		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-size: 0.48rem;
+		font-weight: 700;
+		letter-spacing: 0;
+		text-align: center;
+		transform: skewX(7deg);
 	}
 
 	.folio-slots li.taken {
-		border-color: color-mix(in srgb, var(--stamp) 70%, var(--ink));
-		background: linear-gradient(180deg, #c45a38, #8a3a26);
-		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
+		border-color: color-mix(in srgb, var(--stamp) 55%, var(--ink));
+		background: linear-gradient(180deg, #d46a48 0%, #c45a38 42%, #8a3a26 100%);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.22),
+			2px 4px 8px -4px color-mix(in srgb, var(--ink) 35%, transparent);
+	}
+
+	.folio-slots li.taken::after {
+		color: #fff8ee;
 	}
 
 	.folio-quota {
-		grid-area: quota;
-		z-index: 1;
-		margin: 0 0 0.05rem;
+		margin: 0 0 0.15rem;
 		color: var(--muted);
 		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-		font-size: 0.68rem;
+		font-size: 0.78rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
 	}
 
-	.folio-stamp {
-		grid-area: stamp;
-		z-index: 1;
-		justify-self: end;
-		align-self: start;
-		margin: 0;
-		padding: 0.34rem 0.42rem 0.24rem;
-		border: 2px solid color-mix(in srgb, var(--stamp) 78%, var(--ink));
-		border-radius: 999px;
-		color: var(--stamp);
-		font-family: var(--font-display, Fraunces, serif);
-		font-size: 0.7rem;
-		font-style: italic;
-		font-weight: 700;
-		letter-spacing: 0.14em;
-		line-height: 1;
-		text-transform: uppercase;
-		transform: rotate(9deg);
-		mix-blend-mode: multiply;
-		pointer-events: none;
-	}
-
 	.folio-note {
-		margin: 0.9rem 0 0;
-		padding: 0.7rem 0.9rem;
+		margin: 0 0 0.95rem;
+		padding: 0.7rem 0.8rem;
 		border-left: 3px solid var(--stamp);
 		background: color-mix(in srgb, var(--stamp) 10%, var(--ticket));
 		color: #9a3b28;
 		font-family: var(--font-body, Newsreader, serif);
-		font-size: 1rem;
+		font-size: 0.95rem;
 	}
 
 	.folio-tabs {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 0.35rem;
-		margin: 1.15rem 0 1.25rem;
+		margin: 0 0 0.15rem;
 		padding: 0.28rem;
 		border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
 		border-radius: 999px;
@@ -339,12 +473,12 @@
 		appearance: none;
 		border: 0;
 		border-radius: 999px;
-		padding: 0.62rem 0.4rem;
+		padding: 0.55rem 0.4rem;
 		background: transparent;
 		color: var(--muted);
 		cursor: pointer;
 		font-family: var(--font-body, Newsreader, serif);
-		font-size: 1.02rem;
+		font-size: 1rem;
 		transition: background 0.2s ease, color 0.2s ease;
 	}
 
@@ -358,14 +492,39 @@
 	}
 
 	.folio-tabs button[aria-selected='true'] {
-		background: var(--ticket);
-		color: var(--ink);
-		box-shadow: 0 6px 14px -10px color-mix(in srgb, var(--ink) 45%, transparent);
+		background: var(--ink);
+		color: var(--ticket);
 	}
 
 	.folio-tabs button:focus-visible {
 		outline: 2px solid var(--stamp);
 		outline-offset: 2px;
+	}
+
+	.folio-perf {
+		height: 0;
+		margin: 0.95rem -1.3rem 1.1rem -2.15rem;
+		border-top: 1px dashed var(--rule);
+	}
+
+	.folio-perf::before,
+	.folio-perf::after {
+		content: '';
+		position: absolute;
+		top: -0.42rem;
+		width: 0.84rem;
+		height: 0.84rem;
+		border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+		border-radius: 999px;
+		background: var(--paper);
+	}
+
+	.folio-perf::before {
+		left: -0.42rem;
+	}
+
+	.folio-perf::after {
+		right: -0.42rem;
 	}
 
 	.folio-pane {
@@ -375,107 +534,97 @@
 	.folio-empty {
 		position: relative;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		align-items: center;
-		gap: 1rem 1.5rem;
-		overflow: hidden;
-		min-height: 9.5rem;
-		padding: 1.6rem 1.5rem 1.5rem;
-		border: 1px dashed color-mix(in srgb, var(--ink) 22%, transparent);
-		border-radius: 1.05rem;
-		background:
-			repeating-linear-gradient(
-				-12deg,
-				transparent,
-				transparent 11px,
-				color-mix(in srgb, var(--ink) 4%, transparent) 11px,
-				color-mix(in srgb, var(--ink) 4%, transparent) 12px
-			),
-			var(--ticket);
+		gap: 1.1rem;
+		min-height: 11.5rem;
+		padding: 0.15rem 0 0.2rem;
 	}
 
 	.folio-empty.is-quiet {
-		grid-template-columns: minmax(0, 1fr);
-		min-height: 7.5rem;
+		min-height: 6.5rem;
 	}
 
-	.folio-empty-mark {
+	.folio-ghosts {
 		position: absolute;
-		right: auto;
-		left: 1.15rem;
-		bottom: -0.2rem;
-		z-index: 0;
-		margin: 0;
-		color: color-mix(in srgb, var(--stamp) 42%, transparent);
-		font-family: var(--font-display, Fraunces, serif);
-		font-size: clamp(2.2rem, 7vw, 3.6rem);
-		font-style: italic;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		line-height: 1;
-		text-transform: uppercase;
-		transform: rotate(-12deg);
+		right: -0.4rem;
+		bottom: 0.15rem;
+		display: flex;
+		align-items: flex-end;
+		gap: 0.35rem;
 		pointer-events: none;
-		mix-blend-mode: multiply;
 	}
 
-	.folio-empty.is-quiet .folio-empty-mark {
-		left: auto;
-		right: 0.8rem;
-		bottom: 0.2rem;
+	.folio-ghosts span {
+		display: block;
+		width: 2.35rem;
+		height: 3.5rem;
+		border: 1.5px dashed color-mix(in srgb, var(--ink) 22%, transparent);
+		border-radius: 2px 6px 4px 2px;
+		background: color-mix(in srgb, var(--ink) 4%, transparent);
+		transform: rotate(calc((var(--n) - 2) * 6deg)) translateY(calc(var(--n) * 0.12rem));
+		box-shadow: 0 8px 14px -10px color-mix(in srgb, var(--ink) 40%, transparent);
 	}
 
-	.folio-empty h3,
-	.folio-empty p {
+	.folio-empty-copy {
 		position: relative;
 		z-index: 1;
+		max-width: 18rem;
 	}
 
 	.folio-empty h3 {
 		margin: 0;
-		max-width: 16ch;
+		max-width: 14ch;
 		font-family: var(--font-display, Fraunces, serif);
-		font-size: clamp(1.45rem, 3.5vw, 1.9rem);
+		font-size: clamp(1.45rem, 3.4vw, 1.85rem);
 		font-weight: 650;
-		line-height: 1.1;
+		line-height: 1.08;
 		letter-spacing: -0.03em;
 	}
 
-	.folio-empty p:not(.folio-empty-mark) {
+	.folio-empty p {
 		margin: 0.45rem 0 0;
 		max-width: 28ch;
 		color: var(--muted);
 		font-family: var(--font-body, Newsreader, serif);
-		font-size: 1.05rem;
+		font-size: 1.02rem;
 		line-height: 1.4;
 	}
 
 	.folio-go {
 		position: relative;
 		z-index: 1;
-		justify-self: end;
-		align-self: end;
+		justify-self: start;
+		display: grid;
+		place-items: center;
+		width: 5.6rem;
+		height: 5.6rem;
+		border: 2px solid color-mix(in srgb, var(--stamp) 80%, var(--ink));
 		border-radius: 999px;
-		padding: 0.72rem 1.15rem;
-		background: var(--ink);
-		color: var(--ticket);
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		background: color-mix(in srgb, var(--stamp) 8%, var(--ticket));
+		color: var(--stamp);
+		font-family: var(--font-display, Fraunces, serif);
 		font-size: 0.78rem;
-		font-weight: 650;
-		letter-spacing: 0.04em;
+		font-style: italic;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		line-height: 1.15;
+		text-align: center;
 		text-decoration: none;
-		white-space: nowrap;
-		transition: transform 0.2s ease, background 0.2s ease;
+		text-wrap: balance;
+		transform: rotate(-8deg);
+		mix-blend-mode: multiply;
+		transition: transform 0.25s ease, background 0.25s ease;
 	}
 
 	.folio-go:hover {
-		background: color-mix(in srgb, var(--stamp) 70%, var(--ink));
-		transform: rotate(-2deg);
+		background: var(--stamp);
+		color: var(--ticket);
+		transform: rotate(-3deg) scale(1.04);
+		mix-blend-mode: normal;
 	}
 
 	.folio-slips {
 		display: grid;
-		gap: 0.85rem;
+		gap: 0.75rem;
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -485,16 +634,18 @@
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr) auto;
 		align-items: center;
-		gap: 0.95rem 1.05rem;
-		padding: 0.85rem 1rem 0.85rem 0.85rem;
-		border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
-		border-radius: 0.95rem;
-		background: var(--ticket);
-		box-shadow: 0 10px 22px -16px color-mix(in srgb, var(--ink) 40%, transparent);
+		gap: 0.85rem 0.95rem;
+		padding: 0.55rem 0.15rem 0.65rem;
+		border-bottom: 1px dotted var(--rule);
+	}
+
+	.slip:last-child {
+		border-bottom: 0;
 	}
 
 	.slip :global(.jacket) {
 		box-shadow: 0 8px 14px rgb(40 32 18 / 0.16);
+		transform: rotate(-3deg);
 	}
 
 	.slip-copy {
@@ -535,7 +686,7 @@
 		display: block;
 		color: inherit;
 		font-family: var(--font-display, Fraunces, serif);
-		font-size: 1.12rem;
+		font-size: 1.08rem;
 		font-weight: 650;
 		line-height: 1.2;
 		letter-spacing: -0.025em;
@@ -552,12 +703,12 @@
 		margin: 0.2rem 0 0;
 		color: var(--muted);
 		font-family: var(--font-body, Newsreader, serif);
-		font-size: 0.95rem;
+		font-size: 0.92rem;
 	}
 
 	.slip-when {
 		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-		font-size: 0.68rem;
+		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
@@ -565,28 +716,30 @@
 
 	.slip form button {
 		appearance: none;
-		border: 0;
+		border: 1.5px solid color-mix(in srgb, var(--stamp) 70%, var(--ink));
 		border-radius: 999px;
-		padding: 0.55rem 0.95rem;
-		background: color-mix(in srgb, var(--stamp) 16%, var(--ticket));
+		padding: 0.48rem 0.85rem;
+		background: transparent;
 		color: #9a3b28;
 		cursor: pointer;
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
-		font-size: 0.74rem;
-		font-weight: 650;
+		font-family: var(--font-display, Fraunces, serif);
+		font-size: 0.78rem;
+		font-style: italic;
+		font-weight: 700;
 		letter-spacing: 0.04em;
-		transition: background 0.2s ease, transform 0.2s ease;
+		transform: rotate(4deg);
+		transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 	}
 
 	.slip form button:hover {
 		background: #9a3b28;
 		color: var(--ticket);
-		transform: rotate(2deg);
+		transform: rotate(0deg);
 	}
 
 	.folio-ledger {
 		margin: 0;
-		padding: 0.2rem 0;
+		padding: 0.1rem 0;
 		list-style: none;
 	}
 
@@ -595,14 +748,14 @@
 		grid-template-columns: auto minmax(1.5rem, 1fr) auto;
 		align-items: baseline;
 		gap: 0.65rem;
-		padding: 0.85rem 0.1rem;
+		padding: 0.75rem 0.1rem;
 		border-bottom: 1px dotted var(--rule);
 	}
 
 	.folio-ledger a {
 		color: inherit;
 		font-family: var(--font-display, Fraunces, serif);
-		font-size: 1.08rem;
+		font-size: 1.05rem;
 		font-weight: 600;
 		text-decoration: none;
 	}
@@ -619,21 +772,75 @@
 	.folio-ledger time {
 		color: var(--muted);
 		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-		font-size: 0.68rem;
+		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		white-space: nowrap;
 	}
 
-	@keyframes folio-in {
+	.folio-serial {
+		margin: 1.15rem 0 0;
+		color: var(--muted);
+		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-size: 0.62rem;
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+	}
+
+	@media (min-width: 860px) {
+		.folio {
+			grid-template-columns: minmax(0, 1.05fr) minmax(22rem, 26.5rem);
+			align-items: start;
+			gap: 0;
+			padding: 0.35rem 0 2rem;
+		}
+
+		.folio-copy {
+			padding-top: 1.15rem;
+			padding-right: 4.5rem;
+		}
+
+		.folio-card {
+			margin-top: 2.4rem;
+			margin-left: -2.8rem;
+		}
+
+		.folio-card:hover {
+			transform: rotate(-0.35deg) translateY(-0.2rem);
+		}
+
+		.folio-empty {
+			grid-template-columns: minmax(0, 1fr) auto;
+			align-items: end;
+		}
+
+		.folio-go {
+			justify-self: end;
+			margin-bottom: 0.2rem;
+		}
+	}
+
+	@keyframes folio-rise {
 		from {
 			opacity: 0;
-			transform: translateY(0.7rem);
+			transform: translateY(0.9rem);
 		}
 		to {
 			opacity: 1;
 			transform: none;
+		}
+	}
+
+	@keyframes folio-card-in {
+		from {
+			opacity: 0;
+			transform: translateY(1.2rem) rotate(-1.35deg);
+		}
+		to {
+			opacity: 1;
+			transform: rotate(-1.35deg);
 		}
 	}
 
@@ -649,24 +856,14 @@
 	}
 
 	@media (max-width: 640px) {
-		.folio-id {
-			grid-template-columns: minmax(0, 1fr) auto;
-			grid-template-areas:
-				'kicker stamp'
-				'who who'
-				'slots quota';
+		.folio-card {
+			transform: none;
+			animation: folio-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 		}
 
-		.folio-empty {
-			grid-template-columns: 1fr;
-		}
-
-		.folio-go {
-			justify-self: start;
-		}
-
-		.folio-empty-mark {
-			opacity: 0.35;
+		.folio-ghosts span {
+			width: 1.7rem;
+			height: 2.55rem;
 		}
 
 		.slip {
@@ -679,6 +876,16 @@
 
 		.slip form button {
 			width: 100%;
+			transform: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.folio-copy,
+		.folio-card,
+		.folio-pane {
+			animation: none;
+			transform: none;
 		}
 	}
 </style>

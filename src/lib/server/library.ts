@@ -21,8 +21,12 @@ import type {
 	LoanRecord
 } from '$lib/types';
 
-export const MAX_ACTIVE_LOANS = 5;
+export const MAX_ACTIVE_LOANS: number | null = null;
 export const LOAN_DAYS = 21;
+
+export function isLoanLimitReached(activeCount: number) {
+	return MAX_ACTIVE_LOANS != null && activeCount >= MAX_ACTIVE_LOANS;
+}
 
 type BookRow = {
 	book: typeof book.$inferSelect;
@@ -412,14 +416,16 @@ export function borrowBook(userId: string, bookId: string): BorrowResult {
 			.get();
 		if (already) return { ok: false, message: 'Túto knihu už máte vypožičanú.' };
 
-		const active =
-			tx
-				.select({ c: count() })
-				.from(loan)
-				.where(and(eq(loan.userId, userId), isNull(loan.returnedAt)))
-				.get()?.c ?? 0;
-		if (active >= MAX_ACTIVE_LOANS) {
-			return { ok: false, message: `Limit ${MAX_ACTIVE_LOANS} výpožičiek je naplnený.` };
+		if (MAX_ACTIVE_LOANS != null) {
+			const active =
+				tx
+					.select({ c: count() })
+					.from(loan)
+					.where(and(eq(loan.userId, userId), isNull(loan.returnedAt)))
+					.get()?.c ?? 0;
+			if (isLoanLimitReached(active)) {
+				return { ok: false, message: `Limit ${MAX_ACTIVE_LOANS} výpožičiek je naplnený.` };
+			}
 		}
 
 		const now = new Date();

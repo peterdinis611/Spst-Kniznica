@@ -10,7 +10,7 @@ Nie. Fond si môžeš prehliadať ako hosť. Výpožička ide až po [prihlásen
 
 ## Koľko kníh naraz?
 
-Najviac **päť**. Ďalšiu vezmeš, až keď jednu vrátiš.
+Koľko treba — na preukaze **nie je strop**. Jednu knihu si naraz požičiaš len raz. Ďalší titul môžeš vziať hneď, kým je voľný výtlačok.
 
 ## Ako dlho?
 
@@ -30,7 +30,7 @@ Nie je. Schválne nie je medzi Objavovať a Katalógom. Otvoríš ju z **pätič
 
 ## Prečo sa prehliadka nespustila sama?
 
-Lebo má ísť len po kliknutí na **Prehliadka**. Podrobnosti sú v kapitole [Pult](/docs/pult).
+Lebo má ísť len po kliknutí. Na pulte je **Prehliadka** v bočnom paneli. V príručke je v hlavičke zošita. Podrobnosti sú v kapitole [Pult](/docs/pult).
 
 ## Ako nájdem knihu, keď neviem názov?
 

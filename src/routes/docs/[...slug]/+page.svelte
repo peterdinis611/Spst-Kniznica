@@ -17,7 +17,7 @@
 <Seo title={data.page.data.title} description={data.page.data.description ?? 'Príručka SPŠT knižnice.'} />
 
 <Handbook tree={data.pageTree}>
-	<article class="docs-leaf">
+	<article class="docs-leaf" data-tour="docs-leaf">
 		<p class="docs-kicker">Príručka fondu</p>
 		<header>
 			<h1>{data.page.data.title}</h1>

@@ -2,7 +2,7 @@ import { page } from 'vitest/browser';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import type { BookSlip, LoanRecord } from '$lib/types';
-import LoansPage from './+page.svelte';
+import LoansPage from '../+page.svelte';
 
 vi.mock('$app/state', () => ({
 	page: {
@@ -64,7 +64,7 @@ const empty = {
 	loans: [] as LoanRecord[],
 	history: [] as LoanRecord[],
 	activeCount: 0,
-	maxLoans: 5
+	maxLoans: null
 };
 
 describe('Moje knihy folio', () => {
@@ -73,8 +73,8 @@ describe('Moje knihy folio', () => {
 
 		await expect.element(page.getByRole('heading', { name: 'Peter Dinis' })).toBeVisible();
 		await expect.element(page.getByText(/preukaz 509A/i)).toBeVisible();
-		await expect.element(page.getByText('0 / 5')).toBeVisible();
-		await expect.element(page.getByRole('list', { name: '0 z 5 miest' })).toBeVisible();
+		await expect.element(page.getByText('0 kníh')).toBeVisible();
+		await expect.element(page.getByRole('list', { name: '0 kníh' })).toBeVisible();
 		await expect.element(page.getByRole('heading', { name: 'Zatiaľ nič nepožičiavaš' })).toBeVisible();
 		await expect
 			.element(page.getByRole('link', { name: 'Otvoriť katalóg' }))
@@ -92,14 +92,16 @@ describe('Moje knihy folio', () => {
 			form: null
 		});
 
-		const slots = document.querySelectorAll('.folio-slots li');
-		expect(slots).toHaveLength(5);
+		expect(document.querySelectorAll('.folio-slots li')).toHaveLength(2);
 		expect(document.querySelectorAll('.folio-slots li.taken')).toHaveLength(2);
+		await expect.element(page.getByText('2 knihy')).toBeVisible();
 
-		await expect.element(page.getByRole('link', { name: 'Technické kreslenie' })).toBeVisible();
+		await expect
+			.element(page.getByRole('link', { name: 'Technické kreslenie', exact: true }))
+			.toBeVisible();
 		await expect.element(page.getByText('Ján Test')).toBeVisible();
 		await expect.element(page.getByRole('button', { name: 'Vrátiť' })).toBeVisible();
-		expect(document.querySelector('input[name="loanId"]')).toHaveValue('loan-1');
+		expect(document.querySelector<HTMLInputElement>('input[name="loanId"]')?.value).toBe('loan-1');
 	});
 
 	it('switches to returned history', async () => {
@@ -126,21 +128,22 @@ describe('Moje knihy folio', () => {
 		await expect.element(page.getByRole('heading', { name: 'Ešte žiadna vrátená kniha' })).toBeVisible();
 	});
 
-	it('surfaces a return error and a success stamp', async () => {
-		const first = render(LoansPage, {
+	it('surfaces a return error', async () => {
+		render(LoansPage, {
 			data: empty,
 			form: { message: 'Výpožička sa nenašla.' }
 		});
 
 		await expect.element(page.getByRole('alert')).toHaveTextContent('Výpožička sa nenašla.');
-		first.unmount();
+	});
 
+	it('shows a success stamp after a return', async () => {
 		render(LoansPage, {
 			data: empty,
 			form: { stamp: 'Vrátené', sub: '23. 08. 2026' }
 		});
 
-		await expect.element(page.getByText('Vrátené')).toBeVisible();
+		expect(document.querySelector('.lock-seal')?.textContent).toMatch(/Vrátené/);
 		await expect.element(page.getByText('23. 08. 2026')).toBeVisible();
 	});
 });

@@ -2,10 +2,10 @@ import { isActionFailure, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LoanRecord } from '$lib/types';
 import { countActiveLoans, listLoans, returnBook } from '$lib/server/library';
-import { actions, load } from './+page.server';
+import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
-	MAX_ACTIVE_LOANS: 5,
+	MAX_ACTIVE_LOANS: null,
 	listLoans: vi.fn(),
 	countActiveLoans: vi.fn(),
 	returnBook: vi.fn()
@@ -76,7 +76,7 @@ describe('loans load', () => {
 
 		expect(listLoans).toHaveBeenCalledWith(reader.id);
 		expect(data.reader).toEqual(reader);
-		expect(data.maxLoans).toBe(5);
+		expect(data.maxLoans).toBeNull();
 		expect(data.activeCount).toBe(1);
 		expect(data.loans.map((item) => item.id)).toEqual(['open']);
 		expect(data.history.map((item) => item.book.title)).toEqual(['Vrátená']);

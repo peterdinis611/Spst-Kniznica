@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { authorLine, dueStatus, readerNumber, stampDate } from './format';
+import { authorLine, dueStatus, loanedLabel, readerNumber, stampDate } from '../format';
 
 describe('readerNumber', () => {
 	it('takes the last four alphanumerics and pads them', () => {
@@ -10,6 +10,15 @@ describe('readerNumber', () => {
 
 	it('strips uuid punctuation from a supabase id', () => {
 		expect(readerNumber('qxlr-dyoa-qnko-ezja-csjv')).toBe('CSJV');
+	});
+});
+
+describe('loanedLabel', () => {
+	it('declines Slovak book counts on the pass', () => {
+		expect(loanedLabel(0)).toBe('0 kníh');
+		expect(loanedLabel(1)).toBe('1 kniha');
+		expect(loanedLabel(3)).toBe('3 knihy');
+		expect(loanedLabel(5)).toBe('5 kníh');
 	});
 });
 

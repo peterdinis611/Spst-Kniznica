@@ -21,19 +21,25 @@ Vľavo (na telefóne za tlačidlom menu) je fond:
 
 Dole v paneli sú hodiny pultu, **Prehliadka** a prihlásenie.
 
-## Prehliadka
+## Prehliadka pultu
 
-Tlačidlo **Prehliadka** spustí sprevádzanie pultom: značka školy, menu, hľadanie, dnešný výber, odbory, voľná polica a účet.
+Tlačidlo **Prehliadka** je v **bočnom paneli**, nie v katalógu. Sama sa nespustí. Ani po prvom otvorení, ani z adresy. Len po kliknutí.
 
-Sama sa nespustí. Ani po prvom otvorení, ani z adresy. Len po kliknutí.
+Ide po značke školy, menu fondu, hľadaní, dnešnom výbere, odboroch, voľnej polici a **preukaze** vpravo (kruh s iniciálami — Moje knihy, číslo preukazu, odhlásenie).
 
-Ak krok na stránke nie je (si napríklad v katalógu, nie na Objavovať), prehliadka ho preskočí.
+Ak krok na stránke nie je (si napríklad v katalógu, nie na Objavovať), prehliadka ho preskočí. Najviac z nej uvidíš na [Objavovať](/discover).
+
+## Prehliadka príručky
+
+Keď čítaš tento zošit, v hlavičke je tiež **Prehliadka**. Ide po značke SPŠT, zozname kapitol, liste ktorý čítaš a tlačidle **Do fondu**.
+
+Je to iná prehliadka ako tá v paneli pultu. Pult ukáže fond, príručka ukáže zošit.
 
 ## Téma
 
 Vedľa účtu je prepínač svetla. Fond má **svetlý papier** a **tmavý pult**. Voľba ostane v prehliadači.
 
-Na vstupnej sieni je ten istý prepínač vpravo hore.
+Na vstupnej sieni a v príručke je ten istý prepínač vpravo hore.
 
 ## Hľadanie
 

@@ -2,7 +2,8 @@ import { page } from 'vitest/browser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import type { CategoryChip, SignedReader } from '$lib/types';
-import AppTopbar from './AppTopbar.svelte';
+import AppTopbar from '../AppTopbar.svelte';
+import '../../../routes/layout.css';
 
 vi.mock('$app/state', () => ({
 	page: {
@@ -52,9 +53,13 @@ describe('account pass menu', () => {
 		await expect.element(page.getByRole('menuitem', { name: 'Moje knihy' })).toBeVisible();
 		await expect.element(page.getByRole('menuitem', { name: 'Odhlásiť' })).toBeVisible();
 
+		const trigger = document.querySelector('.account-mark');
 		const menu = document.querySelector('.account-pass');
 		expect(menu).toBeTruthy();
-		expect(menu?.getBoundingClientRect().width ?? 0).toBeGreaterThan(240);
+		expect(menu?.classList.contains('account-pass')).toBe(true);
+		expect(menu?.getBoundingClientRect().width ?? 0).toBeGreaterThan(
+			(trigger?.getBoundingClientRect().width ?? 40) * 2
+		);
 	});
 
 	it('submits logout through the hidden desk form', async () => {

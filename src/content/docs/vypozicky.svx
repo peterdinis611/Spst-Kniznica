@@ -1,6 +1,6 @@
 ---
 title: Výpožičky
-description: Lehota 21 dní, limit 5 kníh a vrátenie v pavilóne B.
+description: Lehota 21 dní, bez stropu na počet kníh a vrátenie v pavilóne B.
 order: 5
 ---
 
@@ -9,13 +9,11 @@ Výpožička je bez poplatku. Platí pre prihlásených čitateľov.
 ## Pravidlá
 
 - **Lehota:** 21 dní od dňa výpožičky
-- **Limit:** naraz najviac 5 kníh
+- **Počet:** koľko treba — na preukaze nie je strop
 - **Miesto vrátenia:** pavilón B, 1. poschodie
 - **Hodiny:** pondelok až piatok, 7:30—15:30
 
-Ak máš už 5 aktívnych výpožičiek, ďalšiu knihu nevezmeš, kým jednu nevrátiš.
-
-Jednu knihu si naraz požičiaš len raz. Kým ju nevrátiš, druhý výtlačok toho istého zväzku si neberieš.
+Jednu knihu si naraz požičiaš len raz. Kým ju nevrátiš, druhý výtlačok toho istého zväzku si neberieš. Ďalšie tituly môžeš brať hneď, kým je voľný výtlačok.
 
 ## Ako si požičať
 
@@ -45,4 +43,4 @@ Pečiatka je potvrdenie pohybu, nie pokuta. Papierový výtlačok ostáva rozhod
 
 ## Moje knihy
 
-Na [Moje knihy](/loans) sú dve police: čo máš vonku a čo si už vrátil. Hostia túto stránku nevidia — najprv [účet](/docs/ucet).
+Na [Moje knihy](/loans) je výpožičný lístok: čo máš vonku a čo si už vrátil. Strop na počet kníh nie je. Hostia túto stránku nevidia — najprv [účet](/docs/ucet).

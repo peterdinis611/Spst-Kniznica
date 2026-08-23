@@ -51,6 +51,12 @@ export function booksLabel(count: number) {
 	return `${count} kníh vo fonde`;
 }
 
+export function loanedLabel(count: number) {
+	if (count === 1) return '1 kniha';
+	if (count >= 2 && count <= 4) return `${count} knihy`;
+	return `${count} kníh`;
+}
+
 export function volumesLabel(count: number) {
 	if (count === 1) return 'zväzok';
 	if (count < 5) return 'zväzky';

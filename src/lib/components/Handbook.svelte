@@ -19,11 +19,16 @@
 	function close() {
 		open = false;
 	}
+
+	async function openTour() {
+		const { startTour, markTourSeen } = await import('$lib/tour');
+		await startTour(markTourSeen);
+	}
 </script>
 
 <div class="handbook" id="obsah">
 	<header class="handbook-bind">
-		<a class="handbook-mark no-underline" href={resolve('/')}>
+		<a class="handbook-mark no-underline" href={resolve('/')} data-tour="docs-mark">
 			<span>SPŠT</span>
 			knižnica
 		</a>
@@ -31,7 +36,15 @@
 			Kapitoly
 		</button>
 		<div class="handbook-tools">
-			<a class="handbook-cta no-underline" href={resolve('/discover')}>Do fondu</a>
+			<button
+				type="button"
+				class="handbook-tour-btn"
+				onclick={openTour}
+				aria-label="Prehliadka príručky"
+			>
+				Prehliadka
+			</button>
+			<a class="handbook-cta no-underline" href={resolve('/discover')} data-tour="docs-fund">Do fondu</a>
 			<ThemeToggle />
 		</div>
 	</header>
@@ -41,7 +54,7 @@
 			<button type="button" class="handbook-scrim" aria-label="Zavrieť kapitoly" onclick={close}></button>
 		{/if}
 
-		<aside class="handbook-index" class:is-open={open}>
+		<aside class="handbook-index" class:is-open={open} data-tour="docs-chapters">
 			<p class="handbook-spine" aria-hidden="true"><span>Príručka</span></p>
 			<div class="handbook-index-body">
 				<p class="handbook-kicker">Kapitoly</p>

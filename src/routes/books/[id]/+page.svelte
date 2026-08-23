@@ -6,7 +6,7 @@
 	import StampBurst from '$lib/components/StampBurst.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { jacketFor } from '$lib/cover';
-	import { copiesLabel, shortDate } from '$lib/format';
+	import { copiesLabel, loanedLabel, shortDate } from '$lib/format';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
@@ -17,6 +17,7 @@
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const book = $derived(data.book);
 	const available = $derived(book.copiesAvailable > 0);
+	const atLimit = $derived(data.maxLoans != null && data.activeCount >= data.maxLoans);
 </script>
 
 <Seo
@@ -100,14 +101,14 @@
 				<p class="text-muted-foreground text-sm">
 					{#if !available}
 						Momentálne nie je voľný výtlačok.
-					{:else if data.activeCount >= data.maxLoans}
+					{:else if atLimit}
 						Limit {data.maxLoans} výpožičiek je plný.
 					{:else}
-						21 dní · {data.activeCount}/{data.maxLoans} obsadených
+						21 dní · {loanedLabel(data.activeCount)} u teba
 					{/if}
 				</p>
 				<form method="POST" action="?/borrow" use:enhance>
-					<Button type="submit" disabled={!available || data.activeCount >= data.maxLoans}>
+					<Button type="submit" disabled={!available || atLimit}>
 						Vypožičať
 					</Button>
 				</form>
