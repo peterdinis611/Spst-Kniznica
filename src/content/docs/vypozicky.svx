@@ -1,6 +1,6 @@
 ---
 title: Výpožičky
-description: Lehota 21 dní, bez stropu na počet kníh a vrátenie v pavilóne B.
+description: Lehota 7, 14 alebo 21 dní, bez stropu na počet kníh a vrátenie v pavilóne B.
 order: 5
 ---
 
@@ -8,7 +8,7 @@ Výpožička je bez poplatku. Platí pre prihlásených čitateľov.
 
 ## Pravidlá
 
-- **Lehota:** 21 dní od dňa výpožičky
+- **Lehota:** 7, 14, 21 dní, alebo iný počet na lístku (1–90)
 - **Počet:** koľko treba — na preukaze nie je strop
 - **Miesto vrátenia:** pavilón B, 1. poschodie
 - **Hodiny:** pondelok až piatok, 7:30—15:30
@@ -19,7 +19,7 @@ Jednu knihu si naraz požičiaš len raz. Kým ju nevrátiš, druhý výtlačok 
 
 1. Prihlás sa.
 2. Otvor kartu knihy v [katalógu](/books).
-3. Ak je výtlačok voľný, potvrď výpožičku. Na karte ostane pečiatka **Vypožičané**.
+3. Ak je výtlačok voľný, otvor lístok a vyplň **meno, priezvisko, triedu a dobu**. Na karte ostane pečiatka **Vypožičané**.
 4. Zväzok si vyzdvihni na pulte — v účte uvidíš termín vrátenia.
 
 Ak je nula voľných, tlačidlo výpožičku nespustí. Kniha nie je stratená, len vonku.
@@ -43,4 +43,4 @@ Pečiatka je potvrdenie pohybu, nie pokuta. Papierový výtlačok ostáva rozhod
 
 ## Moje knihy
 
-Na [Moje knihy](/loans) je výpožičný lístok: čo máš vonku a čo si už vrátil. Strop na počet kníh nie je. Hostia túto stránku nevidia — najprv [účet](/docs/ucet).
+Na [Moje knihy](/loans) je výpožičný lístok: čo máš vonku a čo si už vrátil. Vrátené môžeš z lístka stiahnuť tlačidlom **Vyčistiť vrátené** — vo fonde ostávajú vrátené, len ich na preukaze nevidíš. Strop na počet kníh nie je. Hostia túto stránku nevidia — najprv [účet](/docs/ucet).

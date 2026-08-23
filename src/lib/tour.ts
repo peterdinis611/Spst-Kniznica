@@ -8,7 +8,7 @@ export const deskSteps: DriveStep[] = [
 		popover: {
 			title: 'SPŠT knižnica',
 			description:
-				'Školský fond učebníc a literatúry. 21 dní, bez stropu na počet kníh. Pavilón B, Po—Pia 7:30—15:30.',
+				'Školský fond učebníc a literatúry. 7, 14 alebo 21 dní, bez stropu na počet kníh. Pavilón B, Po—Pia 7:30—15:30.',
 			side: 'right',
 			align: 'start'
 		}
@@ -18,7 +18,7 @@ export const deskSteps: DriveStep[] = [
 		popover: {
 			title: 'Fond',
 			description:
-				'Objavovať, odbory, katalóg a autori. Moje knihy sú výpožičný lístok — koľko treba, každá na 21 dní.',
+				'Objavovať, odbory, katalóg a autori. Moje knihy sú výpožičný lístok — koľko treba, lehota podľa lístka.',
 			side: 'right',
 			align: 'start'
 		}

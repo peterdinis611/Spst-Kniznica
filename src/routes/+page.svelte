@@ -14,7 +14,7 @@
 
 <Seo
 	title="SPŠT knižnica"
-	description="Školská knižnica SPŠT — katalóg učebníc, noriem a literatúry. Výpožička na 21 dní, bez stropu na počet kníh. Pavilón B, Po—Pia 7:30—15:30."
+	description="Školská knižnica SPŠT — katalóg učebníc, noriem a literatúry. Výpožička na 7, 14 alebo 21 dní, bez stropu na počet kníh. Pavilón B, Po—Pia 7:30—15:30."
 	jsonLd={{
 		'@context': 'https://schema.org',
 		'@type': 'Library',
@@ -53,7 +53,7 @@
 			<li>
 				<span>02</span>
 				<h3>Požičaj na účet</h3>
-				<p>Prihlás sa a vezmi toľko kníh, koľko potrebuješ. Lehota je 21 dní, bez poplatku.</p>
+				<p>Prihlás sa a vezmi toľko kníh, koľko potrebuješ. Lehotu 7, 14 alebo 21 dní vyberieš na lístku, bez poplatku.</p>
 			</li>
 			<li>
 				<span>03</span>
@@ -107,9 +107,9 @@
 			<p class="folio-kicker">Čitateľský účet</p>
 			<h2>
 				{#if data.user}
-					Máš účet. Kniha je tvoja na 21 dní.
+					Máš účet. Kniha je tvoja na lehotu z lístka.
 				{:else}
-					Prihlás sa a kniha je tvoja na 21 dní.
+					Prihlás sa a kniha je tvoja na 7, 14 alebo 21 dní.
 				{/if}
 			</h2>
 		</div>

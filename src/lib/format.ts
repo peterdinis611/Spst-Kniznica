@@ -57,6 +57,12 @@ export function loanedLabel(count: number) {
 	return `${count} kníh`;
 }
 
+export function daysLabel(days: number) {
+	if (days === 1) return '1 deň';
+	if (days >= 2 && days <= 4) return `${days} dni`;
+	return `${days} dní`;
+}
+
 export function volumesLabel(count: number) {
 	if (count === 1) return 'zväzok';
 	if (count < 5) return 'zväzky';

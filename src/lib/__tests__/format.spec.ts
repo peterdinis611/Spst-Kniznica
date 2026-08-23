@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { authorLine, dueStatus, loanedLabel, readerNumber, stampDate } from '../format';
+import { authorLine, daysLabel, dueStatus, loanedLabel, readerNumber, stampDate } from '../format';
 
 describe('readerNumber', () => {
 	it('takes the last four alphanumerics and pads them', () => {
@@ -19,6 +19,14 @@ describe('loanedLabel', () => {
 		expect(loanedLabel(1)).toBe('1 kniha');
 		expect(loanedLabel(3)).toBe('3 knihy');
 		expect(loanedLabel(5)).toBe('5 kníh');
+	});
+});
+
+describe('daysLabel', () => {
+	it('declines Slovak day counts', () => {
+		expect(daysLabel(1)).toBe('1 deň');
+		expect(daysLabel(3)).toBe('3 dni');
+		expect(daysLabel(21)).toBe('21 dní');
 	});
 });
 

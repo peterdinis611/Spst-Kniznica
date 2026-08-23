@@ -19,7 +19,7 @@
 		<p class="hall-kicker">Pavilón B · 1. poschodie</p>
 		<p class="hall-foot-brand">SPŠT knižnica</p>
 		<p class="hall-foot-lead">
-			Školský fond učebníc, noriem a literatúry. 21 dní, bez stropu na počet kníh. Po—Pia 7:30—15:30.
+			Školský fond učebníc, noriem a literatúry. 7–21 dní, bez stropu na počet kníh. Po—Pia 7:30—15:30.
 		</p>
 		<nav aria-label="Pätička">
 			{#each links as link (link.href)}

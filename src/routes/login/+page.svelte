@@ -48,7 +48,7 @@
 
 <Seo
 	title={register ? 'Registrácia' : 'Prihlásenie'}
-	description="Prihlás sa do školskej knižnice SPŠT a požičaj si knihy na 21 dní."
+	description="Prihlás sa do školskej knižnice SPŠT a požičaj si knihy na 7, 14 alebo 21 dní."
 	index={false}
 />
 
@@ -57,8 +57,8 @@
 	title={register ? 'Nový preukaz.' : 'Polož preukaz.'}
 	lede={register
 		? 'Meno, e-mail, heslo (8+, písmeno a číslica). Ak fond potvrdzuje e-mail, najprv otvor odkaz v správe.'
-		: 'E-mail a heslo. Potom môžeš brať knihy — dvadsaťjeden dní, koľko treba.'}
-	serial={register ? 'NOVÝ · PREUKAZ · SPŠT' : 'PREUKAZ · PAV. B · 21 D'}
+		: 'E-mail a heslo. Potom môžeš brať knihy — 7, 14 alebo 21 dní, koľko treba.'}
+	serial={register ? 'NOVÝ · PREUKAZ · SPŠT' : 'PREUKAZ · PAV. B · 7–21 D'}
 >
 	{#snippet tabs()}
 		<a href={resolve('/login')} class:is-on={!register}>Mám účet</a>

@@ -3,7 +3,7 @@
 	import { enhance } from '$app/forms';
 	import BookCover from '$lib/components/BookCover.svelte';
 	import StampBurst from '$lib/components/StampBurst.svelte';
-	import { authorLine, dueStatus, firstName, loanedLabel, readerNumber, shortDate } from '$lib/format';
+	import { authorLine, daysLabel, dueStatus, firstName, loanedLabel, readerNumber, shortDate } from '$lib/format';
 	import type { ActionData, PageProps } from './$types';
 	import Seo from '$lib/components/Seo.svelte';
 
@@ -27,13 +27,13 @@
 
 <section class="folio">
 	<div class="folio-copy">
-		<p class="folio-kicker">pavilón B · 21 dní</p>
+		<p class="folio-kicker">pavilón B · lehota na lístku</p>
 		<p class="folio-display">Koľko treba.</p>
 		<p class="folio-lede">
-			{given}, kniha ostane u teba tri týždne. Ber si toľko zväzkov, koľko potrebuješ — strop na preukaze nie je.
+			{given}, pri výpožičke vyplníš meno, triedu a dobu. Ber si toľko zväzkov, koľko potrebuješ — strop na preukaze nie je.
 		</p>
 		<ul class="folio-facts">
-			<li>21 dní</li>
+			<li>7–21 dní</li>
 			<li>bez stropu</li>
 			<li>pav. B</li>
 		</ul>
@@ -106,7 +106,7 @@
 						</div>
 						<div class="folio-empty-copy">
 							<h3>Zatiaľ nič nepožičiavaš</h3>
-							<p>Vyber knihu z katalógu a vypožičaj si ju na 21 dní. Ďalšiu môžeš vziať hneď, kým je voľný výtlačok.</p>
+							<p>Vyber knihu z katalógu a na lístku vyplň meno, triedu a dobu. Ďalšiu môžeš vziať hneď, kým je voľný výtlačok.</p>
 						</div>
 						<a class="folio-go" href={resolve('/books')}>Otvoriť katalóg</a>
 					</div>
@@ -120,7 +120,9 @@
 									<p class="slip-due">{due.label}</p>
 									<a href={resolve('/books/[id]', { id: item.book.id })}>{item.book.title}</a>
 									<p class="slip-meta">{authorLine(item.book.authors)}</p>
-									<p class="slip-when">Od {shortDate(item.borrowedAt)}</p>
+									<p class="slip-when">
+										{item.borrowerClass ? `${item.borrowerClass} · ` : ''}{daysLabel(item.loanDays)} · od {shortDate(item.borrowedAt)}
+									</p>
 								</div>
 								<form method="POST" action="?/return" use:enhance>
 									<input type="hidden" name="loanId" value={item.id} />
@@ -137,10 +139,14 @@
 					<div class="folio-empty is-quiet">
 						<div class="folio-empty-copy">
 							<h3>Ešte žiadna vrátená kniha</h3>
-							<p>Keď knihu vrátiš, ostane tu ako záznam v denníku pultu.</p>
+							<p>Keď knihu vrátiš, ostane tu ako záznam. Tlačidlom ju neskôr stiahneš z lístka.</p>
 						</div>
 					</div>
 				{:else}
+					<form class="folio-clear" method="POST" action="?/clearHistory" use:enhance>
+						<p>Vrátené ostávajú na lístku, kým ich stiahneš.</p>
+						<button type="submit">Vyčistiť vrátené</button>
+					</form>
 					<ol class="folio-ledger">
 						{#each data.history as item (item.id)}
 							<li>
@@ -308,7 +314,8 @@
 	.folio-note,
 	.folio-pane,
 	.folio-serial,
-	.folio-perf {
+	.folio-perf,
+	.folio-clear {
 		position: relative;
 		z-index: 1;
 	}
@@ -737,6 +744,49 @@
 		transform: rotate(0deg);
 	}
 
+	.folio-clear {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.7rem 1rem;
+		margin: 0 0 0.85rem;
+		padding: 0.15rem 0 0.85rem;
+		border-bottom: 1px dashed var(--rule);
+	}
+
+	.folio-clear p {
+		margin: 0;
+		max-width: 22ch;
+		color: var(--muted);
+		font-family: var(--font-body, Newsreader, serif);
+		font-size: 0.95rem;
+		line-height: 1.35;
+	}
+
+	.folio-clear button {
+		appearance: none;
+		border: 1.5px solid color-mix(in srgb, var(--ink) 22%, transparent);
+		border-radius: 999px;
+		padding: 0.48rem 0.9rem;
+		background: transparent;
+		color: var(--ink);
+		cursor: pointer;
+		font-family: var(--font-display, Fraunces, serif);
+		font-size: 0.78rem;
+		font-style: italic;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		transform: rotate(-3deg);
+		transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+	}
+
+	.folio-clear button:hover {
+		background: var(--ink);
+		color: var(--ticket);
+		transform: rotate(0deg);
+	}
+
 	.folio-ledger {
 		margin: 0;
 		padding: 0.1rem 0;
@@ -876,6 +926,10 @@
 
 		.slip form button {
 			width: 100%;
+			transform: none;
+		}
+
+		.folio-clear button {
 			transform: none;
 		}
 	}

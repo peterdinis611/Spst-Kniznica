@@ -116,7 +116,12 @@ export const loan = sqliteTable(
 		borrowedAt: integer('borrowed_at', { mode: 'timestamp_ms' }).notNull().default(nowMs),
 		dueAt: integer('due_at', { mode: 'timestamp_ms' }).notNull(),
 		returnedAt: integer('returned_at', { mode: 'timestamp_ms' }),
-		renewalCount: integer('renewal_count').notNull().default(0)
+		renewalCount: integer('renewal_count').notNull().default(0),
+		borrowerFirstName: text('borrower_first_name').notNull().default(''),
+		borrowerLastName: text('borrower_last_name').notNull().default(''),
+		borrowerClass: text('borrower_class').notNull().default(''),
+		loanDays: integer('loan_days').notNull().default(21),
+		clearedAt: integer('cleared_at', { mode: 'timestamp_ms' })
 	},
 	(table) => [
 		index('loan_userId_idx').on(table.userId),

@@ -1,12 +1,18 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { enhance } from '$app/forms';
 	import BookCover from '$lib/components/BookCover.svelte';
+	import BorrowSlip from '$lib/components/BorrowSlip.svelte';
 	import LockerCard from '$lib/components/LockerCard.svelte';
 	import StampBurst from '$lib/components/StampBurst.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { jacketFor } from '$lib/cover';
 	import { copiesLabel, loanedLabel, shortDate } from '$lib/format';
+	import {
+		hasBorrowErrors,
+		normalizeClass,
+		parseLoanDays,
+		type BorrowErrors
+	} from '$lib/borrow-fields';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
@@ -18,6 +24,25 @@
 	const book = $derived(data.book);
 	const available = $derived(book.copiesAvailable > 0);
 	const atLimit = $derived(data.maxLoans != null && data.activeCount >= data.maxLoans);
+	const formValues = $derived(form && 'values' in form ? form.values : undefined);
+	const formErrors = $derived(
+		(form && 'errors' in form ? form.errors : undefined) as BorrowErrors | undefined
+	);
+	const borrower = $derived({
+		firstName: formValues?.firstName ?? data.borrower.firstName,
+		lastName: formValues?.lastName ?? data.borrower.lastName,
+		className: formValues?.className ? normalizeClass(formValues.className) : data.borrower.className,
+		days: parseLoanDays(formValues?.days ?? '') ?? data.borrower.days
+	});
+	const slipFail = $derived(
+		Boolean(form && 'errors' in form && hasBorrowErrors(form.errors ?? {}))
+	);
+	let slipOpen = $state(false);
+
+	$effect(() => {
+		if (form && 'stamp' in form && form.stamp) slipOpen = false;
+		else if (form && 'errors' in form) slipOpen = true;
+	});
 </script>
 
 <Seo
@@ -83,7 +108,7 @@
 		<p class="mt-5 max-w-xl font-serif text-[1.05rem] leading-relaxed sm:text-lg">{book.description}</p>
 		<Separator class="my-6" />
 
-		{#if form && 'message' in form && form.message}
+		{#if form && 'message' in form && form.message && !slipFail}
 			<Alert.Root variant="destructive" class="mb-4">
 				<Alert.Title>Nešlo to</Alert.Title>
 				<Alert.Description>{form.message}</Alert.Description>
@@ -104,14 +129,19 @@
 					{:else if atLimit}
 						Limit {data.maxLoans} výpožičiek je plný.
 					{:else}
-						21 dní · {loanedLabel(data.activeCount)} u teba
+						7–90 dní · {loanedLabel(data.activeCount)} u teba
 					{/if}
 				</p>
-				<form method="POST" action="?/borrow" use:enhance>
-					<Button type="submit" disabled={!available || atLimit}>
-						Vypožičať
-					</Button>
-				</form>
+				<Button type="button" disabled={!available || atLimit} onclick={() => (slipOpen = true)}>
+					Vypožičať
+				</Button>
+				<BorrowSlip
+					title={book.title}
+					defaults={borrower}
+					errors={formErrors ?? {}}
+					message={form && 'errors' in form ? form.message : ''}
+					bind:open={slipOpen}
+				/>
 			{/if}
 		</div>
 	</div>

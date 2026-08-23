@@ -6,7 +6,7 @@
 		title,
 		lede,
 		serial = 'PREUKAZ · PAV. B',
-		facts = ['21 dní', 'bez stropu', 'pavilón B'],
+		facts = ['7–21 dní', 'bez stropu', 'pavilón B'],
 		tabs,
 		children
 	}: {

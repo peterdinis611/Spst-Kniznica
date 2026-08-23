@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 import { db } from './db';
 import { author, book, bookAuthor, category, holding, loan } from './db/schema';
 import { ftsBookIds } from './db/catalog-fts';
@@ -9,6 +9,7 @@ import {
 	setCatalogCache,
 	type CatalogSnapshot
 } from './catalog-cache';
+import { parseLoanDays } from '$lib/borrow-fields';
 import { authorLine } from '$lib/format';
 import type { CatalogSearchItem } from '$lib/search';
 import type {
@@ -18,6 +19,7 @@ import type {
 	CatalogBook,
 	CategoryChip,
 	CategoryRecord,
+	BorrowerDraft,
 	LoanRecord
 } from '$lib/types';
 
@@ -361,7 +363,7 @@ export function listLoans(userId: string): LoanRecord[] {
 		.innerJoin(category, eq(book.categoryId, category.id))
 		.leftJoin(bookAuthor, eq(bookAuthor.bookId, book.id))
 		.leftJoin(author, eq(author.id, bookAuthor.authorId))
-		.where(eq(loan.userId, userId))
+		.where(and(eq(loan.userId, userId), isNull(loan.clearedAt)))
 		.orderBy(desc(loan.borrowedAt))
 		.all();
 
@@ -385,6 +387,10 @@ export function listLoans(userId: string): LoanRecord[] {
 			borrowedAt: row.loan.borrowedAt,
 			dueAt: row.loan.dueAt,
 			returnedAt: row.loan.returnedAt,
+			borrowerFirstName: row.loan.borrowerFirstName,
+			borrowerLastName: row.loan.borrowerLastName,
+			borrowerClass: row.loan.borrowerClass,
+			loanDays: row.loan.loanDays,
 			book: toSlip(catalogBook)
 		});
 	}
@@ -396,7 +402,31 @@ export type BorrowResult =
 	| { ok: true; dueAt: Date }
 	| { ok: false; message: string };
 
-export function borrowBook(userId: string, bookId: string): BorrowResult {
+export function getLastBorrower(userId: string): BorrowerDraft | null {
+	const row = db
+		.select({
+			firstName: loan.borrowerFirstName,
+			lastName: loan.borrowerLastName,
+			className: loan.borrowerClass,
+			days: loan.loanDays
+		})
+		.from(loan)
+		.where(eq(loan.userId, userId))
+		.orderBy(desc(loan.borrowedAt))
+		.get();
+
+	if (!row?.firstName || !row.lastName || !row.className) return null;
+
+	const days = parseLoanDays(String(row.days)) ?? 21;
+	return {
+		firstName: row.firstName,
+		lastName: row.lastName,
+		className: row.className,
+		days
+	};
+}
+
+export function borrowBook(userId: string, bookId: string, draft: BorrowerDraft): BorrowResult {
 	const result = db.transaction((tx) => {
 		const current = tx.select().from(book).where(eq(book.id, bookId)).get();
 		if (!current) return { ok: false, message: 'Kniha v katalógu nie je.' };
@@ -429,7 +459,8 @@ export function borrowBook(userId: string, bookId: string): BorrowResult {
 		}
 
 		const now = new Date();
-		const dueAt = new Date(now.getTime() + LOAN_DAYS * 24 * 60 * 60 * 1000);
+		const days = draft.days;
+		const dueAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
 		tx.insert(loan)
 			.values({
@@ -437,7 +468,11 @@ export function borrowBook(userId: string, bookId: string): BorrowResult {
 				holdingId: copy.id,
 				userId,
 				borrowedAt: now,
-				dueAt
+				dueAt,
+				borrowerFirstName: draft.firstName,
+				borrowerLastName: draft.lastName,
+				borrowerClass: draft.className,
+				loanDays: days
 			})
 			.run();
 
@@ -510,4 +545,14 @@ export function returnBook(userId: string, loanId: string): ReturnResult {
 	}
 
 	return result;
+}
+
+export function clearReturnedLoans(userId: string) {
+	const result = db
+		.update(loan)
+		.set({ clearedAt: new Date() })
+		.where(and(eq(loan.userId, userId), isNotNull(loan.returnedAt), isNull(loan.clearedAt)))
+		.run();
+
+	return { ok: true as const, cleared: result.changes };
 }

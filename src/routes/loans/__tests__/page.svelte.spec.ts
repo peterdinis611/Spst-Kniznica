@@ -55,6 +55,10 @@ function record(
 		borrowedAt: new Date(2026, 7, 1),
 		dueAt: opts.dueAt ?? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
 		returnedAt: opts.returnedAt ?? null,
+		borrowerFirstName: 'Peter',
+		borrowerLastName: 'Dinis',
+		borrowerClass: 'II.A',
+		loanDays: 21,
 		book: book(title)
 	};
 }
@@ -117,6 +121,7 @@ describe('Moje knihy folio', () => {
 
 		await expect.element(page.getByRole('tab', { name: /Vrátené/ })).toHaveAttribute('aria-selected', 'true');
 		await expect.element(page.getByRole('link', { name: 'Vrátená učebnica' })).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Vyčistiť vrátené' })).toBeVisible();
 		await expect.element(page.getByRole('heading', { name: 'Zatiaľ nič nepožičiavaš' })).not.toBeInTheDocument();
 	});
 

@@ -638,6 +638,29 @@ function ensureLoanGuards() {
 	);
 }
 
+function ensureLoanSlipColumns() {
+	let cols: { name: string }[] = [];
+	try {
+		cols = sqlite.pragma('table_info(loan)') as { name: string }[];
+	} catch {
+		return;
+	}
+	if (cols.length === 0) return;
+
+	const names = new Set(cols.map((col) => col.name));
+	const adds: [string, string][] = [
+		['borrower_first_name', "text not null default ''"],
+		['borrower_last_name', "text not null default ''"],
+		['borrower_class', "text not null default ''"],
+		['loan_days', 'integer not null default 21'],
+		['cleared_at', 'integer']
+	];
+
+	for (const [name, def] of adds) {
+		if (!names.has(name)) sqlite.exec(`ALTER TABLE loan ADD COLUMN ${name} ${def}`);
+	}
+}
+
 function ensureCategoryOrder() {
 	for (const item of categories) {
 		db.update(category).set({ sortOrder: item.sortOrder }).where(eq(category.id, item.id)).run();
@@ -645,6 +668,7 @@ function ensureCategoryOrder() {
 }
 
 export function ensureSeeded() {
+	ensureLoanSlipColumns();
 	if (seeded) return;
 
 	let catalogChanged = false;
@@ -704,6 +728,7 @@ export function ensureSeeded() {
 	ensureHoldings();
 	ensureCategoryOrder();
 	ensureCatalogFts();
+	ensureLoanSlipColumns();
 	ensureLoanGuards();
 	if (catalogChanged) rebuildCatalogFts();
 	invalidateCatalogCache();

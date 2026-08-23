@@ -12,7 +12,7 @@ Hosť vidí katalóg, register, odbory a autorov. V kruhu vpravo hore je písmen
 
 ## Registrácia
 
-Na [prihlásení](/login) vyplníš meno, e-mail a heslo (najmenej 8 znakov). Účet overuje **Supabase**. Ak je zapnuté potvrdenie e-mailu, najprv otvor odkaz v správe, až potom sa prihlás.
+Na [prihlásení](/login) vyplníš meno, e-mail a heslo (najmenej 8 znakov). Účet overuje **Supabase**. Ak je zapnuté potvrdenie e-mailu, najprv otvor odkaz v správe, až potom sa prihlás. Listy z pultu (pečiatka SPŠT, odkaz na `/auth/confirm`) sú v kapitole [E-mail](/docs/email).
 
 Meno sa ukáže v paneli a v pečiatke výpožičky. E-mail je kľúč k účtu, nie verejný zoznam.
 
@@ -24,7 +24,7 @@ Ak prídeš z karty knihy, po prihlásení sa na ňu vráť a výpožičku potvr
 
 ## Zabudnuté heslo
 
-Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mail. Nové heslo nastavíš na stránke, kam ťa odkaz privedie.
+Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mail. Nové heslo nastavíš na [login/heslo](/login/heslo), kam ťa odkaz privedie.
 
 ## Odhlásenie
 

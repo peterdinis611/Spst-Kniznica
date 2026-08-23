@@ -1,0 +1,51 @@
+---
+title: E-mail
+description: Vlastné listy z pultu — potvrdenie preukazu a obnova hesla.
+order: 6.5
+---
+
+Správy o účte posiela **Supabase**. Aby vyzerali ako lístok z pultu a aby odkaz otvoril našu stránku `/auth/confirm`, vlož šablóny z priečinka `supabase/templates`.
+
+## Predtým
+
+V [Authentication → URL configuration](https://supabase.com/dashboard/project/_/auth/url-configuration):
+
+- **Site URL** = adresa fondu (napr. `http://localhost:5173` alebo produkčná origin)
+- **Redirect URLs** musia obsahovať `{origin}/auth/confirm` a `{origin}/auth/confirm**`
+
+Bez toho odkaz z listu nesmeruje na pult.
+
+## Kam to vložiť
+
+[Authentication → Email Templates](https://supabase.com/dashboard/project/_/auth/templates). Predmet skopíruj z tabuľky, telo z HTML súboru. Celý súbor, vrátane `<!doctype html>`.
+
+| List v dashboarde | Súbor | Predmet |
+| --- | --- | --- |
+| Confirm signup | `supabase/templates/confirmation.html` | Potvrď preukaz · SPŠT knižnica |
+| Reset password | `supabase/templates/recovery.html` | Nové heslo · SPŠT knižnica |
+| Magic link | `supabase/templates/magic_link.html` | Vstup do fondu · SPŠT knižnica |
+| Change email address | `supabase/templates/email_change.html` | Nová adresa · SPŠT knižnica |
+
+Odkaz v šablóne **nestavaj** na predvolené ConfirmationURL (to ide na Supabase, nie na pult). V HTML je už poskladaný odkaz:
+
+`/auth/confirm?token_hash=…&type=…&next=…`
+
+Typ `email` ide na Moje knihy, `recovery` na [nové heslo](/login/heslo). TokenHash a SiteURL dopĺňa Supabase.
+
+Pod odkazom je aj **šesťmiestny kód**. Keď pošta odkaz „otvorí“ skôr ako čitateľ (Safe Links), kód ešte platí.
+
+## Čo čitateľ uvidí
+
+List je krémový lístok s medeným chrbtom a pečiatkou **SPŠT**. Potvrdenie registrácie osloví menom z účtu, ak ho pri zápise zadal.
+
+Sender ostáva predvolený `noreply@mail.app.supabase.io`, kým v projekte nenastavíš vlastné SMTP. Vlastná šablóna funguje aj tak.
+
+## Skúška
+
+1. Založ účet na [prihlásení](/login?mod=novy).
+2. Otvor list, klikni **Potvrdiť preukaz**.
+3. Mal by si skončiť na [Moje knihy](/loans).
+
+Obnova: [zabudnuté heslo](/login/obnova) → list → **Nastaviť heslo** → [nové heslo](/login/heslo).
+
+Ak odkaz padne na [chybu účtu](/auth/error), skontroluj Site URL a že v šablóne ostal `token_hash` aj `type`.

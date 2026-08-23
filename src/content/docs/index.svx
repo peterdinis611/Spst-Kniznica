@@ -6,7 +6,7 @@ order: 1
 
 Školský fond učebníc, noriem a literatúry. Sídli v **pavilóne B, 1. poschodie**. Otvorené je **pondelok až piatok, 7:30—15:30**.
 
-Výpožička je bez poplatku: **21 dní**, naraz **koľko treba** — strop na počet kníh nie je.
+Výpožička je bez poplatku: **7, 14 alebo 21 dní**, naraz **koľko treba** — strop na počet kníh nie je.
 
 Táto príručka je interný zošit pultu. V hlavnom menu ju nehľadaj — otvoríš ju z pätičky, alebo priamou adresou.
 
@@ -35,6 +35,7 @@ Táto príručka je interný zošit pultu. V hlavnom menu ju nehľadaj — otvor
 - [Odbory](/docs/odbory) — police podľa študijných zameraní
 - [Výpožičky](/docs/vypozicky) — lehota, pečiatky a vrátenie
 - [Účet](/docs/ucet) — registrácia, prihlásenie a odhlásenie
+- [E-mail](/docs/email) — listy z pultu: potvrdenie preukazu a obnova hesla
 - [Pult](/docs/pult) — menu, téma, prehliadka pultu aj príručky
 - [Časté otázky](/docs/otazky) — krátke odpovede z pultu
 

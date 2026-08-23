@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="sk">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="color-scheme" content="light" />
+		<title>Potvrď preukaz</title>
+	</head>
+	<body style="margin:0;padding:0;background:#f6f0e6;">
+		<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f0e6;">
+			<tr>
+				<td align="center" style="padding:32px 16px 40px;">
+					<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:12px;letter-spacing:0.28em;text-transform:uppercase;color:#7a6554;">
+						SPŠT knižnica · pavilón B
+					</p>
+					<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;background:#fff8ee;border:1px solid #d7c4ae;">
+						<tr>
+							<td width="8" style="background:#c45a38;font-size:0;line-height:0;">&nbsp;</td>
+							<td width="28" valign="top" style="background:#fff8ee;padding:22px 0 0;font-size:0;">
+								<table role="presentation" cellpadding="0" cellspacing="0" align="center">
+									<tr><td style="width:14px;height:14px;background:#f6f0e6;border:1px solid #d7c4ae;border-radius:999px;font-size:0;line-height:0;">&nbsp;</td></tr>
+									<tr><td style="height:28px;font-size:0;line-height:0;">&nbsp;</td></tr>
+									<tr><td style="width:14px;height:14px;background:#f6f0e6;border:1px solid #d7c4ae;border-radius:999px;font-size:0;line-height:0;">&nbsp;</td></tr>
+									<tr><td style="height:28px;font-size:0;line-height:0;">&nbsp;</td></tr>
+									<tr><td style="width:14px;height:14px;background:#f6f0e6;border:1px solid #d7c4ae;border-radius:999px;font-size:0;line-height:0;">&nbsp;</td></tr>
+									<tr><td style="height:28px;font-size:0;line-height:0;">&nbsp;</td></tr>
+									<tr><td style="width:14px;height:14px;background:#f6f0e6;border:1px solid #d7c4ae;border-radius:999px;font-size:0;line-height:0;">&nbsp;</td></tr>
+								</table>
+							</td>
+							<td style="padding:26px 28px 22px 8px;font-family:Georgia,'Times New Roman',serif;color:#2c1d16;">
+								<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+									<tr>
+										<td style="font-family:Courier,monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#7a6554;">
+											čitateľský preukaz
+										</td>
+										<td align="right" style="width:64px;">
+											<span style="display:inline-block;padding:6px 9px 5px;border:2px solid #c45a38;border-radius:999px;color:#c45a38;font-size:12px;font-style:italic;font-weight:700;letter-spacing:0.14em;">SPŠT</span>
+										</td>
+									</tr>
+								</table>
+								<h1 style="margin:18px 0 0;font-size:34px;line-height:0.98;letter-spacing:-0.03em;font-weight:700;">
+									Potvrď preukaz.
+								</h1>
+								{{ if .Data.name }}
+								<p style="margin:14px 0 0;font-size:17px;line-height:1.5;color:#5c4a3c;">
+									{{ .Data.name }}, otvor odkaz a účet v školskom fonde začne platiť. Výpožička je 21 dní, bez stropu na počet kníh.
+								</p>
+								{{ else }}
+								<p style="margin:14px 0 0;font-size:17px;line-height:1.5;color:#5c4a3c;">
+									Otvor odkaz a účet v školskom fonde začne platiť. Výpožička je 21 dní, bez stropu na počet kníh.
+								</p>
+								{{ end }}
+								<table role="presentation" cellpadding="0" cellspacing="0" style="margin:18px 0 0;">
+									<tr>
+										<td style="padding:5px 9px;border:1px solid #d7c4ae;font-family:Courier,monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#5c4a3c;">21 dní</td>
+										<td width="8"></td>
+										<td style="padding:5px 9px;border:1px solid #d7c4ae;font-family:Courier,monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#5c4a3c;">bez stropu</td>
+										<td width="8"></td>
+										<td style="padding:5px 9px;border:1px solid #d7c4ae;font-family:Courier,monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#5c4a3c;">pavilón B</td>
+									</tr>
+								</table>
+								<p style="margin:24px 0 0;">
+									<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next=/loans" style="display:inline-block;padding:14px 22px;background:#3c2a21;color:#fff8ee;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;text-decoration:none;">
+										Potvrdiť preukaz
+									</a>
+								</p>
+								<p style="margin:26px 0 0;padding-top:18px;border-top:1px dashed #d7c4ae;font-family:Courier,monospace;font-size:12px;letter-spacing:0.08em;color:#7a6554;">
+									Kód, ak odkaz nefunguje<br />
+									<span style="display:inline-block;margin-top:6px;font-size:24px;letter-spacing:0.32em;color:#2c1d16;">{{ .Token }}</span>
+								</p>
+								<p style="margin:16px 0 0;font-size:14px;line-height:1.45;color:#7a6554;">
+									Ak si účet nezakladal, tento list zahoď. Platí pre {{ .Email }}.
+								</p>
+								<p style="margin:22px 0 0;font-family:Courier,monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#7a6554;">
+									preukaz · pav. B · po–pia 7:30–15:30
+								</p>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

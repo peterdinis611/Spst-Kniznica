@@ -14,7 +14,7 @@ Koľko treba — na preukaze **nie je strop**. Jednu knihu si naraz požičiaš 
 
 ## Ako dlho?
 
-**21 dní** od dňa výpožičky. Termín vidíš na [Moje knihy](/loans).
+**7, 14, 21 dní, alebo iný počet** — dobu vyberieš na lístku pri výpožičke. Termín vidíš na [Moje knihy](/loans).
 
 ## Čo keď nestihnem vrátiť?
 
@@ -42,7 +42,7 @@ Adresu na polici. INF je informatika, 004.4 číslo, BEL rez autora. Viac v kapi
 
 ## Zabudol som heslo
 
-Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mail. Heslo na pulte nehlásime.
+Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mail. Heslo na pulte nehlásime. Ako má list vyzerať a kam smeruje, je v kapitole [E-mail](/docs/email).
 
 ## Ide to na telefóne?
 

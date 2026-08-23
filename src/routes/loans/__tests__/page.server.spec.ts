@@ -1,14 +1,15 @@
 import { isActionFailure, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LoanRecord } from '$lib/types';
-import { countActiveLoans, listLoans, returnBook } from '$lib/server/library';
+import { countActiveLoans, listLoans, returnBook, clearReturnedLoans } from '$lib/server/library';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
 	MAX_ACTIVE_LOANS: null,
 	listLoans: vi.fn(),
 	countActiveLoans: vi.fn(),
-	returnBook: vi.fn()
+	returnBook: vi.fn(),
+	clearReturnedLoans: vi.fn()
 }));
 
 const reader = {
@@ -37,6 +38,10 @@ function loan(partial: Partial<LoanRecord> & Pick<LoanRecord, 'id' | 'returnedAt
 	return {
 		borrowedAt: new Date(2026, 7, 1),
 		dueAt: new Date(2026, 7, 22),
+		borrowerFirstName: 'Peter',
+		borrowerLastName: 'Dinis',
+		borrowerClass: 'II.A',
+		loanDays: 21,
 		book,
 		...partial
 	};
@@ -133,5 +138,45 @@ describe('loans return action', () => {
 			stamp: 'Vrátené',
 			sub: expect.stringMatching(/\d{1,2}\.\s?\d{1,2}\.\s?2026/)
 		});
+	});
+});
+
+describe('loans clearHistory action', () => {
+	beforeEach(() => {
+		vi.mocked(clearReturnedLoans).mockReset();
+	});
+
+	function event(user: typeof reader | undefined) {
+		return { locals: { user } } as unknown as Parameters<NonNullable<typeof actions.clearHistory>>[0];
+	}
+
+	it('sends anonymous clears to login', async () => {
+		try {
+			await actions.clearHistory?.(event(undefined));
+			throw new Error('expected redirect');
+		} catch (error) {
+			expect(isRedirect(error)).toBe(true);
+			if (isRedirect(error)) expect(error.location).toBe('/login');
+		}
+	});
+
+	it('fails when there is nothing to clear', async () => {
+		vi.mocked(clearReturnedLoans).mockReturnValue({ ok: true, cleared: 0 });
+
+		const result = await actions.clearHistory?.(event(reader));
+
+		expect(isActionFailure(result)).toBe(true);
+		if (isActionFailure(result)) {
+			expect(result.data).toEqual({ message: 'Na lístku nie sú vrátené knihy.' });
+		}
+	});
+
+	it('stamps a successful clear', async () => {
+		vi.mocked(clearReturnedLoans).mockReturnValue({ ok: true, cleared: 3 });
+
+		const result = await actions.clearHistory?.(event(reader));
+
+		expect(clearReturnedLoans).toHaveBeenCalledWith(reader.id);
+		expect(result).toEqual({ stamp: 'Vyčistené', sub: 'Vrátené zmizli z lístka' });
 	});
 });

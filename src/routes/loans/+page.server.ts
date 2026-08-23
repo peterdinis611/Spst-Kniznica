@@ -1,6 +1,12 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { countActiveLoans, listLoans, MAX_ACTIVE_LOANS, returnBook } from '$lib/server/library';
+import {
+	clearReturnedLoans,
+	countActiveLoans,
+	listLoans,
+	MAX_ACTIVE_LOANS,
+	returnBook
+} from '$lib/server/library';
 import { stampDate } from '$lib/format';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -36,5 +42,17 @@ export const actions: Actions = {
 		}
 
 		return { stamp: 'Vrátené', sub: stampDate(new Date()) };
+	},
+	clearHistory: async ({ locals }) => {
+		if (!locals.user) {
+			redirect(302, '/login');
+		}
+
+		const result = clearReturnedLoans(locals.user.id);
+		if (result.cleared === 0) {
+			return fail(400, { message: 'Na lístku nie sú vrátené knihy.' });
+		}
+
+		return { stamp: 'Vyčistené', sub: 'Vrátené zmizli z lístka' };
 	}
 };
