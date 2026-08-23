@@ -1,0 +1,48 @@
+---
+title: Pult
+description: Menu, téma, prehliadka pultu a lístok keď vypadne sieť.
+order: 7
+---
+
+Pult je všetko okrem vstupnej siene: bočný panel, hlavička s hľadaním a papier fondu.
+
+## Menu
+
+Vľavo (na telefóne za tlačidlom menu) je fond:
+
+- Objavovať
+- Všetky knihy
+- Odbory
+- Moje knihy
+- Katalóg
+- Autori
+
+**Príručka** v tomto zozname nie je. Nájdeš ju v pätičke každej stránky pultu, alebo na adrese tejto kapitoly.
+
+Dole v paneli sú hodiny pultu, **Prehliadka** a prihlásenie.
+
+## Prehliadka
+
+Tlačidlo **Prehliadka** spustí sprevádzanie pultom: značka školy, menu, hľadanie, dnešný výber, odbory, voľná polica a účet.
+
+Sama sa nespustí. Ani po prvom otvorení, ani z adresy. Len po kliknutí.
+
+Ak krok na stránke nie je (si napríklad v katalógu, nie na Objavovať), prehliadka ho preskočí.
+
+## Téma
+
+Vedľa účtu je prepínač svetla. Fond má **svetlý papier** a **tmavý pult**. Voľba ostane v prehliadači.
+
+Na vstupnej sieni je ten istý prepínač vpravo hore.
+
+## Hľadanie
+
+Jedna lišta, jedno miesto. Na vstupnej sieni ju otvoríš tlačidlom alebo **⌘K / Ctrl+K**. V katalógu ostáva v hlavičke.
+
+Na telefóne je filter odboru skrátený na kód a hľadanie potvrdíš ikonou.
+
+## Keď vypadne sieť
+
+Ak prehliadač stratí spojenie, v rohu sa ukáže lístok, že fond práve nie je na linke. Keď sa sieť vráti, lístok to potvrdí a zmizne.
+
+Katalóg bez spojenia nové výpožičky neuloží. Počkaj na sieť, alebo sa zastav v pavilóne B.

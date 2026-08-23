@@ -68,5 +68,6 @@
 		top: 0;
 		right: 0;
 		left: 0;
+		min-width: 0;
 	}
 </style>

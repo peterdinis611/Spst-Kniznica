@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { CatalogBook } from '$lib/types';
+	import type { BookSlip } from '$lib/types';
 	import BookCover from './BookCover.svelte';
 
-	let { book }: { book: CatalogBook } = $props();
+	let { book }: { book: BookSlip } = $props();
 </script>
 
 <a href={resolve('/books/[id]', { id: book.id })} class="block no-underline">

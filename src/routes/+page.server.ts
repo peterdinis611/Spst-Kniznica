@@ -1,19 +1,22 @@
 import type { PageServerLoad } from './$types';
-import { catalogStats, listAuthors, listBooks } from '$lib/server/library';
+import { catalogStats, listAuthorSlips, listBookSlips, toSearchItem } from '$lib/server/library';
 import { authorLine } from '$lib/format';
 
 export const load: PageServerLoad = async () => {
-	const books = listBooks();
-	const authors = [...listAuthors()].sort((a, b) => b.bookCount - a.bookCount);
+	const slips = listBookSlips().filter((book) => book.id !== 'book-modlitbicky');
+	const ready = slips.filter((book) => book.copiesAvailable > 0);
+	const picks = ready.slice(0, 6);
+	const authors = [...listAuthorSlips()].sort((a, b) => b.bookCount - a.bookCount);
 
 	return {
-		books: books.map((book) => ({
+		books: picks.map((book) => ({
 			id: book.id,
 			title: book.title,
 			authors: authorLine(book.authors),
 			copiesAvailable: book.copiesAvailable,
 			category: book.category.name
 		})),
+		shelf: slips.slice(0, 22).map((book) => ({ id: book.id, title: book.title })),
 		authors: authors.slice(0, 5).map((author) => ({
 			id: author.id,
 			name: author.name,
@@ -21,14 +24,6 @@ export const load: PageServerLoad = async () => {
 			bookCount: author.bookCount
 		})),
 		stats: catalogStats(),
-		searchIndex: books.map((book) => ({
-			id: book.id,
-			title: book.title,
-			authors: authorLine(book.authors),
-			callNumber: book.callNumber,
-			category: book.category.name,
-			isbn: book.isbn,
-			copiesAvailable: book.copiesAvailable
-		}))
+		searchPreview: ready.slice(0, 6).map(toSearchItem)
 	};
 };

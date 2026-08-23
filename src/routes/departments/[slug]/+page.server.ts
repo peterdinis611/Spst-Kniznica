@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getCategory, listBooksByCategory } from '$lib/server/library';
+import { getCategory, listBookSlipsByCategory } from '$lib/server/library';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const current = getCategory(params.slug);
@@ -8,6 +8,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	return {
 		category: current,
-		books: listBooksByCategory(params.slug)
+		books: listBookSlipsByCategory(params.slug)
 	};
 };

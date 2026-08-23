@@ -8,9 +8,7 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	const landingBooks = $derived(data.books.filter((book) => book.id !== 'book-modlitbicky'));
-	const picks = $derived(landingBooks.slice(0, 6));
-	const shelfBooks = $derived(landingBooks.map((book) => ({ id: book.id, title: book.title })));
+	const picks = $derived(data.books);
 </script>
 
 <Seo
@@ -31,7 +29,7 @@
 	}}
 />
 
-<HallChrome user={data.user} searchIndex={data.searchIndex}>
+<HallChrome user={data.user} searchPreview={data.searchPreview}>
 	<section class="folio">
 		<h1>Učebnice a príbehy, ktoré SPŠT ešte nedočítalo.</h1>
 		<p class="folio-lead">
@@ -39,7 +37,7 @@
 			z {data.stats.books} kníh. Klikni na chrbát alebo menovku.
 		</p>
 		<a class="folio-cta no-underline" href={resolve('/discover')}>Vstúpiť do fondu</a>
-		<FolioShelf books={shelfBooks} />
+		<FolioShelf books={data.shelf} />
 	</section>
 
 	<section class="folio-block" id="ako">

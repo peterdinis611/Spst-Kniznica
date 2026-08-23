@@ -3,12 +3,13 @@
 	import { page } from '$app/state';
 	import { flattenPageTree, type PageTree } from 'fumadocs-svelte';
 	import { docsHref } from '$lib/docs/href';
+	import { sortDocChapters } from '$lib/docs/order';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import type { Snippet } from 'svelte';
 
 	let { tree, children }: { tree: PageTree; children: Snippet } = $props();
 
-	const chapters = $derived(flattenPageTree(tree));
+	const chapters = $derived(sortDocChapters(flattenPageTree(tree)));
 	let open = $state(false);
 
 	function current(url: string) {

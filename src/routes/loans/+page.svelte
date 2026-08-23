@@ -27,7 +27,7 @@
 	<StampBurst label={form.stamp} sub={form.sub} />
 {/if}
 
-<p class="text-muted-foreground text-sm">
+<p class="text-muted-foreground text-sm text-pretty">
 	{data.reader.name} · preukaz {readerNumber(data.reader.id)} · {data.activeCount} z {data.maxLoans} miest
 </p>
 <Progress class="mt-4 max-w-md" max={100} value={progress} />
@@ -39,9 +39,9 @@
 {/if}
 
 <Tabs.Root value="aktivne" class="mt-8">
-	<Tabs.List>
-		<Tabs.Trigger value="aktivne">Požičané ({data.loans.length})</Tabs.Trigger>
-		<Tabs.Trigger value="historia">Vrátené ({data.history.length})</Tabs.Trigger>
+	<Tabs.List class="h-auto w-full">
+		<Tabs.Trigger value="aktivne" class="px-2 text-[0.8rem] sm:text-sm">Požičané ({data.loans.length})</Tabs.Trigger>
+		<Tabs.Trigger value="historia" class="px-2 text-[0.8rem] sm:text-sm">Vrátené ({data.history.length})</Tabs.Trigger>
 	</Tabs.List>
 	<Tabs.Content value="aktivne" class="mt-6">
 		{#if data.loans.length === 0}
@@ -62,7 +62,7 @@
 							<div class="flex min-w-0 flex-1 flex-col justify-between">
 								<div>
 									<Badge variant={due.tone === 'ok' ? 'secondary' : 'destructive'}>{due.label}</Badge>
-									<Card.Title class="mt-2 text-xl">
+									<Card.Title class="mt-2 text-[1.05rem] leading-snug break-words sm:text-xl">
 										<a href={resolve('/books/[id]', { id: item.book.id })} class="hover:text-primary">
 											{item.book.title}
 										</a>

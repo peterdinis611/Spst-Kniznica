@@ -22,14 +22,14 @@
 			<Breadcrumb.Link href={resolve('/departments')}>Odbory</Breadcrumb.Link>
 		</Breadcrumb.Item>
 		<Breadcrumb.Separator />
-		<Breadcrumb.Item>
-			<Breadcrumb.Page>{data.category.name}</Breadcrumb.Page>
+		<Breadcrumb.Item class="min-w-0">
+			<Breadcrumb.Page class="block max-w-[16ch] truncate sm:max-w-[28ch]">{data.category.name}</Breadcrumb.Page>
 		</Breadcrumb.Item>
 	</Breadcrumb.List>
 </Breadcrumb.Root>
 
 <Badge class="mt-5" variant="outline">{data.category.code}</Badge>
-<h2 class="mt-2 font-serif text-4xl font-bold md:text-5xl">{data.category.name}</h2>
+<h2 class="mt-2 font-serif text-[clamp(1.85rem,8vw,3.1rem)] leading-[1.05] font-bold break-words">{data.category.name}</h2>
 <p class="text-muted-foreground mt-3 max-w-xl font-serif">{data.category.description}</p>
 
 <div class="mt-8">

@@ -16,11 +16,11 @@
 
 	let {
 		user,
-		searchIndex,
+		searchPreview,
 		children
 	}: {
 		user: Reader;
-		searchIndex: CatalogSearchItem[];
+		searchPreview: CatalogSearchItem[];
 		children: Snippet;
 	} = $props();
 
@@ -128,5 +128,5 @@
 		<Footer tone="hall" />
 	</div>
 
-	<CatalogSearch items={searchIndex} bind:open={searchOpen} />
+	<CatalogSearch preview={searchPreview} bind:open={searchOpen} />
 </div>

@@ -22,7 +22,7 @@
 	{#if data.q}pre „{data.q}“{/if}
 	{#if activeName}· {activeName}{/if}
 	{#if data.books.length > 48}
-		· virtualizovaný register
+		<span class="hidden sm:inline">· virtualizovaný register</span>
 	{/if}
 </p>
 
@@ -36,7 +36,8 @@
 			variant={data.odbor === cat.slug ? 'default' : 'outline'}
 			class="h-8"
 		>
-			{cat.name}
+			<span class="sm:hidden">{cat.code}</span>
+			<span class="hidden sm:inline">{cat.name}</span>
 		</Badge>
 	{/each}
 </div>

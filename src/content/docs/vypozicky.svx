@@ -1,6 +1,7 @@
 ---
 title: Výpožičky
 description: Lehota 21 dní, limit 5 kníh a vrátenie v pavilóne B.
+order: 5
 ---
 
 Výpožička je bez poplatku. Platí pre prihlásených čitateľov.
@@ -14,15 +15,34 @@ Výpožička je bez poplatku. Platí pre prihlásených čitateľov.
 
 Ak máš už 5 aktívnych výpožičiek, ďalšiu knihu nevezmeš, kým jednu nevrátiš.
 
+Jednu knihu si naraz požičiaš len raz. Kým ju nevrátiš, druhý výtlačok toho istého zväzku si neberieš.
+
 ## Ako si požičať
 
 1. Prihlás sa.
 2. Otvor kartu knihy v [katalógu](/books).
-3. Ak je výtlačok voľný, potvrď výpožičku.
+3. Ak je výtlačok voľný, potvrď výpožičku. Na karte ostane pečiatka **Vypožičané**.
 4. Zväzok si vyzdvihni na pulte — v účte uvidíš termín vrátenia.
+
+Ak je nula voľných, tlačidlo výpožičku nespustí. Kniha nie je stratená, len vonku.
 
 ## Ako vrátiť
 
-Odnes knihu do pavilónu B a na stránke [Moje knihy](/loans) ju označ ako vrátenú. Stav výtlačku sa hneď vráti do fondu.
+Odnes knihu do pavilónu B a na stránke [Moje knihy](/loans) ju označ ako vrátenú. Pečiatka **Vrátené** potvrdí pohyb. Stav výtlačku sa hneď vráti do fondu.
 
 Oneskorené vrátenie rieši pult. V aplikácii poplatok nie je — termín slúži ako dohoda, nie ako pokuta.
+
+Na lístku výpožičky uvidíš, či ešte máš dni, či je splatné **dnes**, **zajtra**, alebo koľko dní ideš **po lehote**.
+
+## Pečiatky
+
+| Pečiatka | Kedy padne |
+| --- | --- |
+| Vypožičané | Práve si vzal zväzok na účet |
+| Vrátené | Práve si ho vrátil vo fonde |
+
+Pečiatka je potvrdenie pohybu, nie pokuta. Papierový výtlačok ostáva rozhodujúci.
+
+## Moje knihy
+
+Na [Moje knihy](/loans) sú dve police: čo máš vonku a čo si už vrátil. Hostia túto stránku nevidia — najprv [účet](/docs/ucet).

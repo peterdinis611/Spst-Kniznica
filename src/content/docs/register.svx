@@ -1,0 +1,45 @@
+---
+title: Register
+description: Kartotéka fondu — signatúra, odbor a voľné výtlačky.
+order: 3
+---
+
+[Všetky knihy](/holdings) sú kartotéka, nie výklad. Zväzky stoja podľa odboru. Vľavo je signatúra, vpravo stav výtlačkov.
+
+## Čo na lístku uvidíš
+
+- **kód odboru** — INF, STR, ELE…
+- **číslo** — napríklad 004.4 alebo 621.3
+- **rez** — tri písmená z priezviska autora
+- **názov** a autorov
+- **voľné výtlačky** — na úzkom displeji skrátene ako `4/4`
+
+Klik na lístok otvorí kartu knihy. Klik na hlavičku odboru ide na policu [odboru](/departments).
+
+## Signatúra
+
+Signatúra je adresa zväzku v školi. Čítaj ju zľava:
+
+`INF 004.4 BEL`
+
+1. **INF** — odbor (informatika)
+2. **004.4** — číslo na polici
+3. **BEL** — rez autora (Belko)
+
+To isté číslo zadáš do lišty v hlavičke. Fond ho nájde aj bez medzier, ak napíšeš časť.
+
+## Voľné a obsadené
+
+Zelený lístok znamená, že aspoň jeden výtlačok čaká na pulte. Červený (`0` alebo *Nedostupné*) znamená, že všetky kópie sú vonku.
+
+Stav sa mení hneď po výpožičke a vrátení. Ak číslo nesedí s pultom, verí pult v pavilóne B.
+
+## Veľký fond
+
+Keď je vo fonde veľa zväzkov, register sa **kreslí po okienkach** — skroluješ list, kreslia sa len viditeľné lístky. Nič z fondu sa nestráca, len sa stránka neudýcha.
+
+To isté platí pre [katalóg](/books) a [autorov](/authors).
+
+## Čo register nie je
+
+Nie je to výpožičný lístok. Požičiaš až na karte knihy, po [prihlásení](/docs/ucet).

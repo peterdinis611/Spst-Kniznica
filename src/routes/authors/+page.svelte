@@ -5,7 +5,7 @@
 	import Seo from '$lib/components/Seo.svelte';
 	import VirtualWindow from '$lib/components/VirtualWindow.svelte';
 	import type { PageProps } from './$types';
-	import type { AuthorRecord } from '$lib/types';
+	import type { AuthorSlip } from '$lib/types';
 
 	let { data }: PageProps = $props();
 
@@ -23,7 +23,7 @@
 		const sorted = [...filtered].sort((a, b) =>
 			familyName(a.name).localeCompare(familyName(b.name), 'sk')
 		);
-		const map = new Map<string, AuthorRecord[]>();
+			const map = new Map<string, AuthorSlip[]>();
 		for (const person of sorted) {
 			const letter = familyName(person.name).slice(0, 1).toLocaleUpperCase('sk');
 			const bucket = map.get(letter) ?? [];
@@ -58,7 +58,7 @@
 		pre „{data.q.trim()}“
 	{/if}
 	{#if virtual}
-		· virtualizovaný register
+		<span class="hidden sm:inline">· virtualizovaný register</span>
 	{/if}
 </p>
 
@@ -73,7 +73,7 @@
 				{@const item = lanes[row.index]}
 				{#if item?.kind === 'letter'}
 					<p
-						class="mb-0 font-display text-[2rem] leading-none font-semibold tracking-[-0.04em] [font-variation-settings:'SOFT'_28,'WONK'_0]"
+						class="mb-0 font-display text-[1.55rem] leading-none font-semibold tracking-[-0.04em] [font-variation-settings:'SOFT'_28,'WONK'_0] sm:text-[2rem]"
 					>
 						{item.letter}
 					</p>
@@ -95,7 +95,7 @@
 							>
 								{person.name}
 							</strong>
-							<em class="mt-0.5 block font-body text-[0.88rem] text-muted-foreground italic">
+							<em class="mt-0.5 block truncate font-body text-[0.88rem] text-muted-foreground italic">
 								{person.role} · {person.lifespan} · {booksLabel(person.bookCount)}
 							</em>
 						</span>
@@ -109,7 +109,7 @@
 		{#each grouped as [letter, people] (letter)}
 			<section>
 				<p
-					class="mb-1 font-display text-[2rem] leading-none font-semibold tracking-[-0.04em] text-foreground [font-variation-settings:'SOFT'_28,'WONK'_0]"
+					class="mb-1 font-display text-[1.55rem] leading-none font-semibold tracking-[-0.04em] text-foreground [font-variation-settings:'SOFT'_28,'WONK'_0] sm:text-[2rem]"
 				>
 					{letter}
 				</p>

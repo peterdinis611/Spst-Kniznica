@@ -73,6 +73,11 @@ export function copiesLabel(available: number, total: number) {
 	return `${available} voľných z ${total}`;
 }
 
+export function copiesShort(available: number, total: number) {
+	if (available === 0) return '0';
+	return `${available}/${total}`;
+}
+
 export function readerNumber(id: string) {
 	return id.replace(/[^a-zA-Z0-9]/g, '').slice(-4).toUpperCase().padStart(4, '0');
 }

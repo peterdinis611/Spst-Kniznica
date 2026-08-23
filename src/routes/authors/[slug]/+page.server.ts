@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getAuthor, listBooksByAuthor } from '$lib/server/library';
+import { getAuthor, listBookSlipsByAuthor } from '$lib/server/library';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const person = getAuthor(params.slug);
@@ -8,6 +8,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	return {
 		author: person,
-		books: listBooksByAuthor(params.slug)
+		books: listBookSlipsByAuthor(params.slug)
 	};
 };

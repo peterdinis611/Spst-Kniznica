@@ -274,18 +274,24 @@
 
 	@media (max-width: 720px) {
 		.folio-shelf {
-			filter: drop-shadow(-10px 14px 0 rgb(60 42 33 / 0.08));
-			padding-top: 0.6rem;
+			gap: 0;
+			margin-top: 1.1rem;
+			padding: 0.2rem 0 0.6rem;
+			filter: drop-shadow(-8px 10px 0 rgb(60 42 33 / 0.08));
 		}
 
-		.tip-1,
-		.tip-3 {
-			display: none;
+		.folio-bay {
+			width: 100%;
+			min-height: 13.4rem;
 		}
 
+		.folio-row {
+			min-height: 3.9rem;
+		}
+
+		.folio-bay + .folio-bay,
 		.folio-tip {
-			font-size: 0.64rem;
-			padding: 0.34rem 0.55rem;
+			display: none;
 		}
 	}
 

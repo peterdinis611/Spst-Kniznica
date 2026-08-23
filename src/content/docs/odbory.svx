@@ -1,9 +1,10 @@
 ---
 title: Odbory
 description: Police fondu podľa študijných zameraní SPŠT.
+order: 4
 ---
 
-Každý zväzok patrí do jedného odboru. Na pulte sú označené kódom — INF, STR, ELE a ďalšie. Filter v hlavičke berie ten istý kód.
+Každý zväzok patrí do **jedného odboru**. Na pulte sú označené kódom — INF, STR, ELE a ďalšie. Filter v hlavičke berie ten istý kód.
 
 ## Zamerania
 
@@ -18,6 +19,18 @@ Každý zväzok patrí do jedného odboru. Na pulte sú označené kódom — IN
 | HIS | História | Dejiny techniky a Slovenska |
 | JAZ | Jazyky | Technická angličtina a nemčina |
 
-Celé police sú na [Odboroch](/departments). Jednotlivý odbor otvoríš z dlaždice alebo z filtra v katalógu.
+Celé police sú na [Odboroch](/departments). Jednotlivý odbor otvoríš z dlaždice, z filtra v katalógu, alebo z hlavičky v [registri](/holdings).
 
-Autori majú vlastný [register A—Z](/authors). Nesúvisia s odborom priamo — kniha môže mať viac autorov a jeden odbor.
+Na polici uvidíš najprv vejár chrbtic, potom list zväzkov. Sú to tie isté knihy ako v katalógu, len z jedného zamerania.
+
+## Ako čítať policu
+
+Odbor nie je trieda ani ročník. Je to **zameranie zväzku**. Učebnica sietí stojí v INF, aj keď ju berie elektrikár. Dejiny techniky stoja v HIS, nie v STR.
+
+Kniha má vždy jeden odbor. Autorov môže mať viac — preto majú vlastný [register A—Z](/authors). Nesúvisia s odborom priamo.
+
+## Autori
+
+Na stránke [Autori](/authors) hľadáš priezvisko alebo meno. Pri každom mene je rola, životné dáta a koľko kníh má vo fonde. Klik otvorí jeho zväzky.
+
+Ak nevieš odbor, ale pamätáš učiteľa, začni tu.

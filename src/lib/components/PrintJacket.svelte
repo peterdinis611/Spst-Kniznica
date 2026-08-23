@@ -3,7 +3,7 @@
 	import { authorLine } from '$lib/format';
 	import { authorLast, clothFor } from '$lib/cover';
 	import { cn } from '$lib/utils.js';
-	import type { CatalogBook } from '$lib/types';
+	import type { BookSlip } from '$lib/types';
 
 	let {
 		book,
@@ -12,7 +12,7 @@
 		height,
 		class: className
 	}: {
-		book: CatalogBook;
+		book: BookSlip;
 		size?: 'feature' | 'shelf' | 'thumb';
 		linked?: boolean;
 		height?: string;
@@ -28,10 +28,10 @@
 	this={linked ? 'a' : 'div'}
 	href={linked ? href : undefined}
 	class={cn(
-		'jacket relative block overflow-hidden rounded-[0.7rem] no-underline shadow-[8px_14px_0_rgb(60_42_33/0.12)] dark:shadow-[8px_14px_0_rgb(0_0_0/0.35)]',
-		size === 'feature' && 'h-[18rem] w-[12.2rem]',
-		size === 'shelf' && 'w-[8.6rem]',
-		size === 'shelf' && !height && 'h-[13.4rem]',
+		'relative block overflow-hidden rounded-[0.7rem] no-underline shadow-[5px_8px_0_rgb(60_42_33/0.12)] dark:shadow-[5px_8px_0_rgb(0_0_0/0.35)]',
+		size === 'feature' && 'h-[13.4rem] w-[9rem] sm:h-[18rem] sm:w-[12.2rem]',
+		size === 'shelf' && 'w-[6.8rem] sm:w-[8.6rem]',
+		size === 'shelf' && !height && 'h-[10.8rem] sm:h-[13.4rem]',
 		size === 'thumb' && 'h-[8.4rem] w-[5.4rem] rounded-[0.45rem] shadow-[5px_10px_0_rgb(40_28_16/0.16)] dark:shadow-[5px_10px_0_rgb(0_0_0/0.4)]',
 		className
 	)}

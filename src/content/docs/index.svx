@@ -1,11 +1,14 @@
 ---
 title: Príručka fondu
 description: Ako sa v SPŠT knižnici hľadá, požičiava a vracia.
+order: 1
 ---
 
 Školský fond učebníc, noriem a literatúry. Sídli v **pavilóne B, 1. poschodie**. Otvorené je **pondelok až piatok, 7:30—15:30**.
 
 Výpožička je bez poplatku: **21 dní**, naraz **najviac 5 kníh**.
+
+Táto príručka je interný zošit pultu. V hlavnom menu ju nehľadaj — otvoríš ju z pätičky, alebo priamou adresou.
 
 ## Tri kroky
 
@@ -13,11 +16,26 @@ Výpožička je bez poplatku: **21 dní**, naraz **najviac 5 kníh**.
 2. **Požičaj na účet** — prihlás sa a vezmi knihu z karty zväzku.
 3. **Vráť v pavilóne B** — odnes výtlačok na pult a v účte označ vrátenie.
 
-## Čo tu nájdeš
+## Mapa pultu
+
+| Stránka | Čo tam je |
+| --- | --- |
+| [Vstupná sieň](/) | Chrbty zväzkov a rýchle hľadanie (⌘K / Ctrl+K) |
+| [Objavovať](/discover) | Dnes na pulte, police odborov, voľné chrbtice |
+| [Všetky knihy](/holdings) | Kartotéka podľa odboru — signatúra a stav |
+| [Katalóg](/books) | Filter odboru a list celého fondu |
+| [Odbory](/departments) | Dlaždice zameraní INF, STR, ELE… |
+| [Autori](/authors) | Register A—Z podľa priezviska |
+| [Moje knihy](/loans) | Aktívne výpožičky a vrátenie (po prihlásení) |
+
+## Kapitoly
 
 - [Katalóg](/docs/katalog) — hľadanie, objavovanie a karty kníh
+- [Register](/docs/register) — všetky knihy, signatúra a voľné výtlačky
 - [Odbory](/docs/odbory) — police podľa študijných zameraní
-- [Výpožičky](/docs/vypozicky) — lehota, limit a vrátenie
+- [Výpožičky](/docs/vypozicky) — lehota, limit, pečiatky a vrátenie
 - [Účet](/docs/ucet) — registrácia, prihlásenie a odhlásenie
+- [Pult](/docs/pult) — menu, téma, prehliadka a offline lístok
+- [Časté otázky](/docs/otazky) — krátke odpovede z pultu
 
-Prehliadku pultu spustíš v katalógu tlačidlom **Prehliadka**.
+Prehliadku pultu spustíš v katalógu tlačidlom **Prehliadka**. Sama sa nespustí.

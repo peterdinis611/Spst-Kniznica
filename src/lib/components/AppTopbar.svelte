@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { CategoryRecord, Reader } from '$lib/types';
+	import type { CategoryChip, Reader } from '$lib/types';
 	import { deskTitle } from '$lib/desk';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -36,7 +36,7 @@
 		categories
 	}: {
 		user: Reader;
-		categories: CategoryRecord[];
+		categories: CategoryChip[];
 	} = $props();
 
 	const title = $derived(deskTitle(page.url.pathname));
@@ -69,16 +69,18 @@
 	}
 </script>
 
-<header class="relative z-10 border-b border-border px-8 pt-8 pb-7 md:px-12 md:pt-9 md:pb-8">
-	<div class="flex flex-wrap items-center gap-x-8 gap-y-5 lg:flex-nowrap">
-		<div class="flex min-w-0 items-center gap-3 lg:order-1 lg:shrink-0">
+<header
+	class="sticky top-0 z-20 border-b border-border bg-paper/92 px-3 pt-[max(0.55rem,env(safe-area-inset-top))] pb-2.5 backdrop-blur-md sm:static sm:z-10 sm:bg-transparent sm:px-8 sm:pt-8 sm:pb-7 sm:backdrop-blur-none md:px-12 md:pt-9 md:pb-8"
+>
+	<div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2 sm:gap-x-5 sm:gap-y-4 lg:flex-nowrap lg:gap-x-8">
+		<div class="flex min-w-0 flex-1 items-center gap-1 sm:gap-3 lg:flex-none">
 			<Sheet>
 				<SheetTrigger>
 					{#snippet child({ props })}
 						<Button
 							variant="ghost"
 							size="icon"
-							class="size-10 rounded-full lg:hidden"
+							class="size-9 shrink-0 rounded-full lg:hidden"
 							aria-label="Menu"
 							{...props}
 						>
@@ -86,7 +88,7 @@
 						</Button>
 					{/snippet}
 				</SheetTrigger>
-				<SheetContent side="left" class="bg-sidebar w-[18rem] p-0">
+				<SheetContent side="left" class="bg-sidebar w-[min(18rem,88vw)] p-0">
 					<SheetHeader class="sr-only">
 						<SheetTitle>Menu</SheetTitle>
 					</SheetHeader>
@@ -94,20 +96,23 @@
 				</SheetContent>
 			</Sheet>
 			<h1
-				class="font-display whitespace-nowrap text-[1.7rem] leading-none font-semibold tracking-[-0.03em] [font-variation-settings:'SOFT'_28,'WONK'_0] md:text-[1.9rem]"
+				class="font-display min-w-0 truncate text-[1.15rem] leading-none font-semibold tracking-[-0.03em] [font-variation-settings:'SOFT'_28,'WONK'_0] sm:text-[1.7rem] md:text-[1.9rem]"
 			>
 				{title}
 			</h1>
 		</div>
 
-		<div class="order-3 flex items-center gap-2.5 lg:order-3" data-tour="account">
+		<div
+			class="flex shrink-0 items-center gap-1.5 sm:gap-2.5 lg:order-3"
+			data-tour="account"
+		>
 			<ThemeToggle />
 			<DropdownMenu>
 				<DropdownMenuTrigger>
 					{#snippet child({ props })}
 						<button
 							type="button"
-							class="grid size-10 cursor-pointer place-items-center rounded-full bg-primary font-sans text-[0.72rem] font-bold text-primary-foreground"
+							class="grid size-9 cursor-pointer place-items-center rounded-full bg-primary font-sans text-[0.68rem] font-bold text-primary-foreground sm:size-10 sm:text-[0.72rem]"
 							aria-label={displayName}
 							{...props}
 						>
@@ -147,7 +152,7 @@
 
 		{#if !hideSearch}
 			<form
-				class="order-4 flex h-12 w-full min-w-0 flex-nowrap items-center gap-2 rounded-full bg-wash pr-1.5 pl-2 lg:order-2 lg:min-w-[28rem] lg:flex-1 lg:w-auto"
+				class="flex h-10 w-full min-w-0 flex-1 basis-full flex-nowrap items-center gap-1 rounded-full bg-wash pr-1 pl-2 sm:h-12 sm:gap-2 sm:pr-1.5 sm:pl-2 lg:order-2 lg:basis-0 lg:w-auto"
 				method="GET"
 				action={authorSearch ? resolve('/authors') : resolve('/books')}
 				data-tour="search"
@@ -159,7 +164,7 @@
 							{#snippet child({ props })}
 								<button
 									type="button"
-									class="flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 font-sans text-[0.78rem] font-semibold text-foreground outline-none hover:bg-card focus-visible:ring-2 focus-visible:ring-ring"
+									class="hidden h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 font-sans text-[0.78rem] font-semibold text-foreground outline-none hover:bg-card focus-visible:ring-2 focus-visible:ring-ring sm:flex"
 									aria-label="Odbor"
 									{...props}
 								>
@@ -195,18 +200,23 @@
 						</DropdownMenuContent>
 					</DropdownMenu>
 				{/if}
-				<SearchIcon class="ml-3 size-4 shrink-0 text-muted-foreground" />
+				<SearchIcon class="size-4 shrink-0 text-muted-foreground sm:ml-1" />
 				<label class="sr-only" for="q-desk">Hľadať</label>
 				<Input
 					id="q-desk"
-					class="h-12 min-w-[12rem] flex-1 rounded-none border-0 bg-transparent px-3 shadow-none placeholder:whitespace-nowrap focus-visible:border-0 focus-visible:ring-0"
+					class="h-10 min-w-0 flex-1 rounded-none border-0 bg-transparent px-1.5 shadow-none placeholder:truncate focus-visible:border-0 focus-visible:ring-0 sm:h-12 sm:px-3"
 					type="search"
 					name="q"
 					value={query}
-					placeholder={authorSearch ? 'priezvisko alebo meno' : 'názov, autor alebo signatúra'}
+					placeholder={authorSearch ? 'priezvisko' : 'názov alebo autor'}
 				/>
-				<Button class="h-10 shrink-0 rounded-full px-5 text-[0.78rem] font-semibold" type="submit">
-					Hľadať
+				<Button
+					class="size-8 shrink-0 rounded-full px-0 sm:h-10 sm:w-auto sm:px-5 sm:text-[0.78rem] sm:font-semibold"
+					type="submit"
+					aria-label="Hľadať"
+				>
+					<SearchIcon class="size-3.5 sm:hidden" />
+					<span class="hidden sm:inline">Hľadať</span>
 				</Button>
 			</form>
 		{/if}

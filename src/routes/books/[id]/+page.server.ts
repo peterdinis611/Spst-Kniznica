@@ -6,7 +6,7 @@ import {
 	getBook,
 	countActiveLoans,
 	MAX_ACTIVE_LOANS,
-	relatedBooks
+	relatedBookSlips
 } from '$lib/server/library';
 import { stampDate } from '$lib/format';
 
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	return {
 		book: current,
-		related: relatedBooks(current.id, current.category.id),
+		related: relatedBookSlips(current.id, current.category.id),
 		userLoan,
 		activeCount,
 		maxLoans: MAX_ACTIVE_LOANS

@@ -1,7 +1,17 @@
 import { and, count, desc, eq, isNull, like, or, sql } from 'drizzle-orm';
 import { db } from './db';
 import { author, book, bookAuthor, category, loan } from './db/schema';
-import type { AuthorRecord, CatalogBook, CategoryRecord, LoanRecord } from '$lib/types';
+import { authorLine } from '$lib/format';
+import type { CatalogSearchItem } from '$lib/search';
+import type {
+	AuthorRecord,
+	AuthorSlip,
+	BookSlip,
+	CatalogBook,
+	CategoryChip,
+	CategoryRecord,
+	LoanRecord
+} from '$lib/types';
 
 export const MAX_ACTIVE_LOANS = 5;
 export const LOAN_DAYS = 21;
@@ -55,6 +65,70 @@ function assembleBooks(rows: BookRow[]): CatalogBook[] {
 	return [...map.values()];
 }
 
+export function toSlip(item: CatalogBook): BookSlip {
+	return {
+		id: item.id,
+		title: item.title,
+		callNumber: item.callNumber,
+		copiesTotal: item.copiesTotal,
+		copiesAvailable: item.copiesAvailable,
+		category: item.category,
+		authors: item.authors
+	};
+}
+
+export function toSearchItem(
+	item: BookSlip & { isbn?: string; category: BookSlip['category'] | string }
+): CatalogSearchItem {
+	return {
+		id: item.id,
+		title: item.title,
+		authors: authorLine(item.authors),
+		callNumber: item.callNumber,
+		category: typeof item.category === 'string' ? item.category : item.category.name,
+		isbn: item.isbn ?? '',
+		copiesAvailable: item.copiesAvailable
+	};
+}
+
+export function toAuthorSlip(person: AuthorRecord): AuthorSlip {
+	return {
+		id: person.id,
+		name: person.name,
+		slug: person.slug,
+		lifespan: person.lifespan,
+		role: person.role,
+		bookCount: person.bookCount
+	};
+}
+
+export function toCategoryChip(item: CategoryRecord): CategoryChip {
+	return {
+		id: item.id,
+		name: item.name,
+		slug: item.slug,
+		code: item.code,
+		accent: item.accent,
+		bookCount: item.bookCount
+	};
+}
+
+export function listBookSlips(query?: string): BookSlip[] {
+	return listBooks(query).map(toSlip);
+}
+
+export function listAuthorSlips(): AuthorSlip[] {
+	return listAuthors().map(toAuthorSlip);
+}
+
+export function listCategoryChips(): CategoryChip[] {
+	return listCategories().map(toCategoryChip);
+}
+
+export function searchCatalog(query: string, limit = 8): CatalogSearchItem[] {
+	return listBooks(query).slice(0, limit).map(toSearchItem);
+}
+
 function bookQuery() {
 	return db
 		.select({
@@ -92,8 +166,11 @@ export function getBook(id: string): CatalogBook | undefined {
 }
 
 export function getFeaturedBook(): CatalogBook | undefined {
-	const rows = bookQuery().where(eq(book.featured, true)).all();
-	return assembleBooks(rows)[0] ?? listBooks()[0];
+	const featured = assembleBooks(bookQuery().where(eq(book.featured, true)).all()).find(
+		(item) => item.id !== 'book-modlitbicky'
+	);
+	if (featured) return featured;
+	return assembleBooks(bookQuery().limit(12).all()).find((item) => item.id !== 'book-modlitbicky');
 }
 
 export function listBooksByCategory(slug: string): CatalogBook[] {
@@ -101,9 +178,17 @@ export function listBooksByCategory(slug: string): CatalogBook[] {
 	return assembleBooks(rows);
 }
 
+export function listBookSlipsByCategory(slug: string): BookSlip[] {
+	return listBooksByCategory(slug).map(toSlip);
+}
+
 export function listBooksByAuthor(slug: string): CatalogBook[] {
 	const rows = bookQuery().where(eq(author.slug, slug)).all();
 	return assembleBooks(rows);
+}
+
+export function listBookSlipsByAuthor(slug: string): BookSlip[] {
+	return listBooksByAuthor(slug).map(toSlip);
 }
 
 export function relatedBooks(bookId: string, categoryId: string, limit = 4): CatalogBook[] {
@@ -111,6 +196,10 @@ export function relatedBooks(bookId: string, categoryId: string, limit = 4): Cat
 	return assembleBooks(rows)
 		.filter((item) => item.id !== bookId)
 		.slice(0, limit);
+}
+
+export function relatedBookSlips(bookId: string, categoryId: string, limit = 4): BookSlip[] {
+	return relatedBooks(bookId, categoryId, limit).map(toSlip);
 }
 
 export function listCategories(): CategoryRecord[] {
@@ -230,7 +319,7 @@ export function listLoans(userId: string): LoanRecord[] {
 			borrowedAt: row.loan.borrowedAt,
 			dueAt: row.loan.dueAt,
 			returnedAt: row.loan.returnedAt,
-			book: catalogBook
+			book: toSlip(catalogBook)
 		});
 	}
 

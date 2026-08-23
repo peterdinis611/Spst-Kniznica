@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { CatalogBook } from '$lib/types';
+	import type { BookSlip } from '$lib/types';
 	import { authorLine } from '$lib/format';
 
-	let { book }: { book: CatalogBook } = $props();
+	let { book }: { book: BookSlip } = $props();
 </script>
 
 <a

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { CatalogBook } from '$lib/types';
+	import type { BookSlip } from '$lib/types';
 	import BookCover from './BookCover.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 
-	let { books }: { books: CatalogBook[] } = $props();
+	let { books }: { books: BookSlip[] } = $props();
 	let rail: HTMLDivElement | undefined = $state();
 
 	function next() {
@@ -12,7 +12,7 @@
 	}
 </script>
 
-<div class="relative">
+<div class="relative min-w-0 max-w-full">
 	<div class="cover-rail" bind:this={rail}>
 		{#each books as book (book.id)}
 			<BookCover {book} size="rail" />

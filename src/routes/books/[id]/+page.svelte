@@ -50,19 +50,19 @@
 			</Breadcrumb.Link>
 		</Breadcrumb.Item>
 		<Breadcrumb.Separator />
-		<Breadcrumb.Item>
-			<Breadcrumb.Page>{book.title}</Breadcrumb.Page>
+		<Breadcrumb.Item class="min-w-0">
+			<Breadcrumb.Page class="block max-w-[16ch] truncate sm:max-w-[28ch]">{book.title}</Breadcrumb.Page>
 		</Breadcrumb.Item>
 	</Breadcrumb.List>
 </Breadcrumb.Root>
 
-<article class="mt-8 grid items-start gap-10 md:grid-cols-[auto_1fr]">
+<article class="mt-5 grid items-start justify-items-center gap-5 sm:mt-8 sm:gap-10 md:grid-cols-[auto_1fr] md:justify-items-stretch">
 	<BookCover {book} size="hero" linked={false} />
-	<div>
+	<div class="min-w-0 w-full">
 		<Badge variant={available ? 'secondary' : 'destructive'}>
 			{copiesLabel(book.copiesAvailable, book.copiesTotal)}
 		</Badge>
-		<h2 class="mt-3 font-serif text-4xl font-bold md:text-5xl">{book.title}</h2>
+		<h2 class="mt-3 font-serif text-[1.7rem] leading-[1.05] font-bold break-words sm:text-[2.05rem] md:text-5xl">{book.title}</h2>
 		{#if book.subtitle}
 			<p class="text-muted-foreground mt-2 text-lg">{book.subtitle}</p>
 		{/if}
@@ -76,10 +76,10 @@
 				</a>{#if i < book.authors.length - 1}, {/if}
 			{/each}
 		</p>
-		<p class="text-muted-foreground mt-2 text-sm">
+		<p class="text-muted-foreground mt-2 text-sm break-words">
 			{book.publisher}, {book.year} · {book.pages} s. · ISBN {book.isbn} · {book.callNumber}
 		</p>
-		<p class="mt-5 max-w-xl font-serif text-lg leading-relaxed">{book.description}</p>
+		<p class="mt-5 max-w-xl font-serif text-[1.05rem] leading-relaxed sm:text-lg">{book.description}</p>
 		<Separator class="my-6" />
 
 		{#if form && 'message' in form && form.message}

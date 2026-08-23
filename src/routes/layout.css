@@ -204,6 +204,8 @@
 	html,
 	body {
 		@apply min-h-dvh bg-background font-sans text-foreground antialiased;
+		max-width: 100%;
+		overflow-x: clip;
 		font-optical-sizing: auto;
 	}
 
@@ -243,7 +245,9 @@
 .desk {
 	display: grid;
 	min-height: 100dvh;
-	grid-template-columns: 1fr;
+	max-width: 100%;
+	grid-template-columns: minmax(0, 1fr);
+	overflow-x: clip;
 	background: var(--sidebar);
 }
 
@@ -255,28 +259,74 @@
 
 .desk-shell {
 	min-width: 0;
-	padding: 0.7rem;
+	padding: 0;
 	background: var(--sidebar);
+}
+
+@media (min-width: 640px) {
+	.desk-shell {
+		padding: 0.7rem max(0.7rem, env(safe-area-inset-right)) max(0.7rem, env(safe-area-inset-bottom))
+			max(0.7rem, env(safe-area-inset-left));
+	}
 }
 
 @media (min-width: 1024px) {
 	.desk-shell {
-		padding: 1.05rem 1.05rem 1.05rem 0.15rem;
+		padding: 1.05rem max(1.05rem, env(safe-area-inset-right)) max(1.05rem, env(safe-area-inset-bottom))
+			0.15rem;
 	}
 }
 
 .desk-panel {
 	position: relative;
-	min-height: calc(100dvh - 2rem);
-	overflow: hidden;
-	border-radius: 1.05rem;
+	min-width: 0;
+	max-width: 100%;
+	min-height: 100dvh;
+	overflow-x: clip;
+	border-radius: 0;
 	background: var(--paper);
+}
+
+@media (min-width: 640px) {
+	.desk-panel {
+		min-height: calc(100dvh - 2rem);
+		border-radius: 1.05rem;
+	}
 }
 
 .desk-main {
 	position: relative;
 	z-index: 1;
-	padding: 0 2rem 2.75rem;
+	min-width: 0;
+	max-width: 100%;
+	overflow-x: clip;
+	padding: 0 0.95rem 1.7rem;
+}
+
+.shelf-rail {
+	display: flex;
+	align-items: flex-end;
+	gap: 0.75rem;
+	min-width: 0;
+	max-width: 100%;
+	padding: 0.2rem 0.2rem 1.15rem;
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	scrollbar-width: none;
+}
+
+.shelf-rail::-webkit-scrollbar {
+	display: none;
+}
+
+.shelf-rail > * {
+	flex: 0 0 auto;
+}
+
+@media (min-width: 640px) {
+	.desk-main {
+		padding: 0 2rem 2.75rem;
+	}
 }
 
 @media (min-width: 768px) {
@@ -302,11 +352,25 @@
 	box-shadow: 0 28px 48px rgb(40 32 18 / 0.24);
 }
 
+@media (max-width: 639px) {
+	.jacket {
+		box-shadow: 0 10px 16px rgb(40 32 18 / 0.14);
+	}
+
+	.jacket:hover {
+		transform: none;
+		box-shadow: 0 10px 16px rgb(40 32 18 / 0.14);
+	}
+}
+
 .cover-rail {
 	display: flex;
 	gap: 1.75rem;
+	min-width: 0;
+	max-width: 100%;
 	padding: 0.35rem 0.15rem 2.2rem;
 	overflow-x: auto;
+	overscroll-behavior-x: contain;
 	scroll-snap-type: x proximity;
 	scrollbar-width: none;
 }

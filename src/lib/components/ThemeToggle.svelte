@@ -13,7 +13,7 @@
 	type="button"
 	class={variant === 'hall'
 		? 'hall-theme-btn'
-		: 'grid size-10 cursor-pointer place-items-center rounded-full bg-primary text-primary-foreground hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring'}
+		: 'grid size-9 cursor-pointer place-items-center rounded-full bg-primary text-primary-foreground hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring sm:size-10'}
 	onclick={toggleMode}
 	aria-label={label}
 	title={label}

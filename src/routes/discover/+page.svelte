@@ -8,9 +8,7 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	const featured = $derived(
-		data.featured?.id === 'book-modlitbicky' ? data.books[0] : data.featured
-	);
+	const featured = $derived(data.featured);
 	const featuredCall = $derived(featured ? splitCallNumber(featured.callNumber) : null);
 	const catalog = $derived(
 		data.books.filter((book) => book.id !== 'book-modlitbicky' && book.id !== featured?.id)
@@ -21,7 +19,7 @@
 		[...data.authors].sort((a, b) => b.bookCount - a.bookCount).slice(0, 8)
 	);
 
-	const heights = [13.8, 12.2, 15, 12.8, 14.4, 12.5, 14.8];
+	const heights = [11.2, 10, 12.2, 10.6, 11.8, 10.3, 12];
 	const display =
 		'font-display m-0 font-semibold tracking-[-0.03em] leading-[1.06] [font-variation-settings:"SOFT"_28,"WONK"_0]';
 	const rise =
@@ -44,27 +42,33 @@
 			)}
 		>
 			<div
-				class="grid items-center gap-8 px-6 py-8 md:grid-cols-[auto_minmax(0,1fr)] md:gap-12 md:px-10 md:py-10 lg:grid-cols-[auto_minmax(0,1fr)_11.5rem]"
+				class="grid grid-cols-1 items-end gap-3.5 px-4 py-4 min-[420px]:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:gap-8 sm:px-6 sm:py-8 md:gap-12 md:px-10 md:py-10 lg:grid-cols-[auto_minmax(0,1fr)_11.5rem]"
 			>
 				<a
-					class="group justify-self-center no-underline md:justify-self-start"
+					class="group w-fit no-underline"
 					href={resolve('/books/[id]', { id: featured.id })}
 				>
 					<span class="block origin-bottom transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:-rotate-2 motion-reduce:transform-none">
 						<PrintJacket
 							book={featured}
+							size="thumb"
+							linked={false}
+							class="shadow-[6px_10px_0_rgb(0_0_0/0.16)] ring-0 hover:!transform-none sm:hidden"
+						/>
+						<PrintJacket
+							book={featured}
 							size="feature"
 							linked={false}
-							class="shadow-[12px_18px_0_rgb(0_0_0/0.18)] ring-0 hover:!transform-none"
+							class="hidden shadow-[12px_18px_0_rgb(0_0_0/0.18)] ring-0 hover:!transform-none sm:block"
 						/>
 					</span>
-					<span class="mx-auto mt-3 block h-2 w-[10.5rem] rounded-full bg-[rgb(0_0_0/0.22)] blur-[2px]"></span>
+					<span class="mx-auto mt-3 hidden h-2 w-[10.5rem] rounded-full bg-[rgb(0_0_0/0.22)] blur-[2px] sm:block"></span>
 				</a>
-				<div class="min-w-0">
-					<p class="m-0 font-sans text-[0.72rem] font-semibold tracking-[0.18em] uppercase opacity-65">
+				<div class="min-w-0 pb-0.5">
+					<p class="m-0 font-sans text-[0.62rem] font-semibold tracking-[0.16em] uppercase opacity-65 sm:text-[0.72rem] sm:tracking-[0.18em]">
 						Dnes na pulte
 					</p>
-					<h2 class={cn(display, 'mt-3 max-w-[12ch] text-[clamp(2.2rem,4.6vw,3.5rem)]')}>
+					<h2 class={cn(display, 'mt-1.5 max-w-[14ch] text-[clamp(1.35rem,6.4vw,3.5rem)] sm:mt-3')}>
 						<a
 							class="text-inherit no-underline decoration-from-font hover:underline"
 							href={resolve('/books/[id]', { id: featured.id })}
@@ -72,23 +76,23 @@
 							{featured.title}
 						</a>
 					</h2>
-					<p class="mt-4 m-0 font-body text-[1.12rem] leading-snug opacity-85">
+					<p class="mt-2 m-0 line-clamp-2 font-body text-[0.92rem] leading-snug opacity-85 sm:mt-4 sm:text-[1.12rem]">
 						{authorLine(featured.authors)}
 						<span class="mx-1.5">·</span>
 						{featured.category.name}
 					</p>
-					<p class="mt-4 m-0 max-w-[38ch] font-body text-[1.05rem] leading-relaxed opacity-75">
+					<p class="mt-4 m-0 hidden max-w-[38ch] font-body text-[1.05rem] leading-relaxed opacity-75 sm:block">
 						{featured.description}
 					</p>
-					<div class="mt-7 flex flex-wrap items-center gap-3">
+					<div class="mt-3 flex flex-wrap items-center gap-2 sm:mt-7 sm:gap-3">
 						<a
-							class="inline-flex h-11 items-center rounded-full bg-card px-6 font-sans text-[0.9rem] font-semibold text-card-foreground no-underline hover:opacity-90"
+							class="hidden h-11 items-center rounded-full bg-card px-6 font-sans text-[0.9rem] font-semibold text-card-foreground no-underline hover:opacity-90 sm:inline-flex"
 							href={resolve('/books/[id]', { id: featured.id })}
 						>
 							Pozrieť knihu
 						</a>
 						<span
-							class="inline-flex h-11 items-center rounded-full bg-[rgb(255_248_230/0.14)] px-4 font-sans text-[0.78rem] font-semibold tracking-wide"
+							class="inline-flex h-8 items-center rounded-full bg-[rgb(255_248_230/0.14)] px-3 font-sans text-[0.68rem] font-semibold tracking-wide sm:h-11 sm:px-4 sm:text-[0.78rem]"
 						>
 							{copiesLabel(featured.copiesAvailable, featured.copiesTotal)}
 						</span>
@@ -141,14 +145,14 @@
 				<span class="ml-1 text-muted-foreground">{cat.bookCount}</span>
 			</a>
 		{/each}
-		<span class="ml-auto font-body text-[0.92rem] text-muted-foreground">
+		<span class="hidden font-body text-[0.92rem] text-muted-foreground sm:ml-auto sm:inline">
 			{data.stats.available} voľných · {data.stats.books} zväzkov
 		</span>
 	</nav>
 
 	<section class={cn('mt-9 delay-150', rise)} data-tour="shelf">
-		<div class="mb-5 flex items-end justify-between gap-4">
-			<h2 class={cn(display, 'text-[clamp(1.6rem,3vw,2.2rem)]')}>Voľné na polici.</h2>
+		<div class="mb-5 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+			<h2 class={cn(display, 'min-w-0 text-[clamp(1.45rem,6vw,2.2rem)]')}>Voľné na polici.</h2>
 			<a
 				class="font-sans text-[0.82rem] font-semibold tracking-[0.04em] text-foreground no-underline hover:opacity-55"
 				href={resolve('/holdings')}
@@ -156,7 +160,7 @@
 				Všetky knihy
 			</a>
 		</div>
-		<div class="-mx-1 flex items-end gap-3 overflow-x-auto px-1 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+		<div class="shelf-rail">
 			{#each shelf as book, i (book.id)}
 				<a class="shrink-0 no-underline" href={resolve('/books/[id]', { id: book.id })}>
 					<PrintJacket {book} linked={false} height="{heights[i % heights.length]}rem" />
@@ -166,12 +170,12 @@
 	</section>
 
 	<section class={cn('mt-12 delay-150', rise)}>
-		<div class="mb-5 flex items-end justify-between gap-4">
-			<div>
+		<div class="mb-5 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+			<div class="min-w-0">
 				<p class="m-0 font-sans text-[0.72rem] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
 					Menný katalóg
 				</p>
-				<h2 class={cn(display, 'mt-1 text-[clamp(1.6rem,3vw,2.2rem)]')}>Autori vo fonde.</h2>
+				<h2 class={cn(display, 'mt-1 text-[clamp(1.45rem,6vw,2.2rem)]')}>Autori vo fonde.</h2>
 			</div>
 			<a
 				class="font-sans text-[0.82rem] font-semibold text-foreground no-underline hover:opacity-55"

@@ -1,30 +1,52 @@
 ---
 title: Katalóg
 description: Ako hľadať knihu podľa názvu, autora, odboru alebo signatúry.
+order: 2
 ---
 
-Fond má jednu vyhľadávaciu lištu — v hlavičke pultu. Druhé pole na stránke nehľadaj.
+Fond má **jednu vyhľadávaciu lištu** — v hlavičke pultu. Druhé pole na stránke nehľadaj.
 
 ## Kde začať
 
 - [Objavovať](/discover) — pulpit s výberom a voľnými chrbticami
 - [Všetky knihy](/holdings) — register fondu podľa odborov
-- [Katalóg](/books) — karty zväzkov s filtrami
+- [Katalóg](/books) — list zväzkov s filtrami
 - [Autori](/authors) — register A—Z podľa priezviska
 - [Odbory](/departments) — police podľa zamerania
 
-Na vstupnej sieni sú chrbty zväzkov. Klik na chrbát otvorí kartu knihy.
+Na [vstupnej sieni](/) sú chrbty zväzkov. Klik na chrbát otvorí kartu knihy.
 
 ## Hľadanie
 
-V katalógu a na objavovaní píšeš do lišty **názov, autora alebo signatúru**. Vedľa je filter **odboru**.
+V katalógu píšeš do lišty **názov, autora alebo signatúru**. Vedľa je filter **odboru** — na úzkom displeji ukáže kód (INF), na širšom celé meno.
 
 Na stránke autorov lišta hľadá **priezvisko alebo meno**. Filter odboru tam nie je.
 
-Klávesová skratka na vstupnej sieni: **⌘K** alebo **Ctrl+K**.
+Klávesová skratka na vstupnej sieni: **⌘K** alebo **Ctrl+K**. V katalógu ostáva lišta v hlavičke.
+
+Ak sa nič nenašlo, zruš filter alebo skús kratšie slovo. Fond hľadá v názve, signatúre, ISBN aj v mene autora.
+
+## Dva pohľady na ten istý fond
+
+**Katalóg** je list — lístok so signatúrou, autorom a stavom výtlačkov. Filter odboru ho zúži.
+
+**Register** na [Všetkých knihách](/holdings) radí tie isté zväzky podľa odboru. Podrobnosti sú v kapitole [Register](/docs/register).
+
+**Objavovať** neukáže celý fond naraz. Je to pult: dnešný výber, značky odborov a niekoľko voľných chrbtic.
 
 ## Karta knihy
 
-Každý zväzok má odbor, autorov, stav výtlačkov a tlačidlo výpožičky. Ak je kniha voľná a máš účet, berieš ju na 21 dní.
+Každý zväzok má:
+
+- názov, podtitul a rok
+- autorov — klik ide do ich registra
+- odbor a **signatúru** (kód police + číslo + rez)
+- ISBN, vydavateľa a počet strán
+- stav výtlačkov — koľko je voľných z celkového počtu
+- tlačidlo výpožičky, ak si prihlásený a kniha je voľná
+
+Ak je nula voľných, kniha ostáva v katalógu, ale zobrať sa nedá. Skús neskôr, alebo sa opýtaj na pulte.
+
+Súvisiace zväzky z toho istého odboru sú dole na karte.
 
 Prehľad podľa zamerania je v [odboroch](/docs/odbory). Pravidlá výpožičky sú v kapitole [Výpožičky](/docs/vypozicky).

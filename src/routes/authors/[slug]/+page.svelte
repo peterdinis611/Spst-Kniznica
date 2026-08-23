@@ -18,14 +18,14 @@
 			<Breadcrumb.Link href={resolve('/authors')}>Autori</Breadcrumb.Link>
 		</Breadcrumb.Item>
 		<Breadcrumb.Separator />
-		<Breadcrumb.Item>
-			<Breadcrumb.Page>{data.author.name}</Breadcrumb.Page>
+		<Breadcrumb.Item class="min-w-0">
+			<Breadcrumb.Page class="block max-w-[16ch] truncate sm:max-w-[28ch]">{data.author.name}</Breadcrumb.Page>
 		</Breadcrumb.Item>
 	</Breadcrumb.List>
 </Breadcrumb.Root>
 
 <Badge class="mt-5" variant="outline">{data.author.role}</Badge>
-<h2 class="mt-2 font-serif text-4xl font-bold md:text-5xl">{data.author.name}</h2>
+<h2 class="mt-2 font-serif text-[clamp(1.85rem,8vw,3.1rem)] leading-[1.05] font-bold break-words">{data.author.name}</h2>
 <p class="text-muted-foreground mt-3 max-w-xl font-serif text-lg">{data.author.bio}</p>
 <div class="mt-10">
 	<VirtualWindow count={data.books.length} estimateSize={() => 76}>

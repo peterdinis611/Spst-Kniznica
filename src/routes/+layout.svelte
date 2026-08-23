@@ -48,7 +48,7 @@
 		<div class="desk-shell">
 			<div class="desk-panel">
 				<AppTopbar user={data.user} categories={data.categories} />
-				<main id="obsah" class="desk-main pt-8">{@render children()}</main>
+				<main id="obsah" class="desk-main pt-3 sm:pt-5 md:pt-8">{@render children()}</main>
 				<div class="desk-main pt-0">
 					<Footer tone="desk" />
 				</div>

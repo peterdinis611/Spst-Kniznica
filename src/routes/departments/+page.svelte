@@ -17,16 +17,16 @@
 	Každý odbor má vlastnú policu. Otvor značku, alebo siahni rovno po chrbte.
 </p>
 
-<ol class="mt-10 m-0 grid list-none gap-10 p-0">
+<ol class="mt-10 m-0 grid min-w-0 list-none gap-10 p-0">
 	{#each data.categories as cat (cat.id)}
-		<li class="border-t border-border pt-6">
-			<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+		<li class="min-w-0 border-t border-border pt-6">
+			<div class="mb-4 flex min-w-0 flex-wrap items-end justify-between gap-3">
 				<a class="group min-w-0 text-inherit no-underline" href={resolve('/departments/[slug]', { slug: cat.slug })}>
 					<p class="m-0 font-mono text-[0.72rem] font-semibold tracking-[0.16em] text-muted-foreground">
 						{cat.code}
 					</p>
 					<h2
-						class="font-display mt-1 text-[clamp(1.7rem,3vw,2.25rem)] leading-none font-semibold tracking-[-0.03em] [font-variation-settings:'SOFT'_28,'WONK'_0] group-hover:underline group-hover:underline-offset-[0.14em]"
+						class="font-display mt-1 text-[clamp(1.45rem,7vw,2.25rem)] leading-none font-semibold tracking-[-0.03em] [font-variation-settings:'SOFT'_28,'WONK'_0] group-hover:underline group-hover:underline-offset-[0.14em]"
 					>
 						{cat.name}
 					</h2>
@@ -35,18 +35,19 @@
 					{booksLabel(cat.bookCount)}
 				</p>
 			</div>
-			<p class="mb-5 max-w-[46ch] font-body text-[1rem] leading-relaxed text-muted-foreground">
+			<p class="mb-5 max-w-[46ch] font-body text-[1rem] leading-relaxed break-words text-muted-foreground">
 				{cat.description}
 			</p>
 			{#if cat.books.length}
-				<div class="flex items-end gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+				<div class="shelf-rail">
 					{#each cat.books as book (book.id)}
-						<a class="shrink-0 no-underline" href={resolve('/books/[id]', { id: book.id })}>
-							<PrintJacket {book} linked={false} />
+						<a class="no-underline" href={resolve('/books/[id]', { id: book.id })}>
+							<PrintJacket {book} linked={false} size="thumb" class="sm:hidden" />
+							<PrintJacket {book} linked={false} class="hidden sm:block" />
 						</a>
 					{/each}
 					<a
-						class="mb-1 inline-flex h-11 shrink-0 items-center rounded-full px-4 font-sans text-[0.82rem] font-semibold text-foreground no-underline hover:opacity-55"
+						class="mb-1 inline-flex h-11 items-center rounded-full px-4 font-sans text-[0.82rem] font-semibold text-foreground no-underline hover:opacity-55"
 						href={resolve('/departments/[slug]', { slug: cat.slug })}
 					>
 						Celá polica

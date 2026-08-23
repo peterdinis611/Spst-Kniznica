@@ -1,0 +1,53 @@
+---
+title: Časté otázky
+description: Krátke odpovede, ktoré na pulte padajú najčastejšie.
+order: 8
+---
+
+## Môžem si požičať bez účtu?
+
+Nie. Fond si môžeš prehliadať ako hosť. Výpožička ide až po [prihlásení](/docs/ucet).
+
+## Koľko kníh naraz?
+
+Najviac **päť**. Ďalšiu vezmeš, až keď jednu vrátiš.
+
+## Ako dlho?
+
+**21 dní** od dňa výpožičky. Termín vidíš na [Moje knihy](/loans).
+
+## Čo keď nestihnem vrátiť?
+
+Dones knihu na pult. V aplikácii poplatok nie je. Oneskorenie rieši pavilón B, 1. poschodie.
+
+## Kniha píše nula voľných. Je preč?
+
+Nie. Všetky výtlačky sú vonku. Skús neskôr, alebo sa opýtaj na pulte, kto ju má.
+
+## Kde je príručka v menu?
+
+Nie je. Schválne nie je medzi Objavovať a Katalógom. Otvoríš ju z **pätičky**, alebo z tejto adresy.
+
+## Prečo sa prehliadka nespustila sama?
+
+Lebo má ísť len po kliknutí na **Prehliadka**. Podrobnosti sú v kapitole [Pult](/docs/pult).
+
+## Ako nájdem knihu, keď neviem názov?
+
+Skús **autora**, **odbor** alebo kúsok **signatúry**. Na Objavovať sú voľné chrbtice. Na [Odboroch](/departments) je polica tvojho smeru.
+
+## Čo znamená INF 004.4 BEL?
+
+Adresu na polici. INF je informatika, 004.4 číslo, BEL rez autora. Viac v kapitole [Register](/docs/register).
+
+## Ide to na telefóne?
+
+Áno. Menu je za ikonou, hľadanie ostáva v hlavičke, lístky sa zmestia do jedného riadku.
+
+## Dá sa prepnúť na tmavý pult?
+
+Áno. Prepínač je vpravo hore, vedľa účtu. Voľba ostane v prehliadači.
+
+## Kde vás nájdem?
+
+Pavilón B, 1. poschodie. Pondelok až piatok, 7:30—15:30.

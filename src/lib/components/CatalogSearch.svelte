@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import Fuse from 'fuse.js';
 	import { cubicOut } from 'svelte/easing';
 	import { fade, fly } from 'svelte/transition';
 	import SearchIcon from '@lucide/svelte/icons/search';
@@ -12,38 +11,19 @@
 	import type { CatalogSearchItem } from '$lib/search';
 
 	let {
-		items,
+		preview,
 		open = $bindable(false)
 	}: {
-		items: CatalogSearchItem[];
+		preview: CatalogSearchItem[];
 		open?: boolean;
 	} = $props();
 
 	let query = $state('');
 	let active = $state(0);
+	let hits = $state<CatalogSearchItem[]>([]);
 	let inputEl: HTMLInputElement | undefined = $state();
 
-	const fuse = $derived(
-		new Fuse(items, {
-			keys: [
-				{ name: 'title', weight: 0.45 },
-				{ name: 'authors', weight: 0.25 },
-				{ name: 'callNumber', weight: 0.2 },
-				{ name: 'category', weight: 0.07 },
-				{ name: 'isbn', weight: 0.03 }
-			],
-			threshold: 0.38,
-			ignoreLocation: true,
-			ignoreDiacritics: true,
-			minMatchCharLength: 1
-		})
-	);
-
-	const results = $derived.by(() => {
-		const q = query.trim();
-		if (!q) return items.slice(0, 6);
-		return fuse.search(q, { limit: 8 }).map((hit) => hit.item);
-	});
+	const results = $derived(query.trim() ? hits : preview);
 
 	$effect(() => {
 		query;
@@ -53,6 +33,7 @@
 	$effect(() => {
 		if (!open) return;
 		query = '';
+		hits = [];
 		active = 0;
 		const id = requestAnimationFrame(() => inputEl?.focus());
 		const original = document.body.style.overflow;
@@ -60,6 +41,30 @@
 		return () => {
 			cancelAnimationFrame(id);
 			document.body.style.overflow = original;
+		};
+	});
+
+	$effect(() => {
+		const q = query.trim();
+		if (!open || !q) return;
+
+		const controller = new AbortController();
+		const timer = setTimeout(async () => {
+			try {
+				const response = await fetch(`${resolve('/api/search')}?q=${encodeURIComponent(q)}`, {
+					signal: controller.signal
+				});
+				if (!response.ok) return;
+				const payload = (await response.json()) as { items?: CatalogSearchItem[] };
+				hits = payload.items ?? [];
+			} catch {
+				if (!controller.signal.aborted) hits = [];
+			}
+		}, 180);
+
+		return () => {
+			clearTimeout(timer);
+			controller.abort();
 		};
 	});
 
@@ -114,7 +119,7 @@
 			aria-modal="true"
 			aria-labelledby="catalog-search-title"
 			tabindex="-1"
-			transition:fly={{ y: 36, duration: 380, easing: cubicOut }}
+			transition:fly={{ y: 72, duration: 380, easing: cubicOut }}
 			onkeydown={onDialogKeydown}
 		>
 			<div class="search-head">
@@ -208,8 +213,8 @@
 		inset: 0;
 		z-index: 80;
 		display: grid;
-		place-items: start center;
-		padding: 12vh 1rem 2rem;
+		place-items: end stretch;
+		padding: 0;
 	}
 
 	.search-backdrop {
@@ -225,10 +230,11 @@
 	.search-panel {
 		position: relative;
 		z-index: 1;
-		width: min(38rem, 100%);
+		width: 100%;
 		overflow: hidden;
 		border: 1px solid color-mix(in srgb, var(--copper, #d46a1e) 28%, transparent);
-		border-radius: 1.15rem;
+		border-bottom: 0;
+		border-radius: 1.15rem 1.15rem 0 0;
 		background: var(--card, #f8f1e3);
 		box-shadow: 0 28px 70px rgb(28 23 18 / 0.32);
 		color: var(--ink, #1c1712);
@@ -297,9 +303,9 @@
 
 	.search-list {
 		margin: 0;
-		max-height: min(22rem, 48vh);
+		max-height: min(24rem, 48dvh);
 		overflow: auto;
-		padding: 0 0.55rem 0.7rem;
+		padding: 0 0.55rem max(0.85rem, env(safe-area-inset-bottom));
 		list-style: none;
 	}
 
@@ -334,10 +340,13 @@
 	}
 
 	.search-hit-copy strong {
+		overflow: hidden;
 		font-family: var(--display, 'Fraunces', serif);
 		font-size: 0.92rem;
 		font-weight: 800;
 		line-height: 1.2;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.search-hit-copy em {
@@ -437,6 +446,24 @@
 		50% {
 			opacity: 1;
 			transform: scaleY(1);
+		}
+	}
+
+	@media (min-width: 640px) {
+		.search-layer {
+			place-items: start center;
+			padding: 12vh 1rem 2rem;
+		}
+
+		.search-panel {
+			width: min(38rem, 100%);
+			border-bottom: 1px solid color-mix(in srgb, var(--copper, #d46a1e) 28%, transparent);
+			border-radius: 1.15rem;
+		}
+
+		.search-list {
+			max-height: min(22rem, 48vh);
+			padding-bottom: 0.7rem;
 		}
 	}
 

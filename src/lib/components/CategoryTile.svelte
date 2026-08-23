@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { CatalogBook, CategoryRecord } from '$lib/types';
+	import type { BookSlip, CategoryRecord } from '$lib/types';
 	import BookCover from './BookCover.svelte';
 
-	let { category, book }: { category: CategoryRecord; book?: CatalogBook } = $props();
+	let { category, book }: { category: CategoryRecord; book?: BookSlip } = $props();
 </script>
 
 <a href={resolve('/departments/[slug]', { slug: category.slug })} class="block no-underline">

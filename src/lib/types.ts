@@ -14,11 +14,29 @@ export type CategoryRecord = {
 	bookCount: number;
 };
 
+export type CategoryChip = {
+	id: string;
+	name: string;
+	slug: string;
+	code: string;
+	accent: string;
+	bookCount: number;
+};
+
 export type AuthorRecord = {
 	id: string;
 	name: string;
 	slug: string;
 	bio: string;
+	lifespan: string;
+	role: string;
+	bookCount: number;
+};
+
+export type AuthorSlip = {
+	id: string;
+	name: string;
+	slug: string;
 	lifespan: string;
 	role: string;
 	bookCount: number;
@@ -51,10 +69,20 @@ export type CatalogBook = {
 	}[];
 };
 
+export type BookSlip = {
+	id: string;
+	title: string;
+	callNumber: string;
+	copiesTotal: number;
+	copiesAvailable: number;
+	category: CatalogBook['category'];
+	authors: CatalogBook['authors'];
+};
+
 export type LoanRecord = {
 	id: string;
 	borrowedAt: Date;
 	dueAt: Date;
 	returnedAt: Date | null;
-	book: CatalogBook;
+	book: BookSlip;
 };

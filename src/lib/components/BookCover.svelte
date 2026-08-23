@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { CatalogBook } from '$lib/types';
+	import type { BookSlip } from '$lib/types';
 	import { authorLine } from '$lib/format';
 	import { authorLast, jacketFor } from '$lib/cover';
 	import { cn } from '$lib/utils.js';
@@ -12,7 +12,7 @@
 		linked = true,
 		plain = false
 	}: {
-		book: CatalogBook;
+		book: BookSlip;
 		size?: 'rail' | 'tile' | 'thumb' | 'hero';
 		linked?: boolean;
 		plain?: boolean;
@@ -25,7 +25,7 @@
 		rail: 'h-[16.8rem] w-[11.2rem] md:h-[18.4rem] md:w-[12.2rem]',
 		tile: 'aspect-[2/3] w-full',
 		thumb: 'h-[6.6rem] w-[4.5rem]',
-		hero: 'h-[22rem] w-[14.8rem]'
+		hero: 'h-[17.4rem] w-[11.6rem] sm:h-[22rem] sm:w-[14.8rem]'
 	};
 </script>
 

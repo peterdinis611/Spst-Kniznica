@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { authorLine, copiesLabel, splitCallNumber } from '$lib/format';
+	import { authorLine, copiesLabel, copiesShort, splitCallNumber } from '$lib/format';
 	import { clothFor } from '$lib/cover';
-	import type { CatalogBook } from '$lib/types';
+	import type { BookSlip } from '$lib/types';
 
-	let { book }: { book: CatalogBook } = $props();
+	let { book }: { book: BookSlip } = $props();
 
 	const call = $derived(splitCallNumber(book.callNumber));
 	const cloth = $derived(clothFor(book.id));
@@ -22,17 +22,23 @@
 		<strong>{book.title}</strong>
 		<span>{authorLine(book.authors)}</span>
 	</span>
-	<span class="slip-mark" class:is-out={out}>{copiesLabel(book.copiesAvailable, book.copiesTotal)}</span>
+	<span class="slip-mark" class:is-out={out}>
+		<abbr class="slip-short" title={copiesLabel(book.copiesAvailable, book.copiesTotal)}>
+			{copiesShort(book.copiesAvailable, book.copiesTotal)}
+		</abbr>
+		<span class="slip-full">{copiesLabel(book.copiesAvailable, book.copiesTotal)}</span>
+	</span>
 </a>
 
 <style>
 	.slip {
 		display: grid;
-		grid-template-columns: 0.42rem 5.6rem minmax(0, 1fr);
-		gap: 0.75rem 1rem;
+		grid-template-columns: 0.28rem 2.15rem minmax(0, 1fr) auto;
+		gap: 0.35rem 0.55rem;
 		align-items: center;
+		min-width: 0;
 		height: 100%;
-		padding: 0 0.2rem 0 0;
+		padding: 0;
 		border-top: 1px dashed color-mix(in srgb, var(--foreground) 16%, transparent);
 		text-decoration: none;
 		color: inherit;
@@ -40,42 +46,53 @@
 
 	.slip-tab {
 		align-self: stretch;
-		width: 0.42rem;
+		width: 0.28rem;
 		margin: 0.55rem 0;
 		border-radius: 999px;
 	}
 
 	.slip-call {
 		display: grid;
+		min-width: 0;
 		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
 		line-height: 1.15;
 	}
 
 	.slip-call i,
 	.slip-call em {
+		overflow: hidden;
 		font-style: normal;
-		font-size: 0.62rem;
+		font-size: 0.58rem;
 		font-weight: 600;
-		letter-spacing: 0.08em;
+		letter-spacing: 0.06em;
 		text-transform: uppercase;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 		color: var(--muted-foreground);
 	}
 
+	.slip-call em {
+		display: none;
+	}
+
 	.slip-call b {
-		font-size: 0.98rem;
+		overflow: hidden;
+		font-size: 0.78rem;
 		font-weight: 600;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.slip-body {
 		display: grid;
-		gap: 0.15rem;
+		gap: 0.12rem;
 		min-width: 0;
 	}
 
 	.slip-body strong {
 		overflow: hidden;
 		font-family: var(--font-display, Fraunces, serif);
-		font-size: 1.12rem;
+		font-size: 0.98rem;
 		font-weight: 650;
 		letter-spacing: -0.03em;
 		line-height: 1.15;
@@ -91,24 +108,32 @@
 	.slip-body span {
 		overflow: hidden;
 		font-family: var(--font-body, Newsreader, serif);
-		font-size: 0.92rem;
+		font-size: 0.82rem;
 		color: var(--muted-foreground);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
 	.slip-mark {
-		grid-column: 3;
-		justify-self: start;
-		padding: 0.22rem 0.55rem;
+		justify-self: end;
+		padding: 0.18rem 0.4rem;
 		border-radius: 999px;
 		background: color-mix(in srgb, #1e6b3c 16%, var(--card));
 		color: #1e6b3c;
 		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
-		font-size: 0.68rem;
+		font-size: 0.62rem;
 		font-weight: 700;
-		letter-spacing: 0.04em;
+		letter-spacing: 0.03em;
 		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.slip-full {
+		display: none;
+	}
+
+	.slip-short {
+		text-decoration: none;
 	}
 
 	.slip-mark.is-out {
@@ -129,11 +154,47 @@
 	@media (min-width: 640px) {
 		.slip {
 			grid-template-columns: 0.42rem 5.8rem minmax(0, 1fr) auto;
+			gap: 0.75rem 1rem;
+		}
+
+		.slip-tab {
+			width: 0.42rem;
+		}
+
+		.slip-call em {
+			display: block;
+		}
+
+		.slip-call i,
+		.slip-call em {
+			font-size: 0.62rem;
+			letter-spacing: 0.08em;
+		}
+
+		.slip-call b {
+			font-size: 0.98rem;
+		}
+
+		.slip-body strong {
+			font-size: 1.12rem;
+		}
+
+		.slip-body span {
+			font-size: 0.92rem;
 		}
 
 		.slip-mark {
-			grid-column: auto;
-			justify-self: end;
+			padding: 0.22rem 0.55rem;
+			font-size: 0.68rem;
+			letter-spacing: 0.04em;
+		}
+
+		.slip-short {
+			display: none;
+		}
+
+		.slip-full {
+			display: inline;
 		}
 	}
 </style>

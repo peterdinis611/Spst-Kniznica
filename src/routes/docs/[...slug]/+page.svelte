@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { flattenPageTree } from 'fumadocs-svelte';
 	import { docsHref } from '$lib/docs/href';
+	import { sortDocChapters } from '$lib/docs/order';
 	import Handbook from '$lib/components/Handbook.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();
 	const Content = $derived(data.page.code);
-	const siblings = $derived(flattenPageTree(data.pageTree));
+	const siblings = $derived(sortDocChapters(flattenPageTree(data.pageTree)));
 	const index = $derived(siblings.findIndex((entry) => entry.url === data.page.url));
 	const previous = $derived(index > 0 ? siblings[index - 1] : undefined);
 	const next = $derived(index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : undefined);
