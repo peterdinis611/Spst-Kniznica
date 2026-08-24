@@ -42,5 +42,8 @@ export default defineConfig(
 			'svelte/no-navigation-without-resolve': 'off'
 		}
 	},
+	{
+		ignores: ['k6/**']
+	},
 	...storybook.configs['flat/recommended']
 );

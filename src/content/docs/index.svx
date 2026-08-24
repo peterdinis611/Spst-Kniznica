@@ -38,5 +38,6 @@ Táto príručka je interný zošit pultu. V hlavnom menu ju nehľadaj — otvor
 - [E-mail](/docs/email) — listy z pultu: potvrdenie preukazu a obnova hesla
 - [Pult](/docs/pult) — menu, téma, prehliadka pultu aj príručky
 - [Časté otázky](/docs/otazky) — krátke odpovede z pultu
+- [Záťaž](/docs/zataz) — k6 stresstesty a grafy v Grafane
 
 Prehliadku **pultu** spustíš v bočnom paneli tlačidlom **Prehliadka**. Prehliadku **príručky** spustíš v hlavičke tohto zošita. Ani jedna sa nespustí sama.

@@ -36,7 +36,7 @@ Stav sa mení hneď po výpožičke a vrátení. Ak číslo nesedí s pultom, ve
 
 ## Veľký fond
 
-Keď je vo fonde veľa zväzkov, register sa **kreslí po okienkach** — skroluješ list, kreslia sa len viditeľné lístky. Nič z fondu sa nestráca, len sa stránka neudýcha.
+Keď je vo fonde veľa zväzkov, register sa **kreslí po okienkach** — skroluješ list, kreslia sa len viditeľné lístky. Nič z fondu sa nestráca, len sa stránka neudýcha. Záťaž tohto listu meria [k6](/docs/zataz).
 
 To isté platí pre [katalóg](/books) a [autorov](/authors).
 
