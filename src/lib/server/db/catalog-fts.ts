@@ -95,6 +95,69 @@ export function rebuildCatalogFts() {
 	write();
 }
 
+function bookFtsRow(bookId: string) {
+	const rows = db
+		.select({
+			id: book.id,
+			title: book.title,
+			subtitle: book.subtitle,
+			description: book.description,
+			isbn: book.isbn,
+			callNumber: book.callNumber,
+			publisher: book.publisher,
+			authorName: author.name
+		})
+		.from(book)
+		.leftJoin(bookAuthor, eq(bookAuthor.bookId, book.id))
+		.leftJoin(author, eq(author.id, bookAuthor.authorId))
+		.where(eq(book.id, bookId))
+		.all();
+
+	if (rows.length === 0) return null;
+
+	const authors = rows
+		.map((row) => row.authorName)
+		.filter((name): name is string => Boolean(name));
+
+	const first = rows[0];
+	return {
+		id: first.id,
+		title: first.title,
+		subtitle: first.subtitle ?? '',
+		description: first.description,
+		isbn: first.isbn,
+		callNumber: first.callNumber,
+		publisher: first.publisher,
+		authors: [...new Set(authors)].join(' ')
+	};
+}
+
+export function upsertBookFts(bookId: string) {
+	sqlite.prepare('DELETE FROM book_fts WHERE book_id = ?').run(bookId);
+	const row = bookFtsRow(bookId);
+	if (!row) return;
+
+	sqlite
+		.prepare(
+			`INSERT INTO book_fts (book_id, title, subtitle, description, isbn, call_number, publisher, authors)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+		)
+		.run(
+			row.id,
+			row.title,
+			row.subtitle,
+			row.description,
+			row.isbn,
+			row.callNumber,
+			row.publisher,
+			row.authors
+		);
+}
+
+export function deleteBookFts(bookId: string) {
+	sqlite.prepare('DELETE FROM book_fts WHERE book_id = ?').run(bookId);
+}
+
 export function ftsBookIds(query: string, limit = 8): string[] {
 	const match = ftsQuery(query);
 	if (!match) return [];
