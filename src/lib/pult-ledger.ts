@@ -6,7 +6,7 @@ import {
 	tableFeatures,
 	type ColumnDef,
 	type RowData
-} from '@tanstack/svelte-table';
+} from '@tanstack/table-core';
 
 export const pultFeatures = tableFeatures({
 	rowSortingFeature,
@@ -32,6 +32,15 @@ export function isPultStack(value: unknown): value is { title: string; hint?: st
 
 export function isPultStamp(value: unknown): value is { stamp: string; desk?: boolean } {
 	return Boolean(value && typeof value === 'object' && 'stamp' in value);
+}
+
+export function pickCurrent<T extends { id: string }>(
+	rows: T[],
+	id: string,
+	fallback?: (id: string) => T | null | undefined
+) {
+	if (!id) return null;
+	return rows.find((row) => row.id === id) ?? fallback?.(id) ?? null;
 }
 
 export function pultHref(url: URL, patch: Record<string, string | null>) {

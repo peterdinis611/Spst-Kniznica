@@ -15,6 +15,9 @@ const config = {
 	},
 	kit: {
 		adapter: adapter(),
+		alias: {
+			'$tanstack/flex-render': 'node_modules/@tanstack/svelte-table/dist/FlexRender.svelte'
+		},
 		typescript: {
 			config: (config) => {
 				config.include.push('../drizzle.config.ts');

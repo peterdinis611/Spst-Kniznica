@@ -19,4 +19,14 @@ declare global {
 	}
 }
 
+declare module '../../node_modules/@tanstack/svelte-table/dist/createTable.svelte.js' {
+	export { createTable } from '@tanstack/svelte-table';
+}
+
+declare module '$tanstack/flex-render' {
+	import type { Component } from 'svelte';
+	const FlexRender: Component<{ cell?: unknown; header?: unknown; footer?: unknown }>;
+	export default FlexRender;
+}
+
 export {};

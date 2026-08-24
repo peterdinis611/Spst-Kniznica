@@ -1,13 +1,14 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { formDate, formText } from '$lib/server/admin';
-import { bookOptions, deleteHolding, listDeskHoldings, saveHolding } from '$lib/server/admin-desk';
+import { pickCurrent } from '$lib/pult-ledger';
+import { bookOptions, deleteHolding, getDeskHolding, listDeskHoldings, saveHolding } from '$lib/server/admin-desk';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';
 	const edit = url.searchParams.get('edit') ?? '';
 	const rows = listDeskHoldings(q);
-	const current = rows.find((row) => row.id === edit) ?? null;
+	const current = pickCurrent(rows, edit, getDeskHolding);
 	return { q, rows, current, books: bookOptions() };
 };
 

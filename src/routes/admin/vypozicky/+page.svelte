@@ -53,7 +53,7 @@
 		{#snippet actions({ row })}
 			<Button href={pultHref(page.url, { edit: row.id })} size="sm" variant="outline">Upraviť</Button>
 			{#if !row.returnedAt}
-				<form method="POST" action="?/return">
+				<form method="POST" action="?/return" use:enhance>
 					<input type="hidden" name="id" value={row.id} />
 					<Button size="sm" type="submit">Vrátiť</Button>
 				</form>
@@ -62,6 +62,7 @@
 		{/snippet}
 	</PultLedger>
 
+	{#key current?.id ?? 'new'}
 	<form class="pult-form" method="POST" action="?/save" use:enhance>
 		<h2>{current ? 'Opraviť lístok' : 'Nový lístok'}</h2>
 		<input type="hidden" name="id" value={current?.id ?? ''} />
@@ -128,8 +129,9 @@
 		<div class="pult-submit">
 			<Button type="submit">{current ? 'Uložiť' : 'Založiť'}</Button>
 			{#if current}
-				<Button href="/admin/vypozicky" variant="ghost">Zrušiť</Button>
+				<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
 			{/if}
 		</div>
 	</form>
+	{/key}
 </div>

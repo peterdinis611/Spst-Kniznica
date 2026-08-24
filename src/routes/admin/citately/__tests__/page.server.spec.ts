@@ -5,6 +5,7 @@ import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/admin-desk', () => ({
 	listDeskReaders: vi.fn(),
+	getDeskReader: vi.fn(),
 	saveReader: vi.fn(),
 	deleteReader: vi.fn()
 }));

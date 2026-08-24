@@ -43,6 +43,7 @@
 		{/snippet}
 	</PultLedger>
 
+	{#key current?.id ?? 'new'}
 	<form class="pult-form" method="POST" action="?/save" use:enhance>
 		<h2>{current ? 'Opraviť autora' : 'Nový autor'}</h2>
 		<input type="hidden" name="id" value={current?.id ?? ''} />
@@ -71,8 +72,9 @@
 		<div class="pult-submit">
 			<Button type="submit">{current ? 'Uložiť' : 'Založiť'}</Button>
 			{#if current}
-				<Button href="/admin/autori" variant="ghost">Zrušiť</Button>
+				<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
 			{/if}
 		</div>
 	</form>
+	{/key}
 </div>

@@ -113,6 +113,36 @@ export function listDeskCategories(query = '') {
 	return rows;
 }
 
+export function getDeskCategory(id: string) {
+	if (!id) return null;
+	return (
+		db
+			.select({
+				id: category.id,
+				name: category.name,
+				slug: category.slug,
+				description: category.description,
+				code: category.code,
+				accent: category.accent,
+				sortOrder: category.sortOrder,
+				bookCount: count(book.id)
+			})
+			.from(category)
+			.leftJoin(book, eq(book.categoryId, category.id))
+			.where(eq(category.id, id))
+			.groupBy(
+				category.id,
+				category.name,
+				category.slug,
+				category.description,
+				category.code,
+				category.accent,
+				category.sortOrder
+			)
+			.get() ?? null
+	);
+}
+
 export function saveCategory(input: {
 	id?: string;
 	name: string;
@@ -198,6 +228,27 @@ export function listDeskAuthors(query = '') {
 		.all();
 }
 
+export function getDeskAuthor(id: string) {
+	if (!id) return null;
+	return (
+		db
+			.select({
+				id: author.id,
+				name: author.name,
+				slug: author.slug,
+				bio: author.bio,
+				lifespan: author.lifespan,
+				role: author.role,
+				bookCount: count(bookAuthor.bookId)
+			})
+			.from(author)
+			.leftJoin(bookAuthor, eq(bookAuthor.authorId, author.id))
+			.where(eq(author.id, id))
+			.groupBy(author.id, author.name, author.slug, author.bio, author.lifespan, author.role)
+			.get() ?? null
+	);
+}
+
 export function saveAuthor(input: {
 	id?: string;
 	name: string;
@@ -276,6 +327,34 @@ export function listDeskBooks(query = '') {
 		.orderBy(asc(book.title))
 		.limit(LIST_LIMIT)
 		.all();
+}
+
+export function getDeskBook(id: string) {
+	if (!id) return null;
+	return (
+		db
+			.select({
+				id: book.id,
+				title: book.title,
+				subtitle: book.subtitle,
+				year: book.year,
+				pages: book.pages,
+				isbn: book.isbn,
+				description: book.description,
+				callNumber: book.callNumber,
+				categoryId: book.categoryId,
+				categoryName: category.name,
+				copiesTotal: book.copiesTotal,
+				copiesAvailable: book.copiesAvailable,
+				publisher: book.publisher,
+				language: book.language,
+				featured: book.featured
+			})
+			.from(book)
+			.innerJoin(category, eq(book.categoryId, category.id))
+			.where(eq(book.id, id))
+			.get() ?? null
+	);
 }
 
 export function bookAuthorIds(bookId: string) {
@@ -527,6 +606,25 @@ export function listDeskHoldings(query = '') {
 		.all();
 }
 
+export function getDeskHolding(id: string) {
+	if (!id) return null;
+	return (
+		db
+			.select({
+				id: holding.id,
+				bookId: holding.bookId,
+				inventoryNo: holding.inventoryNo,
+				status: holding.status,
+				acquiredAt: holding.acquiredAt,
+				bookTitle: book.title
+			})
+			.from(holding)
+			.innerJoin(book, eq(book.id, holding.bookId))
+			.where(eq(holding.id, id))
+			.get() ?? null
+	);
+}
+
 export function saveHolding(input: {
 	id?: string;
 	bookId: string;
@@ -646,6 +744,35 @@ export function listDeskLoans(query = '') {
 		.orderBy(desc(loan.borrowedAt))
 		.limit(LIST_LIMIT)
 		.all();
+}
+
+export function getDeskLoan(id: string) {
+	if (!id) return null;
+	return (
+		db
+			.select({
+				id: loan.id,
+				bookId: loan.bookId,
+				holdingId: loan.holdingId,
+				userId: loan.userId,
+				borrowedAt: loan.borrowedAt,
+				dueAt: loan.dueAt,
+				returnedAt: loan.returnedAt,
+				renewalCount: loan.renewalCount,
+				borrowerFirstName: loan.borrowerFirstName,
+				borrowerLastName: loan.borrowerLastName,
+				borrowerClass: loan.borrowerClass,
+				loanDays: loan.loanDays,
+				bookTitle: book.title,
+				readerName: user.name,
+				readerEmail: user.email
+			})
+			.from(loan)
+			.innerJoin(book, eq(book.id, loan.bookId))
+			.innerJoin(user, eq(user.id, loan.userId))
+			.where(eq(loan.id, id))
+			.get() ?? null
+	);
 }
 
 export function saveLoan(input: {
@@ -797,6 +924,29 @@ export function listDeskReservations(query = '') {
 		.all();
 }
 
+export function getDeskReservation(id: string) {
+	if (!id) return null;
+	return (
+		db
+			.select({
+				id: reservation.id,
+				bookId: reservation.bookId,
+				userId: reservation.userId,
+				createdAt: reservation.createdAt,
+				expiresAt: reservation.expiresAt,
+				status: reservation.status,
+				bookTitle: book.title,
+				readerName: user.name,
+				readerEmail: user.email
+			})
+			.from(reservation)
+			.innerJoin(book, eq(book.id, reservation.bookId))
+			.innerJoin(user, eq(user.id, reservation.userId))
+			.where(eq(reservation.id, id))
+			.get() ?? null
+	);
+}
+
 export function saveReservation(input: {
 	id?: string;
 	bookId: string;
@@ -867,6 +1017,27 @@ export function listDeskReaders(query = '') {
 		.orderBy(asc(user.name))
 		.limit(LIST_LIMIT)
 		.all();
+}
+
+export function getDeskReader(id: string) {
+	if (!id) return null;
+	return (
+		db
+			.select({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				role: user.role,
+				emailVerified: user.emailVerified,
+				createdAt: user.createdAt,
+				loanCount: sql<number>`(select count(*) from loan where loan.user_id = ${user.id})`.as(
+					'loanCount'
+				)
+			})
+			.from(user)
+			.where(eq(user.id, id))
+			.get() ?? null
+	);
 }
 
 export function saveReader(input: {

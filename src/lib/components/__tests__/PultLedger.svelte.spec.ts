@@ -23,7 +23,7 @@ describe('PultLedger', () => {
 			{ id: 'str', name: 'Stroje', slug: 'stroje', count: 12 },
 			{ id: 'inf', name: 'Informatika', slug: 'informatika', count: 3 }
 		];
-		render(PultLedger, { rows, columns, empty: 'prázdne' });
+		render(PultLedger, { rows, columns: columns as never, empty: 'prázdne' });
 
 		await expect.element(page.getByText('Stroje')).toBeVisible();
 		await expect.element(page.getByText('stroje')).toBeVisible();
@@ -41,7 +41,7 @@ describe('PultLedger', () => {
 			slug: `listok-${i}`,
 			count: i
 		}));
-		render(PultLedger, { rows, columns });
+		render(PultLedger, { rows, columns: columns as never });
 
 		await expect.element(page.getByText(/virtuálny register/)).toBeVisible();
 		expect(document.querySelectorAll('.pult-ledger-row').length).toBeLessThan(40);

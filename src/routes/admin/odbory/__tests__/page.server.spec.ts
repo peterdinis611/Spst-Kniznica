@@ -1,10 +1,11 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { deleteCategory, listDeskCategories, saveCategory } from '$lib/server/admin-desk';
+import { deleteCategory, getDeskCategory, listDeskCategories, saveCategory } from '$lib/server/admin-desk';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/admin-desk', () => ({
 	listDeskCategories: vi.fn(),
+	getDeskCategory: vi.fn(),
 	saveCategory: vi.fn(),
 	deleteCategory: vi.fn()
 }));
@@ -23,6 +24,7 @@ const odbor = {
 describe('admin odbory load', () => {
 	beforeEach(() => {
 		vi.mocked(listDeskCategories).mockReset();
+		vi.mocked(getDeskCategory).mockReset();
 	});
 
 	it('picks the edited drawer card', async () => {
@@ -39,6 +41,20 @@ describe('admin odbory load', () => {
 		expect(listDeskCategories).toHaveBeenCalledWith('inf');
 		expect(data.current?.code).toBe('INF');
 		expect(data.q).toBe('inf');
+	});
+
+	it('keeps the edited card when search no longer lists it', async () => {
+		vi.mocked(listDeskCategories).mockReturnValue([]);
+		vi.mocked(getDeskCategory).mockReturnValue(odbor);
+
+		const data = (await load({
+			url: new URL('http://localhost/admin/odbory?edit=cat-inf&q=xyz')
+		} as Parameters<typeof load>[0])) as {
+			current: typeof odbor | null;
+		};
+
+		expect(getDeskCategory).toHaveBeenCalledWith('cat-inf');
+		expect(data.current?.code).toBe('INF');
 	});
 });
 

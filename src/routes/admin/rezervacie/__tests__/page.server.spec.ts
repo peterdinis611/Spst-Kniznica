@@ -5,6 +5,7 @@ import { actions } from '../+page.server';
 
 vi.mock('$lib/server/admin-desk', () => ({
 	listDeskReservations: vi.fn(),
+	getDeskReservation: vi.fn(),
 	bookOptions: vi.fn(),
 	readerOptions: vi.fn(),
 	saveReservation: vi.fn(),

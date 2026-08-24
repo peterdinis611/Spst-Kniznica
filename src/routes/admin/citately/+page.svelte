@@ -65,6 +65,7 @@
 	</PultLedger>
 
 	{#if current}
+		{#key current.id}
 		<form class="pult-form" method="POST" action="?/save" use:enhance>
 			<h2>Opraviť preukaz</h2>
 			<input type="hidden" name="id" value={current.id} />
@@ -91,8 +92,9 @@
 			<p class="pult-count">založený {shortDate(current.createdAt)}</p>
 			<div class="pult-submit">
 				<Button type="submit">Uložiť</Button>
-				<Button href="/admin/citately" variant="ghost">Zrušiť</Button>
+				<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
 			</div>
 		</form>
+		{/key}
 	{/if}
 </div>

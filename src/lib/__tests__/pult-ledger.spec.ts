@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	isPultStack,
 	isPultStamp,
+	pickCurrent,
 	pultCellOf,
 	pultHref,
 	pultSearchPath,
@@ -17,6 +18,19 @@ describe('pultHref', () => {
 	it('clears an empty search without dropping the rest of the slip', () => {
 		const url = new URL('http://localhost/admin/knihy?q=stroje&edit=book-1');
 		expect(pultSearchPath(url, '  ')).toBe('/admin/knihy?edit=book-1');
+	});
+
+	it('drops the edit flag when cancelling a card', () => {
+		const url = new URL('http://localhost/admin/knihy?q=stroje&edit=book-1');
+		expect(pultHref(url, { edit: null })).toBe('/admin/knihy?q=stroje');
+	});
+});
+
+describe('pickCurrent', () => {
+	it('keeps the open slip even when the drawer list moved on', () => {
+		const held = { id: 'cat-inf', name: 'Informatika' };
+		expect(pickCurrent([], 'cat-inf', () => held)?.name).toBe('Informatika');
+		expect(pickCurrent([held], '', () => held)).toBeNull();
 	});
 });
 

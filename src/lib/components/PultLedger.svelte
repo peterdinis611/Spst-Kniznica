@@ -2,7 +2,8 @@
 	import { get } from 'svelte/store';
 	import type { Snippet } from 'svelte';
 	import { createVirtualizer } from '@tanstack/svelte-virtual';
-	import { createTable, FlexRender } from '@tanstack/svelte-table';
+	import { createTable } from '$lib/tanstack-create-table';
+	import FlexRender from '$tanstack/flex-render';
 	import { LIST_LIMIT } from '$lib/admin';
 	import {
 		isPultStack,
@@ -94,6 +95,7 @@
 	);
 </script>
 
+<div class="pult-drawer">
 {#if rows.length === 0}
 	<p class="pult-empty">{empty}</p>
 {:else}
@@ -173,3 +175,4 @@
 		{#if virtual} · virtuálny register{/if}
 	</p>
 {/if}
+</div>

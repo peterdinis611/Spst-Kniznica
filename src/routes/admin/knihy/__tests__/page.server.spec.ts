@@ -12,6 +12,7 @@ import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/admin-desk', () => ({
 	listDeskBooks: vi.fn(),
+	getDeskBook: vi.fn(),
 	bookAuthorIds: vi.fn(),
 	categoryOptions: vi.fn(),
 	authorOptions: vi.fn(),

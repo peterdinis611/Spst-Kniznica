@@ -1,9 +1,11 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { formDate, formInt, formText } from '$lib/server/admin';
+import { pickCurrent } from '$lib/pult-ledger';
 import {
 	bookOptions,
 	deleteLoan,
+	getDeskLoan,
 	listDeskLoans,
 	readerOptions,
 	returnDeskLoan,
@@ -14,7 +16,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';
 	const edit = url.searchParams.get('edit') ?? '';
 	const rows = listDeskLoans(q);
-	const current = rows.find((row) => row.id === edit) ?? null;
+	const current = pickCurrent(rows, edit, getDeskLoan);
 	return { q, rows, current, books: bookOptions(), readers: readerOptions() };
 };
 

@@ -261,6 +261,10 @@
 	color: var(--pult-muted);
 }
 
+.pult-drawer {
+	min-width: 0;
+}
+
 .pult-note {
 	margin: 0 0 0.9rem;
 	padding: 0.55rem 0.75rem;
@@ -472,7 +476,7 @@
 .pult-ledger-head,
 .pult-ledger-row {
 	display: grid;
-	grid-template-columns: repeat(calc(var(--pult-cols) - 1), minmax(5.5rem, 1fr)) minmax(7.5rem, auto);
+	grid-template-columns: repeat(calc(var(--pult-cols) - 1), minmax(5.5rem, 1fr)) minmax(11rem, auto);
 	gap: 0.55rem;
 	align-items: center;
 	min-width: 36rem;
@@ -571,6 +575,7 @@
 }
 
 .pult-ledger .pult-actions {
+	flex-wrap: nowrap;
 	justify-content: flex-end;
 }
 
