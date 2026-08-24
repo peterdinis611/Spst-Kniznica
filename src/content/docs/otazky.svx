@@ -54,7 +54,7 @@ Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mai
 
 ## Kde je správa fondu?
 
-V **preukaze vpravo** (kruh s iniciálami) je **Pult**. Ľavé menu ho neschováva omylom — je to zásuvka správy, nie katalóg. Podrobnosti sú v kapitole [Správa](/docs/sprava).
+V **preukaze vpravo** (kruh s iniciálami) je **Pult** — ale len pre knihovníka. Ľavé menu ho neschováva omylom — je to zásuvka správy, nie katalóg. Podrobnosti sú v kapitole [Správa](/docs/sprava).
 
 ## Kde vás nájdem?
 

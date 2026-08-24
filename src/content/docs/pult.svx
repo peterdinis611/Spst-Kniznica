@@ -25,7 +25,7 @@ Dole v paneli sú hodiny pultu, **Prehliadka** a prihlásenie.
 
 Tlačidlo **Prehliadka** je v **bočnom paneli**, nie v katalógu. Sama sa nespustí. Ani po prvom otvorení, ani z adresy. Len po kliknutí.
 
-Ide po značke školy, menu fondu, hľadaní, dnešnom výbere, odboroch, voľnej polici a **preukaze** vpravo (kruh s iniciálami — Moje knihy, číslo preukazu, odhlásenie; správa fondu tam vidí aj Pult).
+Ide po značke školy, menu fondu, hľadaní, dnešnom výbere, odboroch, voľnej polici a **preukaze** vpravo (kruh s iniciálami — Moje knihy, číslo preukazu, odhlásenie; knihovník tam vidí aj Pult).
 
 Ak krok na stránke nie je (si napríklad v katalógu, nie na Objavovať), prehliadka ho preskočí. Najviac z nej uvidíš na [Objavovať](/discover).
 

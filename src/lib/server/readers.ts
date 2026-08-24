@@ -1,4 +1,6 @@
 import { eq } from 'drizzle-orm';
+import { parseRole, type Role } from '$lib/ability';
+import { isAdminEmail } from '$lib/server/admin-access';
 import { db } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';
 import type { SignedReader } from '$lib/types';
@@ -10,7 +12,28 @@ function displayName(name: string, email: string) {
 	return local.length >= 2 ? local : 'Čitateľ';
 }
 
-export function ensureLocalReader(input: { id: string; email: string; name: string }): SignedReader | null {
+function metaValue(meta: unknown, key: string): unknown {
+	if (meta && typeof meta === 'object' && meta !== null && key in meta) {
+		return (meta as Record<string, unknown>)[key];
+	}
+	return undefined;
+}
+
+function pass(id: string, name: string, email: string, role: Role): SignedReader {
+	return { id, name, email, role };
+}
+
+function resolvedRole(email: string, stored: unknown, fromMeta: unknown): Role {
+	if (isAdminEmail(email) || fromMeta === 'librarian') return 'librarian';
+	return parseRole(stored);
+}
+
+export function ensureLocalReader(input: {
+	id: string;
+	email: string;
+	name: string;
+	role?: unknown;
+}): SignedReader | null {
 	const email = input.email.trim().toLowerCase();
 	if (!email) return null;
 
@@ -20,26 +43,34 @@ export function ensureLocalReader(input: { id: string; email: string; name: stri
 		db.select().from(user).where(eq(user.id, input.id)).get();
 
 	if (existing) {
-		if (existing.name !== name || existing.email !== email || !existing.emailVerified) {
+		const role = resolvedRole(email, existing.role, input.role);
+		if (
+			existing.name !== name ||
+			existing.email !== email ||
+			!existing.emailVerified ||
+			parseRole(existing.role) !== role
+		) {
 			db.update(user)
-				.set({ name, email, emailVerified: true, updatedAt: new Date() })
+				.set({ name, email, emailVerified: true, role, updatedAt: new Date() })
 				.where(eq(user.id, existing.id))
 				.run();
 		}
 
-		return { id: existing.id, name, email };
+		return pass(existing.id, name, email, role);
 	}
 
+	const role = resolvedRole(email, 'reader', input.role);
 	db.insert(user)
 		.values({
 			id: input.id,
 			name,
 			email,
-			emailVerified: true
+			emailVerified: true,
+			role
 		})
 		.run();
 
-	return { id: input.id, name, email };
+	return pass(input.id, name, email, role);
 }
 
 export function readerFromClaims(claims: {
@@ -49,15 +80,10 @@ export function readerFromClaims(claims: {
 }): SignedReader | null {
 	if (!claims.sub) return null;
 
-	const meta = claims.user_metadata;
-	const metaName =
-		meta && typeof meta === 'object' && meta !== null && 'name' in meta
-			? String((meta as { name?: unknown }).name ?? '')
-			: '';
-
 	return ensureLocalReader({
 		id: claims.sub,
 		email: claims.email ?? '',
-		name: metaName
+		name: String(metaValue(claims.user_metadata, 'name') ?? ''),
+		role: metaValue(claims.user_metadata, 'role')
 	});
 }

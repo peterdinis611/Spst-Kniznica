@@ -1,22 +1,42 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { HOLDING_STATUSES, LIST_LIMIT, holdingLabel, toDatetimeLocal } from '$lib/admin';
+	import { page } from '$app/state';
+	import { HOLDING_STATUSES, holdingLabel, toDatetimeLocal } from '$lib/admin';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultDelete from '$lib/components/PultDelete.svelte';
+	import PultLedger from '$lib/components/PultLedger.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { shortDate } from '$lib/format';
+	import { pultHref, type PultColumn } from '$lib/pult-ledger';
 	import type { ActionData, PageProps } from './$types';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const current = $derived(data.current);
+	const columns: PultColumn<(typeof data.rows)[number]>[] = [
+		{
+			id: 'inventoryNo',
+			accessorKey: 'inventoryNo',
+			header: 'Inventár',
+			cell: (info) => ({
+				title: info.row.original.inventoryNo,
+				hint: shortDate(info.row.original.acquiredAt)
+			})
+		},
+		{ id: 'bookTitle', accessorKey: 'bookTitle', header: 'Kniha' },
+		{
+			id: 'status',
+			accessorKey: 'status',
+			header: 'Stav',
+			cell: (info) => holdingLabel(info.row.original.status)
+		}
+	];
 </script>
 
 <Seo title="Výtlačky · Pult" description="CRUD inventárnych výtlačkov." index={false} />
 
 <div class="pult-toolbar">
 	<PultSearch query={data.q} placeholder="inventár, kniha, stav" />
-	<p class="pult-count">{data.rows.length}{data.rows.length >= LIST_LIMIT ? '+' : ''} v zásuvke</p>
 </div>
 
 {#if form?.message}
@@ -26,40 +46,12 @@
 {/if}
 
 <div class="pult-grid is-split">
-	{#if data.rows.length === 0}
-		<p class="pult-empty">V zásuvke nie je výtlačok.</p>
-	{:else}
-		<div class="overflow-x-auto">
-			<table class="pult-table">
-				<thead>
-					<tr>
-						<th>Inventár</th>
-						<th>Kniha</th>
-						<th>Stav</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each data.rows as row (row.id)}
-						<tr>
-							<td>
-								<strong>{row.inventoryNo}</strong>
-								<em>{shortDate(row.acquiredAt)}</em>
-							</td>
-							<td>{row.bookTitle}</td>
-							<td>{holdingLabel(row.status)}</td>
-							<td>
-								<div class="pult-actions">
-									<Button href="/admin/vytlacky?edit={row.id}" size="sm" variant="outline">Upraviť</Button>
-									<PultDelete fields={{ id: row.id }} ask="Zmazať výtlačok {row.inventoryNo}?" />
-								</div>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-	{/if}
+	<PultLedger rows={data.rows} {columns} empty="V zásuvke nie je výtlačok.">
+		{#snippet actions({ row })}
+			<Button href={pultHref(page.url, { edit: row.id })} size="sm" variant="outline">Upraviť</Button>
+			<PultDelete fields={{ id: row.id }} ask="Zmazať výtlačok {row.inventoryNo}?" />
+		{/snippet}
+	</PultLedger>
 
 	<form class="pult-form" method="POST" action="?/save" use:enhance>
 		<h2>{current ? 'Opraviť výtlačok' : 'Nový výtlačok'}</h2>

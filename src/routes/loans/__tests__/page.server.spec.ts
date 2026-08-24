@@ -15,7 +15,8 @@ vi.mock('$lib/server/library', () => ({
 const reader = {
 	id: 'user-509a',
 	name: 'Peter Dinis',
-	email: 'peter@spst.sk'
+	email: 'peter@spst.sk',
+	role: 'reader' as const
 };
 
 const book = {

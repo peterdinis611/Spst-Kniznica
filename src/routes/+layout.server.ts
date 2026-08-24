@@ -1,12 +1,17 @@
 import type { LayoutServerLoad } from './$types';
-import { isAdminEmail } from '$lib/server/admin-access';
+import { canOpenDesk } from '$lib/server/admin-access';
 import { listCategoryChips } from '$lib/server/library';
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
 	const user = locals.user
-		? { id: locals.user.id, name: locals.user.name, email: locals.user.email }
+		? {
+				id: locals.user.id,
+				name: locals.user.name,
+				email: locals.user.email,
+				role: locals.user.role
+			}
 		: null;
-	const admin = isAdminEmail(user?.email);
+	const admin = canOpenDesk(user);
 
 	if (
 		url.pathname === '/' ||

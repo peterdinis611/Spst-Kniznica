@@ -1,22 +1,45 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { LIST_LIMIT, RESERVATION_STATUSES, reservationLabel, toDatetimeLocal } from '$lib/admin';
+	import { page } from '$app/state';
+	import { RESERVATION_STATUSES, reservationLabel, toDatetimeLocal } from '$lib/admin';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultDelete from '$lib/components/PultDelete.svelte';
+	import PultLedger from '$lib/components/PultLedger.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { shortDate } from '$lib/format';
+	import { pultHref, type PultColumn } from '$lib/pult-ledger';
 	import type { ActionData, PageProps } from './$types';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const current = $derived(data.current);
+	const columns: PultColumn<(typeof data.rows)[number]>[] = [
+		{
+			id: 'readerName',
+			accessorKey: 'readerName',
+			header: 'Čitateľ',
+			cell: (info) => ({
+				title: info.row.original.readerName,
+				hint: info.row.original.readerEmail
+			})
+		},
+		{ id: 'bookTitle', accessorKey: 'bookTitle', header: 'Kniha' },
+		{
+			id: 'status',
+			accessorKey: 'status',
+			header: 'Stav',
+			cell: (info) => ({
+				title: reservationLabel(info.row.original.status),
+				hint: `do ${shortDate(info.row.original.expiresAt)}`
+			})
+		}
+	];
 </script>
 
 <Seo title="Rezervácie · Pult" description="CRUD rezervácií školského fondu." index={false} />
 
 <div class="pult-toolbar">
 	<PultSearch query={data.q} placeholder="kniha, čitateľ, stav" />
-	<p class="pult-count">{data.rows.length}{data.rows.length >= LIST_LIMIT ? '+' : ''} v zásuvke</p>
 </div>
 
 {#if form?.message}
@@ -26,43 +49,12 @@
 {/if}
 
 <div class="pult-grid is-split">
-	{#if data.rows.length === 0}
-		<p class="pult-empty">Žiadna rezervácia. Založ lístok vpravo.</p>
-	{:else}
-		<div class="overflow-x-auto">
-			<table class="pult-table">
-				<thead>
-					<tr>
-						<th>Čitateľ</th>
-						<th>Kniha</th>
-						<th>Stav</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each data.rows as row (row.id)}
-						<tr>
-							<td>
-								<strong>{row.readerName}</strong>
-								<em>{row.readerEmail}</em>
-							</td>
-							<td>{row.bookTitle}</td>
-							<td>
-								{reservationLabel(row.status)}
-								<em>do {shortDate(row.expiresAt)}</em>
-							</td>
-							<td>
-								<div class="pult-actions">
-									<Button href="/admin/rezervacie?edit={row.id}" size="sm" variant="outline">Upraviť</Button>
-									<PultDelete fields={{ id: row.id }} ask="Zmazať rezerváciu?" />
-								</div>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-	{/if}
+	<PultLedger rows={data.rows} {columns} empty="Žiadna rezervácia. Založ lístok vpravo.">
+		{#snippet actions({ row })}
+			<Button href={pultHref(page.url, { edit: row.id })} size="sm" variant="outline">Upraviť</Button>
+			<PultDelete fields={{ id: row.id }} ask="Zmazať rezerváciu?" />
+		{/snippet}
+	</PultLedger>
 
 	<form class="pult-form" method="POST" action="?/save" use:enhance>
 		<h2>{current ? 'Opraviť rezerváciu' : 'Nová rezervácia'}</h2>

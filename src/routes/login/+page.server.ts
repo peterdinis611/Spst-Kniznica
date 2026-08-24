@@ -51,7 +51,8 @@ export const actions: Actions = {
 			ensureLocalReader({
 				id: data.user.id,
 				email: data.user.email ?? email,
-				name: String(data.user.user_metadata?.name ?? '')
+				name: String(data.user.user_metadata?.name ?? ''),
+				role: data.user.user_metadata?.role
 			});
 		} catch (cause) {
 			if (isRedirect(cause)) throw cause;
@@ -125,7 +126,8 @@ export const actions: Actions = {
 			ensureLocalReader({
 				id: data.user.id,
 				email: data.user.email ?? email,
-				name: name.trim()
+				name: name.trim(),
+				role: data.user.user_metadata?.role
 			});
 		} catch (cause) {
 			if (isRedirect(cause)) throw cause;

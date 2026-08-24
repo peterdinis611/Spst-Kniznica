@@ -1,21 +1,32 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { LIST_LIMIT } from '$lib/admin';
+	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultDelete from '$lib/components/PultDelete.svelte';
+	import PultLedger from '$lib/components/PultLedger.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { pultHref, type PultColumn } from '$lib/pult-ledger';
 	import type { ActionData, PageProps } from './$types';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const current = $derived(data.current);
+	const columns: PultColumn<(typeof data.rows)[number]>[] = [
+		{
+			id: 'name',
+			accessorKey: 'name',
+			header: 'Autor',
+			cell: (info) => ({ title: info.row.original.name, hint: info.row.original.lifespan })
+		},
+		{ id: 'role', accessorKey: 'role', header: 'Rola' },
+		{ id: 'bookCount', accessorKey: 'bookCount', header: 'Knihy' }
+	];
 </script>
 
 <Seo title="Autori · Pult" description="CRUD autorov školského fondu." index={false} />
 
 <div class="pult-toolbar">
 	<PultSearch query={data.q} placeholder="meno, slug, rola" />
-	<p class="pult-count">{data.rows.length}{data.rows.length >= LIST_LIMIT ? '+' : ''} v zásuvke</p>
 </div>
 
 {#if form?.message}
@@ -25,40 +36,12 @@
 {/if}
 
 <div class="pult-grid is-split">
-	{#if data.rows.length === 0}
-		<p class="pult-empty">V zásuvke nie je autor.</p>
-	{:else}
-		<div class="overflow-x-auto">
-			<table class="pult-table">
-				<thead>
-					<tr>
-						<th>Autor</th>
-						<th>Rola</th>
-						<th>Knihy</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each data.rows as row (row.id)}
-						<tr>
-							<td>
-								<strong>{row.name}</strong>
-								<em>{row.lifespan}</em>
-							</td>
-							<td>{row.role}</td>
-							<td>{row.bookCount}</td>
-							<td>
-								<div class="pult-actions">
-									<Button href="/admin/autori?edit={row.id}" size="sm" variant="outline">Upraviť</Button>
-									<PultDelete fields={{ id: row.id }} ask="Zmazať autora {row.name}?" />
-								</div>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-	{/if}
+	<PultLedger rows={data.rows} {columns} empty="V zásuvke nie je autor.">
+		{#snippet actions({ row })}
+			<Button href={pultHref(page.url, { edit: row.id })} size="sm" variant="outline">Upraviť</Button>
+			<PultDelete fields={{ id: row.id }} ask="Zmazať autora {row.name}?" />
+		{/snippet}
+	</PultLedger>
 
 	<form class="pult-form" method="POST" action="?/save" use:enhance>
 		<h2>{current ? 'Opraviť autora' : 'Nový autor'}</h2>

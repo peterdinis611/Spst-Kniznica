@@ -11,9 +11,14 @@ vi.mock('$env/dynamic/private', () => ({
 	env: { ADMIN_EMAILS: 'anna@spst.sk' }
 }));
 
-import { requireAdmin } from '../admin-access';
+import { canOpenDesk, requireAdmin } from '../admin-access';
 
-const librarian = { id: 'user-1', name: 'Anna Pult', email: 'anna@spst.sk' };
+const librarian = {
+	id: 'user-1',
+	name: 'Anna Pult',
+	email: 'anna@spst.sk',
+	role: 'librarian' as const
+};
 
 describe('requireAdmin', () => {
 	it('sends a guest to login', () => {
@@ -29,9 +34,9 @@ describe('requireAdmin', () => {
 		}
 	});
 
-	it('stamps a reader who is not on the desk list', () => {
+	it('stamps a reader even when the address is on the bootstrap list', () => {
 		try {
-			requireAdmin({ ...librarian, email: 'ziak@spst.sk' });
+			requireAdmin({ ...librarian, role: 'reader' });
 			throw new Error('expected forbidden');
 		} catch (error) {
 			expect(isHttpError(error)).toBe(true);
@@ -42,7 +47,22 @@ describe('requireAdmin', () => {
 		}
 	});
 
-	it('returns the librarian pass', () => {
-		expect(requireAdmin(librarian)).toEqual(librarian);
+	it('returns the librarian pass even when the address is not listed', () => {
+		const other = { ...librarian, email: 'iny@spst.sk' };
+		expect(requireAdmin(other)).toEqual(other);
+	});
+});
+
+describe('canOpenDesk', () => {
+	const reader = { ...librarian, role: 'reader' as const };
+
+	it('keeps a reader off the desk in production', () => {
+		expect(canOpenDesk(reader, false)).toBe(false);
+		expect(canOpenDesk(undefined, true)).toBe(false);
+	});
+
+	it('lets a signed-in reader through in local dev', () => {
+		expect(canOpenDesk(reader, true)).toBe(true);
+		expect(canOpenDesk(librarian, false)).toBe(true);
 	});
 });

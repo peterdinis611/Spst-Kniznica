@@ -1,21 +1,40 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { LIST_LIMIT } from '$lib/admin';
+	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultDelete from '$lib/components/PultDelete.svelte';
+	import PultLedger from '$lib/components/PultLedger.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { pultHref, type PultColumn } from '$lib/pult-ledger';
 	import type { ActionData, PageProps } from './$types';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const current = $derived(data.current);
+	const columns: PultColumn<(typeof data.rows)[number]>[] = [
+		{
+			id: 'title',
+			accessorKey: 'title',
+			header: 'Zväzok',
+			cell: (info) => ({
+				title: info.row.original.title,
+				hint: `${info.row.original.callNumber} · ${info.row.original.isbn}`
+			})
+		},
+		{ id: 'categoryName', accessorKey: 'categoryName', header: 'Odbor' },
+		{
+			id: 'copies',
+			accessorFn: (row) => row.copiesAvailable,
+			header: 'Výtlačky',
+			cell: (info) => `${info.row.original.copiesAvailable}/${info.row.original.copiesTotal}`
+		}
+	];
 </script>
 
 <Seo title="Knihy · Pult" description="CRUD kníh školského fondu." index={false} />
 
 <div class="pult-toolbar">
 	<PultSearch query={data.q} placeholder="názov, ISBN, signatúra" />
-	<p class="pult-count">{data.rows.length}{data.rows.length >= LIST_LIMIT ? '+' : ''} v zásuvke</p>
 </div>
 
 {#if form?.message}
@@ -25,40 +44,12 @@
 {/if}
 
 <div class="pult-grid is-split">
-	{#if data.rows.length === 0}
-		<p class="pult-empty">V zásuvke nie je kniha. Upresni hľadanie, alebo založ zväzok.</p>
-	{:else}
-		<div class="overflow-x-auto">
-			<table class="pult-table">
-				<thead>
-					<tr>
-						<th>Zväzok</th>
-						<th>Odbor</th>
-						<th>Výtlačky</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each data.rows as row (row.id)}
-						<tr>
-							<td>
-								<strong>{row.title}</strong>
-								<em>{row.callNumber} · {row.isbn}</em>
-							</td>
-							<td>{row.categoryName}</td>
-							<td>{row.copiesAvailable}/{row.copiesTotal}</td>
-							<td>
-								<div class="pult-actions">
-									<Button href="/admin/knihy?edit={row.id}" size="sm" variant="outline">Upraviť</Button>
-									<PultDelete fields={{ id: row.id }} ask="Zmazať knihu {row.title}?" />
-								</div>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-	{/if}
+	<PultLedger rows={data.rows} {columns} empty="V zásuvke nie je kniha. Upresni hľadanie, alebo založ zväzok.">
+		{#snippet actions({ row })}
+			<Button href={pultHref(page.url, { edit: row.id })} size="sm" variant="outline">Upraviť</Button>
+			<PultDelete fields={{ id: row.id }} ask="Zmazať knihu {row.title}?" />
+		{/snippet}
+	</PultLedger>
 
 	<form class="pult-form" method="POST" action="?/save" use:enhance>
 		<h2>{current ? 'Opraviť zväzok' : 'Nový zväzok'}</h2>

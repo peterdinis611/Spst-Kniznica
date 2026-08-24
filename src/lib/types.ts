@@ -1,7 +1,10 @@
+import type { Role } from './ability';
+
 export type SignedReader = {
 	id: string;
 	name: string;
 	email: string;
+	role: Role;
 };
 
 export type Reader = SignedReader | null;

@@ -661,6 +661,18 @@ function ensureLoanSlipColumns() {
 	}
 }
 
+function ensureUserRoleColumn() {
+	let cols: { name: string }[] = [];
+	try {
+		cols = sqlite.pragma('table_info(user)') as { name: string }[];
+	} catch {
+		return;
+	}
+	if (cols.length === 0) return;
+	if (cols.some((col) => col.name === 'role')) return;
+	sqlite.exec(`ALTER TABLE user ADD COLUMN role text not null default 'reader'`);
+}
+
 function ensureCategoryOrder() {
 	for (const item of categories) {
 		db.update(category).set({ sortOrder: item.sortOrder }).where(eq(category.id, item.id)).run();
@@ -669,6 +681,7 @@ function ensureCategoryOrder() {
 
 export function ensureSeeded() {
 	ensureLoanSlipColumns();
+	ensureUserRoleColumn();
 	if (seeded) return;
 
 	let catalogChanged = false;
@@ -729,6 +742,7 @@ export function ensureSeeded() {
 	ensureCategoryOrder();
 	ensureCatalogFts();
 	ensureLoanSlipColumns();
+	ensureUserRoleColumn();
 	ensureLoanGuards();
 	if (catalogChanged) rebuildCatalogFts();
 	invalidateCatalogCache();

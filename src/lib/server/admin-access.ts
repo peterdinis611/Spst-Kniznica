@@ -1,13 +1,10 @@
 import { error, redirect } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
+import { defineAbilityFor } from '$lib/ability';
 import type { SignedReader } from '$lib/types';
 
-export function isAdminEmail(
-	email: string | null | undefined,
-	allowList = env.ADMIN_EMAILS,
-	isDev = dev
-) {
+export function isAdminEmail(email: string | null | undefined, allowList = env.ADMIN_EMAILS) {
 	if (!email) return false;
 	const needle = email.trim().toLowerCase();
 	if (!needle) return false;
@@ -18,14 +15,18 @@ export function isAdminEmail(
 		.filter(Boolean);
 
 	if (list.includes('*')) return true;
-	if (list.includes(needle)) return true;
-	if (list.length === 0 && isDev) return true;
-	return false;
+	return list.includes(needle);
+}
+
+export function canOpenDesk(user: SignedReader | null | undefined, isDev = dev) {
+	if (!user) return false;
+	if (defineAbilityFor(user.role).can('manage', 'Desk')) return true;
+	return isDev;
 }
 
 export function requireAdmin(user: SignedReader | undefined) {
 	if (!user) redirect(302, '/login');
-	if (!isAdminEmail(user.email)) {
+	if (!canOpenDesk(user)) {
 		error(403, { message: 'Pult je len pre správu fondu.' });
 	}
 	return user;

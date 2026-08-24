@@ -6,7 +6,12 @@ vi.mock('$lib/server/admin-access', () => ({
 	requireAdmin: vi.fn()
 }));
 
-const librarian = { id: 'user-1', name: 'Anna Pult', email: 'anna@spst.sk' };
+const librarian = {
+	id: 'user-1',
+	name: 'Anna Pult',
+	email: 'anna@spst.sk',
+	role: 'librarian' as const
+};
 
 describe('admin layout', () => {
 	it('asks the desk guard with the current reader', async () => {

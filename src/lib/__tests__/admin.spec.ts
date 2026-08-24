@@ -52,18 +52,17 @@ describe('ledger labels', () => {
 
 describe('isAdminEmail', () => {
 	it('matches a listed address', () => {
-		expect(isAdminEmail('Knihovnik@spst.sk', 'knihovnik@spst.sk,pult@spst.sk', false)).toBe(true);
-		expect(isAdminEmail('ziak@spst.sk', 'knihovnik@spst.sk', false)).toBe(false);
+		expect(isAdminEmail('Knihovnik@spst.sk', 'knihovnik@spst.sk,pult@spst.sk')).toBe(true);
+		expect(isAdminEmail('ziak@spst.sk', 'knihovnik@spst.sk')).toBe(false);
 	});
 
 	it('opens the desk to everyone when the list is a star', () => {
-		expect(isAdminEmail('kdokolvek@spst.sk', '*', false)).toBe(true);
+		expect(isAdminEmail('kdokolvek@spst.sk', '*')).toBe(true);
 	});
 
-	it('lets a signed-in reader through in local dev when the list is empty', () => {
-		expect(isAdminEmail('peter@spst.sk', '', true)).toBe(true);
-		expect(isAdminEmail('peter@spst.sk', '', false)).toBe(false);
-		expect(isAdminEmail('', '', true)).toBe(false);
-		expect(isAdminEmail(null, '*', false)).toBe(false);
+	it('does not treat a signed-in reader as a librarian when the list is empty', () => {
+		expect(isAdminEmail('peter@spst.sk', '')).toBe(false);
+		expect(isAdminEmail('', '*')).toBe(false);
+		expect(isAdminEmail(null, '*')).toBe(false);
 	});
 });

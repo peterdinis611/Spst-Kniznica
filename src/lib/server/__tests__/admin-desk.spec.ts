@@ -143,5 +143,9 @@ describe('desk validation', () => {
 			ok: false,
 			message: 'E-mail nevyzerá ako adresa.'
 		});
+		expect(saveReader({ id: 'user-1', name: 'Anna Pult', email: 'a@spst.sk', role: 'admin' })).toEqual({
+			ok: false,
+			message: 'Rola nie je v zozname.'
+		});
 	});
 });

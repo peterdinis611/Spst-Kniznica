@@ -13,6 +13,7 @@ const row = {
 	id: 'user-1',
 	name: 'Anna Pult',
 	email: 'anna@spst.sk',
+	role: 'librarian',
 	emailVerified: true,
 	createdAt: new Date(2026, 7, 1),
 	loanCount: 2
@@ -49,12 +50,13 @@ describe('admin citately actions', () => {
 	it('saves a name and email', async () => {
 		vi.mocked(saveReader).mockReturnValue({ ok: true });
 		const result = await actions.save?.(
-			event({ id: 'user-1', name: 'Anna Pult', email: 'anna@spst.sk' })
+			event({ id: 'user-1', name: 'Anna Pult', email: 'anna@spst.sk', role: 'librarian' })
 		);
 		expect(saveReader).toHaveBeenCalledWith({
 			id: 'user-1',
 			name: 'Anna Pult',
-			email: 'anna@spst.sk'
+			email: 'anna@spst.sk',
+			role: 'librarian'
 		});
 		expect(result).toEqual({ stamp: 'Uložené' });
 	});

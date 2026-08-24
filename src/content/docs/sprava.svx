@@ -8,13 +8,15 @@ order: 8
 
 ## Kto ho vidí
 
-V `vite dev` stačí byť prihlásený. Na ostrej prevádzke nastav `ADMIN_EMAILS` v `.env` — čiarka, e-maily správcov. Hviezdička `*` otvorí pult každému prihlásenému.
+Pult otvorí **knihovník**. V `vite dev` je pult dočasne otvorený aj prihlásenému čitateľovi, kým sa role usadia. Na ostrej prevádzke ostáva len pečiatka knihovník.
 
-Kto nie je na zozname, dostane pečiatku, že pult je len pre správu fondu.
+Rola žije na preukaze (`user.role`). Prvého knihovníka dáš cez `ADMIN_EMAILS` v `.env` (čiarka, e-maily). Pri prihlásení dostane pečiatku knihovník. Ďalších pridelíš v zásuvke **Čitatelia**. Hviezdička `*` v `ADMIN_EMAILS` je núdzový kľúč: každý prihlásený sa stane knihovníkom.
+
+Kto nemá rolu, dostane pečiatku, že pult je len pre správu fondu. Posledného knihovníka z pultu nedáš.
 
 ## Zásuvky
 
-Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie berie prvých 80 lístkov — keď je fond hustý, spresni query.
+Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie ide priebežne (280 ms po poslednom písmene). Klik na hlavičku lístok zoradí. Zásuvka berie prvých 500 lístkov a hustý zoznam virtualizuje — keď je fond ešte hustší, spresni query.
 
 | Zásuvka | Tabuľka | Čo robíš |
 | --- | --- | --- |
@@ -25,7 +27,7 @@ Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie berie prv�
 | Výtlačky | `holding` | inventár, stav (voľný / vonku / stratený / vyradený) |
 | Výpožičky | `loan` | lístky všetkých čitateľov, vrátenie z pultu |
 | Rezervácie | `reservation` | čakacie lístky |
-| Čitatelia | `user` | meno a e-mail preukazu — heslo ostáva v Supabase |
+| Čitatelia | `user` | meno, e-mail a **rola** preukazu — heslo ostáva v Supabase |
 
 Účty session / account / verification tu nie sú. To je Auth, nie fond.
 

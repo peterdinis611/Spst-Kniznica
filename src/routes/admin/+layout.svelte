@@ -9,11 +9,15 @@
 <section class="pult">
 	<header class="pult-mast">
 		<p class="pult-kicker">pavilón B · kartotéka</p>
-		<h1>Pult.</h1>
-		<p class="pult-lede">Správa fondu — odbory, autori, zväzky, výtlačky a lístky. Zásuvky vpravo od preukazu.</p>
+		<h1>Pult</h1>
+		<p class="pult-lede">
+			Správa fondu. Zásuvky sú vpredu na pulte — odbory, autori, zväzky, výtlačky a lístky.
+		</p>
 	</header>
-	<PultNav />
-	<div class="pult-sheet">
-		{@render children()}
+	<div class="pult-cabinet">
+		<PultNav />
+		<div class="pult-sheet">
+			{@render children()}
+		</div>
 	</div>
 </section>

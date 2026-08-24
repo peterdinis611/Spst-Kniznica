@@ -28,7 +28,7 @@ vi.mock('$app/paths', () => ({
 		route.replace(/\[([^\]]+)\]/g, (_, key) => params?.[key] ?? _)
 }));
 
-const reader = { id: 'user-509a', name: 'Peter Dinis', email: 'peter@spst.sk' };
+const reader = { id: 'user-509a', name: 'Peter Dinis', email: 'peter@spst.sk', role: 'reader' as const };
 
 const book = (title: string, id = title): BookSlip => ({
 	id,

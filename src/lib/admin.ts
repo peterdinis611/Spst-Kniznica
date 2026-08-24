@@ -24,7 +24,7 @@ export const RESERVATION_STATUSES = [
 	{ value: 'expired', label: 'exspirovaná' }
 ] as const;
 
-export const LIST_LIMIT = 80;
+export const LIST_LIMIT = 500;
 
 export function slugify(raw: string) {
 	const slug = raw

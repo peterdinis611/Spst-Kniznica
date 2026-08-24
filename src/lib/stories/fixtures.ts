@@ -3,7 +3,8 @@ import type { CatalogBook, CategoryRecord, Reader } from '$lib/types';
 export const sampleReader: Reader = {
 	id: 'reader-1',
 	name: 'Mária Kováčová',
-	email: 'maria.kovacova@spst.sk'
+	email: 'maria.kovacova@spst.sk',
+	role: 'reader'
 };
 
 export const categories: CategoryRecord[] = [

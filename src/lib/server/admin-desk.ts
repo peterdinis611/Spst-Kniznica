@@ -1,4 +1,5 @@
-import { and, asc, count, desc, eq, isNull, like, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, isNull, like, ne, or, sql } from 'drizzle-orm';
+import { isRole, parseRole } from '$lib/ability';
 import { LIST_LIMIT, slugify } from '$lib/admin';
 import { holdingStatus, reservationStatus } from './db/schema';
 import { db } from './db';
@@ -854,6 +855,7 @@ export function listDeskReaders(query = '') {
 			id: user.id,
 			name: user.name,
 			email: user.email,
+			role: user.role,
 			emailVerified: user.emailVerified,
 			createdAt: user.createdAt,
 			loanCount: sql<number>`(select count(*) from loan where loan.user_id = ${user.id})`.as(
@@ -867,16 +869,35 @@ export function listDeskReaders(query = '') {
 		.all();
 }
 
-export function saveReader(input: { id: string; name: string; email: string }): DeskResult {
+export function saveReader(input: {
+	id: string;
+	name: string;
+	email: string;
+	role?: string;
+}): DeskResult {
 	const name = input.name.trim();
 	const email = input.email.trim().toLowerCase();
 	if (name.length < 2) return fail('Meno čitateľa je krátke.');
 	if (!email.includes('@')) return fail('E-mail nevyzerá ako adresa.');
+	if (input.role !== undefined && !isRole(input.role)) return fail('Rola nie je v zozname.');
 
 	try {
 		const current = db.select().from(user).where(eq(user.id, input.id)).get();
 		if (!current) return fail('Čitateľ sa nenašiel.');
-		db.update(user).set({ name, email, updatedAt: new Date() }).where(eq(user.id, input.id)).run();
+		const role = input.role === undefined ? parseRole(current.role) : input.role;
+		if (parseRole(current.role) === 'librarian' && role === 'reader') {
+			const others =
+				db
+					.select({ c: count() })
+					.from(user)
+					.where(and(eq(user.role, 'librarian'), ne(user.id, input.id)))
+					.get()?.c ?? 0;
+			if (others === 0) return fail('Posledného knihovníka z pultu nedáš.');
+		}
+		db.update(user)
+			.set({ name, email, role, updatedAt: new Date() })
+			.where(eq(user.id, input.id))
+			.run();
 	} catch (cause) {
 		return caught(cause, 'Tento e-mail už má preukaz.');
 	}
@@ -885,6 +906,17 @@ export function saveReader(input: { id: string; name: string; email: string }): 
 }
 
 export function deleteReader(id: string): DeskResult {
+	const current = db.select().from(user).where(eq(user.id, id)).get();
+	if (!current) return fail('Čitateľ sa nenašiel.');
+	if (parseRole(current.role) === 'librarian') {
+		const others =
+			db
+				.select({ c: count() })
+				.from(user)
+				.where(and(eq(user.role, 'librarian'), ne(user.id, id)))
+				.get()?.c ?? 0;
+		if (others === 0) return fail('Posledného knihovníka z pultu nedáš.');
+	}
 	const open =
 		db.select({ c: count() }).from(loan).where(and(eq(loan.userId, id), isNull(loan.returnedAt))).get()
 			?.c ?? 0;

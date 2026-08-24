@@ -15,6 +15,13 @@
       "when": 1787512694918,
       "tag": "0001_tough_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787576000000,
+      "tag": "0002_user_role",
+      "breakpoints": true
     }
   ]
 }

@@ -17,7 +17,8 @@ export const actions: Actions = {
 		const result = saveReader({
 			id: formText(data, 'id'),
 			name: formText(data, 'name'),
-			email: formText(data, 'email')
+			email: formText(data, 'email'),
+			role: formText(data, 'role')
 		});
 		if (!result.ok) return fail(400, { message: result.message });
 		return { stamp: 'Uložené' };

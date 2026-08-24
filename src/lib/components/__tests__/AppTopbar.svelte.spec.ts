@@ -36,7 +36,8 @@ const categories: CategoryChip[] = [
 const user: SignedReader = {
 	id: 'user-509a',
 	name: 'Peter Dinis',
-	email: 'peter@spst.sk'
+	email: 'peter@spst.sk',
+	role: 'reader'
 };
 
 afterEach(() => {
