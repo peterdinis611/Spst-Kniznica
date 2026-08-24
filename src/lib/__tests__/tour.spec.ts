@@ -10,6 +10,7 @@ describe('tourStepsFor', () => {
 	it('uses the desk walkthrough everywhere else', () => {
 		expect(tourStepsFor('/discover')).toBe(deskSteps);
 		expect(tourStepsFor('/loans')).toBe(deskSteps);
+		expect(tourStepsFor('/admin/knihy')).toBe(deskSteps);
 	});
 
 	it('keeps handbook targets on the docs tour', () => {

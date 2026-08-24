@@ -90,4 +90,36 @@ describe('admin odbory actions', () => {
 
 		expect(result).toEqual({ stamp: 'Uložené' });
 	});
+
+	it('stamps a deleted department and surfaces a blocked delete', async () => {
+		vi.mocked(deleteCategory).mockReturnValueOnce({ ok: true });
+		const removed = await actions.delete?.({
+			request: {
+				formData: async () => {
+					const body = new FormData();
+					body.set('id', 'cat-inf');
+					return body;
+				}
+			}
+		} as unknown as Parameters<NonNullable<typeof actions.delete>>[0]);
+		expect(removed).toEqual({ stamp: 'Zmazané' });
+
+		vi.mocked(deleteCategory).mockReturnValueOnce({
+			ok: false,
+			message: 'Odbor má knihy. Najprv ich presuň alebo zmaž.'
+		});
+		const blocked = await actions.delete?.({
+			request: {
+				formData: async () => {
+					const body = new FormData();
+					body.set('id', 'cat-inf');
+					return body;
+				}
+			}
+		} as unknown as Parameters<NonNullable<typeof actions.delete>>[0]);
+		expect(isActionFailure(blocked)).toBe(true);
+		if (isActionFailure(blocked)) {
+			expect(blocked.data).toEqual({ message: 'Odbor má knihy. Najprv ich presuň alebo zmaž.' });
+		}
+	});
 });
