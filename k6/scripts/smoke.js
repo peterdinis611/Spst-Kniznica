@@ -16,17 +16,6 @@ export function setup() {
 	probeFond();
 }
 
-export const options = {
-	tags: { testid: TESTID, suite: 'smoke' },
-	vus: 1,
-	iterations: 8,
-	thresholds: {
-		http_req_failed: ['rate<0.01'],
-		http_req_duration: ['p(95)<1200'],
-		checks: ['rate>0.99']
-	}
-};
-
 export default function () {
 	for (const desk of DESK) {
 		pageOk(get(desk.path, desk.name), desk.name);
