@@ -16,10 +16,12 @@
 
 	let {
 		user,
+		admin = false,
 		searchPreview,
 		children
 	}: {
 		user: Reader;
+		admin?: boolean;
 		searchPreview: CatalogSearchItem[];
 		children: Snippet;
 	} = $props();
@@ -111,6 +113,9 @@
 				<a href={resolve('/authors')} onclick={closeMenu}>Autori</a>
 				{#if user}
 					<a href={resolve('/loans')} onclick={closeMenu}>Moje knihy</a>
+					{#if admin}
+						<a href={resolve('/admin')} onclick={closeMenu}>Pult</a>
+					{/if}
 				{:else}
 					<a href={resolve('/login')} onclick={closeMenu}>Prihlásiť sa</a>
 				{/if}

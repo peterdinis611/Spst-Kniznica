@@ -51,6 +51,7 @@ describe('account pass menu', () => {
 
 		await expect.element(page.getByText('preukaz 509A')).toBeVisible();
 		await expect.element(page.getByRole('menuitem', { name: 'Moje knihy' })).toBeVisible();
+		await expect.element(page.getByRole('menuitem', { name: 'Pult' })).not.toBeInTheDocument();
 		await expect.element(page.getByRole('menuitem', { name: 'Odhlásiť' })).toBeVisible();
 
 		const trigger = document.querySelector('.account-mark');
@@ -60,6 +61,15 @@ describe('account pass menu', () => {
 		expect(menu?.getBoundingClientRect().width ?? 0).toBeGreaterThan(
 			(trigger?.getBoundingClientRect().width ?? 40) * 2
 		);
+	});
+
+	it('offers the desk ledger to an admin reader', async () => {
+		render(AppTopbar, { user, categories, admin: true });
+
+		await page.getByRole('button', { name: 'Peter Dinis' }).click();
+
+		await expect.element(page.getByRole('menuitem', { name: 'Pult' })).toBeVisible();
+		await expect.element(page.getByRole('menuitem', { name: 'Moje knihy' })).toBeVisible();
 	});
 
 	it('submits logout through the hidden desk form', async () => {

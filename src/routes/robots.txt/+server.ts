@@ -6,6 +6,7 @@ Allow: /
 Disallow: /loans
 Disallow: /login
 Disallow: /logout
+Disallow: /admin
 Disallow: /demo
 
 Sitemap: ${url.origin}/sitemap.xml

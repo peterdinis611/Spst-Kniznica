@@ -1,7 +1,8 @@
-import { redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
+import { error, redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { building } from '$app/environment';
 import { createServerClient } from '@supabase/ssr';
+import { isAdminEmail } from '$lib/server/admin-access';
 import { ensureSeeded } from '$lib/server/db/seed';
 import { warmCatalog } from '$lib/server/library';
 import { ensureLocalReader, readerFromClaims } from '$lib/server/readers';
@@ -17,7 +18,8 @@ const aliases = [
 	['/registracia', '/login?mod=novy'],
 	['/zabudnute-heslo', '/login/obnova'],
 	['/nove-heslo', '/login/heslo'],
-	['/odhlasenie', '/logout']
+	['/odhlasenie', '/logout'],
+	['/pult', '/admin']
 ] as const;
 
 const handleAliases: Handle = async ({ event, resolve }) => {
@@ -96,7 +98,18 @@ const handleSupabase: Handle = async ({ event, resolve }) => {
 	});
 };
 
-export const handle: Handle = sequence(handleAliases, handleCatalog, handleSupabase);
+const handleAdmin: Handle = async ({ event, resolve }) => {
+	if (event.url.pathname.startsWith('/admin')) {
+		if (!event.locals.user) redirect(302, '/login');
+		if (!isAdminEmail(event.locals.user.email)) {
+			error(403, { message: 'Pult je len pre správu fondu.' });
+		}
+	}
+
+	return resolve(event);
+};
+
+export const handle: Handle = sequence(handleAliases, handleCatalog, handleSupabase, handleAdmin);
 
 export const handleError: HandleServerError = ({ error, status }) => {
 	const raw = error instanceof Error ? error.message : String(error);

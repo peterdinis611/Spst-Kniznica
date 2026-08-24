@@ -1,0 +1,40 @@
+---
+title: Správa
+description: Kartotéka fondu z preukazu — CRUD všetkých tabuliek.
+order: 8
+---
+
+**Pult** je zásuvka správy fondu. Nie je v ľavom menu. Otvoríš ju z **preukazu vpravo** (kruh s iniciálami) položkou **Pult**. Adresa je `/admin`, skratka `/pult`.
+
+## Kto ho vidí
+
+V `vite dev` stačí byť prihlásený. Na ostrej prevádzke nastav `ADMIN_EMAILS` v `.env` — čiarka, e-maily správcov. Hviezdička `*` otvorí pult každému prihlásenému.
+
+Kto nie je na zozname, dostane pečiatku, že pult je len pre správu fondu.
+
+## Zásuvky
+
+Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie berie prvých 80 lístkov — keď je fond hustý, spresni query.
+
+| Zásuvka | Tabuľka | Čo robíš |
+| --- | --- | --- |
+| Odbory | `category` | názov, slug, kód, farba, poradie |
+| Autori | `author` | meno, medailón, roky, rola |
+| Knihy | `book` | zväzok, ISBN, signatúra, autori, výtlačky pri založení |
+| Väzby | `book_author` | kto je na ktorej knihe a v akom poradí |
+| Výtlačky | `holding` | inventár, stav (voľný / vonku / stratený / vyradený) |
+| Výpožičky | `loan` | lístky všetkých čitateľov, vrátenie z pultu |
+| Rezervácie | `reservation` | čakacie lístky |
+| Čitatelia | `user` | meno a e-mail preukazu — heslo ostáva v Supabase |
+
+Účty session / account / verification tu nie sú. To je Auth, nie fond.
+
+## Poznámky z pultu
+
+- Odbor s knihami nezmažeš, kým zväzky neodídu.
+- Knihu s aktívnou výpožičkou nezmažeš. Najprv vráť.
+- Nový zväzok môže hneď dostať výtlačky. Ďalšie kusy pridáš v zásuvke Výtlačky.
+- Vrátenie na pulte uvoľní výtlačok a pripočíta voľné kusy v katalógu.
+- Čitateľa s knihami vonku nezmažeš.
+
+Po uložení sa katalóg a hľadanie obnovia. Čitateľ v Objavovať uvidí nový zväzok bez reštartu.

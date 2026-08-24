@@ -8,6 +8,8 @@ import { parseLoanDays } from '$lib/borrow-fields';
 
 export type DeskResult = { ok: true } | { ok: false; message: string };
 
+type DeskTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
 function fail(message: string): DeskResult {
 	return { ok: false, message };
 }
@@ -30,7 +32,7 @@ function caught(cause: unknown, unique: string): DeskResult {
 	return fail(uniqueConstraintMessage(cause, unique) ?? 'Záznam sa neuložil.');
 }
 
-function syncCopies(tx: typeof db, bookId: string) {
+function syncCopies(tx: DeskTx, bookId: string) {
 	const total = tx.select({ c: count() }).from(holding).where(eq(holding.bookId, bookId)).get()?.c ?? 0;
 	const available =
 		tx
@@ -305,7 +307,6 @@ export function bookOptions() {
 		.select({ id: book.id, title: book.title, callNumber: book.callNumber })
 		.from(book)
 		.orderBy(asc(book.title))
-		.limit(400)
 		.all();
 }
 
@@ -314,7 +315,6 @@ export function readerOptions() {
 		.select({ id: user.id, name: user.name, email: user.email })
 		.from(user)
 		.orderBy(asc(user.name))
-		.limit(400)
 		.all();
 }
 
@@ -644,15 +644,6 @@ export function listDeskLoans(query = '') {
 		)
 		.orderBy(desc(loan.borrowedAt))
 		.limit(LIST_LIMIT)
-		.all();
-}
-
-export function availableHoldings(bookId: string) {
-	return db
-		.select({ id: holding.id, inventoryNo: holding.inventoryNo })
-		.from(holding)
-		.where(and(eq(holding.bookId, bookId), eq(holding.status, 'available')))
-		.orderBy(asc(holding.inventoryNo))
 		.all();
 }
 

@@ -65,7 +65,7 @@ export const deskSteps: DriveStep[] = [
 		popover: {
 			title: 'Preukaz',
 			description:
-				'Kruh s iniciálami otvorí lístok: meno, číslo preukazu, Moje knihy a odhlásenie. Hosť tam vidí Prihlásiť sa. Téma je vedľa.',
+				'Kruh s iniciálami otvorí lístok: meno, číslo preukazu, Moje knihy a odhlásenie. Správa fondu tam vidí aj Pult. Hosť tam vidí Prihlásiť sa. Téma je vedľa.',
 			side: 'bottom',
 			align: 'end'
 		}

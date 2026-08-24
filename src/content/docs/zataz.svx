@@ -1,7 +1,7 @@
 ---
 title: Záťaž
 description: k6 stresstesty pultu a grafy v Grafane.
-order: 9
+order: 10
 ---
 
 Fond sa meria **k6**. Grafy kreslí **Grafana** z Promethea. Nejde to proti prihláseniu ani výpožičke — len čítanie katalógu, registra, hľadania a kariet kníh.
