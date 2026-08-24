@@ -1,7 +1,9 @@
-import { redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
+import { error, redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { building } from '$app/environment';
 import { createServerClient } from '@supabase/ssr';
+import { defineAbilityFor } from '$lib/ability';
+import { canOpenDesk } from '$lib/server/admin-access';
 import { ensureSeeded } from '$lib/server/db/seed';
 import { warmCatalog } from '$lib/server/library';
 import { ensureLocalReader, readerFromClaims } from '$lib/server/readers';
@@ -17,7 +19,8 @@ const aliases = [
 	['/registracia', '/login?mod=novy'],
 	['/zabudnute-heslo', '/login/obnova'],
 	['/nove-heslo', '/login/heslo'],
-	['/odhlasenie', '/logout']
+	['/odhlasenie', '/logout'],
+	['/pult', '/admin']
 ] as const;
 
 const handleAliases: Handle = async ({ event, resolve }) => {
@@ -80,7 +83,8 @@ const handleSupabase: Handle = async ({ event, resolve }) => {
 						ensureLocalReader({
 							id: userData.user.id,
 							email: userData.user.email ?? '',
-							name: String(userData.user.user_metadata?.name ?? '')
+							name: String(userData.user.user_metadata?.name ?? ''),
+							role: userData.user.user_metadata?.role
 						}) ?? undefined;
 				}
 			}
@@ -96,7 +100,29 @@ const handleSupabase: Handle = async ({ event, resolve }) => {
 	});
 };
 
-export const handle: Handle = sequence(handleAliases, handleCatalog, handleSupabase);
+const handleAbility: Handle = async ({ event, resolve }) => {
+	event.locals.ability = defineAbilityFor(event.locals.user?.role);
+	return resolve(event);
+};
+
+const handleAdmin: Handle = async ({ event, resolve }) => {
+	if (event.url.pathname.startsWith('/admin')) {
+		if (!event.locals.user) redirect(302, '/login');
+		if (!canOpenDesk(event.locals.user)) {
+			error(403, { message: 'Pult je len pre správu fondu.' });
+		}
+	}
+
+	return resolve(event);
+};
+
+export const handle: Handle = sequence(
+	handleAliases,
+	handleCatalog,
+	handleSupabase,
+	handleAbility,
+	handleAdmin
+);
 
 export const handleError: HandleServerError = ({ error, status }) => {
 	const raw = error instanceof Error ? error.message : String(error);

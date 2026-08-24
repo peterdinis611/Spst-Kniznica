@@ -19,7 +19,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const history = loans.filter((item) => item.returnedAt);
 
 	return {
-		reader: { id: locals.user.id, name: locals.user.name, email: locals.user.email },
+		reader: {
+			id: locals.user.id,
+			name: locals.user.name,
+			email: locals.user.email,
+			role: locals.user.role
+		},
 		loans: active,
 		history,
 		activeCount: countActiveLoans(locals.user.id),

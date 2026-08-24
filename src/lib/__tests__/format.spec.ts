@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { authorLine, daysLabel, dueStatus, loanedLabel, readerNumber, stampDate } from '../format';
+import { authorLine, booksLabel, copiesLabel, daysLabel, dueStatus, firstName, loanedLabel, readerNumber, splitCallNumber, stampDate, volumesLabel } from '../format';
 
 describe('readerNumber', () => {
 	it('takes the last four alphanumerics and pads them', () => {
@@ -73,5 +73,25 @@ describe('dueStatus', () => {
 	it('counts late days after that', () => {
 		expect(dueStatus(new Date(2026, 7, 21))).toEqual({ tone: 'late', label: '1 deň po lehote' });
 		expect(dueStatus(new Date(2026, 7, 20))).toEqual({ tone: 'late', label: '2 dni po lehote' });
+	});
+});
+
+describe('catalog copy', () => {
+	it('declines books, volumes, and free copies', () => {
+		expect(booksLabel(1)).toBe('1 kniha vo fonde');
+		expect(booksLabel(3)).toBe('3 knihy vo fonde');
+		expect(booksLabel(8)).toBe('8 kníh vo fonde');
+		expect(volumesLabel(1)).toBe('zväzok');
+		expect(volumesLabel(3)).toBe('zväzky');
+		expect(volumesLabel(12)).toBe('zväzkov');
+		expect(copiesLabel(0, 3)).toBe('Nedostupné');
+		expect(copiesLabel(1, 3)).toBe('1 voľný z 3');
+		expect(copiesLabel(3, 5)).toBe('3 voľné z 5');
+		expect(copiesLabel(8, 10)).toBe('8 voľných z 10');
+	});
+
+	it('splits a call number and the given name', () => {
+		expect(splitCallNumber('INF 004.4 BEL')).toEqual({ dept: 'INF', number: '004.4', cutter: 'BEL' });
+		expect(firstName('Peter Dinis')).toBe('Peter');
 	});
 });

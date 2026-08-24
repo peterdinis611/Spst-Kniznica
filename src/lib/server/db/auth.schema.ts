@@ -22,6 +22,8 @@ export const user = sqliteTable("user", {
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  // App-owned desk role. Keep this if you regenerate Better Auth schema.
+  role: text("role").default("reader").notNull(),
 });
 
 export const session = sqliteTable(

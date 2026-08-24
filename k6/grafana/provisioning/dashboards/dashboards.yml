@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: SPŠT
+    orgId: 1
+    folder: SPŠT knižnica
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 15
+    options:
+      path: /etc/grafana/dashboards
+      foldersFromFilesStructure: false

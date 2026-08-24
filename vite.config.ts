@@ -5,6 +5,21 @@ import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
+	ssr: {
+		noExternal: ['@tanstack/svelte-table']
+	},
+	server: {
+		host: true,
+		port: 5173,
+		strictPort: true,
+		allowedHosts: ['host.docker.internal']
+	},
+	preview: {
+		host: true,
+		port: 4173,
+		strictPort: true,
+		allowedHosts: ['host.docker.internal']
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

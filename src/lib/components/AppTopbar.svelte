@@ -25,6 +25,7 @@
 	import MenuIcon from '@lucide/svelte/icons/menu';
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
+	import StampIcon from '@lucide/svelte/icons/stamp';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import ThemeToggle from './ThemeToggle.svelte';
@@ -32,17 +33,21 @@
 
 	let {
 		user,
-		categories
+		categories,
+		admin = false
 	}: {
 		user: Reader;
 		categories: CategoryChip[];
+		admin?: boolean;
 	} = $props();
 
 	const title = $derived(deskTitle(page.url.pathname));
 	const query = $derived(page.url.searchParams.get('q') ?? '');
 	const odbor = $derived(page.url.searchParams.get('odbor') ?? '');
 	const hideSearch = $derived(
-		page.url.pathname.startsWith('/login') || page.url.pathname.startsWith('/auth')
+		page.url.pathname.startsWith('/login') ||
+			page.url.pathname.startsWith('/auth') ||
+			page.url.pathname.startsWith('/admin')
 	);
 	const authorSearch = $derived(page.url.pathname.startsWith('/authors'));
 	let chosen = $state('all');
@@ -138,6 +143,16 @@
 								</a>
 							{/snippet}
 						</DropdownMenuItem>
+						{#if admin}
+							<DropdownMenuItem>
+								{#snippet child({ props })}
+									<a href={resolve('/admin')} {...props}>
+										<StampIcon />
+										Pult
+									</a>
+								{/snippet}
+							</DropdownMenuItem>
+						{/if}
 						<DropdownMenuItem variant="destructive" onSelect={submitLogout}>
 							<LogOutIcon />
 							Odhlásiť

@@ -30,7 +30,7 @@
 	}}
 />
 
-<HallChrome user={data.user} searchPreview={data.searchPreview}>
+<HallChrome user={data.user} admin={data.admin} searchPreview={data.searchPreview}>
 	<section class="folio">
 		<h1>Učebnice a príbehy, ktoré SPŠT ešte nedočítalo.</h1>
 		<p class="folio-lead">

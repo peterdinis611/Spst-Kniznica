@@ -1,7 +1,7 @@
 ---
 title: Časté otázky
 description: Krátke odpovede, ktoré na pulte padajú najčastejšie.
-order: 8
+order: 9
 ---
 
 ## Môžem si požičať bez účtu?
@@ -51,6 +51,10 @@ Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mai
 ## Dá sa prepnúť na tmavý pult?
 
 Áno. Prepínač je vpravo hore, vedľa účtu. Voľba ostane v prehliadači.
+
+## Kde je správa fondu?
+
+V **preukaze vpravo** (kruh s iniciálami) je **Pult** — ale len pre knihovníka. Ľavé menu ho neschováva omylom — je to zásuvka správy, nie katalóg. Podrobnosti sú v kapitole [Správa](/docs/sprava).
 
 ## Kde vás nájdem?
 

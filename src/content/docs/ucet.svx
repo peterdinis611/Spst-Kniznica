@@ -18,7 +18,7 @@ Meno sa ukáže v paneli a v pečiatke výpožičky. E-mail je kľúč k účtu,
 
 ## Prihlásenie
 
-Po registrácii ťa fond vráti tam, odkiaľ si prišiel, alebo na [Moje knihy](/loans). V kruhu vpravo hore (iniciály) je preukaz: Moje knihy a **Odhlásiť**. To isté odhlásenie je v bočnom paneli.
+Po registrácii ťa fond vráti tam, odkiaľ si prišiel, alebo na [Moje knihy](/loans). V kruhu vpravo hore (iniciály) je preukaz: Moje knihy, pre knihovníka aj **Pult**, a **Odhlásiť**. To isté odhlásenie je v bočnom paneli.
 
 Ak prídeš z karty knihy, po prihlásení sa na ňu vráť a výpožičku potvrď.
 

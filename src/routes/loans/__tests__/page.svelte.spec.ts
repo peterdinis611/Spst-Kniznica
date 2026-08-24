@@ -28,7 +28,7 @@ vi.mock('$app/paths', () => ({
 		route.replace(/\[([^\]]+)\]/g, (_, key) => params?.[key] ?? _)
 }));
 
-const reader = { id: 'user-509a', name: 'Peter Dinis', email: 'peter@spst.sk' };
+const reader = { id: 'user-509a', name: 'Peter Dinis', email: 'peter@spst.sk', role: 'reader' as const };
 
 const book = (title: string, id = title): BookSlip => ({
 	id,
@@ -64,6 +64,9 @@ function record(
 }
 
 const empty = {
+	user: reader,
+	admin: false,
+	categories: [] as { id: string; name: string; slug: string; code: string; accent: string; bookCount: number }[],
 	reader,
 	loans: [] as LoanRecord[],
 	history: [] as LoanRecord[],
@@ -73,7 +76,7 @@ const empty = {
 
 describe('Moje knihy folio', () => {
 	it('prints the reader pass and an empty borrowed slip', async () => {
-		render(LoansPage, { data: empty, form: null });
+		render(LoansPage, { data: empty, form: null } as never);
 
 		await expect.element(page.getByRole('heading', { name: 'Peter Dinis' })).toBeVisible();
 		await expect.element(page.getByText(/preukaz 509A/i)).toBeVisible();
@@ -94,7 +97,7 @@ describe('Moje knihy folio', () => {
 				loans: [record('Technické kreslenie', { id: 'loan-1' })]
 			},
 			form: null
-		});
+		} as never);
 
 		expect(document.querySelectorAll('.folio-slots li')).toHaveLength(2);
 		expect(document.querySelectorAll('.folio-slots li.taken')).toHaveLength(2);
@@ -115,7 +118,7 @@ describe('Moje knihy folio', () => {
 				history: [record('Vrátená učebnica', { id: 'old', returnedAt: new Date(2026, 7, 10) })]
 			},
 			form: null
-		});
+		} as never);
 
 		await page.getByRole('tab', { name: /Vrátené/ }).click();
 
@@ -126,7 +129,7 @@ describe('Moje knihy folio', () => {
 	});
 
 	it('shows a quiet empty archive', async () => {
-		render(LoansPage, { data: empty, form: null });
+		render(LoansPage, { data: empty, form: null } as never);
 
 		await page.getByRole('tab', { name: /Vrátené/ }).click();
 
@@ -137,7 +140,7 @@ describe('Moje knihy folio', () => {
 		render(LoansPage, {
 			data: empty,
 			form: { message: 'Výpožička sa nenašla.' }
-		});
+		} as never);
 
 		await expect.element(page.getByRole('alert')).toHaveTextContent('Výpožička sa nenašla.');
 	});
@@ -146,7 +149,7 @@ describe('Moje knihy folio', () => {
 		render(LoansPage, {
 			data: empty,
 			form: { stamp: 'Vrátené', sub: '23. 08. 2026' }
-		});
+		} as never);
 
 		expect(document.querySelector('.lock-seal')?.textContent).toMatch(/Vrátené/);
 		await expect.element(page.getByText('23. 08. 2026')).toBeVisible();
