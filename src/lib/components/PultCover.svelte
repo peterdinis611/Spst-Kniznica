@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { COVER_MAX_LABEL, coverFileFault, coverUploadFault } from '$lib/cover-upload';
 	import { createUploadThing } from '$lib/uploadthing';
 
 	let {
@@ -22,7 +23,7 @@
 	const { startUpload, isUploading } = createUploadThing('bookCover', {
 		onUploadError: (error) => {
 			pending = false;
-			fault = error.message || 'Obálka sa nenahrala.';
+			fault = coverUploadFault(error);
 		}
 	});
 
@@ -31,12 +32,10 @@
 	async function takeFiles(list: FileList | File[] | null) {
 		const file = list?.[0];
 		if (!file || busy || !ready) return;
-		if (!file.type.startsWith('image/')) {
-			fault = 'Obálka musí byť obrázok.';
-			return;
-		}
-		if (file.size > 4 * 1024 * 1024) {
-			fault = 'Snímka je väčšia ako 4 MB.';
+		const blocked = coverFileFault(file);
+		if (blocked) {
+			fault = blocked;
+			if (picker) picker.value = '';
 			return;
 		}
 
@@ -91,7 +90,7 @@
 	</div>
 	<div class="pult-jacket-copy">
 		{#if ready}
-			<p>{busy ? 'Ide na policu…' : 'JPEG, PNG alebo WebP, do 4 MB. Polož snímku na lístok.'}</p>
+			<p>{busy ? 'Ide na policu…' : `JPEG, PNG alebo WebP, do ${COVER_MAX_LABEL}. Polož snímku na lístok.`}</p>
 			<div class="pult-jacket-actions">
 				<input
 					bind:this={picker}
