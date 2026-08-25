@@ -141,3 +141,23 @@ export const searchPreview = catalogBooks.slice(0, 4).map((item) => ({
 	copiesAvailable: item.copiesAvailable,
 	coverUrl: item.coverUrl
 }));
+
+export const pultLedgerRows = [
+	{ id: 'inf', name: 'Informatika', slug: 'informatika', count: 6 },
+	{ id: 'str', name: 'Strojárstvo', slug: 'strojarstvo', count: 4 },
+	{ id: 'ele', name: 'Elektrotechnika', slug: 'elektrotechnika', count: 3 },
+	{ id: 'lit', name: 'Literatúra', slug: 'literatura', count: 5 }
+];
+
+export const pultLedgerColumns = [
+	{
+		id: 'name',
+		accessorKey: 'name',
+		header: 'Odbor',
+		cell: (info: { row: { original: (typeof pultLedgerRows)[number] } }) => ({
+			title: info.row.original.name,
+			hint: info.row.original.slug
+		})
+	},
+	{ id: 'count', accessorKey: 'count', header: 'Knihy' }
+];
