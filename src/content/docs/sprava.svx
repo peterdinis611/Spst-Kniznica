@@ -22,7 +22,7 @@ Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie ide priebe
 | --- | --- | --- |
 | Odbory | `category` | názov, slug, kód, farba, poradie |
 | Autori | `author` | meno, medailón, roky, rola |
-| Knihy | `book` | zväzok, ISBN, signatúra, autori, výtlačky pri založení |
+| Knihy | `book` | zväzok, ISBN, signatúra, autori, **obálka** (UploadThing), výtlačky pri založení |
 | Väzby | `book_author` | kto je na ktorej knihe a v akom poradí |
 | Výtlačky | `holding` | inventár, stav (voľný / vonku / stratený / vyradený) |
 | Výpožičky | `loan` | lístky všetkých čitateľov, vrátenie z pultu |
@@ -36,6 +36,7 @@ Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie ide priebe
 - Odbor s knihami nezmažeš, kým zväzky neodídu.
 - Knihu s aktívnou výpožičkou nezmažeš. Najprv vráť.
 - Nový zväzok môže hneď dostať výtlačky. Ďalšie kusy pridáš v zásuvke Výtlačky.
+- Obálku nahráš v zásuvke Knihy (JPEG, PNG alebo WebP, do 4 MB). Adresa snímky ide do `book.cover_url`. Bez `UPLOADTHING_TOKEN` v `.env` ostane hashed Unsplash plátno.
 - Vrátenie na pulte uvoľní výtlačok a pripočíta voľné kusy v katalógu.
 - Čitateľa s knihami vonku nezmažeš.
 

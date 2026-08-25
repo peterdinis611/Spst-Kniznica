@@ -35,7 +35,9 @@ const row = {
 	copiesAvailable: 2,
 	publisher: 'SPŠT',
 	language: 'sk',
-	featured: false
+	featured: false,
+	coverUrl: null,
+	coverKey: null
 };
 
 function event(fields: Record<string, string | string[]>) {
@@ -92,7 +94,9 @@ describe('admin knihy actions', () => {
 				year: '2020',
 				pages: '240',
 				featured: '1',
-				authorIds: ['auth-belko', 'auth-kovac']
+				authorIds: ['auth-belko', 'auth-kovac'],
+				coverUrl: 'https://ufs.sh/f/jacket',
+				coverKey: 'jacket'
 			})
 		);
 
@@ -101,7 +105,9 @@ describe('admin knihy actions', () => {
 				title: 'Algoritmy',
 				featured: true,
 				authorIds: ['auth-belko', 'auth-kovac'],
-				year: 2020
+				year: 2020,
+				coverUrl: 'https://ufs.sh/f/jacket',
+				coverKey: 'jacket'
 			})
 		);
 		expect(result).toEqual({ stamp: 'Uložené' });

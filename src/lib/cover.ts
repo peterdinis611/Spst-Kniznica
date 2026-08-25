@@ -66,8 +66,10 @@ function hash(value: string) {
 	return Math.abs(h);
 }
 
-export function jacketFor(book: Pick<CatalogBook, 'id' | 'title'>) {
-	return jackets[hash(book.id + book.title) % jackets.length];
+export function jacketFor(book: Pick<CatalogBook, 'id' | 'title'> & { coverUrl?: string | null }) {
+	const tone = jackets[hash(book.id + book.title) % jackets.length];
+	const photo = book.coverUrl?.trim();
+	return photo ? { ...tone, photo } : tone;
 }
 
 export function authorLast(name: string) {

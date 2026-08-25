@@ -25,6 +25,7 @@ const book = {
 	callNumber: 'STR 12',
 	copiesTotal: 2,
 	copiesAvailable: 1,
+	coverUrl: null,
 	category: {
 		id: 'cat-str',
 		name: 'Strojárstvo',

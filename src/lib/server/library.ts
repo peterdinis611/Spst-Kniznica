@@ -56,6 +56,7 @@ function assembleBooks(rows: BookRow[]): CatalogBook[] {
 				copiesAvailable: row.book.copiesAvailable,
 				publisher: row.book.publisher,
 				featured: row.book.featured,
+				coverUrl: row.book.coverUrl ?? null,
 				category: {
 					id: row.category.id,
 					name: row.category.name,
@@ -127,6 +128,7 @@ export function toSlip(item: CatalogBook): BookSlip {
 		callNumber: item.callNumber,
 		copiesTotal: item.copiesTotal,
 		copiesAvailable: item.copiesAvailable,
+		coverUrl: item.coverUrl,
 		category: item.category,
 		authors: item.authors
 	};
@@ -142,7 +144,8 @@ export function toSearchItem(
 		callNumber: item.callNumber,
 		category: typeof item.category === 'string' ? item.category : item.category.name,
 		isbn: item.isbn ?? '',
-		copiesAvailable: item.copiesAvailable
+		copiesAvailable: item.copiesAvailable,
+		coverUrl: item.coverUrl ?? null
 	};
 }
 
