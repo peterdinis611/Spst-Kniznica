@@ -95,11 +95,11 @@
 			</Button>
 			{#if user}
 				<Button
-					href={resolve('/profil')}
+					href={resolve('/profile')}
 					variant="ghost"
 					class={cn(
 						'text-muted-foreground mb-1 h-auto justify-start px-3 py-1.5 font-normal',
-						page.url.pathname.startsWith('/profil') && 'bg-secondary text-foreground'
+						page.url.pathname.startsWith('/profile') && 'bg-secondary text-foreground'
 					)}
 				>
 					<UserRoundIcon />

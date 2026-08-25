@@ -36,7 +36,7 @@ export const actions: Actions = {
 		const { error } = await event.locals.supabase.auth.resetPasswordForEmail(
 			event.locals.user.email,
 			{
-				redirectTo: `${event.url.origin}/auth/confirm?next=/login/heslo`
+				redirectTo: `${event.url.origin}/auth/confirm?next=/login/password`
 			}
 		);
 

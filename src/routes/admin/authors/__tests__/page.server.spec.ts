@@ -41,7 +41,7 @@ describe('admin autori', () => {
 
 	it('loads the edited medallion', async () => {
 		const data = (await load({
-			url: new URL('http://localhost/admin/autori?edit=auth-belko')
+			url: new URL('http://localhost/admin/authors?edit=auth-belko')
 		} as Parameters<typeof load>[0])) as { current: typeof row | null };
 		expect(data.current?.slug).toBe('jan-belko');
 	});

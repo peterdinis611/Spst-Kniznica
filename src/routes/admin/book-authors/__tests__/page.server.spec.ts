@@ -34,7 +34,7 @@ describe('admin vazby', () => {
 
 	it('searches links', async () => {
 		await load({
-			url: new URL('http://localhost/admin/vazby?q=belko')
+			url: new URL('http://localhost/admin/book-authors?q=belko')
 		} as Parameters<typeof load>[0]);
 		expect(listDeskLinks).toHaveBeenCalledWith('belko');
 	});

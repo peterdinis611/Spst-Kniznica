@@ -36,7 +36,7 @@ describe('admin citately load', () => {
 	it('picks the edited pass', async () => {
 		vi.mocked(listDeskReaders).mockReturnValue([row]);
 		const data = (await load({
-			url: new URL('http://localhost/admin/citately?edit=user-1')
+			url: new URL('http://localhost/admin/readers?edit=user-1')
 		} as Parameters<typeof load>[0])) as { current: typeof row | null };
 		expect(data.current?.email).toBe('anna@spst.sk');
 	});

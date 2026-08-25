@@ -27,7 +27,7 @@ Táto príručka je interný zošit pultu. V hlavnom menu ju nehľadaj — otvor
 | [Odbory](/departments) | Dlaždice zameraní INF, STR, ELE… |
 | [Autori](/authors) | Register A—Z podľa priezviska |
 | [Moje knihy](/loans) | Výpožičný lístok — čo máš vonku a čo si vrátil (po prihlásení) |
-| [Môj profil](/profil) | Čitateľský preukaz — meno, e-mail, číslo a pečiatka (po prihlásení) |
+| [Môj profil](/profile) | Čitateľský preukaz — meno, e-mail, číslo a pečiatka (po prihlásení) |
 | [Pult](/admin) | Kartotéka tabuliek — CRUD fondu (len správa, z preukazu vpravo) |
 
 ## Kapitoly

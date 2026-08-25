@@ -31,7 +31,7 @@ describe('admin odbory load', () => {
 		vi.mocked(listDeskCategories).mockReturnValue([odbor]);
 
 		const data = (await load({
-			url: new URL('http://localhost/admin/odbory?edit=cat-inf&q=inf')
+			url: new URL('http://localhost/admin/departments?edit=cat-inf&q=inf')
 		} as Parameters<typeof load>[0])) as {
 			q: string;
 			current: typeof odbor | null;
@@ -48,7 +48,7 @@ describe('admin odbory load', () => {
 		vi.mocked(getDeskCategory).mockReturnValue(odbor);
 
 		const data = (await load({
-			url: new URL('http://localhost/admin/odbory?edit=cat-inf&q=xyz')
+			url: new URL('http://localhost/admin/departments?edit=cat-inf&q=xyz')
 		} as Parameters<typeof load>[0])) as {
 			current: typeof odbor | null;
 		};

@@ -63,11 +63,11 @@ describe('profil recover', () => {
 				user: reader,
 				supabase: { auth: { resetPasswordForEmail } }
 			},
-			url: new URL('http://localhost/profil')
+			url: new URL('http://localhost/profile')
 		} as Parameters<typeof actions.recover>[0]);
 
 		expect(resetPasswordForEmail).toHaveBeenCalledWith('peter@spst.sk', {
-			redirectTo: 'http://localhost/auth/confirm?next=/login/heslo'
+			redirectTo: 'http://localhost/auth/confirm?next=/login/password'
 		});
 		expect(result).toEqual({
 			ok: true,

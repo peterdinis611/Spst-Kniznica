@@ -129,7 +129,7 @@
 		{/if}
 		{#if !register}
 			<p class="pass-help">
-				<a href={resolve('/login/obnova')}>Zabudnuté heslo?</a>
+				<a href={resolve('/login/recovery')}>Zabudnuté heslo?</a>
 			</p>
 		{/if}
 		{#if !data.configured}

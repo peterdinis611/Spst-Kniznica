@@ -49,7 +49,7 @@
 		page.url.pathname.startsWith('/login') ||
 			page.url.pathname.startsWith('/auth') ||
 			page.url.pathname.startsWith('/admin') ||
-			page.url.pathname.startsWith('/profil')
+			page.url.pathname.startsWith('/profile')
 	);
 	const authorSearch = $derived(page.url.pathname.startsWith('/authors'));
 	let chosen = $state('all');
@@ -139,7 +139,7 @@
 					{#if user}
 						<DropdownMenuItem>
 							{#snippet child({ props })}
-								<a href={resolve('/profil')} {...props}>
+								<a href={resolve('/profile')} {...props}>
 									<UserRoundIcon />
 									Môj profil
 								</a>

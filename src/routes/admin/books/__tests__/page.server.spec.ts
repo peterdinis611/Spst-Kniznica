@@ -65,7 +65,7 @@ describe('admin knihy load', () => {
 
 	it('attaches linked authors when editing a volume', async () => {
 		const data = (await load({
-			url: new URL('http://localhost/admin/knihy?edit=book-algo&q=algo')
+			url: new URL('http://localhost/admin/books?edit=book-algo&q=algo')
 		} as Parameters<typeof load>[0])) as { linkedIds: string[]; current: typeof row | null };
 
 		expect(listDeskBooks).toHaveBeenCalledWith('algo');

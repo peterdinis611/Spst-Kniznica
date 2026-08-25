@@ -38,14 +38,14 @@ describe('ledger labels', () => {
 	it('lists every drawer in the copper tabs', () => {
 		expect(PULT_TABLES.map((item) => item.href)).toEqual([
 			'/admin',
-			'/admin/odbory',
-			'/admin/autori',
-			'/admin/knihy',
-			'/admin/vazby',
-			'/admin/vytlacky',
-			'/admin/vypozicky',
-			'/admin/rezervacie',
-			'/admin/citately'
+			'/admin/departments',
+			'/admin/authors',
+			'/admin/books',
+			'/admin/book-authors',
+			'/admin/holdings',
+			'/admin/loans',
+			'/admin/reservations',
+			'/admin/readers'
 		]);
 	});
 });

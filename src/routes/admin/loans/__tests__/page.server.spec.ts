@@ -59,7 +59,7 @@ describe('admin vypozicky load', () => {
 		vi.mocked(readerOptions).mockReturnValue([]);
 
 		const data = (await load({
-			url: new URL('http://localhost/admin/vypozicky?edit=loan-1')
+			url: new URL('http://localhost/admin/loans?edit=loan-1')
 		} as Parameters<typeof load>[0])) as { current: { id: string } | null };
 
 		expect(data.current?.id).toBe('loan-1');

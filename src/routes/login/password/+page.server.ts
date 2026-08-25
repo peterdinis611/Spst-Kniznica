@@ -6,7 +6,7 @@ import { hasFieldErrors, validateNewPassword } from '$lib/auth-fields';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
-		redirect(302, '/login/obnova');
+		redirect(302, '/login/recovery');
 	}
 
 	return { configured: supabasePublic().configured };

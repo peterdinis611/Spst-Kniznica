@@ -15,13 +15,24 @@ const aliases = [
 	['/odbory', '/departments'],
 	['/autori', '/authors'],
 	['/vypozicky', '/loans'],
-	['/preukaz', '/profil'],
+	['/preukaz', '/profile'],
+	['/profil', '/profile'],
 	['/prihlasenie', '/login'],
 	['/registracia', '/login?mod=novy'],
-	['/zabudnute-heslo', '/login/obnova'],
-	['/nove-heslo', '/login/heslo'],
+	['/zabudnute-heslo', '/login/recovery'],
+	['/nove-heslo', '/login/password'],
+	['/login/obnova', '/login/recovery'],
+	['/login/heslo', '/login/password'],
 	['/odhlasenie', '/logout'],
-	['/pult', '/admin']
+	['/pult', '/admin'],
+	['/admin/odbory', '/admin/departments'],
+	['/admin/autori', '/admin/authors'],
+	['/admin/knihy', '/admin/books'],
+	['/admin/vazby', '/admin/book-authors'],
+	['/admin/vytlacky', '/admin/holdings'],
+	['/admin/vypozicky', '/admin/loans'],
+	['/admin/rezervacie', '/admin/reservations'],
+	['/admin/citately', '/admin/readers']
 ] as const;
 
 const handleAliases: Handle = async ({ event, resolve }) => {
