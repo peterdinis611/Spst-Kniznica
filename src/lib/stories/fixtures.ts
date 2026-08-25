@@ -7,6 +7,13 @@ export const sampleReader: Reader = {
 	role: 'reader'
 };
 
+export const sampleLibrarian: Reader = {
+	id: 'user-1',
+	name: 'Anna Pult',
+	email: 'anna@spst.sk',
+	role: 'librarian'
+};
+
 export const categories: CategoryRecord[] = [
 	{
 		id: 'cat-inf',
@@ -116,3 +123,21 @@ export const catalogBooks: CatalogBook[] = [
 ];
 
 export const shelfBooks = catalogBooks.map((item) => ({ id: item.id, title: item.title }));
+
+export const sampleBorrower = {
+	firstName: 'Mária',
+	lastName: 'Kováčová',
+	className: 'III.A',
+	days: 21
+};
+
+export const searchPreview = catalogBooks.slice(0, 4).map((item) => ({
+	id: item.id,
+	title: item.title,
+	authors: item.authors.map((person) => person.name).join(' & '),
+	callNumber: item.callNumber,
+	category: item.category.name,
+	isbn: item.isbn,
+	copiesAvailable: item.copiesAvailable,
+	coverUrl: item.coverUrl
+}));

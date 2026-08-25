@@ -7,9 +7,22 @@ export const BASE_URL = BASE;
 
 export const TESTID = __ENV.TESTID || `fond-${Date.now()}`;
 
-export const SEARCHES = ['algoritm', 'sql', 'siet', 'pascal', 'INF', 'stroj'];
+export const SEARCHES = ['algoritm', 'sql', 'siet', 'pascal', 'INF', 'stroj', 'sloh', 'belko'];
 
-export const BOOKS = ['book-algoritmy', 'book-databazy', 'book-siete', 'book-cpp', 'book-kreslenie'];
+export const BOOKS = [
+	'book-algoritmy',
+	'book-databazy',
+	'book-siete',
+	'book-cpp',
+	'book-kreslenie',
+	'book-casti',
+	'book-elektro',
+	'book-sloh'
+];
+
+export const AUTHORS = ['jan-belko', 'maria-kovacova', 'ludovit-stur'];
+
+export const DEPARTMENTS = ['informatika', 'strojarstvo', 'elektrotechnika', 'literatura'];
 
 export const DESK = [
 	{ name: 'Sieň', path: '/' },
@@ -18,7 +31,26 @@ export const DESK = [
 	{ name: 'Register', path: '/holdings' },
 	{ name: 'Odbory', path: '/departments' },
 	{ name: 'Autori', path: '/authors' },
+	{ name: 'Účet', path: '/login' },
 	{ name: 'Príručka', path: '/docs' }
+];
+
+export const ALIASES = [
+	{ from: '/knihy', to: '/books' },
+	{ from: '/vsetky-knihy', to: '/holdings' },
+	{ from: '/odbory', to: '/departments' },
+	{ from: '/autori', to: '/authors' },
+	{ from: '/profil', to: '/profile' },
+	{ from: '/prihlasenie', to: '/login' },
+	{ from: '/pult', to: '/admin' },
+	{ from: '/admin/knihy', to: '/admin/books' }
+];
+
+export const GATES = [
+	{ name: 'Pult', path: '/admin', to: '/login' },
+	{ name: 'Profil', path: '/profile', to: '/login' },
+	{ name: 'Moje knihy', path: '/loans', to: '/login' },
+	{ name: 'Nové heslo', path: '/login/password', to: '/login/recovery' }
 ];
 
 export function headers() {
@@ -28,12 +60,17 @@ export function headers() {
 	};
 }
 
-export function get(path, name) {
+export function get(path, name, extra = {}) {
 	return http.get(`${BASE}${path}`, {
 		headers: headers(),
 		tags: { name, testid: TESTID },
-		timeout: '60s'
+		timeout: '60s',
+		...extra
 	});
+}
+
+export function getStay(path, name) {
+	return get(path, name, { redirects: 0 });
 }
 
 export function probeFond() {
@@ -75,8 +112,46 @@ export function jsonOk(res, name) {
 	});
 }
 
+export function textOk(res, name, needle) {
+	return check(res, {
+		[`${name} · 200`]: (r) => r.status === 200,
+		[`${name} · telo`]: (r) => Boolean(r.body && String(r.body).includes(needle))
+	});
+}
+
+function header(res, key) {
+	const headers = res.headers || {};
+	return headers[key] || headers[key.toLowerCase()] || headers[key.toUpperCase()] || '';
+}
+
+export function redirectOk(res, name, status, location) {
+	return check(res, {
+		[`${name} · ${status}`]: (r) => r.status === status,
+		[`${name} · kam`]: (r) => String(header(r, 'Location')).includes(location)
+	});
+}
+
 export function pick(list) {
 	return list[Math.floor(Math.random() * list.length)];
+}
+
+export function checkPublicMap() {
+	for (const alias of ALIASES) {
+		redirectOk(getStay(alias.from, `Alias ${alias.from}`), `Alias ${alias.from}`, 308, alias.to);
+	}
+
+	for (const gate of GATES) {
+		redirectOk(getStay(gate.path, gate.name), gate.name, 302, gate.to);
+	}
+
+	pageOk(get('/login', 'Účet'), 'Účet');
+	pageOk(get('/login/recovery', 'Obnova'), 'Obnova');
+	pageOk(get('/login?mod=novy', 'Registrácia'), 'Registrácia');
+	pageOk(get(`/authors/${pick(AUTHORS)}`, 'Autor'), 'Autor');
+	pageOk(get(`/departments/${pick(DEPARTMENTS)}`, 'Odbor'), 'Odbor');
+	pageOk(get('/docs/pult', 'Kapitola'), 'Kapitola');
+	textOk(get('/robots.txt', 'Robots'), 'Robots', 'Disallow: /admin');
+	textOk(get('/sitemap.xml', 'Sitemap'), 'Sitemap', '/books/');
 }
 
 export function browseOnce() {
@@ -91,6 +166,15 @@ export function browseOnce() {
 	}
 
 	if (Math.random() < 0.25) {
-		pageOk(get('/departments/informatika', 'Odbor'), 'Odbor');
+		pageOk(get(`/departments/${pick(DEPARTMENTS)}`, 'Odbor'), 'Odbor');
+	}
+
+	if (Math.random() < 0.2) {
+		pageOk(get(`/authors/${pick(AUTHORS)}`, 'Autor'), 'Autor');
+	}
+
+	if (Math.random() < 0.15) {
+		const alias = pick(ALIASES);
+		pageOk(get(alias.from, `Alias ${alias.from}`), `Alias ${alias.from}`);
 	}
 }

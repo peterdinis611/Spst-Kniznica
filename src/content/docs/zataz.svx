@@ -27,7 +27,7 @@ Dashboard **SPŠT knižnica · k6** sa otvorí sám.
 
 | Príkaz | Čo robí |
 | --- | --- |
-| `npm run k6:smoke` | 1 čitateľ, celý pult raz — či stránky vôbec stoja |
+| `npm run k6:smoke` | 1 čitateľ — mapa fondu, aliasy, gaty, potom pult dokola |
 | `npm run k6:load` | 16 čitateľov, bežné čítanie |
 | `npm run k6:stress` | rampa až na 80 čitateľov, častejší [register](/holdings) |
 | `npm run k6:spike` | náhly nával 60 čitateľov |
@@ -48,7 +48,7 @@ Po teste v Grafane vyber **beh**. Grafy idú živo, kým k6 beží.
 
 ## Čo k6 bije
 
-Sieň, Objavovať, katalóg, **register** (najťažší list), odbory, autorov, príručku, `/api/search` a pár kariet kníh. Účet, lístok a `/auth` nenechávame v záťaži.
+Sieň, Objavovať, katalóg, **register** (najťažší list), odbory, autorov, prihlásenie, príručku, `/api/search` a karty kníh. Smoke raz overí aj **308 aliasy** (`/knihy`, `/pult`, `/profil`…) a **302 gaty** (`/admin`, `/profile`, `/loans`). Účet, lístok a POST `/auth` nenechávame v záťaži.
 
 ## Vypnúť
 
