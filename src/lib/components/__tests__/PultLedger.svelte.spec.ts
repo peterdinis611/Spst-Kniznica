@@ -25,8 +25,8 @@ describe('PultLedger', () => {
 		];
 		render(PultLedger, { rows, columns: columns as never, empty: 'prázdne' });
 
-		await expect.element(page.getByText('Stroje')).toBeVisible();
-		await expect.element(page.getByText('stroje')).toBeVisible();
+		await expect.element(page.getByText('Stroje', { exact: true })).toBeVisible();
+		await expect.element(page.getByText('stroje', { exact: true })).toBeVisible();
 		await expect.element(page.getByRole('grid', { name: 'Register zásuvky' })).toBeVisible();
 
 		await page.getByRole('button', { name: /Odbor/ }).click();

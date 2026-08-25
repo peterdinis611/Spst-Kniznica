@@ -1,4 +1,4 @@
-import { isActionFailure, isRedirect } from '@sveltejs/kit';
+import { isActionFailure, isHttpError, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { borrowBook, getActiveLoan, getBook, getLastBorrower, countActiveLoans, relatedBookSlips } from '$lib/server/library';
 import { queueLoanNotice } from '$lib/server/loan-mail';
@@ -65,6 +65,21 @@ describe('book card load', () => {
 			className: '',
 			days: 21
 		});
+	});
+
+	it('404s a missing card', async () => {
+		vi.mocked(getBook).mockReturnValue(undefined);
+
+		try {
+			await load({
+				params: { id: 'nie' },
+				locals: { user: reader }
+			} as Parameters<typeof load>[0]);
+			throw new Error('expected 404');
+		} catch (error) {
+			expect(isHttpError(error)).toBe(true);
+			if (isHttpError(error)) expect(error.status).toBe(404);
+		}
 	});
 });
 
@@ -160,5 +175,29 @@ describe('book borrow action', () => {
 			days: 30
 		});
 		expect(result).toMatchObject({ stamp: 'Vypožičané' });
+	});
+
+	it('keeps a fund refusal on the slip', async () => {
+		vi.mocked(borrowBook).mockReturnValue({
+			ok: false,
+			message: 'Žiadny voľný výtlačok. Skúste neskôr.'
+		});
+
+		const result = await actions.borrow?.(
+			event(reader, {
+				firstName: 'Peter',
+				lastName: 'Dinis',
+				className: 'II.A',
+				days: '21'
+			})
+		);
+
+		expect(isActionFailure(result)).toBe(true);
+		if (isActionFailure(result)) {
+			expect(result.data).toMatchObject({
+				message: 'Žiadny voľný výtlačok. Skúste neskôr.'
+			});
+		}
+		expect(queueLoanNotice).not.toHaveBeenCalled();
 	});
 });

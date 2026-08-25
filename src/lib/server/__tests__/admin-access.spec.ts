@@ -11,7 +11,7 @@ vi.mock('$env/dynamic/private', () => ({
 	env: { ADMIN_EMAILS: 'anna@spst.sk' }
 }));
 
-import { canOpenDesk, requireAdmin } from '../admin-access';
+import { canOpenDesk, deskGate, isAdminEmail, requireAdmin } from '../admin-access';
 
 const librarian = {
 	id: 'user-1',
@@ -61,8 +61,32 @@ describe('canOpenDesk', () => {
 		expect(canOpenDesk(undefined, true)).toBe(false);
 	});
 
+	it('lets a librarian manage the desk', () => {
+		expect(canOpenDesk(librarian, false)).toBe(true);
+	});
+
 	it('lets a signed-in reader through in local dev', () => {
 		expect(canOpenDesk(reader, true)).toBe(true);
-		expect(canOpenDesk(librarian, false)).toBe(true);
+	});
+});
+
+describe('isAdminEmail', () => {
+	it('matches the bootstrap list, a wildcard, and ignores blanks', () => {
+		expect(isAdminEmail('anna@spst.sk')).toBe(true);
+		expect(isAdminEmail(' Anna@SPST.sk ')).toBe(true);
+		expect(isAdminEmail('iny@spst.sk')).toBe(false);
+		expect(isAdminEmail('')).toBe(false);
+		expect(isAdminEmail(null)).toBe(false);
+		expect(isAdminEmail('kto@spst.sk', '*')).toBe(true);
+		expect(isAdminEmail('kto@spst.sk', 'a@spst.sk, kto@spst.sk')).toBe(true);
+	});
+});
+
+describe('deskGate', () => {
+	it('lets the hall through and guards the copper drawers', () => {
+		expect(deskGate('/books', undefined)).toBe('ok');
+		expect(deskGate('/admin', undefined)).toBe('login');
+		expect(deskGate('/admin/books', { ...librarian, role: 'reader' })).toBe('forbidden');
+		expect(deskGate('/admin/books', librarian)).toBe('ok');
 	});
 });

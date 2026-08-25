@@ -1,4 +1,4 @@
-import { isRedirect } from '@sveltejs/kit';
+import { isActionFailure, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { canOpenDesk } from '$lib/server/admin-access';
 import { countActiveLoans } from '$lib/server/library';
@@ -73,5 +73,28 @@ describe('profil recover', () => {
 			ok: true,
 			message: 'Odkaz na nové heslo ide na peter@spst.sk.'
 		});
+	});
+
+	it('sends a guest to login', async () => {
+		try {
+			await actions.recover({
+				locals: { user: undefined },
+				url: new URL('http://localhost/profile')
+			} as Parameters<typeof actions.recover>[0]);
+			throw new Error('expected redirect');
+		} catch (error) {
+			expect(isRedirect(error)).toBe(true);
+			if (isRedirect(error)) expect(error.location).toBe('/login');
+		}
+	});
+
+	it('fails when Auth is not wired', async () => {
+		const result = await actions.recover({
+			locals: { user: reader },
+			url: new URL('http://localhost/profile')
+		} as Parameters<typeof actions.recover>[0]);
+
+		expect(isActionFailure(result)).toBe(true);
+		if (isActionFailure(result)) expect(result.status).toBe(503);
 	});
 });

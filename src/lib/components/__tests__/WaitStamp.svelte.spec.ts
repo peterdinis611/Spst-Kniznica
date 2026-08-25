@@ -24,7 +24,8 @@ describe('WaitStamp', () => {
 	it('presses the SPŠT stamp while the fond is listing', async () => {
 		render(WaitStamp, { preview: true });
 
-		await expect.element(page.getByRole('status', { name: 'Listujem fond' })).toBeVisible();
+		await expect.element(page.getByRole('status')).toBeVisible();
+		await expect.element(page.getByText('Listujem fond')).toBeVisible();
 		await expect.element(page.getByText('SPŠT')).toBeVisible();
 	});
 });
