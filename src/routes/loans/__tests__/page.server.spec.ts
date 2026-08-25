@@ -2,6 +2,7 @@ import { isActionFailure, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LoanRecord } from '$lib/types';
 import { countActiveLoans, listLoans, returnBook, clearReturnedLoans } from '$lib/server/library';
+import { queueLoanNotice } from '$lib/server/loan-mail';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -10,6 +11,10 @@ vi.mock('$lib/server/library', () => ({
 	countActiveLoans: vi.fn(),
 	returnBook: vi.fn(),
 	clearReturnedLoans: vi.fn()
+}));
+
+vi.mock('$lib/server/loan-mail', () => ({
+	queueLoanNotice: vi.fn()
 }));
 
 const reader = {
@@ -93,6 +98,8 @@ describe('loans load', () => {
 describe('loans return action', () => {
 	beforeEach(() => {
 		vi.mocked(returnBook).mockReset();
+		vi.mocked(queueLoanNotice).mockReset();
+		vi.mocked(listLoans).mockReturnValue([loan({ id: 'open', returnedAt: null })]);
 	});
 
 	function event(user: typeof reader | undefined, loanId = 'open') {
@@ -124,6 +131,7 @@ describe('loans return action', () => {
 		const result = await actions.return?.(event(reader, 'missing'));
 
 		expect(returnBook).toHaveBeenCalledWith(reader.id, 'missing');
+		expect(queueLoanNotice).not.toHaveBeenCalled();
 		expect(isActionFailure(result)).toBe(true);
 		if (isActionFailure(result)) {
 			expect(result.status).toBe(400);
@@ -140,6 +148,13 @@ describe('loans return action', () => {
 			stamp: 'Vrátené',
 			sub: expect.stringMatching(/\d{1,2}\.\s?\d{1,2}\.\s?2026/)
 		});
+		expect(queueLoanNotice).toHaveBeenCalledWith(
+			expect.objectContaining({
+				kind: 'return',
+				to: reader.email,
+				bookTitle: 'Stroje'
+			})
+		);
 	});
 });
 

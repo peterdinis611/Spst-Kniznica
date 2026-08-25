@@ -19,13 +19,13 @@ Vľavo (na telefóne za tlačidlom menu) je fond:
 
 **Príručka** v tomto zozname nie je. Nájdeš ju v pätičke každej stránky pultu, alebo na adrese tejto kapitoly.
 
-Dole v paneli sú hodiny pultu, **Prehliadka** a prihlásenie.
+Dole v paneli sú hodiny pultu, **Prehliadka**, prihlásenému čitateľovi **Môj profil** a odhlásenie.
 
 ## Prehliadka pultu
 
 Tlačidlo **Prehliadka** je v **bočnom paneli**, nie v katalógu. Sama sa nespustí. Ani po prvom otvorení, ani z adresy. Len po kliknutí.
 
-Ide po značke školy, menu fondu, hľadaní, dnešnom výbere, odboroch, voľnej polici a **preukaze** vpravo (kruh s iniciálami — Moje knihy, číslo preukazu, odhlásenie; knihovník tam vidí aj Pult).
+Ide po značke školy, menu fondu, hľadaní, dnešnom výbere, odboroch, voľnej polici a **preukaze** vpravo (kruh s iniciálami — Môj profil, Moje knihy, číslo preukazu, odhlásenie; knihovník tam vidí aj Pult).
 
 Ak krok na stránke nie je (si napríklad v katalógu, nie na Objavovať), prehliadka ho preskočí. Najviac z nej uvidíš na [Objavovať](/discover).
 
@@ -46,6 +46,10 @@ Na vstupnej sieni a v príručke je ten istý prepínač vpravo hore.
 Jedna lišta, jedno miesto. Na vstupnej sieni ju otvoríš tlačidlom alebo **⌘K / Ctrl+K**. V katalógu ostáva v hlavičke.
 
 Na telefóne je filter odboru skrátený na kód a hľadanie potvrdíš ikonou.
+
+## Keď listuje fond
+
+Pri prechode na inú stránku (katalóg, preukaz, pult) sa na chvíľu položí krémový lístok s otáčajúcou sa pečiatkou **SPŠT**. Rýchly skok ho neukáže — čaká, kým fond naozaj listuje.
 
 ## Keď vypadne sieť
 

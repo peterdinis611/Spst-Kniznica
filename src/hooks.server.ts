@@ -15,6 +15,7 @@ const aliases = [
 	['/odbory', '/departments'],
 	['/autori', '/authors'],
 	['/vypozicky', '/loans'],
+	['/preukaz', '/profil'],
 	['/prihlasenie', '/login'],
 	['/registracia', '/login?mod=novy'],
 	['/zabudnute-heslo', '/login/obnova'],

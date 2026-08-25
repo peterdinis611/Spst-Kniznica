@@ -20,13 +20,13 @@ Jednu knihu si naraz požičiaš len raz. Kým ju nevrátiš, druhý výtlačok 
 1. Prihlás sa.
 2. Otvor kartu knihy v [katalógu](/books).
 3. Ak je výtlačok voľný, otvor lístok a vyplň **meno, priezvisko, triedu a dobu**. Na karte ostane pečiatka **Vypožičané**.
-4. Zväzok si vyzdvihni na pulte — v účte uvidíš termín vrátenia.
+4. Zväzok si vyzdvihni na pulte — v účte uvidíš termín vrátenia. Na preukazový e-mail príde lístok **Vypožičané**.
 
 Ak je nula voľných, tlačidlo výpožičku nespustí. Kniha nie je stratená, len vonku.
 
 ## Ako vrátiť
 
-Odnes knihu do pavilónu B a na stránke [Moje knihy](/loans) ju označ ako vrátenú. Pečiatka **Vrátené** potvrdí pohyb. Stav výtlačku sa hneď vráti do fondu.
+Odnes knihu do pavilónu B a na stránke [Moje knihy](/loans) ju označ ako vrátenú. Pečiatka **Vrátené** potvrdí pohyb. Stav výtlačku sa hneď vráti do fondu. Na e-mail príde lístok **Vrátené**.
 
 Oneskorené vrátenie rieši pult. V aplikácii poplatok nie je — termín slúži ako dohoda, nie ako pokuta.
 

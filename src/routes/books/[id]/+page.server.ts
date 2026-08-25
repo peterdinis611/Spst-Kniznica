@@ -17,6 +17,7 @@ import {
 	validateBorrow
 } from '$lib/borrow-fields';
 import { stampDate } from '$lib/format';
+import { queueLoanNotice } from '$lib/server/loan-mail';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const current = getBook(params.id);
@@ -74,6 +75,18 @@ export const actions: Actions = {
 		if (!result.ok) {
 			return fail(400, { message: result.message, errors: {}, values });
 		}
+
+		const held = getBook(params.id);
+		await queueLoanNotice({
+			kind: 'borrow',
+			to: locals.user.email,
+			readerName: `${values.firstName.trim()} ${values.lastName.trim()}`.trim() || locals.user.name,
+			bookTitle: held?.title ?? 'Zväzok',
+			callNumber: held?.callNumber,
+			dueAt: result.dueAt,
+			className: normalizeClass(values.className),
+			days
+		});
 
 		return { stamp: 'Vypožičané', sub: stampDate(result.dueAt) };
 	}

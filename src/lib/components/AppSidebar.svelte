@@ -11,6 +11,7 @@
 	import UsersIcon from '@lucide/svelte/icons/users';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
+	import UserRoundIcon from '@lucide/svelte/icons/user-round';
 	import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
 	import type { Component } from 'svelte';
 	import { cn } from '$lib/utils.js';
@@ -93,6 +94,17 @@
 				Prehliadka
 			</Button>
 			{#if user}
+				<Button
+					href={resolve('/profil')}
+					variant="ghost"
+					class={cn(
+						'text-muted-foreground mb-1 h-auto justify-start px-3 py-1.5 font-normal',
+						page.url.pathname.startsWith('/profil') && 'bg-secondary text-foreground'
+					)}
+				>
+					<UserRoundIcon />
+					Môj profil
+				</Button>
 				<Button
 					variant="ghost"
 					class="text-muted-foreground h-auto justify-start px-3 py-1.5 font-normal"

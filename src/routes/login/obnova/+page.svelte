@@ -9,7 +9,7 @@
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const noteOk = $derived(Boolean(form && 'ok' in form && form.ok));
 
-	let email = $state('');
+	let email = $state(data.email);
 	let submitted = $state(false);
 
 	$effect(() => {

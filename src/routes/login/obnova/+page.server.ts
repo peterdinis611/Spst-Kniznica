@@ -1,15 +1,14 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { slovakAuthMessage } from '$lib/server/auth-message';
 import { supabasePublic } from '$lib/supabase/config';
 import { hasFieldErrors, validateResetEmail } from '$lib/auth-fields';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (locals.user) {
-		redirect(302, '/loans');
-	}
-
-	return { configured: supabasePublic().configured };
+	return {
+		configured: supabasePublic().configured,
+		email: locals.user?.email ?? ''
+	};
 };
 
 export const actions: Actions = {

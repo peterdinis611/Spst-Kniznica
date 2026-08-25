@@ -18,13 +18,13 @@ Meno sa ukáže v paneli a v pečiatke výpožičky. E-mail je kľúč k účtu,
 
 ## Prihlásenie
 
-Po registrácii ťa fond vráti tam, odkiaľ si prišiel, alebo na [Moje knihy](/loans). V kruhu vpravo hore (iniciály) je preukaz: Moje knihy, pre knihovníka aj **Pult**, a **Odhlásiť**. To isté odhlásenie je v bočnom paneli.
+Po registrácii ťa fond vráti tam, odkiaľ si prišiel, alebo na [Moje knihy](/loans). V kruhu vpravo hore (iniciály) je preukaz: **Môj profil**, Moje knihy, pre knihovníka aj **Pult**, a **Odhlásiť**. Môj profil a odhlásenie sú aj v bočnom paneli.
 
 Ak prídeš z karty knihy, po prihlásení sa na ňu vráť a výpožičku potvrď.
 
 ## Zabudnuté heslo
 
-Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mail. Nové heslo nastavíš na [login/heslo](/login/heslo), kam ťa odkaz privedie.
+Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mail. Nové heslo nastavíš na [login/heslo](/login/heslo), kam ťa odkaz privedie. Z [Môjho profilu](/profil) tlačidlo **Nové heslo** pošle odkaz hneď — aj keď si prihlásený.
 
 ## Odhlásenie
 
@@ -36,6 +36,6 @@ Na cudzom počítači v študovni sa vždy odhlás.
 
 - aktívne výpožičky a dátum vrátenia
 - históriu vrátených zväzkov na stránke [Moje knihy](/loans)
-- číslo preukazu — posledné štyri znaky účtu, vidíš ho na Moje knihy
+- číslo preukazu, e-mail a pečiatku (čitateľ / knihovník) na [Môj profil](/profil)
 
 Heslo neposielaj nikomu. Ak účet nefunguje, ozvi sa na pulte v pavilóne B.

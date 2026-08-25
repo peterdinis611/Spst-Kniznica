@@ -1,6 +1,6 @@
 ---
 title: E-mail
-description: Vlastné listy z pultu — potvrdenie preukazu a obnova hesla.
+description: Listy z pultu — preukaz, heslo, výpožička a vrátenie.
 order: 6.5
 ---
 
@@ -49,3 +49,13 @@ Sender ostáva predvolený `noreply@mail.app.supabase.io`, kým v projekte nenas
 Obnova: [zabudnuté heslo](/login/obnova) → list → **Nastaviť heslo** → [nové heslo](/login/heslo).
 
 Ak odkaz padne na [chybu účtu](/auth/error), skontroluj Site URL a že v šablóne ostal `token_hash` aj `type`.
+
+## Výpožička a vrátenie
+
+Pri **vypožičaní** a **vrátení** ide druhý list, tentoraz cez **Mailgun** (nie cez Supabase). Padne na e-mail z preukazu. Predmet je `Vypožičané · …` alebo `Vrátené · …`. Telo je ten istý krémový lístok s medeným chrbtom.
+
+Kľúč je `MAILGUN_API_KEY` + `MAILGUN_DOMAIN` v `.env`. Bez nich sa pohyb vo fonde uloží, list neide.
+
+Sandbox z Mailgun doručí **len na autorizované adresy**. Ak adresa ešte nie je overená, pult ju do zoznamu pridá a Mailgun pošle **overovací odkaz**. Kým ho neklikneš, lístok výpožičky nedorazí. Vlastná doména toto obmedzenie nemá.
+
+List ide aj keď výpožičku alebo vrátenie spraví pult v zásuvke Výpožičky. Zlyhanie pošty výpožičku nezruší.

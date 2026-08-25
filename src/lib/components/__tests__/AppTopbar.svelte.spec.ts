@@ -51,6 +51,7 @@ describe('account pass menu', () => {
 		await page.getByRole('button', { name: 'Peter Dinis' }).click();
 
 		await expect.element(page.getByText('preukaz 509A')).toBeVisible();
+		await expect.element(page.getByRole('menuitem', { name: 'Môj profil' })).toBeVisible();
 		await expect.element(page.getByRole('menuitem', { name: 'Moje knihy' })).toBeVisible();
 		await expect.element(page.getByRole('menuitem', { name: 'Pult' })).not.toBeInTheDocument();
 		await expect.element(page.getByRole('menuitem', { name: 'Odhlásiť' })).toBeVisible();
@@ -94,6 +95,7 @@ describe('account pass menu', () => {
 
 		await expect.element(page.getByText('hosť v sieni')).toBeVisible();
 		await expect.element(page.getByRole('menuitem', { name: 'Prihlásiť sa' })).toBeVisible();
+		await expect.element(page.getByRole('menuitem', { name: 'Môj profil' })).not.toBeInTheDocument();
 		await expect.element(page.getByRole('menuitem', { name: 'Moje knihy' })).not.toBeInTheDocument();
 	});
 });

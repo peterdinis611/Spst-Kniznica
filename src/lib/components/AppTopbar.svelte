@@ -25,6 +25,7 @@
 	import MenuIcon from '@lucide/svelte/icons/menu';
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
+	import UserRoundIcon from '@lucide/svelte/icons/user-round';
 	import StampIcon from '@lucide/svelte/icons/stamp';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
@@ -47,7 +48,8 @@
 	const hideSearch = $derived(
 		page.url.pathname.startsWith('/login') ||
 			page.url.pathname.startsWith('/auth') ||
-			page.url.pathname.startsWith('/admin')
+			page.url.pathname.startsWith('/admin') ||
+			page.url.pathname.startsWith('/profil')
 	);
 	const authorSearch = $derived(page.url.pathname.startsWith('/authors'));
 	let chosen = $state('all');
@@ -135,6 +137,14 @@
 						<span class="account-pass-stamp" aria-hidden="true">SPŠT</span>
 					</div>
 					{#if user}
+						<DropdownMenuItem>
+							{#snippet child({ props })}
+								<a href={resolve('/profil')} {...props}>
+									<UserRoundIcon />
+									Môj profil
+								</a>
+							{/snippet}
+						</DropdownMenuItem>
 						<DropdownMenuItem>
 							{#snippet child({ props })}
 								<a href={resolve('/loans')} {...props}>

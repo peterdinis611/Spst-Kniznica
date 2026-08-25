@@ -1,6 +1,7 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { bookOptions, deleteLoan, listDeskLoans, readerOptions, returnDeskLoan, saveLoan } from '$lib/server/admin-desk';
+import { bookOptions, deleteLoan, getDeskLoan, listDeskLoans, readerOptions, returnDeskLoan, saveLoan } from '$lib/server/admin-desk';
+import { queueLoanNotice } from '$lib/server/loan-mail';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/admin-desk', () => ({
@@ -11,6 +12,14 @@ vi.mock('$lib/server/admin-desk', () => ({
 	saveLoan: vi.fn(),
 	returnDeskLoan: vi.fn(),
 	deleteLoan: vi.fn()
+}));
+
+vi.mock('$lib/server/loan-mail', () => ({
+	queueLoanNotice: vi.fn()
+}));
+
+vi.mock('$lib/server/library', () => ({
+	getBook: vi.fn()
 }));
 
 function event(fields: Record<string, string>) {
@@ -62,12 +71,38 @@ describe('admin vypozicky actions', () => {
 		vi.mocked(saveLoan).mockReset();
 		vi.mocked(returnDeskLoan).mockReset();
 		vi.mocked(deleteLoan).mockReset();
+		vi.mocked(queueLoanNotice).mockReset();
+		vi.mocked(getDeskLoan).mockReset();
 	});
 
 	it('stamps a desk return', async () => {
+		vi.mocked(getDeskLoan).mockReturnValue({
+			id: 'loan-1',
+			bookId: 'book-1',
+			holdingId: 'h-1',
+			userId: 'user-1',
+			borrowedAt: new Date(),
+			dueAt: new Date(),
+			returnedAt: null,
+			renewalCount: 0,
+			borrowerFirstName: 'Peter',
+			borrowerLastName: 'Dinis',
+			borrowerClass: 'II.A',
+			loanDays: 21,
+			bookTitle: 'Algoritmy',
+			readerName: 'Peter Dinis',
+			readerEmail: 'peter@spst.sk'
+		});
 		vi.mocked(returnDeskLoan).mockReturnValue({ ok: true });
 		expect(await actions.return?.(event({ id: 'loan-1' }))).toEqual({ stamp: 'Vrátené' });
 		expect(returnDeskLoan).toHaveBeenCalledWith('loan-1');
+		expect(queueLoanNotice).toHaveBeenCalledWith(
+			expect.objectContaining({
+				kind: 'return',
+				to: 'peter@spst.sk',
+				bookTitle: 'Algoritmy'
+			})
+		);
 	});
 
 	it('returns a missing slip as a failure', async () => {

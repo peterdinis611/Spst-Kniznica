@@ -10,6 +10,7 @@ describe('deskTitle', () => {
 		expect(deskTitle('/authors')).toBe('Autori');
 		expect(deskTitle('/admin/knihy')).toBe('Pult');
 		expect(deskTitle('/loans')).toBe('Moje knihy');
+		expect(deskTitle('/profil')).toBe('Môj profil');
 		expect(deskTitle('/login/heslo')).toBe('Účet');
 		expect(deskTitle('/docs/sprava')).toBe('Príručka');
 		expect(deskTitle('/')).toBe('SPŠT knižnica');
