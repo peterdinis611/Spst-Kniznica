@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { enhance } from '$app/forms';
+	import { enhance, type SubmitFunction } from '$app/forms';
 	import type { ActionData, PageProps } from './$types';
 	import Seo from '$lib/components/Seo.svelte';
 	import AuthPass from '$lib/components/AuthPass.svelte';
@@ -29,6 +29,7 @@
 	});
 
 	const errors = $derived.by((): FieldErrors => {
+		if (noteOk) return {};
 		if (submitted) {
 			return register
 				? validateSignUp({ name, email, password, confirm })
@@ -44,6 +45,17 @@
 			: validateSignIn({ email, password });
 		if (hasFieldErrors(next)) event.preventDefault();
 	}
+
+	const applyForm: SubmitFunction = () => {
+		return async ({ result, update }) => {
+			await update({ reset: result.type !== 'success' });
+			if (result.type === 'success') {
+				submitted = false;
+				password = '';
+				confirm = '';
+			}
+		};
+	};
 </script>
 
 <Seo
@@ -68,7 +80,7 @@
 	<form
 		method="POST"
 		action={register ? '?/signUp' : '?/signIn'}
-		use:enhance
+		use:enhance={applyForm}
 		class="pass-form"
 		novalidate
 		onsubmit={check}
@@ -109,23 +121,25 @@
 				<p class="pass-error" id="email-chyba">{errors.email}</p>
 			{/if}
 		</div>
-		<PassSecret
-			id="password"
-			label="Heslo"
-			autocomplete={register ? 'new-password' : 'current-password'}
-			bind:value={password}
-			error={errors.password}
-			meter={register}
-		/>
-		{#if register}
+		{#if !noteOk}
 			<PassSecret
-				id="confirm"
-				name="confirm"
-				label="Heslo znova"
-				autocomplete="new-password"
-				bind:value={confirm}
-				error={errors.confirm}
+				id="password"
+				label="Heslo"
+				autocomplete={register ? 'new-password' : 'current-password'}
+				bind:value={password}
+				error={errors.password}
+				meter={register}
 			/>
+			{#if register}
+				<PassSecret
+					id="confirm"
+					name="confirm"
+					label="Heslo znova"
+					autocomplete="new-password"
+					bind:value={confirm}
+					error={errors.confirm}
+				/>
+			{/if}
 		{/if}
 		{#if !register}
 			<p class="pass-help">
@@ -140,8 +154,12 @@
 		{:else if form?.message}
 			<p class="pass-note" class:is-ok={noteOk}>{form.message}</p>
 		{/if}
-		<button class="pass-go" type="submit" disabled={!data.configured}>
-			{register ? 'Vytvoriť preukaz' : 'Prihlásiť sa'}
-		</button>
+		{#if noteOk}
+			<a class="pass-back" href={resolve('/login')}>Späť na prihlásenie</a>
+		{:else}
+			<button class="pass-go" type="submit" disabled={!data.configured}>
+				{register ? 'Vytvoriť preukaz' : 'Prihlásiť sa'}
+			</button>
+		{/if}
 	</form>
 </AuthPass>

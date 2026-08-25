@@ -33,7 +33,7 @@ async function inviteSandboxRecipient(base: string, key: string, email: string) 
 	}
 }
 
-export async function sendMail(input: {
+export async function sendMailgun(input: {
 	to: string;
 	toName?: string;
 	subject: string;

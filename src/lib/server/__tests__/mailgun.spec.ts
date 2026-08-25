@@ -9,7 +9,7 @@ vi.mock('$env/dynamic/private', () => ({
 	}
 }));
 
-import { sendMail } from '../mailgun';
+import { sendMailgun } from '../mailgun';
 
 const slip = {
 	toName: 'Peter Dinis',
@@ -18,7 +18,7 @@ const slip = {
 	html: '<p>Lístok.</p>'
 };
 
-describe('sendMail', () => {
+describe('sendMailgun', () => {
 	beforeEach(() => {
 		vi.stubGlobal(
 			'fetch',
@@ -31,7 +31,7 @@ describe('sendMail', () => {
 	});
 
 	it('posts a message to Mailgun', async () => {
-		const result = await sendMail({ to: 'peter@spst.sk', ...slip });
+		const result = await sendMailgun({ to: 'peter@spst.sk', ...slip });
 
 		expect(result).toEqual({ ok: true });
 		expect(fetch).toHaveBeenCalledWith(
@@ -52,7 +52,7 @@ describe('sendMail', () => {
 		});
 		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-		const result = await sendMail({ to: 'pdinis1@gmail.com', ...slip });
+		const result = await sendMailgun({ to: 'pdinis1@gmail.com', ...slip });
 
 		expect(result).toEqual({ ok: false, skipped: false });
 		expect(fetch).toHaveBeenCalledWith(

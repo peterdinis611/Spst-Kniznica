@@ -52,10 +52,12 @@ Ak odkaz padne na [chybu účtu](/auth/error), skontroluj Site URL a že v šabl
 
 ## Výpožička a vrátenie
 
-Pri **vypožičaní** a **vrátení** ide druhý list, tentoraz cez **Mailgun** (nie cez Supabase). Padne na e-mail z preukazu. Predmet je `Vypožičané · …` alebo `Vrátené · …`. Telo je ten istý krémový lístok s medeným chrbtom.
+Pri **vypožičaní** a **vrátení** ide druhý list cez poštu pultu (nie cez Supabase). Padne na e-mail z preukazu. Predmet je `Vypožičané · …` alebo `Vrátené · …`. Telo je ten istý krémový lístok s medeným chrbtom.
 
-Kľúč je `MAILGUN_API_KEY` + `MAILGUN_DOMAIN` v `.env`. Bez nich sa pohyb vo fonde uloží, list neide.
+Lokálne (`vite dev`, alebo `MAIL_DRIVER=mailtrap`) ide **Mailtrap**. Token je `MAILTRAP_TOKEN`, odosielateľ `MAILTRAP_FROM` (demo adresa `hello@demomailtrap.co`, kým nemáte overenú vlastnú doménu). Demo doména doručí **len na e-mail majiteľa Mailtrap účtu** — doplň ho do `MAILTRAP_TO`. Lístok pre iný preukaz tam padne s poznámkou pôvodnej adresy.
 
-Sandbox z Mailgun doručí **len na autorizované adresy**. Ak adresa ešte nie je overená, pult ju do zoznamu pridá a Mailgun pošle **overovací odkaz**. Kým ho neklikneš, lístok výpožičky nedorazí. Vlastná doména toto obmedzenie nemá.
+Na ostrej prevádzke (`MAIL_DRIVER=mailgun`, mimo `vite dev` je to predvolené) ide **Mailgun**. Kľúč je `MAILGUN_API_KEY` + `MAILGUN_DOMAIN`. Bez kľúča aktívneho ovládača sa pohyb vo fonde uloží, list neide.
+
+Sandbox z Mailgun doručí **len na autorizované adresy**. Ak adresa ešte nie je overená, pult ju do zoznamu pridá a Mailgun pošle **overovací odkaz**. Kým ho neklikneš, lístok výpožičky nedorazí. Vlastná doména toto obmedzenie nemá. Mailtrap demo doména doručí len na `MAILTRAP_TO`.
 
 List ide aj keď výpožičku alebo vrátenie spraví pult v zásuvke Výpožičky. Zlyhanie pošty výpožičku nezruší.

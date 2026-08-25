@@ -18,6 +18,7 @@
 	});
 
 	const errors = $derived.by((): FieldErrors => {
+		if (noteOk) return {};
 		const next = validateResetEmail({ email });
 		if (!submitted) return form && 'errors' in form ? (form.errors ?? {}) : {};
 		return next;
@@ -42,7 +43,18 @@
 	serial="OBNOVA · LEN E-MAIL"
 	facts={['odkaz na e-mail', 'heslo na pulte nie', 'platnosť krátka']}
 >
-	<form method="POST" use:enhance class="pass-form" novalidate onsubmit={check}>
+	<form
+		method="POST"
+		use:enhance={() => {
+			return async ({ result, update }) => {
+				await update({ reset: result.type !== 'success' });
+				if (result.type === 'success') submitted = false;
+			};
+		}}
+		class="pass-form"
+		novalidate
+		onsubmit={check}
+	>
 		<div class="pass-field" class:is-bad={Boolean(errors.email)}>
 			<label for="email">E-mail</label>
 			<input

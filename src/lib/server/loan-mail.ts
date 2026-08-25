@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { shortDate, stampDate } from '$lib/format';
-import { sendMail } from '$lib/server/mailgun';
+import { sendMail } from '$lib/server/mail';
 
 export type LoanNotice = {
 	kind: 'borrow' | 'return';
