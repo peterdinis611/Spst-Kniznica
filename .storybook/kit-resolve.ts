@@ -7,10 +7,14 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const lib = path.resolve(root, '../src/lib');
 const appPaths = path.resolve(root, 'mocks/app-paths.ts');
 const appEnvironment = path.resolve(root, 'mocks/app-environment.ts');
+const appForms = path.resolve(root, 'mocks/app-forms.ts');
+const appNavigation = path.resolve(root, 'mocks/app-navigation.ts');
 
 const aliases = [
 	{ find: '$app/paths', replacement: appPaths },
 	{ find: '$app/environment', replacement: appEnvironment },
+	{ find: '$app/forms', replacement: appForms },
+	{ find: '$app/navigation', replacement: appNavigation },
 	{ find: '$lib', replacement: lib }
 ];
 
@@ -58,6 +62,8 @@ export function storybookKitResolve(): Plugin {
 		resolveId(id) {
 			if (id === '$app/paths' || id.startsWith('$app/paths?')) return appPaths;
 			if (id === '$app/environment' || id.startsWith('$app/environment?')) return appEnvironment;
+			if (id === '$app/forms' || id.startsWith('$app/forms?')) return appForms;
+			if (id === '$app/navigation' || id.startsWith('$app/navigation?')) return appNavigation;
 			return resolveLib(id);
 		}
 	};

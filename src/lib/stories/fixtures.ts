@@ -7,6 +7,13 @@ export const sampleReader: Reader = {
 	role: 'reader'
 };
 
+export const sampleLibrarian: Reader = {
+	id: 'user-1',
+	name: 'Anna Pult',
+	email: 'anna@spst.sk',
+	role: 'librarian'
+};
+
 export const categories: CategoryRecord[] = [
 	{
 		id: 'cat-inf',
@@ -116,3 +123,41 @@ export const catalogBooks: CatalogBook[] = [
 ];
 
 export const shelfBooks = catalogBooks.map((item) => ({ id: item.id, title: item.title }));
+
+export const sampleBorrower = {
+	firstName: 'Mária',
+	lastName: 'Kováčová',
+	className: 'III.A',
+	days: 21
+};
+
+export const searchPreview = catalogBooks.slice(0, 4).map((item) => ({
+	id: item.id,
+	title: item.title,
+	authors: item.authors.map((person) => person.name).join(' & '),
+	callNumber: item.callNumber,
+	category: item.category.name,
+	isbn: item.isbn,
+	copiesAvailable: item.copiesAvailable,
+	coverUrl: item.coverUrl
+}));
+
+export const pultLedgerRows = [
+	{ id: 'inf', name: 'Informatika', slug: 'informatika', count: 6 },
+	{ id: 'str', name: 'Strojárstvo', slug: 'strojarstvo', count: 4 },
+	{ id: 'ele', name: 'Elektrotechnika', slug: 'elektrotechnika', count: 3 },
+	{ id: 'lit', name: 'Literatúra', slug: 'literatura', count: 5 }
+];
+
+export const pultLedgerColumns = [
+	{
+		id: 'name',
+		accessorKey: 'name',
+		header: 'Odbor',
+		cell: (info: { row: { original: (typeof pultLedgerRows)[number] } }) => ({
+			title: info.row.original.name,
+			hint: info.row.original.slug
+		})
+	},
+	{ id: 'count', accessorKey: 'count', header: 'Knihy' }
+];

@@ -11,6 +11,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 	import OfflineSlip from '$lib/components/OfflineSlip.svelte';
+	import WaitStamp from '$lib/components/WaitStamp.svelte';
 
 	let { children, data } = $props();
 	const isHall = $derived(page.route.id === '/' && !page.error);
@@ -57,5 +58,6 @@
 	</div>
 {/if}
 
+<WaitStamp />
 <OfflineSlip />
 <ScrollToTop />

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { authorLine, booksLabel, copiesLabel, daysLabel, dueStatus, firstName, loanedLabel, readerNumber, splitCallNumber, stampDate, volumesLabel } from '../format';
+import { authorLine, booksLabel, catalogDate, copiesLabel, copiesShort, daysLabel, dueStatus, familyName, firstName, initials, loanedLabel, readerNumber, splitCallNumber, stampDate, volumesLabel } from '../format';
 
 describe('readerNumber', () => {
 	it('takes the last four alphanumerics and pads them', () => {
@@ -93,5 +93,11 @@ describe('catalog copy', () => {
 	it('splits a call number and the given name', () => {
 		expect(splitCallNumber('INF 004.4 BEL')).toEqual({ dept: 'INF', number: '004.4', cutter: 'BEL' });
 		expect(firstName('Peter Dinis')).toBe('Peter');
+		expect(copiesShort(0, 3)).toBe('0');
+		expect(copiesShort(2, 5)).toBe('2/5');
+		expect(initials('Ing. Peter Dinis')).toBe('PD');
+		expect(initials('Peter')).toBe('PE');
+		expect(familyName('Ing. Peter Dinis')).toBe('Dinis');
+		expect(catalogDate(new Date(2026, 7, 25))).toMatch(/2026/);
 	});
 });

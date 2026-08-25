@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import PultDelete from '../PultDelete.svelte';
 
+vi.mock('$app/forms', () => ({
+	enhance: () => ({ destroy() {} })
+}));
+
 describe('PultDelete', () => {
 	it('posts hidden ids after a confirmed stamp', async () => {
 		const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);

@@ -1,7 +1,7 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import AppSidebar from './AppSidebar.svelte';
-	import { sampleReader } from '$lib/stories/fixtures';
+	import { sampleLibrarian, sampleReader } from '$lib/stories/fixtures';
 
 	const { Story } = defineMeta({
 		title: 'Fond/AppSidebar',
@@ -20,6 +20,13 @@
 <Story name="Čitateľ" asChild>
 	<div class="bg-sidebar h-dvh w-[16rem]">
 		<AppSidebar user={sampleReader} />
+	</div>
+</Story>
+
+<Story name="Knihovník" asChild>
+	<div class="bg-sidebar h-dvh w-[16rem]">
+		<form id="logout-form" method="POST" action="/logout"></form>
+		<AppSidebar user={sampleLibrarian} />
 	</div>
 </Story>
 

@@ -11,18 +11,18 @@ import {
 
 describe('pultHref', () => {
 	it('keeps the current query when opening a card', () => {
-		const url = new URL('http://localhost/admin/knihy?q=stroje');
-		expect(pultHref(url, { edit: 'book-1' })).toBe('/admin/knihy?q=stroje&edit=book-1');
+		const url = new URL('http://localhost/admin/books?q=stroje');
+		expect(pultHref(url, { edit: 'book-1' })).toBe('/admin/books?q=stroje&edit=book-1');
 	});
 
 	it('clears an empty search without dropping the rest of the slip', () => {
-		const url = new URL('http://localhost/admin/knihy?q=stroje&edit=book-1');
-		expect(pultSearchPath(url, '  ')).toBe('/admin/knihy?edit=book-1');
+		const url = new URL('http://localhost/admin/books?q=stroje&edit=book-1');
+		expect(pultSearchPath(url, '  ')).toBe('/admin/books?edit=book-1');
 	});
 
 	it('drops the edit flag when cancelling a card', () => {
-		const url = new URL('http://localhost/admin/knihy?q=stroje&edit=book-1');
-		expect(pultHref(url, { edit: null })).toBe('/admin/knihy?q=stroje');
+		const url = new URL('http://localhost/admin/books?q=stroje&edit=book-1');
+		expect(pultHref(url, { edit: null })).toBe('/admin/books?q=stroje');
 	});
 });
 

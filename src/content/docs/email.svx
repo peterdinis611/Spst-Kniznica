@@ -1,6 +1,6 @@
 ---
 title: E-mail
-description: Vlastné listy z pultu — potvrdenie preukazu a obnova hesla.
+description: Listy z pultu — preukaz, heslo, výpožička a vrátenie.
 order: 6.5
 ---
 
@@ -30,7 +30,7 @@ Odkaz v šablóne **nestavaj** na predvolené ConfirmationURL (to ide na Supabas
 
 `/auth/confirm?token_hash=…&type=…&next=…`
 
-Typ `email` ide na Moje knihy, `recovery` na [nové heslo](/login/heslo). TokenHash a SiteURL dopĺňa Supabase.
+Typ `email` ide na Moje knihy, `recovery` na [nové heslo](/login/password). TokenHash a SiteURL dopĺňa Supabase.
 
 Pod odkazom je aj **šesťmiestny kód**. Keď pošta odkaz „otvorí“ skôr ako čitateľ (Safe Links), kód ešte platí.
 
@@ -46,6 +46,18 @@ Sender ostáva predvolený `noreply@mail.app.supabase.io`, kým v projekte nenas
 2. Otvor list, klikni **Potvrdiť preukaz**.
 3. Mal by si skončiť na [Moje knihy](/loans).
 
-Obnova: [zabudnuté heslo](/login/obnova) → list → **Nastaviť heslo** → [nové heslo](/login/heslo).
+Obnova: [zabudnuté heslo](/login/recovery) → list → **Nastaviť heslo** → [nové heslo](/login/password).
 
 Ak odkaz padne na [chybu účtu](/auth/error), skontroluj Site URL a že v šablóne ostal `token_hash` aj `type`.
+
+## Výpožička a vrátenie
+
+Pri **vypožičaní** a **vrátení** ide druhý list cez poštu pultu (nie cez Supabase). Padne na e-mail z preukazu. Predmet je `Vypožičané · …` alebo `Vrátené · …`. Telo je ten istý krémový lístok s medeným chrbtom.
+
+Lokálne (`vite dev`, alebo `MAIL_DRIVER=mailtrap`) ide **Mailtrap**. Token je `MAILTRAP_TOKEN`, odosielateľ `MAILTRAP_FROM` (demo adresa `hello@demomailtrap.co`, kým nemáte overenú vlastnú doménu). Demo doména doručí **len na e-mail majiteľa Mailtrap účtu** — doplň ho do `MAILTRAP_TO`. Lístok pre iný preukaz tam padne s poznámkou pôvodnej adresy.
+
+Na ostrej prevádzke (`MAIL_DRIVER=mailgun`, mimo `vite dev` je to predvolené) ide **Mailgun**. Kľúč je `MAILGUN_API_KEY` + `MAILGUN_DOMAIN`. Bez kľúča aktívneho ovládača sa pohyb vo fonde uloží, list neide.
+
+Sandbox z Mailgun doručí **len na autorizované adresy**. Ak adresa ešte nie je overená, pult ju do zoznamu pridá a Mailgun pošle **overovací odkaz**. Kým ho neklikneš, lístok výpožičky nedorazí. Vlastná doména toto obmedzenie nemá. Mailtrap demo doména doručí len na `MAILTRAP_TO`.
+
+List ide aj keď výpožičku alebo vrátenie spraví pult v zásuvke Výpožičky. Zlyhanie pošty výpožičku nezruší.

@@ -112,6 +112,7 @@
 				<a href={resolve('/departments')} onclick={closeMenu}>Odbory</a>
 				<a href={resolve('/authors')} onclick={closeMenu}>Autori</a>
 				{#if user}
+					<a href={resolve('/profile')} onclick={closeMenu}>Môj profil</a>
 					<a href={resolve('/loans')} onclick={closeMenu}>Moje knihy</a>
 					{#if admin}
 						<a href={resolve('/admin')} onclick={closeMenu}>Pult</a>

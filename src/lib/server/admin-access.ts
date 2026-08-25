@@ -24,6 +24,13 @@ export function canOpenDesk(user: SignedReader | null | undefined, isDev = dev) 
 	return isDev;
 }
 
+export function deskGate(pathname: string, user: SignedReader | undefined) {
+	if (!pathname.startsWith('/admin')) return 'ok' as const;
+	if (!user) return 'login' as const;
+	if (!canOpenDesk(user)) return 'forbidden' as const;
+	return 'ok' as const;
+}
+
 export function requireAdmin(user: SignedReader | undefined) {
 	if (!user) redirect(302, '/login');
 	if (!canOpenDesk(user)) {

@@ -1,13 +1,13 @@
 export const PULT_TABLES = [
 	{ href: '/admin', label: 'Prehľad', code: '01' },
-	{ href: '/admin/odbory', label: 'Odbory', code: '02', table: 'category' },
-	{ href: '/admin/autori', label: 'Autori', code: '03', table: 'author' },
-	{ href: '/admin/knihy', label: 'Knihy', code: '04', table: 'book' },
-	{ href: '/admin/vazby', label: 'Väzby', code: '05', table: 'book_author' },
-	{ href: '/admin/vytlacky', label: 'Výtlačky', code: '06', table: 'holding' },
-	{ href: '/admin/vypozicky', label: 'Výpožičky', code: '07', table: 'loan' },
-	{ href: '/admin/rezervacie', label: 'Rezervácie', code: '08', table: 'reservation' },
-	{ href: '/admin/citately', label: 'Čitatelia', code: '09', table: 'user' }
+	{ href: '/admin/departments', label: 'Odbory', code: '02', table: 'category' },
+	{ href: '/admin/authors', label: 'Autori', code: '03', table: 'author' },
+	{ href: '/admin/books', label: 'Knihy', code: '04', table: 'book' },
+	{ href: '/admin/book-authors', label: 'Väzby', code: '05', table: 'book_author' },
+	{ href: '/admin/holdings', label: 'Výtlačky', code: '06', table: 'holding' },
+	{ href: '/admin/loans', label: 'Výpožičky', code: '07', table: 'loan' },
+	{ href: '/admin/reservations', label: 'Rezervácie', code: '08', table: 'reservation' },
+	{ href: '/admin/readers', label: 'Čitatelia', code: '09', table: 'user' }
 ] as const;
 
 export const HOLDING_STATUSES = [

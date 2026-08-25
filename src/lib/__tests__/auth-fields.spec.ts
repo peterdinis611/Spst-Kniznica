@@ -3,6 +3,7 @@ import {
 	hasFieldErrors,
 	passwordStrength,
 	validateNewPassword,
+	validateResetEmail,
 	validateSignIn,
 	validateSignUp
 } from '../auth-fields';
@@ -47,6 +48,13 @@ describe('validateSignUp', () => {
 describe('validateNewPassword', () => {
 	it('requires the confirm field', () => {
 		expect(validateNewPassword({ password: 'kniha12a', confirm: '' }).confirm).toMatch(/Zopakuj/);
+	});
+});
+
+describe('validateResetEmail', () => {
+	it('wants a real address', () => {
+		expect(validateResetEmail({ email: '' }).email).toMatch(/Zadaj e-mail/);
+		expect(validateResetEmail({ email: 'anna@spst.sk' }).email).toBeUndefined();
 	});
 });
 

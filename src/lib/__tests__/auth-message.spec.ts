@@ -10,6 +10,11 @@ describe('slovakAuthMessage', () => {
 		expect(slovakAuthMessage('Unable to validate email address', 'x')).toMatch(/adresa/);
 		expect(slovakAuthMessage('Session missing', 'x')).toMatch(/vypršal/);
 		expect(slovakAuthMessage('something else', 'Skús znova.')).toBe('Skús znova.');
+		expect(slovakAuthMessage('For security purposes you can only request this after', 'x')).toMatch(
+			/Počkaj/
+		);
+		expect(slovakAuthMessage('New password should be different', 'x')).toMatch(/iné ako doterajšie/);
+		expect(slovakAuthMessage('same password', 'x')).toMatch(/iné ako doterajšie/);
 	});
 });
 

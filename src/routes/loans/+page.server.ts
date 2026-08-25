@@ -8,6 +8,7 @@ import {
 	returnBook
 } from '$lib/server/library';
 import { stampDate } from '$lib/format';
+import { queueLoanNotice } from '$lib/server/loan-mail';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -40,10 +41,21 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const loanId = formData.get('loanId')?.toString() ?? '';
+		const open = listLoans(locals.user.id).find((item) => item.id === loanId);
 		const result = returnBook(locals.user.id, loanId);
 
 		if (!result.ok) {
 			return fail(400, { message: result.message });
+		}
+
+		if (open) {
+			await queueLoanNotice({
+				kind: 'return',
+				to: locals.user.email,
+				readerName: locals.user.name,
+				bookTitle: open.book.title,
+				callNumber: open.book.callNumber
+			});
 		}
 
 		return { stamp: 'Vrátené', sub: stampDate(new Date()) };

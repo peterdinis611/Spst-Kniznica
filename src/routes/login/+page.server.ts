@@ -119,7 +119,8 @@ export const actions: Actions = {
 				return {
 					ok: true,
 					mode: 'novy' as const,
-					message: 'Skontroluj e-mail a potvrď účet. Potom sa môžeš prihlásiť.'
+					message: 'Skontroluj e-mail a potvrď účet. Potom sa môžeš prihlásiť.',
+					values: { name, email }
 				};
 			}
 

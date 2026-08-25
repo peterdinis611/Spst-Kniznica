@@ -6,6 +6,7 @@ export function deskTitle(pathname: string) {
 	if (pathname.startsWith('/authors')) return 'Autori';
 	if (pathname.startsWith('/admin')) return 'Pult';
 	if (pathname.startsWith('/loans')) return 'Moje knihy';
+	if (pathname.startsWith('/profile')) return 'Môj profil';
 	if (pathname.startsWith('/login') || pathname.startsWith('/auth')) return 'Účet';
 	if (pathname.startsWith('/docs')) return 'Príručka';
 	return 'SPŠT knižnica';

@@ -1,6 +1,7 @@
-import { isActionFailure, isRedirect } from '@sveltejs/kit';
+import { isActionFailure, isHttpError, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { borrowBook, getActiveLoan, getBook, getLastBorrower, countActiveLoans, relatedBookSlips } from '$lib/server/library';
+import { queueLoanNotice } from '$lib/server/loan-mail';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -11,6 +12,10 @@ vi.mock('$lib/server/library', () => ({
 	getLastBorrower: vi.fn(),
 	countActiveLoans: vi.fn(),
 	relatedBookSlips: vi.fn()
+}));
+
+vi.mock('$lib/server/loan-mail', () => ({
+	queueLoanNotice: vi.fn()
 }));
 
 const reader = { id: 'user-509a', name: 'Peter Dinis', email: 'peter@spst.sk', role: 'reader' as const };
@@ -61,11 +66,28 @@ describe('book card load', () => {
 			days: 21
 		});
 	});
+
+	it('404s a missing card', async () => {
+		vi.mocked(getBook).mockReturnValue(undefined);
+
+		try {
+			await load({
+				params: { id: 'nie' },
+				locals: { user: reader }
+			} as Parameters<typeof load>[0]);
+			throw new Error('expected 404');
+		} catch (error) {
+			expect(isHttpError(error)).toBe(true);
+			if (isHttpError(error)) expect(error.status).toBe(404);
+		}
+	});
 });
 
 describe('book borrow action', () => {
 	beforeEach(() => {
 		vi.mocked(borrowBook).mockReset();
+		vi.mocked(queueLoanNotice).mockReset();
+		vi.mocked(getBook).mockReturnValue(book);
 	});
 
 	function event(user: typeof reader | undefined, body: Record<string, string> = {}) {
@@ -124,6 +146,14 @@ describe('book borrow action', () => {
 			stamp: 'Vypožičané',
 			sub: expect.stringMatching(/13\.\s?09\.\s?2026/)
 		});
+		expect(queueLoanNotice).toHaveBeenCalledWith(
+			expect.objectContaining({
+				kind: 'borrow',
+				to: reader.email,
+				bookTitle: 'Stroje',
+				days: 21
+			})
+		);
 	});
 
 	it('accepts a custom period', async () => {
@@ -145,5 +175,29 @@ describe('book borrow action', () => {
 			days: 30
 		});
 		expect(result).toMatchObject({ stamp: 'Vypožičané' });
+	});
+
+	it('keeps a fund refusal on the slip', async () => {
+		vi.mocked(borrowBook).mockReturnValue({
+			ok: false,
+			message: 'Žiadny voľný výtlačok. Skúste neskôr.'
+		});
+
+		const result = await actions.borrow?.(
+			event(reader, {
+				firstName: 'Peter',
+				lastName: 'Dinis',
+				className: 'II.A',
+				days: '21'
+			})
+		);
+
+		expect(isActionFailure(result)).toBe(true);
+		if (isActionFailure(result)) {
+			expect(result.data).toMatchObject({
+				message: 'Žiadny voľný výtlačok. Skúste neskôr.'
+			});
+		}
+		expect(queueLoanNotice).not.toHaveBeenCalled();
 	});
 });

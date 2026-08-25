@@ -19,6 +19,6 @@
 >
 	<div class="pass-actions">
 		<a class="is-ink" href={resolve('/login')}>Prihlásenie</a>
-		<a href={resolve('/login/obnova')}>Zabudnuté heslo</a>
+		<a href={resolve('/login/recovery')}>Zabudnuté heslo</a>
 	</div>
 </AuthPass>
