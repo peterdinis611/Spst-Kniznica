@@ -5,6 +5,7 @@ import { holdingStatus, reservationStatus } from './db/schema';
 import { db } from './db';
 import { author, book, bookAuthor, category, holding, loan, reservation, user } from './db/schema';
 import { refreshCatalog, uniqueConstraintMessage } from './admin';
+import { forgetCover, parseCover } from './cover-files';
 import { parseLoanDays } from '$lib/borrow-fields';
 
 export type DeskResult = { ok: true } | { ok: false; message: string };
@@ -310,7 +311,9 @@ export function listDeskBooks(query = '') {
 			copiesAvailable: book.copiesAvailable,
 			publisher: book.publisher,
 			language: book.language,
-			featured: book.featured
+			featured: book.featured,
+			coverUrl: book.coverUrl,
+			coverKey: book.coverKey
 		})
 		.from(book)
 		.innerJoin(category, eq(book.categoryId, category.id))
@@ -348,7 +351,9 @@ export function getDeskBook(id: string) {
 				copiesAvailable: book.copiesAvailable,
 				publisher: book.publisher,
 				language: book.language,
-				featured: book.featured
+				featured: book.featured,
+				coverUrl: book.coverUrl,
+				coverKey: book.coverKey
 			})
 			.from(book)
 			.innerJoin(category, eq(book.categoryId, category.id))
@@ -413,6 +418,8 @@ export function saveBook(input: {
 	featured: boolean;
 	authorIds: string[];
 	copies?: number;
+	coverUrl?: string;
+	coverKey?: string;
 }): DeskResult {
 	const title = input.title.trim();
 	const isbn = input.isbn.trim();
@@ -432,13 +439,16 @@ export function saveBook(input: {
 	if (!cat) return fail('Vyber odbor.');
 
 	const authors = input.authorIds.filter(Boolean);
+	const cover = parseCover(input.coverUrl ?? '', input.coverKey ?? '');
 	let bookId = input.id ?? '';
+	let previousKey: string | null = null;
 
 	try {
 		db.transaction((tx) => {
 			if (input.id) {
 				const current = tx.select().from(book).where(eq(book.id, input.id)).get();
 				if (!current) throw new Error('Kniha sa nenašla.');
+				previousKey = current.coverKey;
 				tx.update(book)
 					.set({
 						title,
@@ -451,7 +461,9 @@ export function saveBook(input: {
 						categoryId: input.categoryId,
 						publisher,
 						language,
-						featured: input.featured
+						featured: input.featured,
+						coverUrl: cover.coverUrl,
+						coverKey: cover.coverKey
 					})
 					.where(eq(book.id, input.id))
 					.run();
@@ -473,6 +485,8 @@ export function saveBook(input: {
 						publisher,
 						language,
 						featured: input.featured,
+						coverUrl: cover.coverUrl,
+						coverKey: cover.coverKey,
 						copiesTotal: 0,
 						copiesAvailable: 0
 					})
@@ -505,6 +519,7 @@ export function saveBook(input: {
 	}
 
 	refreshCatalog({ bookId });
+	if (previousKey && previousKey !== cover.coverKey) forgetCover(previousKey);
 	return ok();
 }
 
@@ -513,9 +528,11 @@ export function deleteBook(id: string): DeskResult {
 		db.select({ c: count() }).from(loan).where(and(eq(loan.bookId, id), isNull(loan.returnedAt))).get()
 			?.c ?? 0;
 	if (open > 0) return fail('Kniha má aktívne výpožičky. Najprv ich vráť.');
+	const current = db.select({ coverKey: book.coverKey }).from(book).where(eq(book.id, id)).get();
 	db.delete(loan).where(eq(loan.bookId, id)).run();
 	const gone = db.delete(book).where(eq(book.id, id)).run();
 	if (!gone.changes) return fail('Kniha sa nenašla.');
+	forgetCover(current?.coverKey);
 	refreshCatalog({ deletedBookId: id });
 	return ok();
 }

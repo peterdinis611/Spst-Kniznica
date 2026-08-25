@@ -28,6 +28,7 @@ const book = {
 	copiesAvailable: 1,
 	publisher: 'SPŠT',
 	featured: false,
+	coverUrl: null,
 	category: {
 		id: 'cat-str',
 		name: 'Strojárstvo',

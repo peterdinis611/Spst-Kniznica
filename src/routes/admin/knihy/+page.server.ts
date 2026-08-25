@@ -1,4 +1,5 @@
 import { fail } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 import type { Actions, PageServerLoad } from './$types';
 import { formBool, formInt, formText } from '$lib/server/admin';
 import { pickCurrent } from '$lib/pult-ledger';
@@ -24,7 +25,8 @@ export const load: PageServerLoad = async ({ url }) => {
 		current,
 		linkedIds: linked.map((item) => item.authorId),
 		categories: categoryOptions(),
-		authors: authorOptions()
+		authors: authorOptions(),
+		uploadReady: Boolean(env.UPLOADTHING_TOKEN?.trim())
 	};
 };
 
@@ -45,7 +47,9 @@ export const actions: Actions = {
 			language: formText(data, 'language'),
 			featured: formBool(data, 'featured'),
 			authorIds: data.getAll('authorIds').map((value) => value.toString()),
-			copies: formInt(data, 'copies') ?? 1
+			copies: formInt(data, 'copies') ?? 1,
+			coverUrl: formText(data, 'coverUrl'),
+			coverKey: formText(data, 'coverKey')
 		});
 		if (!result.ok) return fail(400, { message: result.message });
 		return { stamp: 'Uložené' };

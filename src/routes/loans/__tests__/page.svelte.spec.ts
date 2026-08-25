@@ -36,6 +36,7 @@ const book = (title: string, id = title): BookSlip => ({
 	callNumber: 'STR 12',
 	copiesTotal: 2,
 	copiesAvailable: 1,
+	coverUrl: null,
 	category: {
 		id: 'cat-str',
 		name: 'Strojárstvo',

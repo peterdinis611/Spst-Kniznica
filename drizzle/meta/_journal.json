@@ -22,6 +22,13 @@
       "when": 1787576000000,
       "tag": "0002_user_role",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1787662812166,
+      "tag": "0003_book_cover",
+      "breakpoints": true
     }
   ]
 }

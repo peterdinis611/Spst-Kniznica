@@ -6,4 +6,5 @@ export type CatalogSearchItem = {
 	category: string;
 	isbn: string;
 	copiesAvailable: number;
+	coverUrl: string | null;
 };

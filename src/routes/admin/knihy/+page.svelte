@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import PultCover from '$lib/components/PultCover.svelte';
 	import PultDelete from '$lib/components/PultDelete.svelte';
 	import PultLedger from '$lib/components/PultLedger.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
@@ -55,6 +56,10 @@
 	<form class="pult-form" method="POST" action="?/save" use:enhance>
 		<h2>{current ? 'Opraviť zväzok' : 'Nový zväzok'}</h2>
 		<input type="hidden" name="id" value={current?.id ?? ''} />
+		<div class="pult-field is-wide">
+			<span>Obálka</span>
+			<PultCover url={current?.coverUrl} fileKey={current?.coverKey} ready={data.uploadReady} />
+		</div>
 		<div class="pult-fields is-2">
 			<label class="pult-field is-wide">
 				<span>Názov</span>

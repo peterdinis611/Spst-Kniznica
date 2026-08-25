@@ -61,6 +61,7 @@ function book(
 		copiesAvailable: 2,
 		publisher: 'SPŠT',
 		featured: false,
+		coverUrl: null,
 		authors: [{ id: 'auth-belko', name: 'Prof. Ján Belko', slug: 'jan-belko', position: 0 }],
 		...partial,
 		category: {

@@ -56,6 +56,8 @@ export const book = sqliteTable(
 		publisher: text('publisher').notNull(),
 		language: text('language').notNull().default('sk'),
 		featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
+		coverUrl: text('cover_url'),
+		coverKey: text('cover_key'),
 		createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(nowMs)
 	},
 	(table) => [

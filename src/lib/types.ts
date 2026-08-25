@@ -60,6 +60,7 @@ export type CatalogBook = {
 	copiesAvailable: number;
 	publisher: string;
 	featured: boolean;
+	coverUrl: string | null;
 	category: {
 		id: string;
 		name: string;
@@ -81,6 +82,7 @@ export type BookSlip = {
 	callNumber: string;
 	copiesTotal: number;
 	copiesAvailable: number;
+	coverUrl: string | null;
 	category: CatalogBook['category'];
 	authors: CatalogBook['authors'];
 };
