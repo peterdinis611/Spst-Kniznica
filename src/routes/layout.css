@@ -99,8 +99,8 @@
 	--ice: #2a2620;
 	--forest: #f3eadf;
 	--forest-deep: #1a1612;
-	--copper: #f3eadf;
-	--copper-deep: #d8cbb8;
+	--copper: #c45a38;
+	--copper-deep: #a3482c;
 	--page: #16120e;
 	--ok: #2a2620;
 	--ok-ink: #f3eadf;
@@ -476,10 +476,39 @@
 
 html.dark .account-pass {
 	background:
-		radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, #c45a38 12%, transparent), transparent 46%),
-		#f4eadc !important;
-	color: #241710 !important;
-	box-shadow: 0 1.8rem 3rem -1.1rem rgb(0 0 0 / 0.5) !important;
+		radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, #c45a38 18%, transparent), transparent 46%),
+		#1c1713 !important;
+	color: #f3eadf !important;
+	border-color: color-mix(in srgb, #c45a38 28%, transparent) !important;
+	box-shadow: 0 1.8rem 3rem -1.1rem rgb(0 0 0 / 0.62) !important;
+}
+
+html.dark .account-pass::before {
+	mix-blend-mode: overlay;
+	opacity: 0.28;
+}
+
+html.dark .account-pass-head {
+	border-bottom-color: color-mix(in srgb, #f3eadf 14%, transparent);
+}
+
+html.dark .account-pass-initials {
+	background: #c45a38;
+	color: #fff6ec;
+}
+
+html.dark .account-pass-head em {
+	color: #cbbba8;
+}
+
+html.dark .account-pass [data-slot='dropdown-menu-item'] {
+	color: #f3eadf;
+}
+
+html.dark .account-pass [data-slot='dropdown-menu-item']:focus,
+html.dark .account-pass [data-slot='dropdown-menu-item']:hover {
+	background: color-mix(in srgb, #c45a38 16%, transparent);
+	color: #f3eadf;
 }
 
 .account-pass-head {

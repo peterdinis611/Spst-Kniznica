@@ -555,6 +555,11 @@
 		opacity: 0.86;
 	}
 
+	:global(html.dark) .shelf-open {
+		background: #c45a38;
+		color: #fff6ec;
+	}
+
 	:global(html.dark) .complete-shelf {
 		--well: #0c0f14;
 		--well-lit: rgb(170 196 214 / 0.07);
