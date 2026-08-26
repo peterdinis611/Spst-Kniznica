@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { requireAdmin } from '$lib/server/admin-access';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+layout.server';
 
 vi.mock('$lib/server/admin-access', () => ({
@@ -26,7 +27,7 @@ describe('admin layout', () => {
 	it('exposes the desk pass', async () => {
 		vi.mocked(requireAdmin).mockReturnValue(librarian);
 
-		const data = await load({ locals: { user: librarian } } as Parameters<typeof load>[0]);
+		const data = pageOf(await load({ locals: { user: librarian } } as Parameters<typeof load>[0]));
 
 		expect(data.desk).toEqual(librarian);
 	});

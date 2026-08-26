@@ -1,6 +1,7 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { describe, expect, it, vi } from 'vitest';
 import { requestPasswordReset } from '$lib/server/password-reset';
+import { pageOf } from '$lib/page-of';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/supabase/config', () => ({
@@ -34,13 +35,13 @@ function event(email: string, supabase: unknown = { auth: {} }) {
 
 describe('recovery load', () => {
 	it('prefills the signed-in address', async () => {
-		const data = await load({ locals: { user: reader } } as Parameters<typeof load>[0]);
+		const data = pageOf(await load({ locals: { user: reader } } as Parameters<typeof load>[0]));
 
 		expect(data).toEqual({ configured: true, email: reader.email });
 	});
 
 	it('leaves the field empty for a guest', async () => {
-		const data = await load({ locals: {} } as Parameters<typeof load>[0]);
+		const data = pageOf(await load({ locals: {} } as Parameters<typeof load>[0]));
 
 		expect(data.email).toBe('');
 	});

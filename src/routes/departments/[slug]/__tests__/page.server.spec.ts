@@ -1,6 +1,7 @@
 import { isHttpError } from '@sveltejs/kit';
 import { describe, expect, it, vi } from 'vitest';
 import { getCategory, listBookSlipsByCategory } from '$lib/server/library';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -34,7 +35,9 @@ describe('department card load', () => {
 		vi.mocked(getCategory).mockResolvedValue(category);
 		vi.mocked(listBookSlipsByCategory).mockResolvedValue([]);
 
-		const data = await load({ params: { slug: 'strojarstvo' } } as Parameters<typeof load>[0]);
+		const data = pageOf(
+			await load({ params: { slug: 'strojarstvo' } } as Parameters<typeof load>[0])
+		);
 
 		expect(data.category).toEqual(category);
 		expect(listBookSlipsByCategory).toHaveBeenCalledWith('strojarstvo');

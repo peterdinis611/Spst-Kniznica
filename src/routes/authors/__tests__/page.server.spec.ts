@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { listAuthorSlips } from '$lib/server/library';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -20,9 +21,11 @@ describe('authors load', () => {
 		];
 		vi.mocked(listAuthorSlips).mockResolvedValue(authors);
 
-		const data = await load({
-			url: new URL('http://localhost/authors?q=ján')
-		} as Parameters<typeof load>[0]);
+		const data = pageOf(
+			await load({
+				url: new URL('http://localhost/authors?q=ján')
+			} as Parameters<typeof load>[0])
+		);
 
 		expect(data.authors).toEqual(authors);
 		expect(data.q).toBe('ján');

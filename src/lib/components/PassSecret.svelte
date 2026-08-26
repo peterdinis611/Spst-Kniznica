@@ -13,7 +13,7 @@
 		id: string;
 		name?: string;
 		label: string;
-		autocomplete: string;
+		autocomplete: AutoFill;
 		value?: string;
 		error?: string;
 		meter?: boolean;

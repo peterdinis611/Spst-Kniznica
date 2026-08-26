@@ -2,6 +2,7 @@ import { isActionFailure, isHttpError, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { borrowBook, getActiveLoan, getBook, getLastBorrower, countActiveLoans, relatedBookSlips } from '$lib/server/library';
 import { queueLoanNotice } from '$lib/server/loan-mail';
+import { pageOf } from '$lib/page-of';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -54,10 +55,12 @@ describe('book card load', () => {
 	});
 
 	it('prefills the slip from the account name', async () => {
-		const data = await load({
-			params: { id: 'stroje-1' },
-			locals: { user: reader }
-		} as Parameters<typeof load>[0]);
+		const data = pageOf(
+			await load({
+				params: { id: 'stroje-1' },
+				locals: { user: reader }
+			} as Parameters<typeof load>[0])
+		);
 
 		expect(data.borrower).toEqual({
 			firstName: 'Peter',

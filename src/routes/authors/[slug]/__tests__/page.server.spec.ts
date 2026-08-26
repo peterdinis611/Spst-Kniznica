@@ -1,6 +1,7 @@
 import { isHttpError } from '@sveltejs/kit';
 import { describe, expect, it, vi } from 'vitest';
 import { getAuthor, listBookSlipsByAuthor } from '$lib/server/library';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -34,7 +35,7 @@ describe('author card load', () => {
 		vi.mocked(getAuthor).mockResolvedValue(author);
 		vi.mocked(listBookSlipsByAuthor).mockResolvedValue([]);
 
-		const data = await load({ params: { slug: 'jan-test' } } as Parameters<typeof load>[0]);
+		const data = pageOf(await load({ params: { slug: 'jan-test' } } as Parameters<typeof load>[0]));
 
 		expect(data.author).toEqual(author);
 		expect(listBookSlipsByAuthor).toHaveBeenCalledWith('jan-test');

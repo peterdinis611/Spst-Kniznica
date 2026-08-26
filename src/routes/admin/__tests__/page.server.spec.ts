@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { deskCounts } from '$lib/server/admin-desk';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
 vi.mock('$lib/server/admin-desk', () => ({
@@ -20,7 +21,7 @@ describe('admin overview', () => {
 			readers: 3
 		});
 
-		const data = await load({} as Parameters<typeof load>[0]);
+		const data = pageOf(await load({} as Parameters<typeof load>[0]));
 
 		expect(data.counts.openLoans).toBe(2);
 		expect(data.counts.books).toBe(20);

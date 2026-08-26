@@ -1,6 +1,7 @@
 import { isHttpError } from '@sveltejs/kit';
 import { describe, expect, it, vi } from 'vitest';
 import { docsSource } from '$lib/docs/source';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+page';
 
 vi.mock('$lib/docs/source', () => ({
@@ -27,7 +28,7 @@ describe('docs page load', () => {
 		const page = { url: '/docs', data: { title: 'Príručka' } };
 		vi.mocked(docsSource.getPage).mockReturnValue(page as never);
 
-		const data = await load({ params: { slug: '' } } as Parameters<typeof load>[0]);
+		const data = pageOf(await load({ params: { slug: '' } } as Parameters<typeof load>[0]));
 
 		expect(docsSource.getPage).toHaveBeenCalledWith([]);
 		expect(data.page).toEqual(page);

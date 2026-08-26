@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { catalogStats, getFeaturedBook, listAuthorSlips, listBookSlips } from '$lib/server/library';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -50,11 +51,11 @@ describe('discover load', () => {
 		]);
 		vi.mocked(catalogStats).mockResolvedValue({ books: 3, authors: 2, available: 2, openLoans: 1 });
 
-		const data = await load({} as Parameters<typeof load>[0]);
+		const data = pageOf(await load({} as Parameters<typeof load>[0]));
 
 		expect(data.featured).toEqual(featured);
-		expect(data.books.map((book) => book.id)).toEqual(['ready-1']);
-		expect(data.authors.map((author) => author.slug)).toEqual(['a', 'b']);
+		expect(data.books.map((book: { id: string }) => book.id)).toEqual(['ready-1']);
+		expect(data.authors.map((author: { slug: string }) => author.slug)).toEqual(['a', 'b']);
 		expect(data.stats.openLoans).toBe(1);
 	});
 });

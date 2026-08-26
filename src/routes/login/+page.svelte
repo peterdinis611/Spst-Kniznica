@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { enhance, type SubmitFunction } from '$app/forms';
+	import { enhance } from '$app/forms';
+	import type { ActionResult } from '@sveltejs/kit';
 	import type { ActionData, PageProps } from './$types';
 	import Seo from '$lib/components/Seo.svelte';
 	import AuthPass from '$lib/components/AuthPass.svelte';
@@ -24,8 +25,12 @@
 
 	$effect(() => {
 		const values = form && 'values' in form ? form.values : undefined;
-		if (values?.email) email = values.email;
-		if (values?.name) name = values.name;
+		if (values && 'email' in values && typeof values.email === 'string' && values.email) {
+			email = values.email;
+		}
+		if (values && 'name' in values && typeof values.name === 'string' && values.name) {
+			name = values.name;
+		}
 	});
 
 	const errors = $derived.by((): FieldErrors => {
@@ -46,8 +51,14 @@
 		if (hasFieldErrors(next)) event.preventDefault();
 	}
 
-	const applyForm: SubmitFunction = () => {
-		return async ({ result, update }) => {
+	const applyForm = () => {
+		return async ({
+			result,
+			update
+		}: {
+			result: ActionResult;
+			update: (opts?: { reset?: boolean }) => Promise<void>;
+		}) => {
 			await update({ reset: result.type !== 'success' });
 			if (result.type === 'success') {
 				submitted = false;

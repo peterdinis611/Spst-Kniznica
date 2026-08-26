@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { listCategoryChips } from '$lib/server/library';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+layout.server';
 
 vi.mock('$app/environment', () => ({
@@ -43,10 +44,12 @@ describe('root layout', () => {
 	});
 
 	it('skips the catalog chips on the hall and login', async () => {
-		const hall = await load({
-			locals: { user: reader },
-			url: new URL('http://localhost/')
-		} as Parameters<typeof load>[0]);
+		const hall = pageOf(
+			await load({
+				locals: { user: reader },
+				url: new URL('http://localhost/')
+			} as Parameters<typeof load>[0])
+		);
 
 		expect(hall.categories).toEqual([]);
 		expect(hall.admin).toBe(false);
@@ -54,10 +57,12 @@ describe('root layout', () => {
 	});
 
 	it('loads chips and the admin flag on the desk', async () => {
-		const data = await load({
-			locals: { user: librarian },
-			url: new URL('http://localhost/discover')
-		} as Parameters<typeof load>[0]);
+		const data = pageOf(
+			await load({
+				locals: { user: librarian },
+				url: new URL('http://localhost/discover')
+			} as Parameters<typeof load>[0])
+		);
 
 		expect(data.admin).toBe(true);
 		expect(data.categories).toEqual([chip]);

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { listBookSlips } from '$lib/server/library';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -30,9 +31,11 @@ describe('books catalog load', () => {
 			{ ...slip, id: 'inf-1', title: 'Algoritmy', category: { ...slip.category, slug: 'informatika' } }
 		]);
 
-		const data = await load({
-			url: new URL('http://localhost/books?q=stroje&odbor=strojarstvo')
-		} as Parameters<typeof load>[0]);
+		const data = pageOf(
+			await load({
+				url: new URL('http://localhost/books?q=stroje&odbor=strojarstvo')
+			} as Parameters<typeof load>[0])
+		);
 
 		expect(listBookSlips).toHaveBeenCalledWith('stroje');
 		expect(data.q).toBe('stroje');
@@ -43,9 +46,11 @@ describe('books catalog load', () => {
 	it('lists the whole tray when the query is empty', async () => {
 		vi.mocked(listBookSlips).mockResolvedValue([slip]);
 
-		const data = await load({
-			url: new URL('http://localhost/books')
-		} as Parameters<typeof load>[0]);
+		const data = pageOf(
+			await load({
+				url: new URL('http://localhost/books')
+			} as Parameters<typeof load>[0])
+		);
 
 		expect(listBookSlips).toHaveBeenCalledWith(undefined);
 		expect(data.books).toEqual([slip]);

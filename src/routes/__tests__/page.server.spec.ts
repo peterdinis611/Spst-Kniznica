@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { catalogStats, listAuthorSlips, listBookSlips, toSearchItem } from '$lib/server/library';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -47,10 +48,10 @@ describe('hall load', () => {
 		]);
 		vi.mocked(catalogStats).mockResolvedValue({ books: 2, authors: 1, available: 1, openLoans: 0 });
 
-		const data = await load({} as Parameters<typeof load>[0]);
+		const data = pageOf(await load({} as Parameters<typeof load>[0]));
 
-		expect(data.books.map((book) => book.id)).toEqual(['ready-1']);
-		expect(data.shelf.map((book) => book.id)).toEqual(['ready-1', 'gone-1']);
+		expect(data.books.map((book: { id: string }) => book.id)).toEqual(['ready-1']);
+		expect(data.shelf.map((book: { id: string }) => book.id)).toEqual(['ready-1', 'gone-1']);
 		expect(data.searchPreview[0].id).toBe('ready-1');
 		expect(toSearchItem).toHaveBeenCalled();
 		expect(data.authors[0].slug).toBe('a');

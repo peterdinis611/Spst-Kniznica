@@ -4,6 +4,7 @@ import { canOpenDesk } from '$lib/server/admin-access';
 import { sendPasswordChangedLetter } from '$lib/server/auth-mail';
 import { countActiveLoans } from '$lib/server/library';
 import { requestPasswordReset } from '$lib/server/password-reset';
+import { pageOf } from '$lib/page-of';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -74,7 +75,7 @@ describe('profil load', () => {
 		vi.mocked(countActiveLoans).mockResolvedValue(2);
 		vi.mocked(canOpenDesk).mockReturnValue(false);
 
-		const data = await load(localsOf(reader));
+		const data = pageOf(await load(localsOf(reader)));
 
 		expect(countActiveLoans).toHaveBeenCalledWith(reader.id);
 		expect(data.reader).toEqual(reader);

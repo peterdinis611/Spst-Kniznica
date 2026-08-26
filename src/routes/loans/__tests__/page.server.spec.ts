@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LoanRecord } from '$lib/types';
 import { countActiveLoans, listLoans, returnBook, clearReturnedLoans } from '$lib/server/library';
 import { queueLoanNotice } from '$lib/server/loan-mail';
+import { pageOf } from '$lib/page-of';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -84,14 +85,14 @@ describe('loans load', () => {
 		]);
 		vi.mocked(countActiveLoans).mockResolvedValue(1);
 
-		const data = await load(localsOf(reader));
+		const data = pageOf(await load(localsOf(reader)));
 
 		expect(listLoans).toHaveBeenCalledWith(reader.id);
 		expect(data.reader).toEqual(reader);
 		expect(data.maxLoans).toBeNull();
 		expect(data.activeCount).toBe(1);
-		expect(data.loans.map((item) => item.id)).toEqual(['open']);
-		expect(data.history.map((item) => item.book.title)).toEqual(['Vrátená']);
+		expect(data.loans.map((item: { id: string }) => item.id)).toEqual(['open']);
+		expect(data.history.map((item: { book: { title: string } }) => item.book.title)).toEqual(['Vrátená']);
 	});
 });
 

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { listBookSlips } from '$lib/server/library';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -27,8 +28,8 @@ describe('holdings load', () => {
 	it('hides the prayer booklet from the full shelf', async () => {
 		vi.mocked(listBookSlips).mockResolvedValue([slip('book-modlitbicky'), slip('stroje-1')]);
 
-		const data = await load({} as Parameters<typeof load>[0]);
+		const data = pageOf(await load({} as Parameters<typeof load>[0]));
 
-		expect(data.books.map((book) => book.id)).toEqual(['stroje-1']);
+		expect(data.books.map((book: { id: string }) => book.id)).toEqual(['stroje-1']);
 	});
 });

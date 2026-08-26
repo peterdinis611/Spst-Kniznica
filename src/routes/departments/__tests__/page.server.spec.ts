@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { listBookSlips, listCategories } from '$lib/server/library';
+import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -47,9 +48,9 @@ describe('departments load', () => {
 			slip('inf-1', 'informatika')
 		]);
 
-		const data = await load({} as Parameters<typeof load>[0]);
+		const data = pageOf(await load({} as Parameters<typeof load>[0]));
 
 		expect(data.categories).toHaveLength(1);
-		expect(data.categories[0].books.map((book) => book.id)).toEqual(['a', 'b', 'c', 'd']);
+		expect(data.categories[0].books.map((book: { id: string }) => book.id)).toEqual(['a', 'b', 'c', 'd']);
 	});
 });

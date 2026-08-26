@@ -9,7 +9,7 @@ describe('logout', () => {
 		try {
 			await POST({
 				locals: { supabase: { auth: { signOut } } }
-			} as Parameters<typeof POST>[0]);
+			} as unknown as Parameters<typeof POST>[0]);
 			throw new Error('expected redirect');
 		} catch (error) {
 			expect(isRedirect(error)).toBe(true);
@@ -24,7 +24,7 @@ describe('logout', () => {
 
 	it('sends a GET visitor home', async () => {
 		try {
-			await GET({} as Parameters<typeof GET>[0]);
+			await GET({} as unknown as Parameters<typeof GET>[0]);
 			throw new Error('expected redirect');
 		} catch (error) {
 			expect(isRedirect(error)).toBe(true);
