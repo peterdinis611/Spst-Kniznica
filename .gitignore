@@ -25,5 +25,5 @@ vite.config.ts.timestamp-*
 # Storybook
 /storybook-static
 debug-storybook.log
-# SQLite
+# SQLite leftovers (local.db from the previous driver)
 *.db

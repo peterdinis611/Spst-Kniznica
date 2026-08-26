@@ -28,19 +28,19 @@ function resolvedRole(email: string, stored: unknown, fromMeta: unknown): Role {
 	return parseRole(stored);
 }
 
-export function ensureLocalReader(input: {
+export async function ensureLocalReader(input: {
 	id: string;
 	email: string;
 	name: string;
 	role?: unknown;
-}): SignedReader | null {
+}): Promise<SignedReader | null> {
 	const email = input.email.trim().toLowerCase();
 	if (!email) return null;
 
 	const name = displayName(input.name, email);
 	const existing =
-		db.select().from(user).where(eq(user.email, email)).get() ??
-		db.select().from(user).where(eq(user.id, input.id)).get();
+		await db.select().from(user).where(eq(user.email, email)).then((rows) => rows[0]) ??
+		await db.select().from(user).where(eq(user.id, input.id)).then((rows) => rows[0]);
 
 	if (existing) {
 		const role = resolvedRole(email, existing.role, input.role);
@@ -50,17 +50,17 @@ export function ensureLocalReader(input: {
 			!existing.emailVerified ||
 			parseRole(existing.role) !== role
 		) {
-			db.update(user)
+			await db.update(user)
 				.set({ name, email, emailVerified: true, role, updatedAt: new Date() })
 				.where(eq(user.id, existing.id))
-				.run();
+				;
 		}
 
 		return pass(existing.id, name, email, role);
 	}
 
 	const role = resolvedRole(email, 'reader', input.role);
-	db.insert(user)
+	await db.insert(user)
 		.values({
 			id: input.id,
 			name,
@@ -68,19 +68,19 @@ export function ensureLocalReader(input: {
 			emailVerified: true,
 			role
 		})
-		.run();
+		;
 
 	return pass(input.id, name, email, role);
 }
 
-export function readerFromClaims(claims: {
+export async function readerFromClaims(claims: {
 	sub?: string;
 	email?: string;
 	user_metadata?: unknown;
-}): SignedReader | null {
+}): Promise<SignedReader | null> {
 	if (!claims.sub) return null;
 
-	return ensureLocalReader({
+	return await ensureLocalReader({
 		id: claims.sub,
 		email: claims.email ?? '',
 		name: String(metaValue(claims.user_metadata, 'name') ?? ''),

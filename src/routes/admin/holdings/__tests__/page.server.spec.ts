@@ -30,7 +30,7 @@ describe('admin vytlacky actions', () => {
 	});
 
 	it('saves a copy status', async () => {
-		vi.mocked(saveHolding).mockReturnValue({ ok: true });
+		vi.mocked(saveHolding).mockResolvedValue({ ok: true });
 		expect(
 			await actions.save?.(
 				event({ bookId: 'book-1', inventoryNo: 'INF-1', status: 'available' })
@@ -39,7 +39,7 @@ describe('admin vytlacky actions', () => {
 	});
 
 	it('blocks a delete of a loaned copy', async () => {
-		vi.mocked(deleteHolding).mockReturnValue({
+		vi.mocked(deleteHolding).mockResolvedValue({
 			ok: false,
 			message: 'Výtlačok je na výpožičke. Najprv ho vráť.'
 		});

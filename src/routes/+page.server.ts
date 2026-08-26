@@ -2,10 +2,15 @@ import type { PageServerLoad } from './$types';
 import { catalogStats, listAuthorSlips, listBookSlips, toSearchItem } from '$lib/server/library';
 
 export const load: PageServerLoad = async () => {
-	const slips = listBookSlips().filter((book) => book.id !== 'book-modlitbicky');
+	const [slipsRaw, authorsRaw, stats] = await Promise.all([
+		listBookSlips(),
+		listAuthorSlips(),
+		catalogStats()
+	]);
+	const slips = slipsRaw.filter((book) => book.id !== 'book-modlitbicky');
 	const ready = slips.filter((book) => book.copiesAvailable > 0);
 	const picks = ready.slice(0, 9);
-	const authors = [...listAuthorSlips()].sort((a, b) => b.bookCount - a.bookCount);
+	const authors = [...authorsRaw].sort((a, b) => b.bookCount - a.bookCount);
 
 	return {
 		books: picks,
@@ -16,7 +21,7 @@ export const load: PageServerLoad = async () => {
 			slug: author.slug,
 			bookCount: author.bookCount
 		})),
-		stats: catalogStats(),
+		stats,
 		searchPreview: ready.slice(0, 6).map(toSearchItem)
 	};
 };

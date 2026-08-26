@@ -25,6 +25,6 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	return {
 		user,
 		admin,
-		categories: listCategoryChips()
+		categories: await listCategoryChips()
 	};
 };

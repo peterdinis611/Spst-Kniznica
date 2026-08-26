@@ -1,16 +1,11 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import * as schema from './schema';
 import { env } from '$env/dynamic/private';
 
 if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 
-export const sqlite = new Database(env.DATABASE_URL);
-sqlite.pragma('journal_mode = WAL');
-sqlite.pragma('foreign_keys = ON');
-sqlite.pragma('busy_timeout = 5000');
-sqlite.pragma('synchronous = NORMAL');
-sqlite.pragma('cache_size = -16000');
-sqlite.pragma('temp_store = MEMORY');
+const client = postgres(env.DATABASE_URL, { max: 8 });
 
-export const db = drizzle(sqlite, { schema });
+export const db = drizzle(client, { schema });
+export const sqlClient = client;

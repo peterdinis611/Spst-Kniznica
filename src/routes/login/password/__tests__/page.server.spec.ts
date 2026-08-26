@@ -1,9 +1,14 @@
 import { isActionFailure, isRedirect } from '@sveltejs/kit';
 import { describe, expect, it, vi } from 'vitest';
+import { sendPasswordChangedLetter } from '$lib/server/auth-mail';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/supabase/config', () => ({
 	supabasePublic: () => ({ url: 'http://supabase.test', key: 'anon', configured: true })
+}));
+
+vi.mock('$lib/server/auth-mail', () => ({
+	sendPasswordChangedLetter: vi.fn()
 }));
 
 const reader = {
@@ -82,6 +87,7 @@ describe('password action', () => {
 
 	it('opens loans after a saved password', async () => {
 		const updateUser = vi.fn().mockResolvedValue({ error: null });
+		vi.mocked(sendPasswordChangedLetter).mockResolvedValue({ ok: true });
 
 		try {
 			await actions.default(
@@ -92,5 +98,11 @@ describe('password action', () => {
 			expect(isRedirect(error)).toBe(true);
 			if (isRedirect(error)) expect(error.location).toBe('/loans');
 		}
+
+		expect(sendPasswordChangedLetter).toHaveBeenCalledWith({
+			to: 'peter@spst.sk',
+			name: 'Peter Dinis',
+			profileHref: 'http://localhost/profile'
+		});
 	});
 });

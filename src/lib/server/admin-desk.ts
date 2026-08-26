@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, isNull, like, ne, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, isNull, ne, or, sql } from 'drizzle-orm';
 import { isRole, parseRole } from '$lib/ability';
 import { LIST_LIMIT, slugify } from '$lib/admin';
 import { holdingStatus, reservationStatus } from './db/schema';
@@ -34,49 +34,60 @@ function caught(cause: unknown, unique: string): DeskResult {
 	return fail(uniqueConstraintMessage(cause, unique) ?? 'Záznam sa neuložil.');
 }
 
-function syncCopies(tx: DeskTx, bookId: string) {
-	const total = tx.select({ c: count() }).from(holding).where(eq(holding.bookId, bookId)).get()?.c ?? 0;
+async function syncCopies(tx: DeskTx, bookId: string) {
+	const total = await tx.select({ c: count() }).from(holding).where(eq(holding.bookId, bookId)).then((rows) => rows[0]?.c ?? 0);
 	const available =
-		tx
+		await tx
 			.select({ c: count() })
 			.from(holding)
 			.where(and(eq(holding.bookId, bookId), eq(holding.status, 'available')))
-			.get()?.c ?? 0;
+			.then((rows) => rows[0]?.c ?? 0);
 
-	tx.update(book)
+	await tx.update(book)
 		.set({ copiesTotal: total, copiesAvailable: available })
 		.where(eq(book.id, bookId))
-		.run();
+		;
 }
 
-function nextInventory(bookId: string, code: string) {
+async function nextInventory(bookId: string, code: string) {
 	const token = bookId
 		.replace(/^book-/, '')
 		.replace(/[^a-z0-9]+/gi, '')
 		.slice(0, 10)
 		.toUpperCase();
 	const existing =
-		db.select({ c: count() }).from(holding).where(eq(holding.bookId, bookId)).get()?.c ?? 0;
+		await db.select({ c: count() }).from(holding).where(eq(holding.bookId, bookId)).then((rows) => rows[0]?.c ?? 0);
 	return `${code}-${token}-${String(existing + 1).padStart(2, '0')}`;
 }
 
-export function deskCounts() {
-	return {
-		categories: db.select({ c: count() }).from(category).get()?.c ?? 0,
-		authors: db.select({ c: count() }).from(author).get()?.c ?? 0,
-		books: db.select({ c: count() }).from(book).get()?.c ?? 0,
-		links: db.select({ c: count() }).from(bookAuthor).get()?.c ?? 0,
-		holdings: db.select({ c: count() }).from(holding).get()?.c ?? 0,
-		loans: db.select({ c: count() }).from(loan).get()?.c ?? 0,
-		openLoans: db.select({ c: count() }).from(loan).where(isNull(loan.returnedAt)).get()?.c ?? 0,
-		reservations: db.select({ c: count() }).from(reservation).get()?.c ?? 0,
-		readers: db.select({ c: count() }).from(user).get()?.c ?? 0
-	};
+export async function deskCounts() {
+	const [
+		categories,
+		authors,
+		books,
+		links,
+		holdings,
+		loans,
+		openLoans,
+		reservations,
+		readers
+	] = await Promise.all([
+		db.select({ c: count() }).from(category).then((rows) => rows[0]?.c ?? 0),
+		db.select({ c: count() }).from(author).then((rows) => rows[0]?.c ?? 0),
+		db.select({ c: count() }).from(book).then((rows) => rows[0]?.c ?? 0),
+		db.select({ c: count() }).from(bookAuthor).then((rows) => rows[0]?.c ?? 0),
+		db.select({ c: count() }).from(holding).then((rows) => rows[0]?.c ?? 0),
+		db.select({ c: count() }).from(loan).then((rows) => rows[0]?.c ?? 0),
+		db.select({ c: count() }).from(loan).where(isNull(loan.returnedAt)).then((rows) => rows[0]?.c ?? 0),
+		db.select({ c: count() }).from(reservation).then((rows) => rows[0]?.c ?? 0),
+		db.select({ c: count() }).from(user).then((rows) => rows[0]?.c ?? 0)
+	]);
+	return { categories, authors, books, links, holdings, loans, openLoans, reservations, readers };
 }
 
-export function listDeskCategories(query = '') {
+export async function listDeskCategories(query = '') {
 	const q = query.trim();
-	const rows = db
+	const rows = await db
 		.select({
 			id: category.id,
 			name: category.name,
@@ -92,9 +103,9 @@ export function listDeskCategories(query = '') {
 		.where(
 			q
 				? or(
-						like(category.name, needle(q)),
-						like(category.slug, needle(q)),
-						like(category.code, needle(q))
+						ilike(category.name, needle(q)),
+						ilike(category.slug, needle(q)),
+						ilike(category.code, needle(q))
 					)
 				: undefined
 		)
@@ -109,12 +120,12 @@ export function listDeskCategories(query = '') {
 		)
 		.orderBy(asc(category.sortOrder), asc(category.name))
 		.limit(LIST_LIMIT)
-		.all();
+		;
 
 	return rows;
 }
 
-export function getDeskCategory(id: string) {
+export async function getDeskCategory(id: string) {
 	if (!id) return null;
 	return (
 		db
@@ -140,11 +151,11 @@ export function getDeskCategory(id: string) {
 				category.accent,
 				category.sortOrder
 			)
-			.get() ?? null
+			.then((rows) => rows[0] ?? null)
 	);
 }
 
-export function saveCategory(input: {
+export async function saveCategory(input: {
 	id?: string;
 	name: string;
 	slug: string;
@@ -152,7 +163,7 @@ export function saveCategory(input: {
 	code: string;
 	accent: string;
 	sortOrder: number;
-}): DeskResult {
+}): Promise<DeskResult> {
 	const name = input.name.trim();
 	const slug = slugify(input.slug || name);
 	const description = input.description.trim();
@@ -164,14 +175,14 @@ export function saveCategory(input: {
 
 	try {
 		if (input.id) {
-			const current = db.select().from(category).where(eq(category.id, input.id)).get();
+			const current = await db.select().from(category).where(eq(category.id, input.id)).then((rows) => rows[0]);
 			if (!current) return fail('Odbor sa nenašiel.');
-			db.update(category)
+			await db.update(category)
 				.set({ name, slug, description, code, accent, sortOrder: input.sortOrder })
 				.where(eq(category.id, input.id))
-				.run();
+				;
 		} else {
-			db.insert(category)
+			await db.insert(category)
 				.values({
 					id: newId('cat', slug),
 					name,
@@ -181,28 +192,28 @@ export function saveCategory(input: {
 					accent,
 					sortOrder: input.sortOrder
 				})
-				.run();
+				;
 		}
 	} catch (cause) {
 		return caught(cause, 'Tento kód alebo slug už vo fonde je.');
 	}
 
-	refreshCatalog('all');
+	await refreshCatalog('all');
 	return ok();
 }
 
-export function deleteCategory(id: string): DeskResult {
-	const used = db.select({ c: count() }).from(book).where(eq(book.categoryId, id)).get()?.c ?? 0;
+export async function deleteCategory(id: string): Promise<DeskResult> {
+	const used = await db.select({ c: count() }).from(book).where(eq(book.categoryId, id)).then((rows) => rows[0]?.c ?? 0);
 	if (used > 0) return fail('Odbor má knihy. Najprv ich presuň alebo zmaž.');
-	const gone = db.delete(category).where(eq(category.id, id)).run();
-	if (!gone.changes) return fail('Odbor sa nenašiel.');
-	refreshCatalog('all');
+	const gone = await db.delete(category).where(eq(category.id, id)).returning({ id: category.id });
+	if (!gone.length) return fail('Odbor sa nenašiel.');
+	await refreshCatalog('all');
 	return ok();
 }
 
-export function listDeskAuthors(query = '') {
+export async function listDeskAuthors(query = '') {
 	const q = query.trim();
-	return db
+	return await db
 		.select({
 			id: author.id,
 			name: author.name,
@@ -217,19 +228,19 @@ export function listDeskAuthors(query = '') {
 		.where(
 			q
 				? or(
-						like(author.name, needle(q)),
-						like(author.slug, needle(q)),
-						like(author.role, needle(q))
+						ilike(author.name, needle(q)),
+						ilike(author.slug, needle(q)),
+						ilike(author.role, needle(q))
 					)
 				: undefined
 		)
 		.groupBy(author.id, author.name, author.slug, author.bio, author.lifespan, author.role)
 		.orderBy(asc(author.name))
 		.limit(LIST_LIMIT)
-		.all();
+		;
 }
 
-export function getDeskAuthor(id: string) {
+export async function getDeskAuthor(id: string) {
 	if (!id) return null;
 	return (
 		db
@@ -246,18 +257,18 @@ export function getDeskAuthor(id: string) {
 			.leftJoin(bookAuthor, eq(bookAuthor.authorId, author.id))
 			.where(eq(author.id, id))
 			.groupBy(author.id, author.name, author.slug, author.bio, author.lifespan, author.role)
-			.get() ?? null
+			.then((rows) => rows[0] ?? null)
 	);
 }
 
-export function saveAuthor(input: {
+export async function saveAuthor(input: {
 	id?: string;
 	name: string;
 	slug: string;
 	bio: string;
 	lifespan: string;
 	role: string;
-}): DeskResult {
+}): Promise<DeskResult> {
 	const name = input.name.trim();
 	const slug = slugify(input.slug || name);
 	const bio = input.bio.trim();
@@ -270,32 +281,32 @@ export function saveAuthor(input: {
 
 	try {
 		if (input.id) {
-			const current = db.select().from(author).where(eq(author.id, input.id)).get();
+			const current = await db.select().from(author).where(eq(author.id, input.id)).then((rows) => rows[0]);
 			if (!current) return fail('Autor sa nenašiel.');
-			db.update(author).set({ name, slug, bio, lifespan, role }).where(eq(author.id, input.id)).run();
+			await db.update(author).set({ name, slug, bio, lifespan, role }).where(eq(author.id, input.id));
 		} else {
-			db.insert(author)
+			await db.insert(author)
 				.values({ id: newId('auth', slug), name, slug, bio, lifespan, role })
-				.run();
+				;
 		}
 	} catch (cause) {
 		return caught(cause, 'Tento slug autora už vo fonde je.');
 	}
 
-	refreshCatalog('all');
+	await refreshCatalog('all');
 	return ok();
 }
 
-export function deleteAuthor(id: string): DeskResult {
-	const gone = db.delete(author).where(eq(author.id, id)).run();
-	if (!gone.changes) return fail('Autor sa nenašiel.');
-	refreshCatalog('all');
+export async function deleteAuthor(id: string): Promise<DeskResult> {
+	const gone = await db.delete(author).where(eq(author.id, id)).returning({ id: author.id });
+	if (!gone.length) return fail('Autor sa nenašiel.');
+	await refreshCatalog('all');
 	return ok();
 }
 
-export function listDeskBooks(query = '') {
+export async function listDeskBooks(query = '') {
 	const q = query.trim();
-	return db
+	return await db
 		.select({
 			id: book.id,
 			title: book.title,
@@ -320,19 +331,19 @@ export function listDeskBooks(query = '') {
 		.where(
 			q
 				? or(
-						like(book.title, needle(q)),
-						like(book.isbn, needle(q)),
-						like(book.callNumber, needle(q)),
-						like(book.publisher, needle(q))
+						ilike(book.title, needle(q)),
+						ilike(book.isbn, needle(q)),
+						ilike(book.callNumber, needle(q)),
+						ilike(book.publisher, needle(q))
 					)
 				: undefined
 		)
 		.orderBy(asc(book.title))
 		.limit(LIST_LIMIT)
-		.all();
+		;
 }
 
-export function getDeskBook(id: string) {
+export async function getDeskBook(id: string) {
 	if (!id) return null;
 	return (
 		db
@@ -358,52 +369,52 @@ export function getDeskBook(id: string) {
 			.from(book)
 			.innerJoin(category, eq(book.categoryId, category.id))
 			.where(eq(book.id, id))
-			.get() ?? null
+			.then((rows) => rows[0] ?? null)
 	);
 }
 
-export function bookAuthorIds(bookId: string) {
-	return db
+export async function bookAuthorIds(bookId: string) {
+	return await db
 		.select({ authorId: bookAuthor.authorId, position: bookAuthor.position })
 		.from(bookAuthor)
 		.where(eq(bookAuthor.bookId, bookId))
 		.orderBy(asc(bookAuthor.position))
-		.all();
+		;
 }
 
-export function categoryOptions() {
-	return db
+export async function categoryOptions() {
+	return await db
 		.select({ id: category.id, name: category.name, code: category.code })
 		.from(category)
 		.orderBy(asc(category.sortOrder), asc(category.name))
-		.all();
+		;
 }
 
-export function authorOptions() {
-	return db
+export async function authorOptions() {
+	return await db
 		.select({ id: author.id, name: author.name })
 		.from(author)
 		.orderBy(asc(author.name))
-		.all();
+		;
 }
 
-export function bookOptions() {
-	return db
+export async function bookOptions() {
+	return await db
 		.select({ id: book.id, title: book.title, callNumber: book.callNumber })
 		.from(book)
 		.orderBy(asc(book.title))
-		.all();
+		;
 }
 
-export function readerOptions() {
-	return db
+export async function readerOptions() {
+	return await db
 		.select({ id: user.id, name: user.name, email: user.email })
 		.from(user)
 		.orderBy(asc(user.name))
-		.all();
+		;
 }
 
-export function saveBook(input: {
+export async function saveBook(input: {
 	id?: string;
 	title: string;
 	subtitle: string;
@@ -420,7 +431,7 @@ export function saveBook(input: {
 	copies?: number;
 	coverUrl?: string;
 	coverKey?: string;
-}): DeskResult {
+}): Promise<DeskResult> {
 	const title = input.title.trim();
 	const isbn = input.isbn.trim();
 	const callNumber = input.callNumber.trim();
@@ -435,7 +446,7 @@ export function saveBook(input: {
 	if (!publisher) return fail('Doplň vydavateľa.');
 	if (input.year < 1400 || input.year > 2100) return fail('Rok vydania nevyzerá.');
 	if (input.pages < 1) return fail('Počet strán musí byť kladný.');
-	const cat = db.select().from(category).where(eq(category.id, input.categoryId)).get();
+	const cat = await db.select().from(category).where(eq(category.id, input.categoryId)).then((rows) => rows[0]);
 	if (!cat) return fail('Vyber odbor.');
 
 	const authors = input.authorIds.filter(Boolean);
@@ -444,12 +455,12 @@ export function saveBook(input: {
 	let previousKey: string | null = null;
 
 	try {
-		db.transaction((tx) => {
+		await db.transaction(async (tx) => {
 			if (input.id) {
-				const current = tx.select().from(book).where(eq(book.id, input.id)).get();
+				const current = await tx.select().from(book).where(eq(book.id, input.id)).then((rows) => rows[0]);
 				if (!current) throw new Error('Kniha sa nenašla.');
 				previousKey = current.coverKey;
-				tx.update(book)
+				await tx.update(book)
 					.set({
 						title,
 						subtitle,
@@ -466,12 +477,12 @@ export function saveBook(input: {
 						coverKey: cover.coverKey
 					})
 					.where(eq(book.id, input.id))
-					.run();
-				tx.delete(bookAuthor).where(eq(bookAuthor.bookId, input.id)).run();
+					;
+				await tx.delete(bookAuthor).where(eq(bookAuthor.bookId, input.id));
 				bookId = input.id;
 			} else {
 				bookId = newId('book', title);
-				tx.insert(book)
+				await tx.insert(book)
 					.values({
 						id: bookId,
 						title,
@@ -490,26 +501,26 @@ export function saveBook(input: {
 						copiesTotal: 0,
 						copiesAvailable: 0
 					})
-					.run();
+					;
 
 				const copies = Math.max(0, Math.min(input.copies ?? 1, 40));
 				for (let n = 1; n <= copies; n += 1) {
-					tx.insert(holding)
+					await tx.insert(holding)
 						.values({
 							id: `${bookId}-h${String(n).padStart(2, '0')}`,
 							bookId,
 							inventoryNo: `${cat.code}-${bookId.replace(/^book-/, '').replace(/[^a-z0-9]+/gi, '').slice(0, 10).toUpperCase()}-${String(n).padStart(2, '0')}`,
 							status: 'available'
 						})
-						.run();
+						;
 				}
-				syncCopies(tx, bookId);
+				await syncCopies(tx, bookId);
 			}
 
 			if (authors.length) {
-				tx.insert(bookAuthor)
+				await tx.insert(bookAuthor)
 					.values(authors.map((authorId, position) => ({ bookId, authorId, position })))
-					.run();
+					;
 			}
 		});
 	} catch (cause) {
@@ -518,28 +529,31 @@ export function saveBook(input: {
 		return caught(cause, 'ISBN alebo signatúra už vo fonde je.');
 	}
 
-	refreshCatalog({ bookId });
+	await refreshCatalog({ bookId });
 	if (previousKey && previousKey !== cover.coverKey) forgetCover(previousKey);
 	return ok();
 }
 
-export function deleteBook(id: string): DeskResult {
+export async function deleteBook(id: string): Promise<DeskResult> {
 	const open =
-		db.select({ c: count() }).from(loan).where(and(eq(loan.bookId, id), isNull(loan.returnedAt))).get()
-			?.c ?? 0;
+		(await db
+			.select({ c: count() })
+			.from(loan)
+			.where(and(eq(loan.bookId, id), isNull(loan.returnedAt)))
+			.then((rows) => rows[0]))?.c ?? 0;
 	if (open > 0) return fail('Kniha má aktívne výpožičky. Najprv ich vráť.');
-	const current = db.select({ coverKey: book.coverKey }).from(book).where(eq(book.id, id)).get();
-	db.delete(loan).where(eq(loan.bookId, id)).run();
-	const gone = db.delete(book).where(eq(book.id, id)).run();
-	if (!gone.changes) return fail('Kniha sa nenašla.');
+	const current = await db.select({ coverKey: book.coverKey }).from(book).where(eq(book.id, id)).then((rows) => rows[0]);
+	await db.delete(loan).where(eq(loan.bookId, id));
+	const gone = await db.delete(book).where(eq(book.id, id)).returning({ id: book.id });
+	if (!gone.length) return fail('Kniha sa nenašla.');
 	forgetCover(current?.coverKey);
-	refreshCatalog({ deletedBookId: id });
+	await refreshCatalog({ deletedBookId: id });
 	return ok();
 }
 
-export function listDeskLinks(query = '') {
+export async function listDeskLinks(query = '') {
 	const q = query.trim();
-	return db
+	return await db
 		.select({
 			bookId: bookAuthor.bookId,
 			authorId: bookAuthor.authorId,
@@ -552,22 +566,22 @@ export function listDeskLinks(query = '') {
 		.innerJoin(author, eq(author.id, bookAuthor.authorId))
 		.where(
 			q
-				? or(like(book.title, needle(q)), like(author.name, needle(q)))
+				? or(ilike(book.title, needle(q)), ilike(author.name, needle(q)))
 				: undefined
 		)
 		.orderBy(asc(book.title), asc(bookAuthor.position))
 		.limit(LIST_LIMIT)
-		.all();
+		;
 }
 
-export function saveLink(input: { bookId: string; authorId: string; position: number }): DeskResult {
-	const held = db.select({ id: book.id }).from(book).where(eq(book.id, input.bookId)).get();
-	const person = db.select({ id: author.id }).from(author).where(eq(author.id, input.authorId)).get();
+export async function saveLink(input: { bookId: string; authorId: string; position: number }): Promise<DeskResult> {
+	const held = await db.select({ id: book.id }).from(book).where(eq(book.id, input.bookId)).then((rows) => rows[0]);
+	const person = await db.select({ id: author.id }).from(author).where(eq(author.id, input.authorId)).then((rows) => rows[0]);
 	if (!held) return fail('Kniha sa nenašla.');
 	if (!person) return fail('Autor sa nenašiel.');
 
 	try {
-		db.insert(bookAuthor)
+		await db.insert(bookAuthor)
 			.values({
 				bookId: input.bookId,
 				authorId: input.authorId,
@@ -577,28 +591,28 @@ export function saveLink(input: { bookId: string; authorId: string; position: nu
 				target: [bookAuthor.bookId, bookAuthor.authorId],
 				set: { position: Math.max(0, input.position) }
 			})
-			.run();
+			;
 	} catch (cause) {
 		return caught(cause, 'Táto väzba už vo fonde je.');
 	}
 
-	refreshCatalog({ bookId: input.bookId });
+	await refreshCatalog({ bookId: input.bookId });
 	return ok();
 }
 
-export function deleteLink(bookId: string, authorId: string): DeskResult {
-	const gone = db
+export async function deleteLink(bookId: string, authorId: string): Promise<DeskResult> {
+	const gone = await db
 		.delete(bookAuthor)
 		.where(and(eq(bookAuthor.bookId, bookId), eq(bookAuthor.authorId, authorId)))
-		.run();
-	if (!gone.changes) return fail('Väzba sa nenašla.');
-	refreshCatalog({ bookId });
+		.returning({ bookId: bookAuthor.bookId });
+	if (!gone.length) return fail('Väzba sa nenašla.');
+	await refreshCatalog({ bookId });
 	return ok();
 }
 
-export function listDeskHoldings(query = '') {
+export async function listDeskHoldings(query = '') {
 	const q = query.trim();
-	return db
+	return await db
 		.select({
 			id: holding.id,
 			bookId: holding.bookId,
@@ -612,18 +626,18 @@ export function listDeskHoldings(query = '') {
 		.where(
 			q
 				? or(
-						like(holding.inventoryNo, needle(q)),
-						like(book.title, needle(q)),
-						like(holding.status, needle(q))
+						ilike(holding.inventoryNo, needle(q)),
+						ilike(book.title, needle(q)),
+						ilike(holding.status, needle(q))
 					)
 				: undefined
 		)
 		.orderBy(desc(holding.acquiredAt))
 		.limit(LIST_LIMIT)
-		.all();
+		;
 }
 
-export function getDeskHolding(id: string) {
+export async function getDeskHolding(id: string) {
 	if (!id) return null;
 	return (
 		db
@@ -638,39 +652,39 @@ export function getDeskHolding(id: string) {
 			.from(holding)
 			.innerJoin(book, eq(book.id, holding.bookId))
 			.where(eq(holding.id, id))
-			.get() ?? null
+			.then((rows) => rows[0] ?? null)
 	);
 }
 
-export function saveHolding(input: {
+export async function saveHolding(input: {
 	id?: string;
 	bookId: string;
 	inventoryNo: string;
 	status: string;
 	acquiredAt?: Date | null;
-}): DeskResult {
+}): Promise<DeskResult> {
 	const inventoryNo = input.inventoryNo.trim();
 	if (!holdingStatus.includes(input.status as (typeof holdingStatus)[number])) {
 		return fail('Stav výtlačka nie je v zozname.');
 	}
 	const status = input.status as (typeof holdingStatus)[number];
-	const held = db.select().from(book).where(eq(book.id, input.bookId)).get();
+	const held = await db.select().from(book).where(eq(book.id, input.bookId)).then((rows) => rows[0]);
 	if (!held) return fail('Vyber knihu.');
 
 	try {
-		db.transaction((tx) => {
+		await db.transaction(async (tx) => {
 			if (input.id) {
-				const current = tx.select().from(holding).where(eq(holding.id, input.id)).get();
+				const current = await tx.select().from(holding).where(eq(holding.id, input.id)).then((rows) => rows[0]);
 				if (!current) throw new Error('Výtlačok sa nenašiel.');
 				if (status === 'available' && current.status === 'loaned') {
-					const open = tx
+					const open = await tx
 						.select({ c: count() })
 						.from(loan)
 						.where(and(eq(loan.holdingId, current.id), isNull(loan.returnedAt)))
-						.get()?.c ?? 0;
+						.then((rows) => rows[0]?.c ?? 0);
 					if (open > 0) throw new Error('Výtlačok je na výpožičke. Najprv ho vráť.');
 				}
-				tx.update(holding)
+				await tx.update(holding)
 					.set({
 						bookId: input.bookId,
 						inventoryNo: inventoryNo || current.inventoryNo,
@@ -678,21 +692,21 @@ export function saveHolding(input: {
 						acquiredAt: input.acquiredAt ?? current.acquiredAt
 					})
 					.where(eq(holding.id, input.id))
-					.run();
-				if (current.bookId !== input.bookId) syncCopies(tx, current.bookId);
-				syncCopies(tx, input.bookId);
+					;
+				if (current.bookId !== input.bookId) await syncCopies(tx, current.bookId);
+				await syncCopies(tx, input.bookId);
 			} else {
-				const cat = tx.select({ code: category.code }).from(category).where(eq(category.id, held.categoryId)).get();
-				tx.insert(holding)
+				const cat = await tx.select({ code: category.code }).from(category).where(eq(category.id, held.categoryId)).then((rows) => rows[0]);
+				await tx.insert(holding)
 					.values({
 						id: crypto.randomUUID(),
 						bookId: input.bookId,
-						inventoryNo: inventoryNo || nextInventory(input.bookId, cat?.code ?? 'FON'),
+						inventoryNo: inventoryNo || await nextInventory(input.bookId, cat?.code ?? 'FON'),
 						status,
 						acquiredAt: input.acquiredAt ?? new Date()
 					})
-					.run();
-				syncCopies(tx, input.bookId);
+					;
+				await syncCopies(tx, input.bookId);
 			}
 		});
 	} catch (cause) {
@@ -701,32 +715,32 @@ export function saveHolding(input: {
 		return caught(cause, 'Toto inventárne číslo už vo fonde je.');
 	}
 
-	refreshCatalog({ bookId: input.bookId });
+	await refreshCatalog({ bookId: input.bookId });
 	return ok();
 }
 
-export function deleteHolding(id: string): DeskResult {
-	const current = db.select().from(holding).where(eq(holding.id, id)).get();
+export async function deleteHolding(id: string): Promise<DeskResult> {
+	const current = await db.select().from(holding).where(eq(holding.id, id)).then((rows) => rows[0]);
 	if (!current) return fail('Výtlačok sa nenašiel.');
 	const open =
-		db
+		(await db
 			.select({ c: count() })
 			.from(loan)
 			.where(and(eq(loan.holdingId, id), isNull(loan.returnedAt)))
-			.get()?.c ?? 0;
+			.then((rows) => rows[0]))?.c ?? 0;
 	if (open > 0) return fail('Výtlačok je na výpožičke. Najprv ho vráť.');
 
-	db.transaction((tx) => {
-		tx.delete(holding).where(eq(holding.id, id)).run();
-		syncCopies(tx, current.bookId);
+	await db.transaction(async (tx) => {
+		await tx.delete(holding).where(eq(holding.id, id));
+		await syncCopies(tx, current.bookId);
 	});
-	refreshCatalog({ bookId: current.bookId });
+	await refreshCatalog({ bookId: current.bookId });
 	return ok();
 }
 
-export function listDeskLoans(query = '') {
+export async function listDeskLoans(query = '') {
 	const q = query.trim();
-	return db
+	return await db
 		.select({
 			id: loan.id,
 			bookId: loan.bookId,
@@ -750,20 +764,20 @@ export function listDeskLoans(query = '') {
 		.where(
 			q
 				? or(
-						like(book.title, needle(q)),
-						like(user.name, needle(q)),
-						like(user.email, needle(q)),
-						like(loan.borrowerLastName, needle(q)),
-						like(loan.borrowerClass, needle(q))
+						ilike(book.title, needle(q)),
+						ilike(user.name, needle(q)),
+						ilike(user.email, needle(q)),
+						ilike(loan.borrowerLastName, needle(q)),
+						ilike(loan.borrowerClass, needle(q))
 					)
 				: undefined
 		)
 		.orderBy(desc(loan.borrowedAt))
 		.limit(LIST_LIMIT)
-		.all();
+		;
 }
 
-export function getDeskLoan(id: string) {
+export async function getDeskLoan(id: string) {
 	if (!id) return null;
 	return (
 		db
@@ -788,11 +802,11 @@ export function getDeskLoan(id: string) {
 			.innerJoin(book, eq(book.id, loan.bookId))
 			.innerJoin(user, eq(user.id, loan.userId))
 			.where(eq(loan.id, id))
-			.get() ?? null
+			.then((rows) => rows[0] ?? null)
 	);
 }
 
-export function saveLoan(input: {
+export async function saveLoan(input: {
 	id?: string;
 	bookId: string;
 	holdingId: string;
@@ -805,7 +819,7 @@ export function saveLoan(input: {
 	dueAt?: Date | null;
 	returnedAt?: Date | null;
 	renewalCount?: number;
-}): DeskResult {
+}): Promise<DeskResult> {
 	const first = input.borrowerFirstName.trim();
 	const last = input.borrowerLastName.trim();
 	const klass = input.borrowerClass.trim();
@@ -813,20 +827,20 @@ export function saveLoan(input: {
 	if (!klass) return fail('Doplň triedu.');
 	const days = parseLoanDays(String(input.loanDays));
 	if (!days) return fail('Doba výpožičky nie je v rozsahu.');
-	const held = db.select().from(book).where(eq(book.id, input.bookId)).get();
-	const reader = db.select().from(user).where(eq(user.id, input.userId)).get();
+	const held = await db.select().from(book).where(eq(book.id, input.bookId)).then((rows) => rows[0]);
+	const reader = await db.select().from(user).where(eq(user.id, input.userId)).then((rows) => rows[0]);
 	if (!held) return fail('Vyber knihu.');
 	if (!reader) return fail('Vyber čitateľa.');
 
 	try {
-		db.transaction((tx) => {
+		await db.transaction(async (tx) => {
 			if (input.id) {
-				const current = tx.select().from(loan).where(eq(loan.id, input.id)).get();
+				const current = await tx.select().from(loan).where(eq(loan.id, input.id)).then((rows) => rows[0]);
 				if (!current) throw new Error('Výpožička sa nenašla.');
 				const borrowedAt = input.borrowedAt ?? current.borrowedAt;
 				const dueAt =
 					input.dueAt ?? new Date(borrowedAt.getTime() + days * 24 * 60 * 60 * 1000);
-				tx.update(loan)
+				await tx.update(loan)
 					.set({
 						borrowerFirstName: first,
 						borrowerLastName: last,
@@ -838,21 +852,21 @@ export function saveLoan(input: {
 						renewalCount: input.renewalCount ?? current.renewalCount
 					})
 					.where(eq(loan.id, input.id))
-					.run();
+					;
 			} else {
 				const copy = input.holdingId
-					? tx.select().from(holding).where(eq(holding.id, input.holdingId)).get()
-					: tx
+					? await tx.select().from(holding).where(eq(holding.id, input.holdingId)).then((rows) => rows[0])
+					: await tx
 							.select()
 							.from(holding)
 							.where(and(eq(holding.bookId, input.bookId), eq(holding.status, 'available')))
-							.get();
+							.then((rows) => rows[0]);
 				if (!copy || copy.status !== 'available') {
 					throw new Error('Žiadny voľný výtlačok.');
 				}
 				const now = input.borrowedAt ?? new Date();
 				const dueAt = input.dueAt ?? new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
-				tx.insert(loan)
+				await tx.insert(loan)
 					.values({
 						bookId: input.bookId,
 						holdingId: copy.id,
@@ -864,9 +878,9 @@ export function saveLoan(input: {
 						borrowerClass: klass,
 						loanDays: days
 					})
-					.run();
-				tx.update(holding).set({ status: 'loaned' }).where(eq(holding.id, copy.id)).run();
-				syncCopies(tx, input.bookId);
+					;
+				await tx.update(holding).set({ status: 'loaned' }).where(eq(holding.id, copy.id));
+				await syncCopies(tx, input.bookId);
 			}
 		});
 	} catch (cause) {
@@ -875,44 +889,44 @@ export function saveLoan(input: {
 		return caught(cause, 'Výpožička sa neuložila.');
 	}
 
-	refreshCatalog({ bookId: input.bookId });
+	await refreshCatalog({ bookId: input.bookId });
 	return ok();
 }
 
-export function returnDeskLoan(id: string): DeskResult {
-	const current = db.select().from(loan).where(eq(loan.id, id)).get();
+export async function returnDeskLoan(id: string): Promise<DeskResult> {
+	const current = await db.select().from(loan).where(eq(loan.id, id)).then((rows) => rows[0]);
 	if (!current) return fail('Výpožička sa nenašla.');
 	if (current.returnedAt) return fail('Táto kniha je už vrátená.');
 
-	db.transaction((tx) => {
-		tx.update(loan).set({ returnedAt: new Date() }).where(eq(loan.id, id)).run();
+	await db.transaction(async (tx) => {
+		await tx.update(loan).set({ returnedAt: new Date() }).where(eq(loan.id, id));
 		if (current.holdingId) {
-			tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId)).run();
+			await tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId));
 		}
-		syncCopies(tx, current.bookId);
+		await syncCopies(tx, current.bookId);
 	});
-	refreshCatalog({ bookId: current.bookId });
+	await refreshCatalog({ bookId: current.bookId });
 	return ok();
 }
 
-export function deleteLoan(id: string): DeskResult {
-	const current = db.select().from(loan).where(eq(loan.id, id)).get();
+export async function deleteLoan(id: string): Promise<DeskResult> {
+	const current = await db.select().from(loan).where(eq(loan.id, id)).then((rows) => rows[0]);
 	if (!current) return fail('Výpožička sa nenašla.');
 
-	db.transaction((tx) => {
+	await db.transaction(async (tx) => {
 		if (!current.returnedAt && current.holdingId) {
-			tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId)).run();
+			await tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId));
 		}
-		tx.delete(loan).where(eq(loan.id, id)).run();
-		if (!current.returnedAt) syncCopies(tx, current.bookId);
+		await tx.delete(loan).where(eq(loan.id, id));
+		if (!current.returnedAt) await syncCopies(tx, current.bookId);
 	});
-	refreshCatalog({ bookId: current.bookId });
+	await refreshCatalog({ bookId: current.bookId });
 	return ok();
 }
 
-export function listDeskReservations(query = '') {
+export async function listDeskReservations(query = '') {
 	const q = query.trim();
-	return db
+	return await db
 		.select({
 			id: reservation.id,
 			bookId: reservation.bookId,
@@ -930,18 +944,18 @@ export function listDeskReservations(query = '') {
 		.where(
 			q
 				? or(
-						like(book.title, needle(q)),
-						like(user.name, needle(q)),
-						like(reservation.status, needle(q))
+						ilike(book.title, needle(q)),
+						ilike(user.name, needle(q)),
+						ilike(reservation.status, needle(q))
 					)
 				: undefined
 		)
 		.orderBy(desc(reservation.createdAt))
 		.limit(LIST_LIMIT)
-		.all();
+		;
 }
 
-export function getDeskReservation(id: string) {
+export async function getDeskReservation(id: string) {
 	if (!id) return null;
 	return (
 		db
@@ -960,24 +974,24 @@ export function getDeskReservation(id: string) {
 			.innerJoin(book, eq(book.id, reservation.bookId))
 			.innerJoin(user, eq(user.id, reservation.userId))
 			.where(eq(reservation.id, id))
-			.get() ?? null
+			.then((rows) => rows[0] ?? null)
 	);
 }
 
-export function saveReservation(input: {
+export async function saveReservation(input: {
 	id?: string;
 	bookId: string;
 	userId: string;
 	status: string;
 	createdAt?: Date | null;
 	expiresAt?: Date | null;
-}): DeskResult {
+}): Promise<DeskResult> {
 	if (!reservationStatus.includes(input.status as (typeof reservationStatus)[number])) {
 		return fail('Stav rezervácie nie je v zozname.');
 	}
 	const status = input.status as (typeof reservationStatus)[number];
-	const held = db.select({ id: book.id }).from(book).where(eq(book.id, input.bookId)).get();
-	const reader = db.select({ id: user.id }).from(user).where(eq(user.id, input.userId)).get();
+	const held = await db.select({ id: book.id }).from(book).where(eq(book.id, input.bookId)).then((rows) => rows[0]);
+	const reader = await db.select({ id: user.id }).from(user).where(eq(user.id, input.userId)).then((rows) => rows[0]);
 	if (!held) return fail('Vyber knihu.');
 	if (!reader) return fail('Vyber čitateľa.');
 	const createdAt = input.createdAt ?? new Date();
@@ -985,14 +999,14 @@ export function saveReservation(input: {
 
 	try {
 		if (input.id) {
-			const current = db.select().from(reservation).where(eq(reservation.id, input.id)).get();
+			const current = await db.select().from(reservation).where(eq(reservation.id, input.id)).then((rows) => rows[0]);
 			if (!current) return fail('Rezervácia sa nenašla.');
-			db.update(reservation)
+			await db.update(reservation)
 				.set({ bookId: input.bookId, userId: input.userId, status, createdAt, expiresAt })
 				.where(eq(reservation.id, input.id))
-				.run();
+				;
 		} else {
-			db.insert(reservation)
+			await db.insert(reservation)
 				.values({
 					bookId: input.bookId,
 					userId: input.userId,
@@ -1000,7 +1014,7 @@ export function saveReservation(input: {
 					createdAt,
 					expiresAt
 				})
-				.run();
+				;
 		}
 	} catch (cause) {
 		return caught(cause, 'Rezervácia sa neuložila.');
@@ -1009,15 +1023,15 @@ export function saveReservation(input: {
 	return ok();
 }
 
-export function deleteReservation(id: string): DeskResult {
-	const gone = db.delete(reservation).where(eq(reservation.id, id)).run();
-	if (!gone.changes) return fail('Rezervácia sa nenašla.');
+export async function deleteReservation(id: string): Promise<DeskResult> {
+	const gone = await db.delete(reservation).where(eq(reservation.id, id)).returning({ id: reservation.id });
+	if (!gone.length) return fail('Rezervácia sa nenašla.');
 	return ok();
 }
 
-export function listDeskReaders(query = '') {
+export async function listDeskReaders(query = '') {
 	const q = query.trim();
-	return db
+	return await db
 		.select({
 			id: user.id,
 			name: user.name,
@@ -1030,13 +1044,13 @@ export function listDeskReaders(query = '') {
 			)
 		})
 		.from(user)
-		.where(q ? or(like(user.name, needle(q)), like(user.email, needle(q))) : undefined)
+		.where(q ? or(ilike(user.name, needle(q)), ilike(user.email, needle(q))) : undefined)
 		.orderBy(asc(user.name))
 		.limit(LIST_LIMIT)
-		.all();
+		;
 }
 
-export function getDeskReader(id: string) {
+export async function getDeskReader(id: string) {
 	if (!id) return null;
 	return (
 		db
@@ -1053,16 +1067,16 @@ export function getDeskReader(id: string) {
 			})
 			.from(user)
 			.where(eq(user.id, id))
-			.get() ?? null
+			.then((rows) => rows[0] ?? null)
 	);
 }
 
-export function saveReader(input: {
+export async function saveReader(input: {
 	id: string;
 	name: string;
 	email: string;
 	role?: string;
-}): DeskResult {
+}): Promise<DeskResult> {
 	const name = input.name.trim();
 	const email = input.email.trim().toLowerCase();
 	if (name.length < 2) return fail('Meno čitateľa je krátke.');
@@ -1070,22 +1084,22 @@ export function saveReader(input: {
 	if (input.role !== undefined && !isRole(input.role)) return fail('Rola nie je v zozname.');
 
 	try {
-		const current = db.select().from(user).where(eq(user.id, input.id)).get();
+		const current = await db.select().from(user).where(eq(user.id, input.id)).then((rows) => rows[0]);
 		if (!current) return fail('Čitateľ sa nenašiel.');
 		const role = input.role === undefined ? parseRole(current.role) : input.role;
 		if (parseRole(current.role) === 'librarian' && role === 'reader') {
 			const others =
-				db
+				(await db
 					.select({ c: count() })
 					.from(user)
 					.where(and(eq(user.role, 'librarian'), ne(user.id, input.id)))
-					.get()?.c ?? 0;
+					.then((rows) => rows[0]))?.c ?? 0;
 			if (others === 0) return fail('Posledného knihovníka z pultu nedáš.');
 		}
-		db.update(user)
+		await db.update(user)
 			.set({ name, email, role, updatedAt: new Date() })
 			.where(eq(user.id, input.id))
-			.run();
+			;
 	} catch (cause) {
 		return caught(cause, 'Tento e-mail už má preukaz.');
 	}
@@ -1093,23 +1107,26 @@ export function saveReader(input: {
 	return ok();
 }
 
-export function deleteReader(id: string): DeskResult {
-	const current = db.select().from(user).where(eq(user.id, id)).get();
+export async function deleteReader(id: string): Promise<DeskResult> {
+	const current = await db.select().from(user).where(eq(user.id, id)).then((rows) => rows[0]);
 	if (!current) return fail('Čitateľ sa nenašiel.');
 	if (parseRole(current.role) === 'librarian') {
 		const others =
-			db
+			(await db
 				.select({ c: count() })
 				.from(user)
 				.where(and(eq(user.role, 'librarian'), ne(user.id, id)))
-				.get()?.c ?? 0;
+				.then((rows) => rows[0]))?.c ?? 0;
 		if (others === 0) return fail('Posledného knihovníka z pultu nedáš.');
 	}
 	const open =
-		db.select({ c: count() }).from(loan).where(and(eq(loan.userId, id), isNull(loan.returnedAt))).get()
-			?.c ?? 0;
+		(await db
+			.select({ c: count() })
+			.from(loan)
+			.where(and(eq(loan.userId, id), isNull(loan.returnedAt)))
+			.then((rows) => rows[0]))?.c ?? 0;
 	if (open > 0) return fail('Čitateľ má knihy vonku. Najprv ich vráť.');
-	const gone = db.delete(user).where(eq(user.id, id)).run();
-	if (!gone.changes) return fail('Čitateľ sa nenašiel.');
+	const gone = await db.delete(user).where(eq(user.id, id)).returning({ id: user.id });
+	if (!gone.length) return fail('Čitateľ sa nenašiel.');
 	return ok();
 }

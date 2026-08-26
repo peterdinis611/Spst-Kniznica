@@ -86,16 +86,16 @@ function assembleBooks(rows: BookRow[]): CatalogBook[] {
 	return [...map.values()];
 }
 
-function catalog(): CatalogSnapshot {
+async function catalog() {
 	const hit = getCatalogCache();
 	if (hit) return hit;
 
-	const books = assembleBooks(bookQuery().all());
-	const authors = loadAuthors();
+	const books = assembleBooks(await bookQuery());
+	const authors = await loadAuthors();
 	const next: CatalogSnapshot = {
 		books,
 		byId: new Map(books.map((item) => [item.id, item])),
-		categories: loadCategories(),
+		categories: await loadCategories(),
 		authors,
 		stats: {
 			books: books.length,
@@ -107,8 +107,8 @@ function catalog(): CatalogSnapshot {
 	return next;
 }
 
-export function warmCatalog() {
-	catalog();
+export async function warmCatalog() {
+	await catalog();
 }
 
 function matchesQuery(item: CatalogBook, query: string) {
@@ -135,7 +135,7 @@ export function toSlip(item: CatalogBook): BookSlip {
 }
 
 export function toSearchItem(
-	item: BookSlip & { isbn?: string; category: BookSlip['category'] | string }
+	item: Omit<BookSlip, 'category'> & { isbn?: string; category: BookSlip['category'] | string }
 ): CatalogSearchItem {
 	return {
 		id: item.id,
@@ -171,25 +171,25 @@ export function toCategoryChip(item: CategoryRecord): CategoryChip {
 	};
 }
 
-export function listBookSlips(query?: string): BookSlip[] {
-	return listBooks(query).map(toSlip);
+export async function listBookSlips(query?: string) {
+	return (await listBooks(query)).map(toSlip);
 }
 
-export function listAuthorSlips(): AuthorSlip[] {
-	return listAuthors().map(toAuthorSlip);
+export async function listAuthorSlips() {
+	return (await listAuthors()).map(toAuthorSlip);
 }
 
-export function listCategoryChips(): CategoryChip[] {
-	return listCategories().map(toCategoryChip);
+export async function listCategoryChips() {
+	return (await listCategories()).map(toCategoryChip);
 }
 
-export function searchCatalog(query: string, limit = 8): CatalogSearchItem[] {
+export async function searchCatalog(query: string, limit = 8) {
 	const q = query.trim();
 	if (!q) return [];
 
-	const ftsIds = ftsBookIds(q, limit);
+	const ftsIds = await ftsBookIds(q, limit);
 	if (ftsIds.length > 0) {
-		const found = listBooksByIds(ftsIds);
+		const found = await listBooksByIds(ftsIds);
 		const rank = new Map(ftsIds.map((id, i) => [id, i]));
 		return found
 			.sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99))
@@ -197,20 +197,20 @@ export function searchCatalog(query: string, limit = 8): CatalogSearchItem[] {
 			.map(toSearchItem);
 	}
 
-	return listBooks(q).slice(0, limit).map(toSearchItem);
+	return (await listBooks(q)).slice(0, limit).map(toSearchItem);
 }
 
-function listBooksByIds(ids: string[]): CatalogBook[] {
+async function listBooksByIds(ids: string[]) {
 	if (ids.length === 0) return [];
-	const { byId } = catalog();
+	const { byId } = await catalog();
 	return ids.flatMap((id) => {
 		const item = byId.get(id);
 		return item ? [item] : [];
 	});
 }
 
-function bookQuery() {
-	return db
+async function bookQuery() {
+	return await db
 		.select({
 			book,
 			category,
@@ -223,8 +223,8 @@ function bookQuery() {
 		.leftJoin(author, eq(author.id, bookAuthor.authorId));
 }
 
-function loadCategories(): CategoryRecord[] {
-	return db
+async function loadCategories() {
+	return await db
 		.select({
 			id: category.id,
 			name: category.name,
@@ -245,12 +245,11 @@ function loadCategories(): CategoryRecord[] {
 			category.accent,
 			category.sortOrder
 		)
-		.orderBy(asc(category.sortOrder), asc(category.name))
-		.all();
+		.orderBy(asc(category.sortOrder), asc(category.name));
 }
 
-function loadAuthors(): AuthorRecord[] {
-	return db
+async function loadAuthors() {
+	return await db
 		.select({
 			id: author.id,
 			name: author.name,
@@ -262,98 +261,101 @@ function loadAuthors(): AuthorRecord[] {
 		})
 		.from(author)
 		.leftJoin(bookAuthor, eq(bookAuthor.authorId, author.id))
-		.groupBy(author.id, author.name, author.slug, author.bio, author.lifespan, author.role)
-		.all();
+		.groupBy(author.id, author.name, author.slug, author.bio, author.lifespan, author.role);
 }
 
-export function listBooks(query?: string): CatalogBook[] {
+export async function listBooks(query?: string) {
 	const q = query?.trim();
-	const books = catalog().books;
+	const books = (await catalog()).books;
 	if (!q) return books;
 	return books.filter((item) => matchesQuery(item, q));
 }
 
-export function getBook(id: string): CatalogBook | undefined {
-	return catalog().byId.get(id);
+export async function getBook(id: string) {
+	return (await catalog()).byId.get(id);
 }
 
-export function getFeaturedBook(): CatalogBook | undefined {
-	const books = catalog().books;
+export async function getFeaturedBook() {
+	const books = (await catalog()).books;
 	const featured = books.find((item) => item.featured && item.id !== 'book-modlitbicky');
 	if (featured) return featured;
 	return books.find((item) => item.id !== 'book-modlitbicky');
 }
 
-export function listBooksByCategory(slug: string): CatalogBook[] {
-	return catalog().books.filter((item) => item.category.slug === slug);
+export async function listBooksByCategory(slug: string) {
+	return (await catalog()).books.filter((item) => item.category.slug === slug);
 }
 
-export function listBookSlipsByCategory(slug: string): BookSlip[] {
-	return listBooksByCategory(slug).map(toSlip);
+export async function listBookSlipsByCategory(slug: string) {
+	return (await listBooksByCategory(slug)).map(toSlip);
 }
 
-export function listBooksByAuthor(slug: string): CatalogBook[] {
-	return catalog().books.filter((item) => item.authors.some((person) => person.slug === slug));
+export async function listBooksByAuthor(slug: string) {
+	return (await catalog()).books.filter((item) => item.authors.some((person) => person.slug === slug));
 }
 
-export function listBookSlipsByAuthor(slug: string): BookSlip[] {
-	return listBooksByAuthor(slug).map(toSlip);
+export async function listBookSlipsByAuthor(slug: string) {
+	return (await listBooksByAuthor(slug)).map(toSlip);
 }
 
-export function relatedBooks(bookId: string, categoryId: string, limit = 4): CatalogBook[] {
-	return catalog()
+export async function relatedBooks(bookId: string, categoryId: string, limit = 4) {
+	return (await catalog())
 		.books.filter((item) => item.category.id === categoryId && item.id !== bookId)
 		.slice(0, limit);
 }
 
-export function relatedBookSlips(bookId: string, categoryId: string, limit = 4): BookSlip[] {
-	return relatedBooks(bookId, categoryId, limit).map(toSlip);
+export async function relatedBookSlips(bookId: string, categoryId: string, limit = 4) {
+	return (await relatedBooks(bookId, categoryId, limit)).map(toSlip);
 }
 
-export function listCategories(): CategoryRecord[] {
-	return catalog().categories;
+export async function listCategories() {
+	return (await catalog()).categories;
 }
 
-export function getCategory(slug: string): CategoryRecord | undefined {
-	return listCategories().find((item) => item.slug === slug);
+export async function getCategory(slug: string) {
+	return (await listCategories()).find((item) => item.slug === slug);
 }
 
-export function listAuthors(): AuthorRecord[] {
-	return catalog().authors;
+export async function listAuthors() {
+	return (await catalog()).authors;
 }
 
-export function getAuthor(slug: string): AuthorRecord | undefined {
-	return listAuthors().find((item) => item.slug === slug);
+export async function getAuthor(slug: string) {
+	return (await listAuthors()).find((item) => item.slug === slug);
 }
 
-export function catalogStats() {
-	const { stats } = catalog();
+export async function catalogStats() {
+	const { stats } = await catalog();
 	const openLoans =
-		db.select({ c: count() }).from(loan).where(isNull(loan.returnedAt)).get()?.c ?? 0;
+		await db.select({ c: count() }).from(loan).where(isNull(loan.returnedAt)).then((rows) => rows[0]?.c ?? 0);
 
 	return { ...stats, openLoans };
 }
 
-export function getActiveLoan(userId: string, bookId: string) {
-	return db
+export async function getActiveLoan(
+	userId: string,
+	bookId: string
+): Promise<(typeof loan.$inferSelect) | null> {
+	const row = await db
 		.select()
 		.from(loan)
 		.where(and(eq(loan.userId, userId), eq(loan.bookId, bookId), isNull(loan.returnedAt)))
-		.get();
+		.then((rows) => rows[0]);
+	return row ?? null;
 }
 
-export function countActiveLoans(userId: string) {
+export async function countActiveLoans(userId: string) {
 	return (
 		db
 			.select({ c: count() })
 			.from(loan)
 			.where(and(eq(loan.userId, userId), isNull(loan.returnedAt)))
-			.get()?.c ?? 0
+			.then((rows) => rows[0]?.c ?? 0)
 	);
 }
 
-export function listLoans(userId: string): LoanRecord[] {
-	const rows = db
+export async function listLoans(userId: string): Promise<LoanRecord[]> {
+	const rows = await db
 		.select({
 			loan,
 			book,
@@ -368,7 +370,7 @@ export function listLoans(userId: string): LoanRecord[] {
 		.leftJoin(author, eq(author.id, bookAuthor.authorId))
 		.where(and(eq(loan.userId, userId), isNull(loan.clearedAt)))
 		.orderBy(desc(loan.borrowedAt))
-		.all();
+		;
 
 	const booksById = assembleBooks(
 		rows.map((row) => ({
@@ -405,8 +407,8 @@ export type BorrowResult =
 	| { ok: true; dueAt: Date }
 	| { ok: false; message: string };
 
-export function getLastBorrower(userId: string): BorrowerDraft | null {
-	const row = db
+export async function getLastBorrower(userId: string): Promise<BorrowerDraft | null> {
+	const row = await db
 		.select({
 			firstName: loan.borrowerFirstName,
 			lastName: loan.borrowerLastName,
@@ -416,7 +418,7 @@ export function getLastBorrower(userId: string): BorrowerDraft | null {
 		.from(loan)
 		.where(eq(loan.userId, userId))
 		.orderBy(desc(loan.borrowedAt))
-		.get();
+		.then((rows) => rows[0]);
 
 	if (!row?.firstName || !row.lastName || !row.className) return null;
 
@@ -429,33 +431,33 @@ export function getLastBorrower(userId: string): BorrowerDraft | null {
 	};
 }
 
-export function borrowBook(userId: string, bookId: string, draft: BorrowerDraft): BorrowResult {
-	const result = db.transaction((tx) => {
-		const current = tx.select().from(book).where(eq(book.id, bookId)).get();
+export async function borrowBook(userId: string, bookId: string, draft: BorrowerDraft): Promise<BorrowResult> {
+	const result = await db.transaction(async (tx): Promise<BorrowResult> => {
+		const current = await tx.select().from(book).where(eq(book.id, bookId)).then((rows) => rows[0]);
 		if (!current) return { ok: false, message: 'Kniha v katalógu nie je.' };
-		const copy = tx
+		const copy = await tx
 			.select()
 			.from(holding)
 			.where(and(eq(holding.bookId, bookId), eq(holding.status, 'available')))
-			.get();
+			.then((rows) => rows[0]);
 		if (!copy || current.copiesAvailable < 1) {
 			return { ok: false, message: 'Žiadny voľný výtlačok. Skúste neskôr.' };
 		}
 
-		const already = tx
+		const already = await tx
 			.select()
 			.from(loan)
 			.where(and(eq(loan.userId, userId), eq(loan.bookId, bookId), isNull(loan.returnedAt)))
-			.get();
+			.then((rows) => rows[0]);
 		if (already) return { ok: false, message: 'Túto knihu už máte vypožičanú.' };
 
 		if (MAX_ACTIVE_LOANS != null) {
 			const active =
-				tx
+				await tx
 					.select({ c: count() })
 					.from(loan)
 					.where(and(eq(loan.userId, userId), isNull(loan.returnedAt)))
-					.get()?.c ?? 0;
+					.then((rows) => rows[0]?.c ?? 0);
 			if (isLoanLimitReached(active)) {
 				return { ok: false, message: `Limit ${MAX_ACTIVE_LOANS} výpožičiek je naplnený.` };
 			}
@@ -465,7 +467,7 @@ export function borrowBook(userId: string, bookId: string, draft: BorrowerDraft)
 		const days = draft.days;
 		const dueAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
-		tx.insert(loan)
+		await tx.insert(loan)
 			.values({
 				bookId,
 				holdingId: copy.id,
@@ -477,14 +479,14 @@ export function borrowBook(userId: string, bookId: string, draft: BorrowerDraft)
 				borrowerClass: draft.className,
 				loanDays: days
 			})
-			.run();
+			;
 
-		tx.update(holding).set({ status: 'loaned' }).where(eq(holding.id, copy.id)).run();
+		await tx.update(holding).set({ status: 'loaned' }).where(eq(holding.id, copy.id));
 
-		tx.update(book)
+		await tx.update(book)
 			.set({ copiesAvailable: Math.max(0, current.copiesAvailable - 1) })
 			.where(eq(book.id, bookId))
-			.run();
+			;
 
 		return { ok: true as const, dueAt };
 	});
@@ -500,43 +502,43 @@ export function borrowBook(userId: string, bookId: string, draft: BorrowerDraft)
 
 export type ReturnResult = { ok: true } | { ok: false; message: string };
 
-export function returnBook(userId: string, loanId: string): ReturnResult {
+export async function returnBook(userId: string, loanId: string): Promise<ReturnResult> {
 	let bookId: string | null = null;
 	let copiesAvailable: number | null = null;
 
-	const result = db.transaction((tx) => {
-		const current = tx
+	const result = await db.transaction(async (tx): Promise<ReturnResult> => {
+		const current = await tx
 			.select()
 			.from(loan)
 			.where(and(eq(loan.id, loanId), eq(loan.userId, userId)))
-			.get();
+			.then((rows) => rows[0]);
 
 		if (!current) return { ok: false, message: 'Výpožička sa nenašla.' };
 		if (current.returnedAt) return { ok: false, message: 'Táto kniha je už vrátená.' };
 
-		const held = tx.select().from(book).where(eq(book.id, current.bookId)).get();
+		const held = await tx.select().from(book).where(eq(book.id, current.bookId)).then((rows) => rows[0]);
 		if (!held) return { ok: false, message: 'Kniha v katalógu nie je.' };
 
-		tx.update(loan).set({ returnedAt: new Date() }).where(eq(loan.id, loanId)).run();
+		await tx.update(loan).set({ returnedAt: new Date() }).where(eq(loan.id, loanId));
 
 		if (current.holdingId) {
-			tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId)).run();
+			await tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId));
 		} else {
-			const loaned = tx
+			const loaned = await tx
 				.select()
 				.from(holding)
 				.where(and(eq(holding.bookId, current.bookId), eq(holding.status, 'loaned')))
-				.get();
+				.then((rows) => rows[0]);
 			if (loaned) {
-				tx.update(holding).set({ status: 'available' }).where(eq(holding.id, loaned.id)).run();
+				await tx.update(holding).set({ status: 'available' }).where(eq(holding.id, loaned.id));
 			}
 		}
 
 		const copies = Math.min(held.copiesTotal, held.copiesAvailable + 1);
-		tx.update(book)
+		await tx.update(book)
 			.set({ copiesAvailable: copies })
 			.where(eq(book.id, current.bookId))
-			.run();
+			;
 
 		bookId = current.bookId;
 		copiesAvailable = copies;
@@ -550,12 +552,12 @@ export function returnBook(userId: string, loanId: string): ReturnResult {
 	return result;
 }
 
-export function clearReturnedLoans(userId: string) {
-	const result = db
+export async function clearReturnedLoans(userId: string) {
+	const result = await db
 		.update(loan)
 		.set({ clearedAt: new Date() })
 		.where(and(eq(loan.userId, userId), isNotNull(loan.returnedAt), isNull(loan.clearedAt)))
-		.run();
+		.returning({ id: loan.id });
 
-	return { ok: true as const, cleared: result.changes };
+	return { ok: true as const, cleared: result.length };
 }

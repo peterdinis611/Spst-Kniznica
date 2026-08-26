@@ -3,7 +3,9 @@
 	import { enhance } from '$app/forms';
 	import Seo from '$lib/components/Seo.svelte';
 	import AuthPass from '$lib/components/AuthPass.svelte';
+	import PassSecret from '$lib/components/PassSecret.svelte';
 	import { ROLE_LABELS } from '$lib/ability';
+	import { hasFieldErrors, validateNewPassword, type FieldErrors } from '$lib/auth-fields';
 	import { firstName, loanedLabel, readerNumber } from '$lib/format';
 	import type { ActionData, PageProps } from './$types';
 
@@ -11,6 +13,23 @@
 	const serial = $derived(readerNumber(data.reader.id));
 	const given = $derived(firstName(data.reader.name));
 	const stamp = $derived(ROLE_LABELS[data.reader.role]);
+	const noteOk = $derived(Boolean(form && 'ok' in form && form.ok));
+
+	let password = $state('');
+	let confirm = $state('');
+	let submitted = $state(false);
+
+	const errors = $derived.by((): FieldErrors => {
+		if (noteOk) return {};
+		const next = validateNewPassword({ password, confirm });
+		if (!submitted) return form && 'errors' in form ? (form.errors ?? {}) : {};
+		return next;
+	});
+
+	function check(event: SubmitEvent) {
+		submitted = true;
+		if (hasFieldErrors(validateNewPassword({ password, confirm }))) event.preventDefault();
+	}
 </script>
 
 <Seo
@@ -22,7 +41,7 @@
 <AuthPass
 	kicker="Môj profil"
 	title="Tvoj preukaz."
-	lede="{given}, toto je lístok účtu. Výpožičky ostávajú na Moje knihy. Heslo meníš odkazom z pošty."
+	lede="{given}, toto je lístok účtu. Výpožičky ostávajú na Moje knihy. Nové heslo uložíš tu — potvrdenie padne na poštu."
 	serial="PREUKAZ {serial} · PAV. B"
 	facts={[stamp, loanedLabel(data.activeCount), 'pav. B']}
 >
@@ -49,17 +68,54 @@
 		</div>
 	</dl>
 
+	<form
+		class="pass-form profile-pass"
+		method="POST"
+		action="?/password"
+		use:enhance={() => {
+			return async ({ result, update }) => {
+				await update({ reset: result.type === 'success' });
+				if (result.type === 'success') {
+					password = '';
+					confirm = '';
+					submitted = false;
+				}
+			};
+		}}
+		novalidate
+		onsubmit={check}
+	>
+		<p class="profile-pass-kicker">Nové heslo</p>
+		<PassSecret
+			id="password"
+			label="Nové heslo"
+			autocomplete="new-password"
+			bind:value={password}
+			error={errors.password}
+			meter
+		/>
+		<PassSecret
+			id="confirm"
+			name="confirm"
+			label="Znova"
+			autocomplete="new-password"
+			bind:value={confirm}
+			error={errors.confirm}
+		/>
+		<button class="pass-go" type="submit">Uložiť heslo</button>
+	</form>
+
 	<div class="profile-actions">
 		<a class="profile-go" href={resolve('/loans')}>Moje knihy</a>
 		<form method="POST" action="?/recover" use:enhance>
-			<button class="profile-ghost" type="submit">Nové heslo</button>
+			<button class="profile-ghost" type="submit">Poslať odkaz e-mailom</button>
 		</form>
 		{#if data.admin}
 			<a class="profile-ghost" href={resolve('/admin')}>Pult</a>
 		{/if}
 	</div>
 	{#if form?.message}
-		<p class="pass-note" class:is-ok={'ok' in form && form.ok}>{form.message}</p>
+		<p class="pass-note" class:is-ok={noteOk}>{form.message}</p>
 	{/if}
 </AuthPass>
 
@@ -132,6 +188,22 @@
 		letter-spacing: 0.28em;
 	}
 
+	.profile-pass {
+		margin-top: 1.25rem;
+		padding-top: 1.1rem;
+		border-top: 1px dashed color-mix(in srgb, var(--pass-ink, #2c1d16) 16%, transparent);
+	}
+
+	.profile-pass-kicker {
+		margin: 0;
+		color: var(--pass-muted, #7a6554);
+		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-size: 0.62rem;
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+	}
+
 	.profile-actions {
 		display: flex;
 		flex-wrap: wrap;
@@ -163,6 +235,14 @@
 
 	:global(.pass-body .pass-note) {
 		margin: 1rem 0 0;
+	}
+
+	:global(.pass-body .pass-go) {
+		width: auto;
+		justify-self: start;
+		min-width: 11rem;
+		padding: 0 1.2rem;
+		border-radius: 999px;
 	}
 
 	@keyframes profile-row {

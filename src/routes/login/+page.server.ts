@@ -48,7 +48,7 @@ export const actions: Actions = {
 				});
 			}
 
-			ensureLocalReader({
+			await ensureLocalReader({
 				id: data.user.id,
 				email: data.user.email ?? email,
 				name: String(data.user.user_metadata?.name ?? ''),
@@ -124,7 +124,7 @@ export const actions: Actions = {
 				};
 			}
 
-			ensureLocalReader({
+			await ensureLocalReader({
 				id: data.user.id,
 				email: data.user.email ?? email,
 				name: name.trim(),

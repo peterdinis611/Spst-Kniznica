@@ -46,19 +46,19 @@
 		height: 2.85rem;
 		border: 0;
 		border-radius: 999px;
-		background: var(--copper, #d46a1e);
-		color: #fff;
-		box-shadow: 0 12px 28px rgb(212 106 30 / 0.32);
+		background: var(--copper, #c45a38);
+		color: #fff6ec;
+		box-shadow: 0 12px 28px rgb(196 90 56 / 0.32);
 		cursor: pointer;
 	}
 
 	.to-top:hover {
-		background: var(--copper-deep, #b35512);
+		background: var(--copper-deep, #a3482c);
 		transform: translateY(-2px);
 	}
 
 	.to-top:focus-visible {
-		outline: 2px solid var(--copper, #d46a1e);
+		outline: 2px solid var(--copper, #c45a38);
 		outline-offset: 3px;
 	}
 

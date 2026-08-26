@@ -3,6 +3,6 @@ import { listBookSlips } from '$lib/server/library';
 
 export const load: PageServerLoad = async () => {
 	return {
-		books: listBookSlips().filter((book) => book.id !== 'book-modlitbicky')
+		books: (await listBookSlips()).filter((book) => book.id !== 'book-modlitbicky')
 	};
 };

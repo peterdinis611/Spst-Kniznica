@@ -28,7 +28,7 @@ describe('admin odbory load', () => {
 	});
 
 	it('picks the edited drawer card', async () => {
-		vi.mocked(listDeskCategories).mockReturnValue([odbor]);
+		vi.mocked(listDeskCategories).mockResolvedValue([odbor]);
 
 		const data = (await load({
 			url: new URL('http://localhost/admin/departments?edit=cat-inf&q=inf')
@@ -44,8 +44,8 @@ describe('admin odbory load', () => {
 	});
 
 	it('keeps the edited card when search no longer lists it', async () => {
-		vi.mocked(listDeskCategories).mockReturnValue([]);
-		vi.mocked(getDeskCategory).mockReturnValue(odbor);
+		vi.mocked(listDeskCategories).mockResolvedValue([]);
+		vi.mocked(getDeskCategory).mockResolvedValue(odbor);
 
 		const data = (await load({
 			url: new URL('http://localhost/admin/departments?edit=cat-inf&q=xyz')
@@ -65,7 +65,7 @@ describe('admin odbory actions', () => {
 	});
 
 	it('returns the desk error as a form failure', async () => {
-		vi.mocked(saveCategory).mockReturnValue({ ok: false, message: 'Názov odboru je krátky.' });
+		vi.mocked(saveCategory).mockResolvedValue({ ok: false, message: 'Názov odboru je krátky.' });
 
 		const result = await actions.save?.({
 			request: {
@@ -88,7 +88,7 @@ describe('admin odbory actions', () => {
 	});
 
 	it('stamps a saved department', async () => {
-		vi.mocked(saveCategory).mockReturnValue({ ok: true });
+		vi.mocked(saveCategory).mockResolvedValue({ ok: true });
 
 		const result = await actions.save?.({
 			request: {
@@ -108,7 +108,7 @@ describe('admin odbory actions', () => {
 	});
 
 	it('stamps a deleted department and surfaces a blocked delete', async () => {
-		vi.mocked(deleteCategory).mockReturnValueOnce({ ok: true });
+		vi.mocked(deleteCategory).mockResolvedValueOnce({ ok: true });
 		const removed = await actions.delete?.({
 			request: {
 				formData: async () => {
@@ -120,7 +120,7 @@ describe('admin odbory actions', () => {
 		} as unknown as Parameters<NonNullable<typeof actions.delete>>[0]);
 		expect(removed).toEqual({ stamp: 'Zmazané' });
 
-		vi.mocked(deleteCategory).mockReturnValueOnce({
+		vi.mocked(deleteCategory).mockResolvedValueOnce({
 			ok: false,
 			message: 'Odbor má knihy. Najprv ich presuň alebo zmaž.'
 		});

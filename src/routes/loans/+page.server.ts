@@ -15,7 +15,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 		redirect(302, '/login');
 	}
 
-	const loans = listLoans(locals.user.id);
+	const [loans, activeCount] = await Promise.all([
+		listLoans(locals.user.id),
+		countActiveLoans(locals.user.id)
+	]);
 	const active = loans.filter((item) => !item.returnedAt);
 	const history = loans.filter((item) => item.returnedAt);
 
@@ -28,7 +31,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		},
 		loans: active,
 		history,
-		activeCount: countActiveLoans(locals.user.id),
+		activeCount,
 		maxLoans: MAX_ACTIVE_LOANS
 	};
 };
@@ -41,8 +44,8 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const loanId = formData.get('loanId')?.toString() ?? '';
-		const open = listLoans(locals.user.id).find((item) => item.id === loanId);
-		const result = returnBook(locals.user.id, loanId);
+		const open = (await listLoans(locals.user.id)).find((item) => item.id === loanId);
+		const result = await returnBook(locals.user.id, loanId);
 
 		if (!result.ok) {
 			return fail(400, { message: result.message });
@@ -65,7 +68,7 @@ export const actions: Actions = {
 			redirect(302, '/login');
 		}
 
-		const result = clearReturnedLoans(locals.user.id);
+		const result = await clearReturnedLoans(locals.user.id);
 		if (result.cleared === 0) {
 			return fail(400, { message: 'Na lístku nie sú vrátené knihy.' });
 		}

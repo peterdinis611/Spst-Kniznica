@@ -16,16 +16,17 @@ import {
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';
 	const edit = url.searchParams.get('edit') ?? '';
-	const rows = listDeskBooks(q);
-	const current = pickCurrent(rows, edit, getDeskBook);
-	const linked = current ? bookAuthorIds(current.id) : [];
+	const rows = await listDeskBooks(q);
+	const current = await pickCurrent(rows, edit, getDeskBook);
+	const linked = current ? await bookAuthorIds(current.id) : [];
+	const [categories, authors] = await Promise.all([categoryOptions(), authorOptions()]);
 	return {
 		q,
 		rows,
 		current,
 		linkedIds: linked.map((item) => item.authorId),
-		categories: categoryOptions(),
-		authors: authorOptions(),
+		categories,
+		authors,
 		uploadReady: Boolean(env.UPLOADTHING_TOKEN?.trim())
 	};
 };
@@ -33,7 +34,7 @@ export const load: PageServerLoad = async ({ url }) => {
 export const actions: Actions = {
 	save: async ({ request }) => {
 		const data = await request.formData();
-		const result = saveBook({
+		const result = await saveBook({
 			id: formText(data, 'id') || undefined,
 			title: formText(data, 'title'),
 			subtitle: formText(data, 'subtitle'),
@@ -56,7 +57,7 @@ export const actions: Actions = {
 	},
 	delete: async ({ request }) => {
 		const data = await request.formData();
-		const result = deleteBook(formText(data, 'id'));
+		const result = await deleteBook(formText(data, 'id'));
 		if (!result.ok) return fail(400, { message: result.message });
 		return { stamp: 'Zmazané' };
 	}

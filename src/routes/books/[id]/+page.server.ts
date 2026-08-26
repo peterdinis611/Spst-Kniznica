@@ -20,17 +20,20 @@ import { stampDate } from '$lib/format';
 import { queueLoanNotice } from '$lib/server/loan-mail';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	const current = getBook(params.id);
+	const current = await getBook(params.id);
 	if (!current) error(404, 'Karta v katalógu chýba.');
 
-	const userLoan = locals.user ? getActiveLoan(locals.user.id, current.id) : null;
-	const activeCount = locals.user ? countActiveLoans(locals.user.id) : 0;
-	const lastBorrower = locals.user ? getLastBorrower(locals.user.id) : null;
+	const [userLoan, activeCount, lastBorrower, related] = await Promise.all([
+		locals.user ? getActiveLoan(locals.user.id, current.id) : null,
+		locals.user ? countActiveLoans(locals.user.id) : 0,
+		locals.user ? getLastBorrower(locals.user.id) : null,
+		relatedBookSlips(current.id, current.category.id)
+	]);
 	const fromName = locals.user ? splitReaderName(locals.user.name) : { firstName: '', lastName: '' };
 
 	return {
 		book: current,
-		related: relatedBookSlips(current.id, current.category.id),
+		related,
 		userLoan,
 		activeCount,
 		maxLoans: MAX_ACTIVE_LOANS,
@@ -66,7 +69,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Vyber dobu výpožičky.', errors, values });
 		}
 
-		const result = borrowBook(locals.user.id, params.id, {
+		const result = await borrowBook(locals.user.id, params.id, {
 			firstName: values.firstName.trim(),
 			lastName: values.lastName.trim(),
 			className: normalizeClass(values.className),
@@ -76,7 +79,7 @@ export const actions: Actions = {
 			return fail(400, { message: result.message, errors: {}, values });
 		}
 
-		const held = getBook(params.id);
+		const held = await getBook(params.id);
 		await queueLoanNotice({
 			kind: 'borrow',
 			to: locals.user.email,

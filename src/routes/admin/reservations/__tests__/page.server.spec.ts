@@ -31,14 +31,14 @@ describe('admin rezervacie actions', () => {
 	});
 
 	it('saves a waiting slip', async () => {
-		vi.mocked(saveReservation).mockReturnValue({ ok: true });
+		vi.mocked(saveReservation).mockResolvedValue({ ok: true });
 		expect(
 			await actions.save?.(event({ bookId: 'book-1', userId: 'user-1', status: 'pending' }))
 		).toEqual({ stamp: 'Uložené' });
 	});
 
 	it('returns a missing reservation as a failure', async () => {
-		vi.mocked(deleteReservation).mockReturnValue({ ok: false, message: 'Rezervácia sa nenašla.' });
+		vi.mocked(deleteReservation).mockResolvedValue({ ok: false, message: 'Rezervácia sa nenašla.' });
 		const result = await actions.delete?.(event({ id: 'missing' }));
 		expect(isActionFailure(result)).toBe(true);
 	});

@@ -25,7 +25,7 @@ const slip = {
 
 describe('books catalog load', () => {
 	it('passes the query through and filters by odbor', async () => {
-		vi.mocked(listBookSlips).mockReturnValue([
+		vi.mocked(listBookSlips).mockResolvedValue([
 			slip,
 			{ ...slip, id: 'inf-1', title: 'Algoritmy', category: { ...slip.category, slug: 'informatika' } }
 		]);
@@ -41,7 +41,7 @@ describe('books catalog load', () => {
 	});
 
 	it('lists the whole tray when the query is empty', async () => {
-		vi.mocked(listBookSlips).mockReturnValue([slip]);
+		vi.mocked(listBookSlips).mockResolvedValue([slip]);
 
 		const data = await load({
 			url: new URL('http://localhost/books')

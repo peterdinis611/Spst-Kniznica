@@ -25,9 +25,9 @@ function event(fields: Record<string, string>) {
 
 describe('admin vazby', () => {
 	beforeEach(() => {
-		vi.mocked(listDeskLinks).mockReturnValue([]);
-		vi.mocked(bookOptions).mockReturnValue([]);
-		vi.mocked(authorOptions).mockReturnValue([]);
+		vi.mocked(listDeskLinks).mockResolvedValue([]);
+		vi.mocked(bookOptions).mockResolvedValue([]);
+		vi.mocked(authorOptions).mockResolvedValue([]);
 		vi.mocked(saveLink).mockReset();
 		vi.mocked(deleteLink).mockReset();
 	});
@@ -40,7 +40,7 @@ describe('admin vazby', () => {
 	});
 
 	it('saves a book–author link', async () => {
-		vi.mocked(saveLink).mockReturnValue({ ok: true });
+		vi.mocked(saveLink).mockResolvedValue({ ok: true });
 		expect(
 			await actions.save?.(event({ bookId: 'book-1', authorId: 'auth-1', position: '2' }))
 		).toEqual({ stamp: 'Uložené' });
@@ -48,7 +48,7 @@ describe('admin vazby', () => {
 	});
 
 	it('returns a missing link as a failure', async () => {
-		vi.mocked(deleteLink).mockReturnValue({ ok: false, message: 'Väzba sa nenašla.' });
+		vi.mocked(deleteLink).mockResolvedValue({ ok: false, message: 'Väzba sa nenašla.' });
 		const result = await actions.delete?.(event({ bookId: 'book-1', authorId: 'auth-1' }));
 		expect(isActionFailure(result)).toBe(true);
 	});

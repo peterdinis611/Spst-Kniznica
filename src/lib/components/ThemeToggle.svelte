@@ -33,8 +33,8 @@
 		height: 2.35rem;
 		border: 0;
 		border-radius: 999px;
-		background: var(--ink);
-		color: var(--page);
+		background: var(--stamp, var(--ink));
+		color: var(--stamp-ink, var(--page));
 		cursor: pointer;
 	}
 
@@ -45,5 +45,9 @@
 	.hall-theme-btn:focus-visible {
 		outline: 2px solid var(--ink);
 		outline-offset: 3px;
+	}
+
+	:global(html.dark) .hall-theme-btn {
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, #c45a38 50%, transparent);
 	}
 </style>

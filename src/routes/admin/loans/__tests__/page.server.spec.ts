@@ -36,7 +36,7 @@ function event(fields: Record<string, string>) {
 
 describe('admin vypozicky load', () => {
 	it('picks the edited slip', async () => {
-		vi.mocked(listDeskLoans).mockReturnValue([
+		vi.mocked(listDeskLoans).mockResolvedValue([
 			{
 				id: 'loan-1',
 				bookId: 'book-1',
@@ -55,8 +55,8 @@ describe('admin vypozicky load', () => {
 				readerEmail: 'peter@spst.sk'
 			}
 		]);
-		vi.mocked(bookOptions).mockReturnValue([]);
-		vi.mocked(readerOptions).mockReturnValue([]);
+		vi.mocked(bookOptions).mockResolvedValue([]);
+		vi.mocked(readerOptions).mockResolvedValue([]);
 
 		const data = (await load({
 			url: new URL('http://localhost/admin/loans?edit=loan-1')
@@ -76,7 +76,7 @@ describe('admin vypozicky actions', () => {
 	});
 
 	it('stamps a desk return', async () => {
-		vi.mocked(getDeskLoan).mockReturnValue({
+		vi.mocked(getDeskLoan).mockResolvedValue({
 			id: 'loan-1',
 			bookId: 'book-1',
 			holdingId: 'h-1',
@@ -93,7 +93,7 @@ describe('admin vypozicky actions', () => {
 			readerName: 'Peter Dinis',
 			readerEmail: 'peter@spst.sk'
 		});
-		vi.mocked(returnDeskLoan).mockReturnValue({ ok: true });
+		vi.mocked(returnDeskLoan).mockResolvedValue({ ok: true });
 		expect(await actions.return?.(event({ id: 'loan-1' }))).toEqual({ stamp: 'Vrátené' });
 		expect(returnDeskLoan).toHaveBeenCalledWith('loan-1');
 		expect(queueLoanNotice).toHaveBeenCalledWith(
@@ -106,13 +106,13 @@ describe('admin vypozicky actions', () => {
 	});
 
 	it('returns a missing slip as a failure', async () => {
-		vi.mocked(returnDeskLoan).mockReturnValue({ ok: false, message: 'Výpožička sa nenašla.' });
+		vi.mocked(returnDeskLoan).mockResolvedValue({ ok: false, message: 'Výpožička sa nenašla.' });
 		const result = await actions.return?.(event({ id: 'missing' }));
 		expect(isActionFailure(result)).toBe(true);
 	});
 
 	it('stamps a deleted slip', async () => {
-		vi.mocked(deleteLoan).mockReturnValue({ ok: true });
+		vi.mocked(deleteLoan).mockResolvedValue({ ok: true });
 		expect(await actions.delete?.(event({ id: 'loan-1' }))).toEqual({ stamp: 'Zmazané' });
 	});
 });

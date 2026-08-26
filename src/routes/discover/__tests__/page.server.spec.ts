@@ -38,17 +38,17 @@ describe('discover load', () => {
 			publisher: 'SPŠT',
 			featured: true
 		};
-		vi.mocked(getFeaturedBook).mockReturnValue(featured);
-		vi.mocked(listBookSlips).mockReturnValue([
+		vi.mocked(getFeaturedBook).mockResolvedValue(featured);
+		vi.mocked(listBookSlips).mockResolvedValue([
 			slip('featured-1'),
 			slip('ready-1'),
 			slip('gone-1', 0)
 		]);
-		vi.mocked(listAuthorSlips).mockReturnValue([
+		vi.mocked(listAuthorSlips).mockResolvedValue([
 			{ id: 'a2', name: 'B', slug: 'b', lifespan: '', role: 'autor', bookCount: 1 },
 			{ id: 'a1', name: 'A', slug: 'a', lifespan: '', role: 'autor', bookCount: 4 }
 		]);
-		vi.mocked(catalogStats).mockReturnValue({ books: 3, authors: 2, available: 2, openLoans: 1 });
+		vi.mocked(catalogStats).mockResolvedValue({ books: 3, authors: 2, available: 2, openLoans: 1 });
 
 		const data = await load({} as Parameters<typeof load>[0]);
 

@@ -34,13 +34,13 @@ export function isPultStamp(value: unknown): value is { stamp: string; desk?: bo
 	return Boolean(value && typeof value === 'object' && 'stamp' in value);
 }
 
-export function pickCurrent<T extends { id: string }>(
+export async function pickCurrent<T extends { id: string }>(
 	rows: T[],
 	id: string,
-	fallback?: (id: string) => T | null | undefined
+	fallback?: (id: string) => T | null | undefined | Promise<T | null | undefined>
 ) {
 	if (!id) return null;
-	return rows.find((row) => row.id === id) ?? fallback?.(id) ?? null;
+	return rows.find((row) => row.id === id) ?? (await fallback?.(id)) ?? null;
 }
 
 export function pultHref(url: URL, patch: Record<string, string | null>) {

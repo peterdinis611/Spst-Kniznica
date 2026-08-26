@@ -1,9 +1,14 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { describe, expect, it, vi } from 'vitest';
+import { requestPasswordReset } from '$lib/server/password-reset';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/supabase/config', () => ({
 	supabasePublic: () => ({ url: 'http://supabase.test', key: 'anon', configured: true })
+}));
+
+vi.mock('$lib/server/password-reset', () => ({
+	requestPasswordReset: vi.fn()
 }));
 
 const reader = {
@@ -13,10 +18,7 @@ const reader = {
 	role: 'reader' as const
 };
 
-function event(
-	email: string,
-	supabase?: { auth: { resetPasswordForEmail: ReturnType<typeof vi.fn> } }
-) {
+function event(email: string, supabase: unknown = { auth: {} }) {
 	return {
 		locals: { user: undefined, supabase },
 		url: new URL('http://localhost/login/recovery'),
@@ -53,7 +55,19 @@ describe('recovery action', () => {
 	});
 
 	it('fails when Auth is not wired', async () => {
-		const result = await actions.default(event('peter@spst.sk'));
+		const result = await actions.default(
+			{
+				locals: { user: undefined },
+				url: new URL('http://localhost/login/recovery'),
+				request: {
+					formData: async () => {
+						const data = new FormData();
+						data.set('email', 'peter@spst.sk');
+						return data;
+					}
+				}
+			} as unknown as Parameters<typeof actions.default>[0]
+		);
 
 		expect(isActionFailure(result)).toBe(true);
 		if (isActionFailure(result)) {
@@ -63,13 +77,12 @@ describe('recovery action', () => {
 	});
 
 	it('keeps a provider fault on the slip', async () => {
-		const resetPasswordForEmail = vi.fn().mockResolvedValue({
-			error: { message: 'Unable to validate email address' }
+		vi.mocked(requestPasswordReset).mockResolvedValue({
+			ok: false,
+			message: 'E-mail nevyzerá ako adresa. Skús to znova.'
 		});
 
-		const result = await actions.default(
-			event('peter@spst.sk', { auth: { resetPasswordForEmail } })
-		);
+		const result = await actions.default(event('peter@spst.sk'));
 
 		expect(isActionFailure(result)).toBe(true);
 		if (isActionFailure(result)) {
@@ -80,14 +93,15 @@ describe('recovery action', () => {
 	});
 
 	it('confirms that a recovery letter went out', async () => {
-		const resetPasswordForEmail = vi.fn().mockResolvedValue({ error: null });
+		vi.mocked(requestPasswordReset).mockResolvedValue({ ok: true, mailed: true, via: 'pult' });
 
-		const result = await actions.default(
-			event('peter@spst.sk', { auth: { resetPasswordForEmail } })
-		);
+		const result = await actions.default(event('peter@spst.sk'));
 
-		expect(resetPasswordForEmail).toHaveBeenCalledWith('peter@spst.sk', {
-			redirectTo: 'http://localhost/auth/confirm?next=/login/password'
+		expect(requestPasswordReset).toHaveBeenCalledWith({
+			email: 'peter@spst.sk',
+			name: undefined,
+			origin: 'http://localhost',
+			supabase: { auth: {} }
 		});
 		expect(result).toEqual({
 			ok: true,

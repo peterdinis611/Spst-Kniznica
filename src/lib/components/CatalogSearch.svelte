@@ -221,7 +221,7 @@
 		position: absolute;
 		inset: 0;
 		border: 0;
-		background: color-mix(in srgb, var(--forest, #1b3d32) 42%, transparent);
+		background: color-mix(in srgb, var(--stamp, #1c1713) 62%, transparent);
 		backdrop-filter: blur(22px) saturate(1.15);
 		-webkit-backdrop-filter: blur(22px) saturate(1.15);
 		cursor: pointer;

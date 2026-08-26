@@ -64,7 +64,7 @@ describe('deskUploader', () => {
 				getClaims: async () => ({ data: { claims: { sub: librarian.id } } })
 			}
 		} as never);
-		vi.mocked(readerFromClaims).mockReturnValue(librarian);
+		vi.mocked(readerFromClaims).mockResolvedValue(librarian);
 
 		const req = new Request('http://localhost/api/uploadthing', {
 			headers: { cookie: 'sb=token' }
@@ -83,7 +83,7 @@ describe('deskUploader', () => {
 				getClaims: async () => ({ data: { claims: { sub: librarian.id } } })
 			}
 		} as never);
-		vi.mocked(readerFromClaims).mockReturnValue({ ...librarian, role: 'reader' });
+		vi.mocked(readerFromClaims).mockResolvedValue({ ...librarian, role: 'reader' });
 
 		expect(await deskUploader(new Request('http://localhost/api/uploadthing'))).toBeNull();
 	});

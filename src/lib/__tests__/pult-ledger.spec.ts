@@ -27,10 +27,10 @@ describe('pultHref', () => {
 });
 
 describe('pickCurrent', () => {
-	it('keeps the open slip even when the drawer list moved on', () => {
+	it('keeps the open slip even when the drawer list moved on', async () => {
 		const held = { id: 'cat-inf', name: 'Informatika' };
-		expect(pickCurrent([], 'cat-inf', () => held)?.name).toBe('Informatika');
-		expect(pickCurrent([held], '', () => held)).toBeNull();
+		expect((await pickCurrent([], 'cat-inf', () => held))?.name).toBe('Informatika');
+		expect(await pickCurrent([held], '', () => held)).toBeNull();
 	});
 });
 

@@ -36,8 +36,9 @@
 		<section
 			data-tour="featured"
 			class={cn(
-				'relative overflow-hidden rounded-[1.7rem] bg-primary text-primary-foreground',
-				'bg-[radial-gradient(ellipse_at_18%_0%,rgb(255_248_230/0.16),transparent_42%),linear-gradient(180deg,transparent_70%,rgb(0_0_0/0.12))]',
+				'relative overflow-hidden rounded-[1.7rem] bg-[#3c2a21] text-[#f6f0e6]',
+				'dark:bg-[#1c1713] dark:text-[#f3eadf] dark:shadow-[inset_0_0_0_1px_rgb(196_90_56_/_0.35)]',
+				'bg-[radial-gradient(ellipse_at_18%_0%,rgb(196_90_56/0.22),transparent_42%),linear-gradient(180deg,transparent_70%,rgb(0_0_0/0.12))]',
 				rise
 			)}
 		>
@@ -90,7 +91,7 @@
 					</p>
 					<div class="mt-3 flex flex-wrap items-center gap-2 sm:mt-7 sm:gap-3">
 						<a
-							class="hidden h-11 items-center rounded-full bg-card px-6 font-sans text-[0.9rem] font-semibold text-card-foreground no-underline hover:opacity-90 sm:inline-flex"
+							class="hidden h-11 items-center rounded-full bg-[#f6f0e6] px-6 font-sans text-[0.9rem] font-semibold text-[#3c2a21] no-underline hover:opacity-90 sm:inline-flex dark:bg-[#c45a38] dark:text-[#fff6ec]"
 							href={resolve('/books/[id]', { id: featured.id })}
 						>
 							Pozrieť knihu

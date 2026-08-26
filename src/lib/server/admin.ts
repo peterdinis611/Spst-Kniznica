@@ -3,17 +3,19 @@ import { deleteBookFts, rebuildCatalogFts, upsertBookFts } from './db/catalog-ft
 
 export { canOpenDesk, isAdminEmail, requireAdmin } from './admin-access';
 
-export function refreshCatalog(scope: 'all' | { bookId: string } | { deletedBookId: string } = 'all') {
+export async function refreshCatalog(
+	scope: 'all' | { bookId: string } | { deletedBookId: string } = 'all'
+) {
 	invalidateCatalogCache();
 	if (scope === 'all') {
-		rebuildCatalogFts();
+		await rebuildCatalogFts();
 		return;
 	}
 	if ('bookId' in scope) {
-		upsertBookFts(scope.bookId);
+		await upsertBookFts(scope.bookId);
 		return;
 	}
-	deleteBookFts(scope.deletedBookId);
+	await deleteBookFts(scope.deletedBookId);
 }
 
 export function formText(data: FormData, name: string) {
@@ -40,7 +42,9 @@ export function formDate(data: FormData, name: string) {
 }
 
 export function uniqueConstraintMessage(cause: unknown, fallback: string) {
+	const code =
+		cause && typeof cause === 'object' && 'code' in cause ? String(cause.code) : '';
 	const text = cause instanceof Error ? cause.message : String(cause);
-	if (/UNIQUE|unique/i.test(text)) return fallback;
+	if (code === '23505' || /UNIQUE|unique/i.test(text)) return fallback;
 	return null;
 }

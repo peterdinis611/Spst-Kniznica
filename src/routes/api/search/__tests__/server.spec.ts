@@ -18,7 +18,7 @@ describe('catalog search api', () => {
 	});
 
 	it('asks the catalog for a short list', async () => {
-		vi.mocked(searchCatalog).mockReturnValue([
+		vi.mocked(searchCatalog).mockResolvedValue([
 			{
 				id: 'stroje-1',
 				title: 'Stroje',

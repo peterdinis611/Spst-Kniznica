@@ -1,6 +1,7 @@
 import { fail, isRedirect, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { slovakAuthMessage } from '$lib/server/auth-message';
+import { sendPasswordChangedLetter } from '$lib/server/auth-mail';
 import { supabasePublic } from '$lib/supabase/config';
 import { hasFieldErrors, validateNewPassword } from '$lib/auth-fields';
 
@@ -37,6 +38,14 @@ export const actions: Actions = {
 		} catch (cause) {
 			if (isRedirect(cause)) throw cause;
 			return fail(400, { message: 'Nové heslo sa nepodarilo uložiť.' });
+		}
+
+		if (event.locals.user) {
+			await sendPasswordChangedLetter({
+				to: event.locals.user.email,
+				name: event.locals.user.name,
+				profileHref: `${event.url.origin}/profile`
+			});
 		}
 
 		redirect(302, '/loans');
