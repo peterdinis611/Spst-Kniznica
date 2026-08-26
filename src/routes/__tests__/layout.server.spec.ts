@@ -39,7 +39,7 @@ const chip = {
 describe('root layout', () => {
 	beforeEach(() => {
 		vi.mocked(listCategoryChips).mockReset();
-		vi.mocked(listCategoryChips).mockReturnValue([chip]);
+		vi.mocked(listCategoryChips).mockResolvedValue([chip]);
 	});
 
 	it('skips the catalog chips on the hall and login', async () => {

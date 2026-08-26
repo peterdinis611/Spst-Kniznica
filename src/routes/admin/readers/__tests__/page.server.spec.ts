@@ -34,7 +34,7 @@ function event(fields: Record<string, string>) {
 
 describe('admin citately load', () => {
 	it('picks the edited pass', async () => {
-		vi.mocked(listDeskReaders).mockReturnValue([row]);
+		vi.mocked(listDeskReaders).mockResolvedValue([row]);
 		const data = (await load({
 			url: new URL('http://localhost/admin/readers?edit=user-1')
 		} as Parameters<typeof load>[0])) as { current: typeof row | null };
@@ -49,7 +49,7 @@ describe('admin citately actions', () => {
 	});
 
 	it('saves a name and email', async () => {
-		vi.mocked(saveReader).mockReturnValue({ ok: true });
+		vi.mocked(saveReader).mockResolvedValue({ ok: true });
 		const result = await actions.save?.(
 			event({ id: 'user-1', name: 'Anna Pult', email: 'anna@spst.sk', role: 'librarian' })
 		);
@@ -63,7 +63,7 @@ describe('admin citately actions', () => {
 	});
 
 	it('blocks a delete while books are out', async () => {
-		vi.mocked(deleteReader).mockReturnValue({
+		vi.mocked(deleteReader).mockResolvedValue({
 			ok: false,
 			message: 'Čitateľ má knihy vonku. Najprv ich vráť.'
 		});

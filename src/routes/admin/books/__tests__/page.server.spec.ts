@@ -57,10 +57,10 @@ function event(fields: Record<string, string | string[]>) {
 
 describe('admin knihy load', () => {
 	beforeEach(() => {
-		vi.mocked(listDeskBooks).mockReturnValue([row]);
-		vi.mocked(bookAuthorIds).mockReturnValue([{ authorId: 'auth-belko', position: 0 }]);
-		vi.mocked(categoryOptions).mockReturnValue([]);
-		vi.mocked(authorOptions).mockReturnValue([]);
+		vi.mocked(listDeskBooks).mockResolvedValue([row]);
+		vi.mocked(bookAuthorIds).mockResolvedValue([{ authorId: 'auth-belko', position: 0 }]);
+		vi.mocked(categoryOptions).mockResolvedValue([]);
+		vi.mocked(authorOptions).mockResolvedValue([]);
 	});
 
 	it('attaches linked authors when editing a volume', async () => {
@@ -81,7 +81,7 @@ describe('admin knihy actions', () => {
 	});
 
 	it('passes featured and author ids into the desk', async () => {
-		vi.mocked(saveBook).mockReturnValue({ ok: true });
+		vi.mocked(saveBook).mockResolvedValue({ ok: true });
 
 		const result = await actions.save?.(
 			event({
@@ -114,7 +114,7 @@ describe('admin knihy actions', () => {
 	});
 
 	it('returns a blocked delete', async () => {
-		vi.mocked(deleteBook).mockReturnValue({
+		vi.mocked(deleteBook).mockResolvedValue({
 			ok: false,
 			message: 'Kniha má aktívne výpožičky. Najprv ich vráť.'
 		});

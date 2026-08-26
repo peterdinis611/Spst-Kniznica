@@ -6,7 +6,7 @@ import { ftsBookIds } from '../db/catalog-fts';
 vi.mock('../db', () => ({ db: {} }));
 
 vi.mock('../db/catalog-fts', () => ({
-	ftsBookIds: vi.fn(() => [])
+	ftsBookIds: vi.fn(() => Promise.resolve([]))
 }));
 
 import {
@@ -82,7 +82,7 @@ function seed(books: CatalogBook[]) {
 
 afterEach(() => {
 	invalidateCatalogCache();
-	vi.mocked(ftsBookIds).mockReturnValue([]);
+	vi.mocked(ftsBookIds).mockResolvedValue([]);
 });
 
 describe('isLoanLimitReached', () => {
@@ -93,67 +93,67 @@ describe('isLoanLimitReached', () => {
 });
 
 describe('catalog listings', () => {
-	it('filters by title, call number, isbn, and author', () => {
+	it('filters by title, call number, isbn, and author', async () => {
 		seed([
 			book('stroje-1', { title: 'Stroje', callNumber: 'STR 12', isbn: '978000' }),
 			book('inf-1', { title: 'Siete', slug: 'informatika', isbn: '111', callNumber: 'INF 1' })
 		]);
 
-		expect(listBooks('stroje').map((item) => item.id)).toEqual(['stroje-1']);
-		expect(listBooks('STR 12').map((item) => item.id)).toEqual(['stroje-1']);
-		expect(listBooks('978000').map((item) => item.id)).toEqual(['stroje-1']);
-		expect(listBooks('ján').map((item) => item.id)).toHaveLength(2);
-		expect(listBookSlips().map(toSlip)).toHaveLength(2);
+		expect((await listBooks('stroje')).map((item) => item.id)).toEqual(['stroje-1']);
+		expect((await listBooks('STR 12')).map((item) => item.id)).toEqual(['stroje-1']);
+		expect((await listBooks('978000')).map((item) => item.id)).toEqual(['stroje-1']);
+		expect((await listBooks('ján')).map((item) => item.id)).toHaveLength(2);
+		expect(await listBookSlips()).toHaveLength(2);
 	});
 
-	it('skips the prayer booklet when picking a featured card', () => {
+	it('skips the prayer booklet when picking a featured card', async () => {
 		seed([book('book-modlitbicky', { featured: true }), book('stroje-1')]);
 
-		expect(getFeaturedBook()?.id).toBe('stroje-1');
-		expect(getBook('stroje-1')?.title).toBe('stroje-1');
+		expect((await getFeaturedBook())?.id).toBe('stroje-1');
+		expect((await getBook('stroje-1'))?.title).toBe('stroje-1');
 	});
 
-	it('prefers an explicit featured card', () => {
+	it('prefers an explicit featured card', async () => {
 		seed([book('stroje-1'), book('inf-1', { featured: true, slug: 'informatika' })]);
 
-		expect(getFeaturedBook()?.id).toBe('inf-1');
+		expect((await getFeaturedBook())?.id).toBe('inf-1');
 	});
 
-	it('lists by odbor and author and related cards', () => {
+	it('lists by odbor and author and related cards', async () => {
 		seed([
 			book('stroje-1'),
 			book('stroje-2'),
 			book('inf-1', { slug: 'informatika' })
 		]);
 
-		expect(listBooksByCategory('strojarstvo').map((item) => item.id)).toEqual(['stroje-1', 'stroje-2']);
-		expect(listBooksByAuthor('jan-test')).toHaveLength(3);
-		expect(relatedBooks('stroje-1', 'cat-str').map((item) => item.id)).toEqual(['stroje-2']);
-		expect(getCategory('strojarstvo')?.name).toBe('Strojárstvo');
-		expect(getAuthor('jan-test')?.name).toBe('Ján Test');
+		expect((await listBooksByCategory('strojarstvo')).map((item) => item.id)).toEqual(['stroje-1', 'stroje-2']);
+		expect(await listBooksByAuthor('jan-test')).toHaveLength(3);
+		expect((await relatedBooks('stroje-1', 'cat-str')).map((item) => item.id)).toEqual(['stroje-2']);
+		expect((await getCategory('strojarstvo'))?.name).toBe('Strojárstvo');
+		expect((await getAuthor('jan-test'))?.name).toBe('Ján Test');
 	});
 });
 
 describe('searchCatalog', () => {
-	it('falls back to substring search when FTS is empty', () => {
+	it('falls back to substring search when FTS is empty', async () => {
 		seed([book('stroje-1', { title: 'Stroje' }), book('siete-1', { title: 'Siete' })]);
 
-		const items = searchCatalog('stroje', 8);
+		const items = await searchCatalog('stroje', 8);
 
 		expect(ftsBookIds).toHaveBeenCalledWith('stroje', 8);
 		expect(items.map((item) => item.id)).toEqual(['stroje-1']);
 		expect(items[0]).toMatchObject({ title: 'Stroje', authors: 'Ján Test', category: 'Strojárstvo' });
 	});
 
-	it('keeps FTS rank when ids come back', () => {
+	it('keeps FTS rank when ids come back', async () => {
 		seed([book('a'), book('b'), book('c')]);
-		vi.mocked(ftsBookIds).mockReturnValue(['c', 'a']);
+		vi.mocked(ftsBookIds).mockResolvedValue(['c', 'a']);
 
-		expect(searchCatalog('x').map((item) => item.id)).toEqual(['c', 'a']);
+		expect((await searchCatalog('x')).map((item) => item.id)).toEqual(['c', 'a']);
 	});
 
-	it('returns nothing for a blank query', () => {
-		expect(searchCatalog('  ')).toEqual([]);
+	it('returns nothing for a blank query', async () => {
+		expect(await searchCatalog('  ')).toEqual([]);
 	});
 });
 

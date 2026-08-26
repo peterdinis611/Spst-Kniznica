@@ -10,7 +10,7 @@ vi.mock('$lib/server/library', () => ({
 
 describe('department card load', () => {
 	it('404s a missing odbor', async () => {
-		vi.mocked(getCategory).mockReturnValue(undefined);
+		vi.mocked(getCategory).mockResolvedValue(undefined);
 
 		try {
 			await load({ params: { slug: 'nie' } } as Parameters<typeof load>[0]);
@@ -31,8 +31,8 @@ describe('department card load', () => {
 			accent: '#3d2a1c',
 			bookCount: 1
 		};
-		vi.mocked(getCategory).mockReturnValue(category);
-		vi.mocked(listBookSlipsByCategory).mockReturnValue([]);
+		vi.mocked(getCategory).mockResolvedValue(category);
+		vi.mocked(listBookSlipsByCategory).mockResolvedValue([]);
 
 		const data = await load({ params: { slug: 'strojarstvo' } } as Parameters<typeof load>[0]);
 

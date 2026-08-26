@@ -71,7 +71,7 @@ describe('profil load', () => {
 	});
 
 	it('puts the pass, open loans and desk flag on the slip', async () => {
-		vi.mocked(countActiveLoans).mockReturnValue(2);
+		vi.mocked(countActiveLoans).mockResolvedValue(2);
 		vi.mocked(canOpenDesk).mockReturnValue(false);
 
 		const data = await load(localsOf(reader));

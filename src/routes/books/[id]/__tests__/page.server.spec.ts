@@ -46,11 +46,11 @@ const book = {
 
 describe('book card load', () => {
 	beforeEach(() => {
-		vi.mocked(getBook).mockReturnValue(book);
-		vi.mocked(relatedBookSlips).mockReturnValue([]);
-		vi.mocked(getActiveLoan).mockReturnValue(undefined);
-		vi.mocked(countActiveLoans).mockReturnValue(0);
-		vi.mocked(getLastBorrower).mockReturnValue(null);
+		vi.mocked(getBook).mockResolvedValue(book);
+		vi.mocked(relatedBookSlips).mockResolvedValue([]);
+		vi.mocked(getActiveLoan).mockResolvedValue(null);
+		vi.mocked(countActiveLoans).mockResolvedValue(0);
+		vi.mocked(getLastBorrower).mockResolvedValue(null);
 	});
 
 	it('prefills the slip from the account name', async () => {
@@ -68,7 +68,7 @@ describe('book card load', () => {
 	});
 
 	it('404s a missing card', async () => {
-		vi.mocked(getBook).mockReturnValue(undefined);
+		vi.mocked(getBook).mockResolvedValue(undefined);
 
 		try {
 			await load({
@@ -87,7 +87,7 @@ describe('book borrow action', () => {
 	beforeEach(() => {
 		vi.mocked(borrowBook).mockReset();
 		vi.mocked(queueLoanNotice).mockReset();
-		vi.mocked(getBook).mockReturnValue(book);
+		vi.mocked(getBook).mockResolvedValue(book);
 	});
 
 	function event(user: typeof reader | undefined, body: Record<string, string> = {}) {
@@ -125,7 +125,7 @@ describe('book borrow action', () => {
 	});
 
 	it('stamps a completed slip', async () => {
-		vi.mocked(borrowBook).mockReturnValue({ ok: true, dueAt: new Date(2026, 8, 13) });
+		vi.mocked(borrowBook).mockResolvedValue({ ok: true, dueAt: new Date(2026, 8, 13) });
 
 		const result = await actions.borrow?.(
 			event(reader, {
@@ -157,7 +157,7 @@ describe('book borrow action', () => {
 	});
 
 	it('accepts a custom period', async () => {
-		vi.mocked(borrowBook).mockReturnValue({ ok: true, dueAt: new Date(2026, 8, 22) });
+		vi.mocked(borrowBook).mockResolvedValue({ ok: true, dueAt: new Date(2026, 8, 22) });
 
 		const result = await actions.borrow?.(
 			event(reader, {
@@ -178,7 +178,7 @@ describe('book borrow action', () => {
 	});
 
 	it('keeps a fund refusal on the slip', async () => {
-		vi.mocked(borrowBook).mockReturnValue({
+		vi.mocked(borrowBook).mockResolvedValue({
 			ok: false,
 			message: 'Žiadny voľný výtlačok. Skúste neskôr.'
 		});

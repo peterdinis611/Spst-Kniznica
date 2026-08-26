@@ -5,18 +5,23 @@ import { authorOptions, bookOptions, deleteLink, listDeskLinks, saveLink } from 
 
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';
+	const [rows, books, authors] = await Promise.all([
+		listDeskLinks(q),
+		bookOptions(),
+		authorOptions()
+	]);
 	return {
 		q,
-		rows: listDeskLinks(q),
-		books: bookOptions(),
-		authors: authorOptions()
+		rows,
+		books,
+		authors
 	};
 };
 
 export const actions: Actions = {
 	save: async ({ request }) => {
 		const data = await request.formData();
-		const result = saveLink({
+		const result = await saveLink({
 			bookId: formText(data, 'bookId'),
 			authorId: formText(data, 'authorId'),
 			position: formInt(data, 'position') ?? 0
@@ -26,7 +31,7 @@ export const actions: Actions = {
 	},
 	delete: async ({ request }) => {
 		const data = await request.formData();
-		const result = deleteLink(formText(data, 'bookId'), formText(data, 'authorId'));
+		const result = await deleteLink(formText(data, 'bookId'), formText(data, 'authorId'));
 		if (!result.ok) return fail(400, { message: result.message });
 		return { stamp: 'Zmazané' };
 	}

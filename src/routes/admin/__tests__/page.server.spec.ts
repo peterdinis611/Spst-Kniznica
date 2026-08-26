@@ -8,7 +8,7 @@ vi.mock('$lib/server/admin-desk', () => ({
 
 describe('admin overview', () => {
 	it('puts drawer counts on the first card', async () => {
-		vi.mocked(deskCounts).mockReturnValue({
+		vi.mocked(deskCounts).mockResolvedValue({
 			categories: 8,
 			authors: 12,
 			books: 20,

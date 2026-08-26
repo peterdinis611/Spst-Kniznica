@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			email: locals.user.email,
 			role: locals.user.role
 		},
-		activeCount: countActiveLoans(locals.user.id),
+		activeCount: await countActiveLoans(locals.user.id),
 		admin: canOpenDesk(locals.user)
 	};
 };

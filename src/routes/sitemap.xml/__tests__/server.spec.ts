@@ -18,9 +18,9 @@ vi.mock('$lib/server/library', () => ({
 describe('sitemap.xml', () => {
 	it('lists the hall, docs, and catalog cards', async () => {
 		vi.mocked(docsSource.getPages).mockReturnValue([{ url: '/docs/pult' }] as never);
-		vi.mocked(listBooks).mockReturnValue([{ id: 'stroje-1' }] as never);
-		vi.mocked(listCategories).mockReturnValue([{ slug: 'informatika' }] as never);
-		vi.mocked(listAuthors).mockReturnValue([{ slug: 'jan-test' }] as never);
+		vi.mocked(listBooks).mockResolvedValue([{ id: 'stroje-1' }] as never);
+		vi.mocked(listCategories).mockResolvedValue([{ slug: 'informatika' }] as never);
+		vi.mocked(listAuthors).mockResolvedValue([{ slug: 'jan-test' }] as never);
 
 		const response = await GET({
 			url: new URL('http://localhost:5173/sitemap.xml')

@@ -9,11 +9,9 @@ vi.mock('../admin-access', async (importOriginal) => {
 	};
 });
 
-const get = vi.fn();
-const run = vi.fn();
-const where = vi.fn(() => ({ get, run }));
+const where = vi.fn();
 const set = vi.fn(() => ({ where }));
-const values = vi.fn(() => ({ run }));
+const values = vi.fn();
 
 vi.mock('../db', () => ({
 	db: {
@@ -27,21 +25,20 @@ import { ensureLocalReader, readerFromClaims } from '../readers';
 
 describe('ensureLocalReader', () => {
 	beforeEach(() => {
-		get.mockReset();
-		run.mockReset();
+		where.mockReset();
+		where.mockResolvedValue([]);
 		set.mockClear();
-		values.mockClear();
+		values.mockReset();
+		values.mockResolvedValue([]);
 		vi.mocked(isAdminEmail).mockReturnValue(false);
 	});
 
-	it('drops an empty address', () => {
-		expect(ensureLocalReader({ id: 'u1', email: '  ', name: 'Peter' })).toBeNull();
+	it('drops an empty address', async () => {
+		expect(await ensureLocalReader({ id: 'u1', email: '  ', name: 'Peter' })).toBeNull();
 	});
 
-	it('inserts a new pass from the local part when the name is thin', () => {
-		get.mockReturnValue(undefined);
-
-		const reader = ensureLocalReader({
+	it('inserts a new pass from the local part when the name is thin', async () => {
+		const reader = await ensureLocalReader({
 			id: 'user-1',
 			email: 'peter@spst.sk',
 			name: 'P'
@@ -64,11 +61,10 @@ describe('ensureLocalReader', () => {
 		});
 	});
 
-	it('promotes a bootstrap librarian on insert', () => {
-		get.mockReturnValue(undefined);
+	it('promotes a bootstrap librarian on insert', async () => {
 		vi.mocked(isAdminEmail).mockReturnValue(true);
 
-		const reader = ensureLocalReader({
+		const reader = await ensureLocalReader({
 			id: 'user-1',
 			email: 'anna@spst.sk',
 			name: 'Anna Pult'
@@ -77,16 +73,18 @@ describe('ensureLocalReader', () => {
 		expect(reader?.role).toBe('librarian');
 	});
 
-	it('refreshes a stale local row', () => {
-		get.mockReturnValue({
-			id: 'user-1',
-			name: 'Old',
-			email: 'old@spst.sk',
-			role: 'reader',
-			emailVerified: false
-		});
+	it('refreshes a stale local row', async () => {
+		where.mockResolvedValueOnce([
+			{
+				id: 'user-1',
+				name: 'Old',
+				email: 'old@spst.sk',
+				role: 'reader',
+				emailVerified: false
+			}
+		]);
 
-		const reader = ensureLocalReader({
+		const reader = await ensureLocalReader({
 			id: 'user-1',
 			email: 'peter@spst.sk',
 			name: 'Peter Dinis'
@@ -111,17 +109,19 @@ describe('ensureLocalReader', () => {
 
 describe('readerFromClaims', () => {
 	beforeEach(() => {
-		get.mockReset();
-		get.mockReturnValue(undefined);
+		where.mockReset();
+		where.mockResolvedValue([]);
+		values.mockReset();
+		values.mockResolvedValue([]);
 		vi.mocked(isAdminEmail).mockReturnValue(false);
 	});
 
-	it('needs a subject', () => {
-		expect(readerFromClaims({ email: 'peter@spst.sk' })).toBeNull();
+	it('needs a subject', async () => {
+		expect(await readerFromClaims({ email: 'peter@spst.sk' })).toBeNull();
 	});
 
-	it('reads the name from user metadata', () => {
-		const reader = readerFromClaims({
+	it('reads the name from user metadata', async () => {
+		const reader = await readerFromClaims({
 			sub: 'user-1',
 			email: 'peter@spst.sk',
 			user_metadata: { name: 'Peter Dinis' }

@@ -25,7 +25,7 @@ const slip = (id: string) => ({
 
 describe('holdings load', () => {
 	it('hides the prayer booklet from the full shelf', async () => {
-		vi.mocked(listBookSlips).mockReturnValue([slip('book-modlitbicky'), slip('stroje-1')]);
+		vi.mocked(listBookSlips).mockResolvedValue([slip('book-modlitbicky'), slip('stroje-1')]);
 
 		const data = await load({} as Parameters<typeof load>[0]);
 

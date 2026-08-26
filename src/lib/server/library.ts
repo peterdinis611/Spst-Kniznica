@@ -135,7 +135,7 @@ export function toSlip(item: CatalogBook): BookSlip {
 }
 
 export function toSearchItem(
-	item: BookSlip & { isbn?: string; category: BookSlip['category'] | string }
+	item: Omit<BookSlip, 'category'> & { isbn?: string; category: BookSlip['category'] | string }
 ): CatalogSearchItem {
 	return {
 		id: item.id,
@@ -332,12 +332,16 @@ export async function catalogStats() {
 	return { ...stats, openLoans };
 }
 
-export async function getActiveLoan(userId: string, bookId: string) {
-	return await db
+export async function getActiveLoan(
+	userId: string,
+	bookId: string
+): Promise<(typeof loan.$inferSelect) | null> {
+	const row = await db
 		.select()
 		.from(loan)
 		.where(and(eq(loan.userId, userId), eq(loan.bookId, bookId), isNull(loan.returnedAt)))
 		.then((rows) => rows[0]);
+	return row ?? null;
 }
 
 export async function countActiveLoans(userId: string) {
@@ -350,7 +354,7 @@ export async function countActiveLoans(userId: string) {
 	);
 }
 
-export async function listLoans(userId: string): LoanRecord[] {
+export async function listLoans(userId: string): Promise<LoanRecord[]> {
 	const rows = await db
 		.select({
 			loan,
@@ -403,7 +407,7 @@ export type BorrowResult =
 	| { ok: true; dueAt: Date }
 	| { ok: false; message: string };
 
-export async function getLastBorrower(userId: string): BorrowerDraft | null {
+export async function getLastBorrower(userId: string): Promise<BorrowerDraft | null> {
 	const row = await db
 		.select({
 			firstName: loan.borrowerFirstName,
@@ -428,7 +432,7 @@ export async function getLastBorrower(userId: string): BorrowerDraft | null {
 }
 
 export async function borrowBook(userId: string, bookId: string, draft: BorrowerDraft): Promise<BorrowResult> {
-	const result = await db.transaction(async (tx) => {
+	const result = await db.transaction(async (tx): Promise<BorrowResult> => {
 		const current = await tx.select().from(book).where(eq(book.id, bookId)).then((rows) => rows[0]);
 		if (!current) return { ok: false, message: 'Kniha v katalógu nie je.' };
 		const copy = await tx
@@ -502,7 +506,7 @@ export async function returnBook(userId: string, loanId: string): Promise<Return
 	let bookId: string | null = null;
 	let copiesAvailable: number | null = null;
 
-	const result = await db.transaction(async (tx) => {
+	const result = await db.transaction(async (tx): Promise<ReturnResult> => {
 		const current = await tx
 			.select()
 			.from(loan)

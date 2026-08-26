@@ -91,7 +91,7 @@ const LAST = [
 	'Zeman'
 ];
 
-const TITLES: Record<string, [string, string][]> = {
+const TITLES: Record<string, [string, string]> = {
 	'cat-inf': ['Mgr', 'informatik'],
 	'cat-str': ['Ing', 'strojár'],
 	'cat-ele': ['Ing', 'elektrotechnik'],

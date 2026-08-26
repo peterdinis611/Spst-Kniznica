@@ -33,7 +33,7 @@ export async function ensureLocalReader(input: {
 	email: string;
 	name: string;
 	role?: unknown;
-}): SignedReader | null {
+}): Promise<SignedReader | null> {
 	const email = input.email.trim().toLowerCase();
 	if (!email) return null;
 
@@ -77,10 +77,10 @@ export async function readerFromClaims(claims: {
 	sub?: string;
 	email?: string;
 	user_metadata?: unknown;
-}): SignedReader | null {
+}): Promise<SignedReader | null> {
 	if (!claims.sub) return null;
 
-	return ensureLocalReader({
+	return await ensureLocalReader({
 		id: claims.sub,
 		email: claims.email ?? '',
 		name: String(metaValue(claims.user_metadata, 'name') ?? ''),

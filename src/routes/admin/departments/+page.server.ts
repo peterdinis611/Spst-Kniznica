@@ -7,15 +7,15 @@ import { deleteCategory, getDeskCategory, listDeskCategories, saveCategory } fro
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';
 	const edit = url.searchParams.get('edit') ?? '';
-	const rows = listDeskCategories(q);
-	const current = pickCurrent(rows, edit, getDeskCategory);
+	const rows = await listDeskCategories(q);
+	const current = await pickCurrent(rows, edit, getDeskCategory);
 	return { q, rows, current };
 };
 
 export const actions: Actions = {
 	save: async ({ request }) => {
 		const data = await request.formData();
-		const result = saveCategory({
+		const result = await saveCategory({
 			id: formText(data, 'id') || undefined,
 			name: formText(data, 'name'),
 			slug: formText(data, 'slug'),
@@ -29,7 +29,7 @@ export const actions: Actions = {
 	},
 	delete: async ({ request }) => {
 		const data = await request.formData();
-		const result = deleteCategory(formText(data, 'id'));
+		const result = await deleteCategory(formText(data, 'id'));
 		if (!result.ok) return fail(400, { message: result.message });
 		return { stamp: 'Zmazané' };
 	}

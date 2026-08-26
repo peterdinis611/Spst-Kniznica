@@ -15,18 +15,25 @@ To recreate this project with the same configuration:
 
 ```sh
 # recreate this project
-bun x sv@0.17.0 create --template minimal --types ts --add prettier eslint vitest="usages:component,unit" tailwindcss="plugins:typography,forms" drizzle="database:sqlite+sqlite:better-sqlite3" better-auth="demo:password" --install bun .
+bun x sv@0.17.0 create --template minimal --types ts --add prettier eslint vitest="usages:component,unit" tailwindcss="plugins:typography,forms" drizzle="database:postgresql" better-auth="demo:password" --install bun .
 ```
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+PostgreSQL 16 (Docker) holds the catalog. From the repo root:
 
 ```sh
-npm run dev
+bun run db:up
+bun run db:migrate
+bun run dev
+```
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+`DATABASE_URL` defaults to `postgres://spst:spst@localhost:5432/spst` — copy `.env.example`. The fund is seeded on the first request. A leftover SQLite `local.db` is not imported.
+
+Open the app in a browser:
+
+```sh
+bun run dev -- --open
 ```
 
 ## Building

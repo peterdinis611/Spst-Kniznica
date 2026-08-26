@@ -20,8 +20,8 @@ const handleAliases: Handle = async ({ event, resolve }) => {
 const handleCatalog: Handle = async ({ event, resolve }) => {
 	if (!building) {
 		try {
-			ensureSeeded();
-			warmCatalog();
+			await ensureSeeded();
+			await warmCatalog();
 		} catch {
 			// Tables may not exist until `bun run db:migrate`.
 		}
@@ -58,17 +58,17 @@ const handleSupabase: Handle = async ({ event, resolve }) => {
 	try {
 		const { data } = await event.locals.supabase.auth.getClaims();
 		if (data?.claims) {
-			event.locals.user = readerFromClaims(data.claims) ?? undefined;
+			event.locals.user = (await readerFromClaims(data.claims)) ?? undefined;
 			if (!event.locals.user && data.claims.sub) {
 				const { data: userData } = await event.locals.supabase.auth.getUser();
 				if (userData.user) {
 					event.locals.user =
-						ensureLocalReader({
+						(await ensureLocalReader({
 							id: userData.user.id,
 							email: userData.user.email ?? '',
 							name: String(userData.user.user_metadata?.name ?? ''),
 							role: userData.user.user_metadata?.role
-						}) ?? undefined;
+						})) ?? undefined;
 				}
 			}
 		}

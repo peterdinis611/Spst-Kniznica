@@ -34,7 +34,7 @@ function event(fields: Record<string, string>) {
 
 describe('admin autori', () => {
 	beforeEach(() => {
-		vi.mocked(listDeskAuthors).mockReturnValue([row]);
+		vi.mocked(listDeskAuthors).mockResolvedValue([row]);
 		vi.mocked(saveAuthor).mockReset();
 		vi.mocked(deleteAuthor).mockReset();
 	});
@@ -47,7 +47,7 @@ describe('admin autori', () => {
 	});
 
 	it('stamps a saved author', async () => {
-		vi.mocked(saveAuthor).mockReturnValue({ ok: true });
+		vi.mocked(saveAuthor).mockResolvedValue({ ok: true });
 		expect(
 			await actions.save?.(
 				event({
@@ -61,7 +61,7 @@ describe('admin autori', () => {
 	});
 
 	it('returns a missing author as a failure', async () => {
-		vi.mocked(deleteAuthor).mockReturnValue({ ok: false, message: 'Autor sa nenašiel.' });
+		vi.mocked(deleteAuthor).mockResolvedValue({ ok: false, message: 'Autor sa nenašiel.' });
 		const result = await actions.delete?.(event({ id: 'missing' }));
 		expect(isActionFailure(result)).toBe(true);
 	});

@@ -3,11 +3,11 @@ import type { PageServerLoad } from './$types';
 import { getCategory, listBookSlipsByCategory } from '$lib/server/library';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const current = getCategory(params.slug);
+	const current = await getCategory(params.slug);
 	if (!current) error(404, 'Odbor v registri nie je.');
 
 	return {
 		category: current,
-		books: listBookSlipsByCategory(params.slug)
+		books: await listBookSlipsByCategory(params.slug)
 	};
 };

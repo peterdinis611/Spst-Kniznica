@@ -7,15 +7,15 @@ import { bookOptions, deleteHolding, getDeskHolding, listDeskHoldings, saveHoldi
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';
 	const edit = url.searchParams.get('edit') ?? '';
-	const rows = listDeskHoldings(q);
-	const current = pickCurrent(rows, edit, getDeskHolding);
-	return { q, rows, current, books: bookOptions() };
+	const rows = await listDeskHoldings(q);
+	const current = await pickCurrent(rows, edit, getDeskHolding);
+	return { q, rows, current, books: await bookOptions() };
 };
 
 export const actions: Actions = {
 	save: async ({ request }) => {
 		const data = await request.formData();
-		const result = saveHolding({
+		const result = await saveHolding({
 			id: formText(data, 'id') || undefined,
 			bookId: formText(data, 'bookId'),
 			inventoryNo: formText(data, 'inventoryNo'),
@@ -27,7 +27,7 @@ export const actions: Actions = {
 	},
 	delete: async ({ request }) => {
 		const data = await request.formData();
-		const result = deleteHolding(formText(data, 'id'));
+		const result = await deleteHolding(formText(data, 'id'));
 		if (!result.ok) return fail(400, { message: result.message });
 		return { stamp: 'Zmazané' };
 	}

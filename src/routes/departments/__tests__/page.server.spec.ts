@@ -36,8 +36,8 @@ const slip = (id: string, slug = 'strojarstvo') => ({
 
 describe('departments load', () => {
 	it('pins four books on each department card', async () => {
-		vi.mocked(listCategories).mockReturnValue([category]);
-		vi.mocked(listBookSlips).mockReturnValue([
+		vi.mocked(listCategories).mockResolvedValue([category]);
+		vi.mocked(listBookSlips).mockResolvedValue([
 			slip('book-modlitbicky'),
 			slip('a'),
 			slip('b'),

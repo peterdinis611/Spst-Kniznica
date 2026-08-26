@@ -39,7 +39,7 @@ export async function readerFromRequest(req: Request): Promise<SignedReader | un
 		const { data } = await supabase.auth.getClaims();
 		if (!data?.claims) return undefined;
 
-		const fromClaims = readerFromClaims(data.claims);
+		const fromClaims = await readerFromClaims(data.claims);
 		if (fromClaims) return fromClaims;
 
 		if (!data.claims.sub) return undefined;
@@ -47,12 +47,12 @@ export async function readerFromRequest(req: Request): Promise<SignedReader | un
 		if (!userData.user) return undefined;
 
 		return (
-			ensureLocalReader({
+			(await ensureLocalReader({
 				id: userData.user.id,
 				email: userData.user.email ?? '',
 				name: String(userData.user.user_metadata?.name ?? ''),
 				role: userData.user.user_metadata?.role
-			}) ?? undefined
+			})) ?? undefined
 		);
 	} catch {
 		return undefined;

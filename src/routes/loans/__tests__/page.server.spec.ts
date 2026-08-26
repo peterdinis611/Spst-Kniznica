@@ -78,11 +78,11 @@ describe('loans load', () => {
 	});
 
 	it('splits active loans from history and exposes the reader pass', async () => {
-		vi.mocked(listLoans).mockReturnValue([
+		vi.mocked(listLoans).mockResolvedValue([
 			loan({ id: 'open', returnedAt: null }),
 			loan({ id: 'closed', returnedAt: new Date(2026, 7, 10), book: { ...book, title: 'Vrátená' } })
 		]);
-		vi.mocked(countActiveLoans).mockReturnValue(1);
+		vi.mocked(countActiveLoans).mockResolvedValue(1);
 
 		const data = await load(localsOf(reader));
 
@@ -99,7 +99,7 @@ describe('loans return action', () => {
 	beforeEach(() => {
 		vi.mocked(returnBook).mockReset();
 		vi.mocked(queueLoanNotice).mockReset();
-		vi.mocked(listLoans).mockReturnValue([loan({ id: 'open', returnedAt: null })]);
+		vi.mocked(listLoans).mockResolvedValue([loan({ id: 'open', returnedAt: null })]);
 	});
 
 	function event(user: typeof reader | undefined, loanId = 'open') {
@@ -126,7 +126,7 @@ describe('loans return action', () => {
 	});
 
 	it('returns the library error as a form failure', async () => {
-		vi.mocked(returnBook).mockReturnValue({ ok: false, message: 'Výpožička sa nenašla.' });
+		vi.mocked(returnBook).mockResolvedValue({ ok: false, message: 'Výpožička sa nenašla.' });
 
 		const result = await actions.return?.(event(reader, 'missing'));
 
@@ -140,7 +140,7 @@ describe('loans return action', () => {
 	});
 
 	it('stamps a successful return', async () => {
-		vi.mocked(returnBook).mockReturnValue({ ok: true });
+		vi.mocked(returnBook).mockResolvedValue({ ok: true });
 
 		const result = await actions.return?.(event(reader));
 
@@ -178,7 +178,7 @@ describe('loans clearHistory action', () => {
 	});
 
 	it('fails when there is nothing to clear', async () => {
-		vi.mocked(clearReturnedLoans).mockReturnValue({ ok: true, cleared: 0 });
+		vi.mocked(clearReturnedLoans).mockResolvedValue({ ok: true, cleared: 0 });
 
 		const result = await actions.clearHistory?.(event(reader));
 
@@ -189,7 +189,7 @@ describe('loans clearHistory action', () => {
 	});
 
 	it('stamps a successful clear', async () => {
-		vi.mocked(clearReturnedLoans).mockReturnValue({ ok: true, cleared: 3 });
+		vi.mocked(clearReturnedLoans).mockResolvedValue({ ok: true, cleared: 3 });
 
 		const result = await actions.clearHistory?.(event(reader));
 

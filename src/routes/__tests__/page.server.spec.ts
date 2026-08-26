@@ -37,15 +37,15 @@ const slip = (id: string, copiesAvailable = 1) => ({
 
 describe('hall load', () => {
 	it('hides the prayer booklet and previews ready copies', async () => {
-		vi.mocked(listBookSlips).mockReturnValue([
+		vi.mocked(listBookSlips).mockResolvedValue([
 			slip('book-modlitbicky'),
 			slip('ready-1'),
 			slip('gone-1', 0)
 		]);
-		vi.mocked(listAuthorSlips).mockReturnValue([
+		vi.mocked(listAuthorSlips).mockResolvedValue([
 			{ id: 'a1', name: 'A', slug: 'a', lifespan: '', role: 'autor', bookCount: 3 }
 		]);
-		vi.mocked(catalogStats).mockReturnValue({ books: 2, authors: 1, available: 1, openLoans: 0 });
+		vi.mocked(catalogStats).mockResolvedValue({ books: 2, authors: 1, available: 1, openLoans: 0 });
 
 		const data = await load({} as Parameters<typeof load>[0]);
 

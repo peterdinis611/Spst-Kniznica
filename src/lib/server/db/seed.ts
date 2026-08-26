@@ -1,6 +1,6 @@
 import { count, eq } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
-import { db, sqlite } from './index';
+import { db } from './index';
 import { author, book, bookAuthor, category, holding } from './schema';
 import { ensureCatalogFts, rebuildCatalogFts } from './catalog-fts';
 import { invalidateCatalogCache } from '../catalog-cache';
@@ -632,47 +632,6 @@ async function ensureHoldings() {
 	}
 }
 
-function ensureLoanGuards() {
-	sqlite.exec(
-		`CREATE UNIQUE INDEX IF NOT EXISTS loan_one_active_uidx ON loan(user_id, book_id) WHERE returned_at IS NULL`
-	);
-}
-
-function ensureLoanSlipColumns() {
-	let cols: { name: string }[] = [];
-	try {
-		cols = sqlite.pragma('table_info(loan)') as { name: string }[];
-	} catch {
-		return;
-	}
-	if (cols.length === 0) return;
-
-	const names = new Set(cols.map((col) => col.name));
-	const adds: [string, string][] = [
-		['borrower_first_name', "text not null default ''"],
-		['borrower_last_name', "text not null default ''"],
-		['borrower_class', "text not null default ''"],
-		['loan_days', 'integer not null default 21'],
-		['cleared_at', 'integer']
-	];
-
-	for (const [name, def] of adds) {
-		if (!names.has(name)) sqlite.exec(`ALTER TABLE loan ADD COLUMN ${name} ${def}`);
-	}
-}
-
-function ensureUserRoleColumn() {
-	let cols: { name: string }[] = [];
-	try {
-		cols = sqlite.pragma('table_info(user)') as { name: string }[];
-	} catch {
-		return;
-	}
-	if (cols.length === 0) return;
-	if (cols.some((col) => col.name === 'role')) return;
-	sqlite.exec(`ALTER TABLE user ADD COLUMN role text not null default 'reader'`);
-}
-
 async function ensureCategoryOrder() {
 	for (const item of categories) {
 		await db.update(category).set({ sortOrder: item.sortOrder }).where(eq(category.id, item.id));
@@ -680,8 +639,6 @@ async function ensureCategoryOrder() {
 }
 
 export async function ensureSeeded() {
-	ensureLoanSlipColumns();
-	ensureUserRoleColumn();
 	if (seeded) return;
 
 	let catalogChanged = false;
@@ -703,19 +660,9 @@ export async function ensureSeeded() {
 		const generated = bookVolume(extraBooks, extraAuthors);
 
 		const haveAuthors = new Set(
-			db
-				.select({ id: author.id })
-				.from(author)
-				
-				.map((row) => row.id)
+			(await db.select({ id: author.id }).from(author)).map((row) => row.id)
 		);
-		const haveBooks = new Set(
-			db
-				.select({ id: book.id })
-				.from(book)
-				
-				.map((row) => row.id)
-		);
+		const haveBooks = new Set((await db.select({ id: book.id }).from(book)).map((row) => row.id));
 
 		const authorsToAdd = extraAuthors.filter((person) => !haveAuthors.has(person.id));
 		const booksToAdd = generated.filter((item) => !haveBooks.has(item.id));
@@ -741,9 +688,6 @@ export async function ensureSeeded() {
 	await ensureHoldings();
 	await ensureCategoryOrder();
 	await ensureCatalogFts();
-	ensureLoanSlipColumns();
-	ensureUserRoleColumn();
-	ensureLoanGuards();
 	if (catalogChanged) await rebuildCatalogFts();
 	invalidateCatalogCache();
 	seeded = true;

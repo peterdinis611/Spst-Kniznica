@@ -46,23 +46,32 @@ describe('form helpers', () => {
 	});
 
 	it('maps a unique constraint to a Slovak note', () => {
-		expect(uniqueConstraintMessage(new Error('UNIQUE constraint failed: category.slug'), 'už je')).toBe(
-			'už je'
-		);
+		expect(
+			uniqueConstraintMessage(new Error('UNIQUE constraint failed: category.slug'), 'už je')
+		).toBe('už je');
+		expect(
+			uniqueConstraintMessage(
+				new Error('duplicate key value violates unique constraint "category_slug_unique"'),
+				'už je'
+			)
+		).toBe('už je');
+		expect(
+			uniqueConstraintMessage({ code: '23505', message: 'duplicate key' }, 'už je')
+		).toBe('už je');
 		expect(uniqueConstraintMessage(new Error('SQLITE_BUSY'), 'už je')).toBeNull();
 	});
 });
 
 describe('refreshCatalog', () => {
-	it('rebuilds the whole index or a single card', () => {
-		refreshCatalog('all');
+	it('rebuilds the whole index or a single card', async () => {
+		await refreshCatalog('all');
 		expect(invalidateCatalogCache).toHaveBeenCalled();
 		expect(rebuildCatalogFts).toHaveBeenCalled();
 
-		refreshCatalog({ bookId: 'book-1' });
+		await refreshCatalog({ bookId: 'book-1' });
 		expect(upsertBookFts).toHaveBeenCalledWith('book-1');
 
-		refreshCatalog({ deletedBookId: 'book-2' });
+		await refreshCatalog({ deletedBookId: 'book-2' });
 		expect(deleteBookFts).toHaveBeenCalledWith('book-2');
 	});
 });

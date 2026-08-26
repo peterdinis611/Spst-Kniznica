@@ -17,9 +17,10 @@ import {
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';
 	const edit = url.searchParams.get('edit') ?? '';
-	const rows = listDeskLoans(q);
-	const current = pickCurrent(rows, edit, getDeskLoan);
-	return { q, rows, current, books: bookOptions(), readers: readerOptions() };
+	const rows = await listDeskLoans(q);
+	const current = await pickCurrent(rows, edit, getDeskLoan);
+	const [books, readers] = await Promise.all([bookOptions(), readerOptions()]);
+	return { q, rows, current, books, readers };
 };
 
 export const actions: Actions = {
@@ -29,7 +30,7 @@ export const actions: Actions = {
 		const bookId = formText(data, 'bookId');
 		const isNew = !formText(data, 'id');
 		const days = formInt(data, 'loanDays') ?? 0;
-		const result = saveLoan({
+		const result = await saveLoan({
 			id: formText(data, 'id') || undefined,
 			bookId,
 			holdingId: formText(data, 'holdingId'),
@@ -45,8 +46,8 @@ export const actions: Actions = {
 		});
 		if (!result.ok) return fail(400, { message: result.message });
 		if (isNew) {
-			const held = getBook(bookId);
-			const pass = readerOptions().find((item) => item.id === userId);
+			const held = await getBook(bookId);
+			const pass = (await readerOptions()).find((item) => item.id === userId);
 			const dueAt =
 				formDate(data, 'dueAt') ??
 				new Date(Date.now() + Math.max(days, 1) * 24 * 60 * 60 * 1000);
@@ -69,8 +70,8 @@ export const actions: Actions = {
 	return: async ({ request }) => {
 		const data = await request.formData();
 		const id = formText(data, 'id');
-		const current = getDeskLoan(id);
-		const result = returnDeskLoan(id);
+		const current = await getDeskLoan(id);
+		const result = await returnDeskLoan(id);
 		if (!result.ok) return fail(400, { message: result.message });
 		if (current?.readerEmail) {
 			await queueLoanNotice({
@@ -84,7 +85,7 @@ export const actions: Actions = {
 	},
 	delete: async ({ request }) => {
 		const data = await request.formData();
-		const result = deleteLoan(formText(data, 'id'));
+		const result = await deleteLoan(formText(data, 'id'));
 		if (!result.ok) return fail(400, { message: result.message });
 		return { stamp: 'Zmazané' };
 	}

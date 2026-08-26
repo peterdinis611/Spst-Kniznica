@@ -18,7 +18,7 @@ describe('authors load', () => {
 				bookCount: 2
 			}
 		];
-		vi.mocked(listAuthorSlips).mockReturnValue(authors);
+		vi.mocked(listAuthorSlips).mockResolvedValue(authors);
 
 		const data = await load({
 			url: new URL('http://localhost/authors?q=ján')

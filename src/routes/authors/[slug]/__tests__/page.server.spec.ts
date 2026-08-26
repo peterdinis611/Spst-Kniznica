@@ -10,7 +10,7 @@ vi.mock('$lib/server/library', () => ({
 
 describe('author card load', () => {
 	it('404s a missing author', async () => {
-		vi.mocked(getAuthor).mockReturnValue(undefined);
+		vi.mocked(getAuthor).mockResolvedValue(undefined);
 
 		try {
 			await load({ params: { slug: 'nie' } } as Parameters<typeof load>[0]);
@@ -31,8 +31,8 @@ describe('author card load', () => {
 			role: 'autor',
 			bookCount: 1
 		};
-		vi.mocked(getAuthor).mockReturnValue(author);
-		vi.mocked(listBookSlipsByAuthor).mockReturnValue([]);
+		vi.mocked(getAuthor).mockResolvedValue(author);
+		vi.mocked(listBookSlipsByAuthor).mockResolvedValue([]);
 
 		const data = await load({ params: { slug: 'jan-test' } } as Parameters<typeof load>[0]);
 

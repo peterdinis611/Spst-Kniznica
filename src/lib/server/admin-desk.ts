@@ -30,7 +30,7 @@ function newId(prefix: string, label: string) {
 	return `${prefix}-${slug || 'zaznam'}-${token}`;
 }
 
-function caught(cause: unknown, unique: string): Promise<DeskResult> {
+function caught(cause: unknown, unique: string): DeskResult {
 	return fail(uniqueConstraintMessage(cause, unique) ?? 'Záznam sa neuložil.');
 }
 
@@ -536,8 +536,11 @@ export async function saveBook(input: {
 
 export async function deleteBook(id: string): Promise<DeskResult> {
 	const open =
-		await db.select({ c: count() }).from(loan).where(and(eq(loan.bookId, id), isNull(loan.returnedAt))).then((rows) => rows[0])
-			?.c ?? 0;
+		(await db
+			.select({ c: count() })
+			.from(loan)
+			.where(and(eq(loan.bookId, id), isNull(loan.returnedAt)))
+			.then((rows) => rows[0]))?.c ?? 0;
 	if (open > 0) return fail('Kniha má aktívne výpožičky. Najprv ich vráť.');
 	const current = await db.select({ coverKey: book.coverKey }).from(book).where(eq(book.id, id)).then((rows) => rows[0]);
 	await db.delete(loan).where(eq(loan.bookId, id));
@@ -720,11 +723,11 @@ export async function deleteHolding(id: string): Promise<DeskResult> {
 	const current = await db.select().from(holding).where(eq(holding.id, id)).then((rows) => rows[0]);
 	if (!current) return fail('Výtlačok sa nenašiel.');
 	const open =
-		db
+		(await db
 			.select({ c: count() })
 			.from(loan)
 			.where(and(eq(loan.holdingId, id), isNull(loan.returnedAt)))
-			.then((rows) => rows[0]?.c ?? 0);
+			.then((rows) => rows[0]))?.c ?? 0;
 	if (open > 0) return fail('Výtlačok je na výpožičke. Najprv ho vráť.');
 
 	await db.transaction(async (tx) => {
@@ -852,8 +855,8 @@ export async function saveLoan(input: {
 					;
 			} else {
 				const copy = input.holdingId
-					? tx.select().from(holding).where(eq(holding.id, input.holdingId)).then((rows) => rows[0])
-					: tx
+					? await tx.select().from(holding).where(eq(holding.id, input.holdingId)).then((rows) => rows[0])
+					: await tx
 							.select()
 							.from(holding)
 							.where(and(eq(holding.bookId, input.bookId), eq(holding.status, 'available')))
@@ -1086,11 +1089,11 @@ export async function saveReader(input: {
 		const role = input.role === undefined ? parseRole(current.role) : input.role;
 		if (parseRole(current.role) === 'librarian' && role === 'reader') {
 			const others =
-				db
+				(await db
 					.select({ c: count() })
 					.from(user)
 					.where(and(eq(user.role, 'librarian'), ne(user.id, input.id)))
-					.then((rows) => rows[0]?.c ?? 0);
+					.then((rows) => rows[0]))?.c ?? 0;
 			if (others === 0) return fail('Posledného knihovníka z pultu nedáš.');
 		}
 		await db.update(user)
@@ -1109,16 +1112,19 @@ export async function deleteReader(id: string): Promise<DeskResult> {
 	if (!current) return fail('Čitateľ sa nenašiel.');
 	if (parseRole(current.role) === 'librarian') {
 		const others =
-			db
+			(await db
 				.select({ c: count() })
 				.from(user)
 				.where(and(eq(user.role, 'librarian'), ne(user.id, id)))
-				.then((rows) => rows[0]?.c ?? 0);
+				.then((rows) => rows[0]))?.c ?? 0;
 		if (others === 0) return fail('Posledného knihovníka z pultu nedáš.');
 	}
 	const open =
-		await db.select({ c: count() }).from(loan).where(and(eq(loan.userId, id), isNull(loan.returnedAt))).then((rows) => rows[0])
-			?.c ?? 0;
+		(await db
+			.select({ c: count() })
+			.from(loan)
+			.where(and(eq(loan.userId, id), isNull(loan.returnedAt)))
+			.then((rows) => rows[0]))?.c ?? 0;
 	if (open > 0) return fail('Čitateľ má knihy vonku. Najprv ich vráť.');
 	const gone = await db.delete(user).where(eq(user.id, id)).returning({ id: user.id });
 	if (!gone.length) return fail('Čitateľ sa nenašiel.');

@@ -6,6 +6,12 @@ export const GET: RequestHandler = async ({ url }) => {
 	const origin = url.origin;
 	const now = new Date().toISOString().slice(0, 10);
 
+	const [books, categories, authors] = await Promise.all([
+		listBooks(),
+		listCategories(),
+		listAuthors()
+	]);
+
 	const routes = [
 		{ path: '/', changefreq: 'weekly', priority: '1.0' },
 		{ path: '/discover', changefreq: 'weekly', priority: '0.9' },
@@ -18,17 +24,17 @@ export const GET: RequestHandler = async ({ url }) => {
 			changefreq: 'monthly',
 			priority: '0.5'
 		})),
-		...listBooks().map((book) => ({
+		...books.map((book) => ({
 			path: `/books/${book.id}`,
 			changefreq: 'monthly',
 			priority: '0.8'
 		})),
-		...listCategories().map((category) => ({
+		...categories.map((category) => ({
 			path: `/departments/${category.slug}`,
 			changefreq: 'monthly',
 			priority: '0.6'
 		})),
-		...listAuthors().map((author) => ({
+		...authors.map((author) => ({
 			path: `/authors/${author.slug}`,
 			changefreq: 'monthly',
 			priority: '0.6'

@@ -14,15 +14,16 @@ import {
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';
 	const edit = url.searchParams.get('edit') ?? '';
-	const rows = listDeskReservations(q);
-	const current = pickCurrent(rows, edit, getDeskReservation);
-	return { q, rows, current, books: bookOptions(), readers: readerOptions() };
+	const rows = await listDeskReservations(q);
+	const current = await pickCurrent(rows, edit, getDeskReservation);
+	const [books, readers] = await Promise.all([bookOptions(), readerOptions()]);
+	return { q, rows, current, books, readers };
 };
 
 export const actions: Actions = {
 	save: async ({ request }) => {
 		const data = await request.formData();
-		const result = saveReservation({
+		const result = await saveReservation({
 			id: formText(data, 'id') || undefined,
 			bookId: formText(data, 'bookId'),
 			userId: formText(data, 'userId'),
@@ -35,7 +36,7 @@ export const actions: Actions = {
 	},
 	delete: async ({ request }) => {
 		const data = await request.formData();
-		const result = deleteReservation(formText(data, 'id'));
+		const result = await deleteReservation(formText(data, 'id'));
 		if (!result.ok) return fail(400, { message: result.message });
 		return { stamp: 'Zmazané' };
 	}

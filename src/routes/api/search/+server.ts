@@ -6,5 +6,5 @@ export const GET: RequestHandler = async ({ url }) => {
 	const q = url.searchParams.get('q')?.trim() ?? '';
 	if (q.length < 1) return json({ items: [] });
 
-	return json({ items: searchCatalog(q, 8) });
+	return json({ items: await searchCatalog(q, 8) });
 };
