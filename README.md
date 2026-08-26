@@ -1,49 +1,100 @@
-# sv
+# SPŠT knižnica
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Školský fond učebníc, noriem a literatúry pre SPŠT. SvelteKit aplikácia: katalóg, výpožičky, čitateľský účet a pult správy.
 
-## Creating a project
+Fond sídli v pavilóne B. Výpožička je bez poplatku — **7, 14 alebo 21 dní**, strop na počet kníh nie je.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Stack
 
-```sh
-# create a new project
-npx sv create my-app
-```
+- **SvelteKit 2** + Svelte 5, Vite, Tailwind CSS 4
+- **PostgreSQL 16** (Docker) + **Drizzle ORM** (`postgres` klient)
+- **Supabase Auth** — registrácia, prihlásenie, obnova hesla
+- **Bun** — inštalácia a skripty (`bun.lock`)
 
-To recreate this project with the same configuration:
+Interná príručka je na [`/docs`](http://localhost:5173/docs).
 
-```sh
-# recreate this project
-bun x sv@0.17.0 create --template minimal --types ts --add prettier eslint vitest="usages:component,unit" tailwindcss="plugins:typography,forms" drizzle="database:postgresql" better-auth="demo:password" --install bun .
-```
+## Lokálne spustenie
 
-## Developing
-
-PostgreSQL 16 (Docker) holds the catalog. From the repo root:
+Potrebuješ **Bun**, **Docker** a kópiu `.env`.
 
 ```sh
+bun install
+cp .env.example .env
 bun run db:up
 bun run db:migrate
 bun run dev
 ```
 
-`DATABASE_URL` defaults to `postgres://spst:spst@localhost:5432/spst` — copy `.env.example`. The fund is seeded on the first request. A leftover SQLite `local.db` is not imported.
+Aplikácia beží na [http://localhost:5173](http://localhost:5173). Katalóg sa **naseeduje pri prvom requeste**.
 
-Open the app in a browser:
+Predvolené `DATABASE_URL` je `postgres://spst:spst@localhost:5432/spst` (užívateľ / heslo / databáza `spst`). Zvyšok kľúčov je v `.env.example`.
+
+Bez bežiaceho Postgresu stránky spadnú na 500 (zásuvka sa zasekla). Docker Desktop musí byť zapnutý, kým ide `bun run db:up`.
+
+### Databáza
+
+| Príkaz | Čo robí |
+| --- | --- |
+| `bun run db:up` | Postgres 16 v Dockeri |
+| `bun run db:migrate` | Drizzle migrácie z `drizzle/` |
+| `bun run db:generate` | nová migrácia zo schémy |
+| `bun run db:push` | schéma priamo do DB (bez súboru) |
+| `bun run db:studio` | Drizzle Studio |
+| `bun run db:down` | zastaví kontajner |
+
+Veľkosť seedu riadi `SEED_VOLUME` (kanonický fond je 20 kníh; vyššie číslo je na stres registra). Po zmene reštartuj `bun run dev`.
+
+## Čo treba v `.env`
+
+Minimálne `DATABASE_URL`. Na prihlásenie:
+
+- `PUBLIC_SUPABASE_URL` a `PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- v Supabase Auth redirect `{ORIGIN}/auth/confirm`
+
+Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, ktoré sa pri prihlásení stanú knihovníkom. V `vite dev` môže pult otvoriť aj bežný čitateľ.
+
+Ďalšie voliteľné:
+
+- **UploadThing** (`UPLOADTHING_TOKEN`) — obálky kníh z pultu
+- **Mail** — lokálne Mailtrap (`MAIL_DRIVER=mailtrap`), na ostrej Mailgun. Listy idú pri výpožičke, vrátení a zmene hesla. S `SUPABASE_SERVICE_ROLE_KEY` ide obnova hesla z pultu, nie z predvolenej pošty Supabase.
+
+## Mapa
+
+| Cesta | Čo tam je |
+| --- | --- |
+| `/` | vstupná sieň, rýchle hľadanie |
+| `/discover` | dnes na pulte, police odborov |
+| `/books`, `/holdings` | katalóg a register výtlačkov |
+| `/departments`, `/authors` | odbory a autori |
+| `/login` | prihlásenie / registrácia (`?mod=novy`) |
+| `/loans`, `/profile` | lístok a preukaz (po prihlásení) |
+| `/admin` | pult — CRUD fondu (knihovník) |
+| `/docs` | príručka |
+
+Slovenské aliasy (`/knihy`, `/pult`, `/profil`…) sa 308 presmerujú na kanonické cesty.
+
+## Skripty
 
 ```sh
-bun run dev -- --open
+bun run dev          # vývoj, port 5173
+bun run build        # produkčný build
+bun run preview      # náhľad buildu, port 4173
+bun run check        # svelte-check
+bun run test         # Vitest (jednorazovo)
+bun run lint         # Prettier + ESLint
+bun run storybook    # Storybook, port 6006
 ```
 
-## Building
+## Záťaž (k6)
 
-To create a production version of your app:
+Meria čítanie katalógu, nie prihlásenie ani výpožičky. Fond musí bežať skôr (dev 5173 alebo preview 4173).
 
 ```sh
-npm run build
+bun run k6:up
+bun run k6:smoke     # 1 čitateľ
+bun run k6:load      # 16 čitateľov
+bun run k6:stress    # rampa; register meraj na preview + SEED_VOLUME=2500
+bun run k6:down
 ```
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Grafana: [http://localhost:3030](http://localhost:3030) (`pult` / `pavilonb`). Podrobnosti v [príručke záťaže](src/content/docs/zataz.svx).
