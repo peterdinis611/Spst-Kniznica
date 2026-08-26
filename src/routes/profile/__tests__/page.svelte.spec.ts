@@ -45,7 +45,8 @@ describe('profile pass', () => {
 		await expect.element(page.getByText('peter@spst.sk')).toBeVisible();
 		await expect.element(page.getByText('509A', { exact: true })).toBeVisible();
 		await expect.element(page.getByRole('link', { name: 'Moje knihy' })).toBeVisible();
-		await expect.element(page.getByRole('button', { name: 'Nové heslo' })).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Uložiť heslo' })).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Poslať odkaz e-mailom' })).toBeVisible();
 		await expect.element(page.getByRole('link', { name: 'Pult' })).not.toBeInTheDocument();
 	});
 

@@ -1,7 +1,9 @@
 import { isActionFailure, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { canOpenDesk } from '$lib/server/admin-access';
+import { sendPasswordChangedLetter } from '$lib/server/auth-mail';
 import { countActiveLoans } from '$lib/server/library';
+import { requestPasswordReset } from '$lib/server/password-reset';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/library', () => ({
@@ -10,6 +12,14 @@ vi.mock('$lib/server/library', () => ({
 
 vi.mock('$lib/server/admin-access', () => ({
 	canOpenDesk: vi.fn()
+}));
+
+vi.mock('$lib/server/auth-mail', () => ({
+	sendPasswordChangedLetter: vi.fn()
+}));
+
+vi.mock('$lib/server/password-reset', () => ({
+	requestPasswordReset: vi.fn()
 }));
 
 const reader = {
@@ -21,6 +31,24 @@ const reader = {
 
 function localsOf(user: typeof reader | undefined) {
 	return { locals: { user } } as Parameters<typeof load>[0];
+}
+
+function event(
+	action: 'password' | 'recover',
+	body: Record<string, string> = {},
+	supabase?: { auth: { updateUser?: ReturnType<typeof vi.fn> } }
+) {
+	return {
+		locals: { user: reader, supabase },
+		url: new URL('http://localhost/profile'),
+		request: {
+			formData: async () => {
+				const data = new FormData();
+				for (const [key, value] of Object.entries(body)) data.set(key, value);
+				return data;
+			}
+		}
+	} as unknown as Parameters<(typeof actions)[typeof action]>[0];
 }
 
 describe('profil load', () => {
@@ -55,19 +83,57 @@ describe('profil load', () => {
 	});
 });
 
+describe('profil password', () => {
+	beforeEach(() => {
+		vi.mocked(sendPasswordChangedLetter).mockReset();
+	});
+
+	it('saves a new password and posts a confirmation letter', async () => {
+		const updateUser = vi.fn().mockResolvedValue({ error: null });
+		vi.mocked(sendPasswordChangedLetter).mockResolvedValue({ ok: true });
+
+		const result = await actions.password(
+			event('password', { password: 'kniha12a', confirm: 'kniha12a' }, { auth: { updateUser } })
+		);
+
+		expect(updateUser).toHaveBeenCalledWith({ password: 'kniha12a' });
+		expect(sendPasswordChangedLetter).toHaveBeenCalledWith({
+			to: 'peter@spst.sk',
+			name: 'Peter Dinis',
+			profileHref: 'http://localhost/profile'
+		});
+		expect(result).toEqual({
+			ok: true,
+			message: 'Heslo je nové. Potvrdenie ide na peter@spst.sk.'
+		});
+	});
+
+	it('rejects a thin password pair', async () => {
+		const result = await actions.password(event('password', { password: 'abc', confirm: '' }));
+		expect(isActionFailure(result)).toBe(true);
+		if (isActionFailure(result)) expect(result.status).toBe(400);
+	});
+});
+
 describe('profil recover', () => {
+	beforeEach(() => {
+		vi.mocked(requestPasswordReset).mockReset();
+	});
+
 	it('sends a recovery letter to the signed-in address', async () => {
-		const resetPasswordForEmail = vi.fn().mockResolvedValue({ error: null });
+		vi.mocked(requestPasswordReset).mockResolvedValue({ ok: true, mailed: true, via: 'pult' });
+
 		const result = await actions.recover({
-			locals: {
-				user: reader,
-				supabase: { auth: { resetPasswordForEmail } }
-			},
+			locals: { user: reader, supabase: { auth: {} } },
 			url: new URL('http://localhost/profile')
 		} as Parameters<typeof actions.recover>[0]);
 
-		expect(resetPasswordForEmail).toHaveBeenCalledWith('peter@spst.sk', {
-			redirectTo: 'http://localhost/auth/confirm?next=/login/password'
+		expect(requestPasswordReset).toHaveBeenCalledWith({
+			email: 'peter@spst.sk',
+			name: 'Peter Dinis',
+			origin: 'http://localhost',
+			supabase: { auth: {} },
+			mustExist: true
 		});
 		expect(result).toEqual({
 			ok: true,

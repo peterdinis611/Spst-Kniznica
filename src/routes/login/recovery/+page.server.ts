@@ -1,8 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { slovakAuthMessage } from '$lib/server/auth-message';
 import { supabasePublic } from '$lib/supabase/config';
 import { hasFieldErrors, validateResetEmail } from '$lib/auth-fields';
+import { requestPasswordReset } from '$lib/server/password-reset';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	return {
@@ -27,13 +27,20 @@ export const actions: Actions = {
 			});
 		}
 
-		const { error } = await event.locals.supabase.auth.resetPasswordForEmail(email.trim(), {
-			redirectTo: `${event.url.origin}/auth/confirm?next=/login/password`
+		const result = await requestPasswordReset({
+			email: email.trim(),
+			name: event.locals.user?.name,
+			origin: event.url.origin,
+			supabase: event.locals.supabase
 		});
 
-		if (error) {
+		if (!result.ok) {
+			return fail(400, { message: result.message, values: { email } });
+		}
+
+		if (!result.mailed) {
 			return fail(400, {
-				message: slovakAuthMessage(error.message, 'Odkaz na obnovu sa teraz nepodarilo poslať.'),
+				message: 'List s odkazom teraz neodišiel. Skontroluj Mailtrap alebo Mailgun v .env.',
 				values: { email }
 			});
 		}

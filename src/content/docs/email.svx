@@ -4,7 +4,9 @@ description: Listy z pultu — preukaz, heslo, výpožička a vrátenie.
 order: 6.5
 ---
 
-Správy o účte posiela **Supabase**. Aby vyzerali ako lístok z pultu a aby odkaz otvoril našu stránku `/auth/confirm`, vlož šablóny z priečinka `supabase/templates`.
+Správy o účte môžu ísť dvoma cestami. **Výpožička, vrátenie, nové heslo z preukazu a obnova** idú cez poštu pultu (Mailtrap / Mailgun). **Potvrdenie registrácie** ostáva na **Supabase**, kým v dashboarde nenastavíš vlastné SMTP.
+
+Aby odkaz z listu otvoril `/auth/confirm`, vlož šablóny z priečinka `supabase/templates` (aspoň Confirm signup). Obnova hesla šablónu v dashboarde nepotrebuje, keď ide list z pultu.
 
 ## Predtým
 
@@ -36,9 +38,7 @@ Pod odkazom je aj **šesťmiestny kód**. Keď pošta odkaz „otvorí“ skôr 
 
 ## Čo čitateľ uvidí
 
-List je krémový lístok s medeným chrbtom a pečiatkou **SPŠT**. Potvrdenie registrácie osloví menom z účtu, ak ho pri zápise zadal.
-
-Sender ostáva predvolený `noreply@mail.app.supabase.io`, kým v projekte nenastavíš vlastné SMTP. Vlastná šablóna funguje aj tak.
+List je krémový lístok s medeným chrbtom a pečiatkou **SPŠT**. Potvrdenie registrácie osloví menom z účtu, ak ho pri zápise zadal. Listy hesla a výpožičky idú z Mailtrap (lokálne) alebo Mailgun (ostrá prevádzka).
 
 ## Skúška
 
@@ -46,9 +46,13 @@ Sender ostáva predvolený `noreply@mail.app.supabase.io`, kým v projekte nenas
 2. Otvor list, klikni **Potvrdiť preukaz**.
 3. Mal by si skončiť na [Moje knihy](/loans).
 
-Obnova: [zabudnuté heslo](/login/recovery) → list → **Nastaviť heslo** → [nové heslo](/login/password).
+Obnova: [zabudnuté heslo](/login/recovery) alebo na [preukaze](/profile) **Poslať odkaz e-mailom** → list z Mailtrap/Mailgun → **Nastaviť heslo** → [nové heslo](/login/password).
 
-Ak odkaz padne na [chybu účtu](/auth/error), skontroluj Site URL a že v šablóne ostal `token_hash` aj `type`.
+Na preukaze vieš heslo aj **uložiť hneď**. Po úspechu ide potvrdzovací lístok na e-mail z účtu.
+
+Aby obnova šla z pultu (nie z `noreply@mail.app.supabase.io`), doplň `SUPABASE_SERVICE_ROLE_KEY` a Mailtrap alebo Mailgun. Bez service role ostane záloha: `resetPasswordForEmail` a list zo Supabase.
+
+Ak odkaz padne na [chybu účtu](/auth/error), skontroluj Site URL a že v odkaze ostal `token_hash` aj `type`.
 
 ## Výpožička a vrátenie
 
