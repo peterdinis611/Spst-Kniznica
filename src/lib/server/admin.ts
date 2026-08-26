@@ -3,17 +3,19 @@ import { deleteBookFts, rebuildCatalogFts, upsertBookFts } from './db/catalog-ft
 
 export { canOpenDesk, isAdminEmail, requireAdmin } from './admin-access';
 
-export function refreshCatalog(scope: 'all' | { bookId: string } | { deletedBookId: string } = 'all') {
+export async function refreshCatalog(
+	scope: 'all' | { bookId: string } | { deletedBookId: string } = 'all'
+) {
 	invalidateCatalogCache();
 	if (scope === 'all') {
-		rebuildCatalogFts();
+		await rebuildCatalogFts();
 		return;
 	}
 	if ('bookId' in scope) {
-		upsertBookFts(scope.bookId);
+		await upsertBookFts(scope.bookId);
 		return;
 	}
-	deleteBookFts(scope.deletedBookId);
+	await deleteBookFts(scope.deletedBookId);
 }
 
 export function formText(data: FormData, name: string) {

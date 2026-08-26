@@ -577,34 +577,34 @@ function holdingRows(catalog: CatalogRow[]) {
 	});
 }
 
-function insertCatalog(tx: { insert: typeof db.insert }, catalog: CatalogRow[]) {
+async function insertCatalog(tx: { insert: typeof db.insert }, catalog: CatalogRow[]) {
 	if (catalog.length === 0) return;
 	for (const batch of chunk(catalog, 60)) {
-		tx.insert(book)
+		await tx.insert(book)
 			.values(
 				batch.map(({ authorIds, ...rest }) => {
 					void authorIds;
 					return rest;
 				})
 			)
-			.run();
-		tx.insert(bookAuthor)
+			;
+		await tx.insert(bookAuthor)
 			.values(
 				batch.flatMap((item) =>
 					item.authorIds.map((authorId, position) => ({ bookId: item.id, authorId, position }))
 				)
 			)
-			.run();
+			;
 		const copies = holdingRows(batch);
-		if (copies.length) tx.insert(holding).values(copies).run();
+		if (copies.length) await tx.insert(holding).values(copies);
 	}
 }
 
-function ensureHoldings() {
-	const existing = db.select({ c: count() }).from(holding).get()?.c ?? 0;
+async function ensureHoldings() {
+	const existing = await db.select({ c: count() }).from(holding).then((rows) => rows[0]?.c ?? 0);
 	if (existing > 0) return;
 
-	const rows = db
+	const rows = await db
 		.select({
 			id: book.id,
 			copiesTotal: book.copiesTotal,
@@ -613,7 +613,7 @@ function ensureHoldings() {
 		})
 		.from(book)
 		.innerJoin(category, eq(book.categoryId, category.id))
-		.all();
+		;
 
 	const copies = rows.flatMap((item) =>
 		Array.from({ length: item.copiesTotal }, (_, i) => {
@@ -628,7 +628,7 @@ function ensureHoldings() {
 	);
 
 	for (const batch of chunk(copies, 200)) {
-		db.insert(holding).values(batch).run();
+		await db.insert(holding).values(batch);
 	}
 }
 
@@ -673,30 +673,30 @@ function ensureUserRoleColumn() {
 	sqlite.exec(`ALTER TABLE user ADD COLUMN role text not null default 'reader'`);
 }
 
-function ensureCategoryOrder() {
+async function ensureCategoryOrder() {
 	for (const item of categories) {
-		db.update(category).set({ sortOrder: item.sortOrder }).where(eq(category.id, item.id)).run();
+		await db.update(category).set({ sortOrder: item.sortOrder }).where(eq(category.id, item.id));
 	}
 }
 
-export function ensureSeeded() {
+export async function ensureSeeded() {
 	ensureLoanSlipColumns();
 	ensureUserRoleColumn();
 	if (seeded) return;
 
 	let catalogChanged = false;
-	const categoryCount = db.select({ c: count() }).from(category).get()?.c ?? 0;
+	const categoryCount = await db.select({ c: count() }).from(category).then((rows) => rows[0]?.c ?? 0);
 	if (categoryCount === 0) {
-		db.transaction((tx) => {
-			tx.insert(category).values(categories).run();
-			tx.insert(author).values(authors).run();
-			insertCatalog(tx, books);
+		await db.transaction(async (tx) => {
+			await tx.insert(category).values(categories);
+			await tx.insert(author).values(authors);
+			await insertCatalog(tx, books);
 		});
 		catalogChanged = true;
 	}
 
 	const target = seedTarget(env.SEED_VOLUME, books.length);
-	const current = db.select({ c: count() }).from(book).get()?.c ?? 0;
+	const current = await db.select({ c: count() }).from(book).then((rows) => rows[0]?.c ?? 0);
 	if (current < target) {
 		const extraBooks = Math.max(0, target - books.length);
 		const extraAuthors = authorVolume(Math.max(24, Math.ceil(extraBooks / 8)));
@@ -706,14 +706,14 @@ export function ensureSeeded() {
 			db
 				.select({ id: author.id })
 				.from(author)
-				.all()
+				
 				.map((row) => row.id)
 		);
 		const haveBooks = new Set(
 			db
 				.select({ id: book.id })
 				.from(book)
-				.all()
+				
 				.map((row) => row.id)
 		);
 
@@ -722,11 +722,11 @@ export function ensureSeeded() {
 		if (authorsToAdd.length || booksToAdd.length) {
 			const knownAuthors = new Set([...haveAuthors, ...authorsToAdd.map((person) => person.id)]);
 
-			db.transaction((tx) => {
+			await db.transaction(async (tx) => {
 				for (const batch of chunk(authorsToAdd, 80)) {
-					tx.insert(author).values(batch).run();
+					await tx.insert(author).values(batch);
 				}
-				insertCatalog(
+				await insertCatalog(
 					tx,
 					booksToAdd.map((item) => ({
 						...item,
@@ -738,13 +738,13 @@ export function ensureSeeded() {
 		}
 	}
 
-	ensureHoldings();
-	ensureCategoryOrder();
-	ensureCatalogFts();
+	await ensureHoldings();
+	await ensureCategoryOrder();
+	await ensureCatalogFts();
 	ensureLoanSlipColumns();
 	ensureUserRoleColumn();
 	ensureLoanGuards();
-	if (catalogChanged) rebuildCatalogFts();
+	if (catalogChanged) await rebuildCatalogFts();
 	invalidateCatalogCache();
 	seeded = true;
 }

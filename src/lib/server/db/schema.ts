@@ -1,8 +1,15 @@
 import { relations, sql } from 'drizzle-orm';
-import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import {
+	boolean,
+	index,
+	integer,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+	uniqueIndex
+} from 'drizzle-orm/pg-core';
 import { user } from './auth.schema';
-
-const nowMs = sql`(cast(unixepoch('subsecond') * 1000 as integer))`;
 
 export const holdingStatus = ['available', 'loaned', 'lost', 'withdrawn'] as const;
 export type HoldingStatus = (typeof holdingStatus)[number];
@@ -10,7 +17,7 @@ export type HoldingStatus = (typeof holdingStatus)[number];
 export const reservationStatus = ['pending', 'fulfilled', 'cancelled', 'expired'] as const;
 export type ReservationStatus = (typeof reservationStatus)[number];
 
-export const category = sqliteTable(
+export const category = pgTable(
 	'category',
 	{
 		id: text('id').primaryKey(),
@@ -24,7 +31,7 @@ export const category = sqliteTable(
 	(table) => [uniqueIndex('category_code_uidx').on(table.code)]
 );
 
-export const author = sqliteTable(
+export const author = pgTable(
 	'author',
 	{
 		id: text('id').primaryKey(),
@@ -37,7 +44,7 @@ export const author = sqliteTable(
 	(table) => [index('author_name_idx').on(table.name)]
 );
 
-export const book = sqliteTable(
+export const book = pgTable(
 	'book',
 	{
 		id: text('id').primaryKey(),
@@ -55,10 +62,10 @@ export const book = sqliteTable(
 		copiesAvailable: integer('copies_available').notNull().default(3),
 		publisher: text('publisher').notNull(),
 		language: text('language').notNull().default('sk'),
-		featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
+		featured: boolean('featured').notNull().default(false),
 		coverUrl: text('cover_url'),
 		coverKey: text('cover_key'),
-		createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(nowMs)
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
 	},
 	(table) => [
 		index('book_categoryId_idx').on(table.categoryId),
@@ -68,7 +75,7 @@ export const book = sqliteTable(
 	]
 );
 
-export const bookAuthor = sqliteTable(
+export const bookAuthor = pgTable(
 	'book_author',
 	{
 		bookId: text('book_id')
@@ -85,7 +92,7 @@ export const bookAuthor = sqliteTable(
 	]
 );
 
-export const holding = sqliteTable(
+export const holding = pgTable(
 	'holding',
 	{
 		id: text('id').primaryKey(),
@@ -94,7 +101,7 @@ export const holding = sqliteTable(
 			.references(() => book.id, { onDelete: 'cascade' }),
 		inventoryNo: text('inventory_no').notNull(),
 		status: text('status', { enum: holdingStatus }).notNull().default('available'),
-		acquiredAt: integer('acquired_at', { mode: 'timestamp_ms' }).notNull().default(nowMs)
+		acquiredAt: timestamp('acquired_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
 	},
 	(table) => [
 		uniqueIndex('holding_inventory_uidx').on(table.inventoryNo),
@@ -102,7 +109,7 @@ export const holding = sqliteTable(
 	]
 );
 
-export const loan = sqliteTable(
+export const loan = pgTable(
 	'loan',
 	{
 		id: text('id')
@@ -115,15 +122,15 @@ export const loan = sqliteTable(
 		userId: text('user_id')
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
-		borrowedAt: integer('borrowed_at', { mode: 'timestamp_ms' }).notNull().default(nowMs),
-		dueAt: integer('due_at', { mode: 'timestamp_ms' }).notNull(),
-		returnedAt: integer('returned_at', { mode: 'timestamp_ms' }),
+		borrowedAt: timestamp('borrowed_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		dueAt: timestamp('due_at', { withTimezone: true, mode: 'date' }).notNull(),
+		returnedAt: timestamp('returned_at', { withTimezone: true, mode: 'date' }),
 		renewalCount: integer('renewal_count').notNull().default(0),
 		borrowerFirstName: text('borrower_first_name').notNull().default(''),
 		borrowerLastName: text('borrower_last_name').notNull().default(''),
 		borrowerClass: text('borrower_class').notNull().default(''),
 		loanDays: integer('loan_days').notNull().default(21),
-		clearedAt: integer('cleared_at', { mode: 'timestamp_ms' })
+		clearedAt: timestamp('cleared_at', { withTimezone: true, mode: 'date' })
 	},
 	(table) => [
 		index('loan_userId_idx').on(table.userId),
@@ -131,11 +138,14 @@ export const loan = sqliteTable(
 		index('loan_holdingId_idx').on(table.holdingId),
 		index('loan_user_open_idx').on(table.userId, table.returnedAt),
 		index('loan_book_open_idx').on(table.bookId, table.returnedAt),
-		index('loan_dueAt_idx').on(table.dueAt)
+		index('loan_dueAt_idx').on(table.dueAt),
+		uniqueIndex('loan_one_active_uidx')
+			.on(table.userId, table.bookId)
+			.where(sql`${table.returnedAt} is null`)
 	]
 );
 
-export const reservation = sqliteTable(
+export const reservation = pgTable(
 	'reservation',
 	{
 		id: text('id')
@@ -147,8 +157,8 @@ export const reservation = sqliteTable(
 		userId: text('user_id')
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
-		createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(nowMs),
-		expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
 		status: text('status', { enum: reservationStatus }).notNull().default('pending')
 	},
 	(table) => [
