@@ -97,6 +97,31 @@
 			index = i;
 		}
 	}
+
+	let shelf = $state<HTMLElement | undefined>();
+	let stage = $state<HTMLElement | undefined>();
+
+	$effect(() => {
+		const node = shelf;
+		if (!node) return;
+		node.addEventListener('keydown', onKey);
+		return () => node.removeEventListener('keydown', onKey);
+	});
+
+	$effect(() => {
+		const node = stage;
+		if (!node) return;
+		node.addEventListener('pointerdown', pointerDown);
+		node.addEventListener('pointermove', pointerMove);
+		node.addEventListener('pointerup', pointerUp);
+		node.addEventListener('pointercancel', pointerUp);
+		return () => {
+			node.removeEventListener('pointerdown', pointerDown);
+			node.removeEventListener('pointermove', pointerMove);
+			node.removeEventListener('pointerup', pointerUp);
+			node.removeEventListener('pointercancel', pointerUp);
+		};
+	});
 </script>
 
 {#if books.length === 0}
@@ -109,6 +134,7 @@
 	</div>
 {:else}
 	<div
+		bind:this={shelf}
 		class="complete-shelf"
 		role="region"
 		aria-roledescription="carousel"
@@ -132,17 +158,7 @@
 			{/if}
 		</div>
 
-		<div
-			class="shelf-stage"
-			role="group"
-			aria-label="Otáčanie zväzkov"
-			tabindex="0"
-			onkeydown={onKey}
-			onpointerdown={pointerDown}
-			onpointermove={pointerMove}
-			onpointerup={pointerUp}
-			onpointercancel={pointerUp}
-		>
+		<div class="shelf-stage" bind:this={stage}>
 			<div class="shelf-ring">
 				{#each books as book, i (book.id)}
 					{@const offset = shift(i)}
@@ -230,10 +246,6 @@
 		overflow: clip;
 		padding-top: 0.15rem;
 		outline: none;
-	}
-
-	.shelf-stage:focus-visible {
-		box-shadow: inset 0 0 0 2px var(--ink, var(--foreground, #3c2a21));
 	}
 
 	.shelf-tools {
