@@ -6,6 +6,7 @@ import { sendPasswordChangedLetter } from '$lib/server/auth-mail';
 import { hasFieldErrors, validateNewPassword } from '$lib/auth-fields';
 import { countActiveLoans } from '$lib/server/library';
 import { requestPasswordReset } from '$lib/server/password-reset';
+import { failIfRateLimited } from '$lib/server/rate-limit';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -38,6 +39,9 @@ export const actions: Actions = {
 		if (hasFieldErrors(errors)) {
 			return fail(400, { errors });
 		}
+
+		const blocked = await failIfRateLimited(event, 'auth');
+		if (blocked) return blocked;
 
 		if (!event.locals.supabase) {
 			return fail(503, { message: 'Zmena hesla nie je nastavená. Chýba Supabase v .env.' });
@@ -79,6 +83,9 @@ export const actions: Actions = {
 				message: 'Obnova hesla nie je nastavená. Chýba Supabase v .env.'
 			});
 		}
+
+		const blocked = await failIfRateLimited(event, 'mail');
+		if (blocked) return blocked;
 
 		const result = await requestPasswordReset({
 			email: event.locals.user.email,

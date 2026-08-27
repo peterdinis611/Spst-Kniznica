@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { supabasePublic } from '$lib/supabase/config';
 import { hasFieldErrors, validateResetEmail } from '$lib/auth-fields';
 import { requestPasswordReset } from '$lib/server/password-reset';
+import { failIfRateLimited } from '$lib/server/rate-limit';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	return {
@@ -19,6 +20,9 @@ export const actions: Actions = {
 		if (hasFieldErrors(errors)) {
 			return fail(400, { errors, values: { email } });
 		}
+
+		const blocked = await failIfRateLimited(event, 'mail', { values: { email } });
+		if (blocked) return blocked;
 
 		if (!event.locals.supabase) {
 			return fail(503, {

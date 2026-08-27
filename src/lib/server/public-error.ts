@@ -6,6 +6,10 @@ export function publicErrorMessage(error: unknown, status: number) {
 		return 'Túto stránku sme v katalógu nenašli.';
 	}
 
+	if (status === 429) {
+		return 'Príliš veľa pokusov. Počkaj chvíľu a skús to znova.';
+	}
+
 	if (internal || status >= 500) {
 		return 'Fond túto kartu teraz neotvorí.';
 	}

@@ -1,9 +1,9 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { deleteCategory, getDeskCategory, listDeskCategories, saveCategory } from '$lib/server/admin-desk';
+import { deleteCategory, getDeskCategory, listDeskCategories, saveCategory } from '$lib/server/desk/categories';
 import { actions, load } from '../+page.server';
 
-vi.mock('$lib/server/admin-desk', () => ({
+vi.mock('$lib/server/desk/categories', () => ({
 	listDeskCategories: vi.fn(),
 	getDeskCategory: vi.fn(),
 	saveCategory: vi.fn(),

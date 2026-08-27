@@ -1,6 +1,7 @@
 import { fail, isRedirect, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { slovakAuthMessage } from '$lib/server/auth-message';
+import { failIfRateLimited } from '$lib/server/rate-limit';
 import { ensureLocalReader } from '$lib/server/readers';
 import { supabasePublic } from '$lib/supabase/config';
 import { hasFieldErrors, validateSignIn, validateSignUp } from '$lib/auth-fields';
@@ -26,6 +27,12 @@ export const actions: Actions = {
 		if (hasFieldErrors(errors)) {
 			return fail(400, { errors, values: { email }, mode: 'vstup' as const });
 		}
+
+		const blocked = await failIfRateLimited(event, 'auth', {
+			values: { email },
+			mode: 'vstup' as const
+		});
+		if (blocked) return blocked;
 
 		if (!event.locals.supabase) {
 			return fail(503, {
@@ -80,6 +87,12 @@ export const actions: Actions = {
 				mode: 'novy' as const
 			});
 		}
+
+		const blocked = await failIfRateLimited(event, 'auth', {
+			values: { name, email },
+			mode: 'novy' as const
+		});
+		if (blocked) return blocked;
 
 		if (!event.locals.supabase) {
 			return fail(503, {

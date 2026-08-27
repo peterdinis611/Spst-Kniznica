@@ -4,15 +4,8 @@ import { formDate, formInt, formText } from '$lib/server/admin';
 import { pickCurrent } from '$lib/pult-ledger';
 import { getBook } from '$lib/server/library';
 import { queueLoanNotice } from '$lib/server/loan-mail';
-import {
-	bookOptions,
-	deleteLoan,
-	getDeskLoan,
-	listDeskLoans,
-	readerOptions,
-	returnDeskLoan,
-	saveLoan
-} from '$lib/server/admin-desk';
+import { deleteLoan, getDeskLoan, listDeskLoans, returnDeskLoan, saveLoan } from '$lib/server/desk/loans';
+import { bookOptions, readerOptions } from '$lib/server/desk/options';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';

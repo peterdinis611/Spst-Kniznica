@@ -2,7 +2,8 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { formDate, formText } from '$lib/server/admin';
 import { pickCurrent } from '$lib/pult-ledger';
-import { bookOptions, deleteHolding, getDeskHolding, listDeskHoldings, saveHolding } from '$lib/server/admin-desk';
+import { deleteHolding, getDeskHolding, listDeskHoldings, saveHolding } from '$lib/server/desk/holdings';
+import { bookOptions } from '$lib/server/desk/options';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';

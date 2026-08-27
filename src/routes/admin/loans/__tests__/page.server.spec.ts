@@ -1,17 +1,21 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { bookOptions, deleteLoan, getDeskLoan, listDeskLoans, readerOptions, returnDeskLoan, saveLoan } from '$lib/server/admin-desk';
+import { deleteLoan, getDeskLoan, listDeskLoans, returnDeskLoan, saveLoan } from '$lib/server/desk/loans';
+import { bookOptions, readerOptions } from '$lib/server/desk/options';
 import { queueLoanNotice } from '$lib/server/loan-mail';
 import { actions, load } from '../+page.server';
 
-vi.mock('$lib/server/admin-desk', () => ({
+vi.mock('$lib/server/desk/loans', () => ({
 	listDeskLoans: vi.fn(),
 	getDeskLoan: vi.fn(),
-	bookOptions: vi.fn(),
-	readerOptions: vi.fn(),
 	saveLoan: vi.fn(),
 	returnDeskLoan: vi.fn(),
 	deleteLoan: vi.fn()
+}));
+
+vi.mock('$lib/server/desk/options', () => ({
+	bookOptions: vi.fn(),
+	readerOptions: vi.fn()
 }));
 
 vi.mock('$lib/server/loan-mail', () => ({

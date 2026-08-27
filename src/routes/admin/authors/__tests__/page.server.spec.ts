@@ -1,9 +1,9 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { deleteAuthor, listDeskAuthors, saveAuthor } from '$lib/server/admin-desk';
+import { deleteAuthor, listDeskAuthors, saveAuthor } from '$lib/server/desk/authors';
 import { actions, load } from '../+page.server';
 
-vi.mock('$lib/server/admin-desk', () => ({
+vi.mock('$lib/server/desk/authors', () => ({
 	listDeskAuthors: vi.fn(),
 	getDeskAuthor: vi.fn(),
 	saveAuthor: vi.fn(),

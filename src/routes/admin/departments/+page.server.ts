@@ -2,7 +2,7 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { formInt, formText } from '$lib/server/admin';
 import { pickCurrent } from '$lib/pult-ledger';
-import { deleteCategory, getDeskCategory, listDeskCategories, saveCategory } from '$lib/server/admin-desk';
+import { deleteCategory, getDeskCategory, listDeskCategories, saveCategory } from '$lib/server/desk/categories';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';

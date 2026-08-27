@@ -57,6 +57,7 @@ Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, kt
 
 - **UploadThing** (`UPLOADTHING_TOKEN`) — obálky kníh z pultu
 - **Mail** — lokálne Mailtrap (`MAIL_DRIVER=mailtrap`), na ostrej Mailgun. Listy idú pri výpožičke, vrátení a zmene hesla. S `SUPABASE_SERVICE_ROLE_KEY` ide obnova hesla z pultu, nie z predvolenej pošty Supabase.
+- **Rate limit** — prihlásenie, registrácia a obnova hesla. `RATE_LIMIT=off` vypne.
 
 ## Mapa
 

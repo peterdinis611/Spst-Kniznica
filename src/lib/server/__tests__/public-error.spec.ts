@@ -25,4 +25,10 @@ describe('publicErrorMessage', () => {
 			'Pult je len pre správu fondu.'
 		);
 	});
+
+	it('holds a rate-limit stamp', () => {
+		expect(publicErrorMessage(new Error('Too many requests'), 429)).toBe(
+			'Príliš veľa pokusov. Počkaj chvíľu a skús to znova.'
+		);
+	});
 });

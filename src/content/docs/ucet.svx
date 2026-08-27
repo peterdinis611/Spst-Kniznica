@@ -22,6 +22,8 @@ Po registrácii ťa fond vráti tam, odkiaľ si prišiel, alebo na [Moje knihy](
 
 Ak prídeš z karty knihy, po prihlásení sa na ňu vráť a výpožičku potvrď.
 
+Po niekoľkých rýchlych pokusoch z jedného prehliadača fond lístok na chvíľu zadrží. Počkaj minútu a skús znova.
+
 ## Zabudnuté heslo
 
 Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mail. Nové heslo nastavíš na [login/password](/login/password), kam ťa odkaz privedie. Z [Môjho profilu](/profile) tlačidlo **Nové heslo** pošle odkaz hneď — aj keď si prihlásený.

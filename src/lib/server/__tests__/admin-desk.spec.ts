@@ -2,15 +2,13 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('../db', () => ({ db: {} }));
 
-import {
-	saveAuthor,
-	saveBook,
-	saveCategory,
-	saveHolding,
-	saveLoan,
-	saveReader,
-	saveReservation
-} from '../admin-desk';
+import { saveAuthor } from '../desk/authors';
+import { saveBook } from '../desk/books';
+import { saveCategory } from '../desk/categories';
+import { saveHolding } from '../desk/holdings';
+import { saveLoan } from '../desk/loans';
+import { saveReader } from '../desk/readers';
+import { saveReservation } from '../desk/reservations';
 
 describe('desk validation', () => {
 	it('rejects a thin department card before touching the fund', async () => {

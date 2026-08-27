@@ -3,15 +3,8 @@ import { env } from '$env/dynamic/private';
 import type { Actions, PageServerLoad } from './$types';
 import { formBool, formInt, formText } from '$lib/server/admin';
 import { pickCurrent } from '$lib/pult-ledger';
-import {
-	authorOptions,
-	bookAuthorIds,
-	categoryOptions,
-	deleteBook,
-	getDeskBook,
-	listDeskBooks,
-	saveBook
-} from '$lib/server/admin-desk';
+import { bookAuthorIds, deleteBook, getDeskBook, listDeskBooks, saveBook } from '$lib/server/desk/books';
+import { authorOptions, categoryOptions } from '$lib/server/desk/options';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';

@@ -2,6 +2,7 @@ import { fail, isRedirect, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { slovakAuthMessage } from '$lib/server/auth-message';
 import { sendPasswordChangedLetter } from '$lib/server/auth-mail';
+import { failIfRateLimited } from '$lib/server/rate-limit';
 import { supabasePublic } from '$lib/supabase/config';
 import { hasFieldErrors, validateNewPassword } from '$lib/auth-fields';
 
@@ -23,6 +24,9 @@ export const actions: Actions = {
 		if (hasFieldErrors(errors)) {
 			return fail(400, { errors });
 		}
+
+		const blocked = await failIfRateLimited(event, 'auth');
+		if (blocked) return blocked;
 
 		if (!event.locals.supabase) {
 			return fail(503, { message: 'Zmena hesla nie je nastavená. Chýba Supabase v .env.' });

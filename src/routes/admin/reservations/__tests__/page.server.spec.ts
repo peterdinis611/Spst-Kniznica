@@ -1,15 +1,18 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { deleteReservation, saveReservation } from '$lib/server/admin-desk';
+import { deleteReservation, saveReservation } from '$lib/server/desk/reservations';
 import { actions } from '../+page.server';
 
-vi.mock('$lib/server/admin-desk', () => ({
+vi.mock('$lib/server/desk/reservations', () => ({
 	listDeskReservations: vi.fn(),
 	getDeskReservation: vi.fn(),
-	bookOptions: vi.fn(),
-	readerOptions: vi.fn(),
 	saveReservation: vi.fn(),
 	deleteReservation: vi.fn()
+}));
+
+vi.mock('$lib/server/desk/options', () => ({
+	bookOptions: vi.fn(),
+	readerOptions: vi.fn()
 }));
 
 function event(fields: Record<string, string>) {

@@ -26,12 +26,18 @@ function event(
 			signInWithPassword?: ReturnType<typeof vi.fn>;
 			signUp?: ReturnType<typeof vi.fn>;
 		};
-	}
+	},
+	client?: { ip: string; ua?: string }
 ) {
 	return {
 		locals: { user: undefined, supabase },
 		url: new URL('http://localhost/login'),
+		getClientAddress: client ? () => client.ip : undefined,
 		request: {
+			headers: {
+				get: (name: string) =>
+					name.toLowerCase() === 'user-agent' ? (client?.ua ?? 'SPST-test') : null
+			},
 			formData: async () => {
 				const data = new FormData();
 				for (const [key, value] of Object.entries(body)) data.set(key, value);
@@ -158,6 +164,32 @@ describe('login signIn', () => {
 			name: reader.name,
 			role: 'reader'
 		});
+	});
+
+	it('holds the stamp after too many password tries', async () => {
+		const signInWithPassword = vi.fn().mockResolvedValue({
+			data: { user: null },
+			error: { message: 'Invalid login credentials' }
+		});
+		const ip = `198.51.100.${1 + Math.floor(Math.random() * 200)}`;
+		const body = { email: 'peter@spst.sk', password: 'heslo1234' };
+		const client = { ip, ua: 'SPST-test' };
+
+		for (let n = 0; n < 8; n += 1) {
+			const result = await actions.signIn(event(body, { auth: { signInWithPassword } }, client));
+			expect(isActionFailure(result)).toBe(true);
+			if (isActionFailure(result)) expect(result.status).toBe(400);
+		}
+
+		const blocked = await actions.signIn(event(body, { auth: { signInWithPassword } }, client));
+		expect(isActionFailure(blocked)).toBe(true);
+		if (isActionFailure(blocked)) {
+			expect(blocked.status).toBe(429);
+			expect(blocked.data).toMatchObject({
+				message: 'Príliš veľa pokusov. Počkaj chvíľu a skús to znova.',
+				mode: 'vstup'
+			});
+		}
 	});
 });
 

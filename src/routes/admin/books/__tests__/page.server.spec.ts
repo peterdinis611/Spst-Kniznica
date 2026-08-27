@@ -1,23 +1,20 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-	authorOptions,
-	bookAuthorIds,
-	categoryOptions,
-	deleteBook,
-	listDeskBooks,
-	saveBook
-} from '$lib/server/admin-desk';
+import { bookAuthorIds, deleteBook, listDeskBooks, saveBook } from '$lib/server/desk/books';
+import { authorOptions, categoryOptions } from '$lib/server/desk/options';
 import { actions, load } from '../+page.server';
 
-vi.mock('$lib/server/admin-desk', () => ({
+vi.mock('$lib/server/desk/books', () => ({
 	listDeskBooks: vi.fn(),
 	getDeskBook: vi.fn(),
 	bookAuthorIds: vi.fn(),
-	categoryOptions: vi.fn(),
-	authorOptions: vi.fn(),
 	saveBook: vi.fn(),
 	deleteBook: vi.fn()
+}));
+
+vi.mock('$lib/server/desk/options', () => ({
+	categoryOptions: vi.fn(),
+	authorOptions: vi.fn()
 }));
 
 const row = {

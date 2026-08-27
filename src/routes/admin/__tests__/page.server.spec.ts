@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { deskCounts } from '$lib/server/admin-desk';
+import { deskCounts } from '$lib/server/desk/counts';
 import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
-vi.mock('$lib/server/admin-desk', () => ({
+vi.mock('$lib/server/desk/counts', () => ({
 	deskCounts: vi.fn()
 }));
 
