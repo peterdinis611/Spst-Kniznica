@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import {
-		hasBorrowErrors,
+		borrowSchema,
+		fieldIssue,
 		LOAN_DAY_OPTIONS,
 		LOAN_DAYS_MAX,
 		LOAN_DAYS_MIN,
-		validateBorrow,
 		type BorrowErrors
 	} from '$lib/borrow-fields';
 	import { daysLabel } from '$lib/format';
+	import { createForm } from '$lib/tanstack-create-form';
 	import type { BorrowerDraft } from '$lib/types';
 
 	let {
@@ -26,18 +27,19 @@
 	} = $props();
 
 	let node = $state<HTMLDialogElement | undefined>();
-	let firstName = $state('');
-	let lastName = $state('');
-	let className = $state('');
-	let days = $state<number | null>(21);
 	let submitted = $state(false);
 
-	$effect(() => {
-		firstName = defaults.firstName;
-		lastName = defaults.lastName;
-		className = defaults.className;
-		days = defaults.days;
-	});
+	const form = createForm(() => ({
+		defaultValues: {
+			firstName: defaults.firstName,
+			lastName: defaults.lastName,
+			className: defaults.className,
+			days: defaults.days
+		},
+		validators: {
+			onSubmit: borrowSchema
+		}
+	}));
 
 	$effect(() => {
 		if (!node) return;
@@ -45,18 +47,14 @@
 		if (!open && node.open) node.close();
 	});
 
-	const daysValue = $derived(days == null ? '' : String(days));
-
-	const shown = $derived.by((): BorrowErrors => {
-		if (submitted) {
-			return validateBorrow({ firstName, lastName, className, days: daysValue });
-		}
-		return errors;
-	});
+	function shown(name: keyof BorrowErrors, issues: unknown[]) {
+		if (submitted) return fieldIssue(issues[0]) || undefined;
+		return errors[name];
+	}
 
 	function check(event: SubmitEvent) {
 		submitted = true;
-		if (hasBorrowErrors(validateBorrow({ firstName, lastName, className, days: daysValue }))) {
+		if (form.validateSync('submit').hasErrored) {
 			event.preventDefault();
 		}
 	}
@@ -92,92 +90,123 @@
 		{/if}
 
 		<div class="borrow-grid">
-			<div class="borrow-field" class:is-bad={Boolean(shown.firstName)}>
-				<label for="borrow-first">Meno</label>
-				<input
-					id="borrow-first"
-					name="firstName"
-					type="text"
-					bind:value={firstName}
-					autocomplete="given-name"
-					required
-					maxlength={40}
-					aria-invalid={shown.firstName ? 'true' : undefined}
-				/>
-				{#if shown.firstName}
-					<p class="borrow-error">{shown.firstName}</p>
-				{/if}
-			</div>
-			<div class="borrow-field" class:is-bad={Boolean(shown.lastName)}>
-				<label for="borrow-last">Priezvisko</label>
-				<input
-					id="borrow-last"
-					name="lastName"
-					type="text"
-					bind:value={lastName}
-					autocomplete="family-name"
-					required
-					maxlength={40}
-					aria-invalid={shown.lastName ? 'true' : undefined}
-				/>
-				{#if shown.lastName}
-					<p class="borrow-error">{shown.lastName}</p>
-				{/if}
-			</div>
+			<form.Field name="firstName">
+				{#snippet children(field)}
+					{@const err = shown('firstName', field.state.meta.errors)}
+					<div class="borrow-field" class:is-bad={Boolean(err)}>
+						<label for="borrow-first">Meno</label>
+						<input
+							id="borrow-first"
+							name={field.name}
+							type="text"
+							value={field.state.value}
+							onblur={field.handleBlur}
+							oninput={(event) => field.handleChange(event.currentTarget.value)}
+							autocomplete="given-name"
+							required
+							maxlength={40}
+							aria-invalid={err ? 'true' : undefined}
+						/>
+						{#if err}
+							<p class="borrow-error">{err}</p>
+						{/if}
+					</div>
+				{/snippet}
+			</form.Field>
+			<form.Field name="lastName">
+				{#snippet children(field)}
+					{@const err = shown('lastName', field.state.meta.errors)}
+					<div class="borrow-field" class:is-bad={Boolean(err)}>
+						<label for="borrow-last">Priezvisko</label>
+						<input
+							id="borrow-last"
+							name={field.name}
+							type="text"
+							value={field.state.value}
+							onblur={field.handleBlur}
+							oninput={(event) => field.handleChange(event.currentTarget.value)}
+							autocomplete="family-name"
+							required
+							maxlength={40}
+							aria-invalid={err ? 'true' : undefined}
+						/>
+						{#if err}
+							<p class="borrow-error">{err}</p>
+						{/if}
+					</div>
+				{/snippet}
+			</form.Field>
 		</div>
 
-		<div class="borrow-field" class:is-bad={Boolean(shown.className)}>
-			<label for="borrow-class">Trieda</label>
-			<input
-				id="borrow-class"
-				name="className"
-				type="text"
-				bind:value={className}
-				placeholder="II.A"
-				autocomplete="off"
-				required
-				maxlength={12}
-				aria-invalid={shown.className ? 'true' : undefined}
-			/>
-			{#if shown.className}
-				<p class="borrow-error">{shown.className}</p>
-			{/if}
-		</div>
+		<form.Field name="className">
+			{#snippet children(field)}
+				{@const err = shown('className', field.state.meta.errors)}
+				<div class="borrow-field" class:is-bad={Boolean(err)}>
+					<label for="borrow-class">Trieda</label>
+					<input
+						id="borrow-class"
+						name={field.name}
+						type="text"
+						value={field.state.value}
+						onblur={field.handleBlur}
+						oninput={(event) => field.handleChange(event.currentTarget.value)}
+						placeholder="II.A"
+						autocomplete="off"
+						required
+						maxlength={12}
+						aria-invalid={err ? 'true' : undefined}
+					/>
+					{#if err}
+						<p class="borrow-error">{err}</p>
+					{/if}
+				</div>
+			{/snippet}
+		</form.Field>
 
-		<fieldset class="borrow-days" class:is-bad={Boolean(shown.days)}>
-			<legend>Doba</legend>
-			<div class="borrow-stamps">
-				{#each LOAN_DAY_OPTIONS as option (option)}
-					<button
-						class="borrow-choice"
-						type="button"
-						aria-pressed={days === option}
-						onclick={() => (days = option)}
-					>
-						{daysLabel(option)}
-					</button>
-				{/each}
-			</div>
-			<div class="borrow-custom">
-				<label for="borrow-days">Iná</label>
-				<input
-					id="borrow-days"
-					name="days"
-					type="number"
-					inputmode="numeric"
-					min={LOAN_DAYS_MIN}
-					max={LOAN_DAYS_MAX}
-					step="1"
-					required
-					bind:value={days}
-					aria-invalid={shown.days ? 'true' : undefined}
-				/>
-				<span>dní</span>
-			</div>
-			{#if shown.days}
-				<p class="borrow-error">{shown.days}</p>
-			{/if}
-		</fieldset>
+		<form.Field name="days">
+			{#snippet children(field)}
+				{@const err = shown('days', field.state.meta.errors)}
+				<fieldset class="borrow-days" class:is-bad={Boolean(err)}>
+					<legend>Doba</legend>
+					<div class="borrow-stamps">
+						{#each LOAN_DAY_OPTIONS as option (option)}
+							<button
+								class="borrow-choice"
+								type="button"
+								aria-pressed={field.state.value === option}
+								onclick={() => field.handleChange(option)}
+							>
+								{daysLabel(option)}
+							</button>
+						{/each}
+					</div>
+					<div class="borrow-custom">
+						<label for="borrow-days">Iná</label>
+						<input
+							id="borrow-days"
+							name={field.name}
+							type="number"
+							inputmode="numeric"
+							min={LOAN_DAYS_MIN}
+							max={LOAN_DAYS_MAX}
+							step="1"
+							required
+							value={field.state.value}
+							onblur={field.handleBlur}
+							oninput={(event) => {
+								const next = event.currentTarget.valueAsNumber;
+								field.handleChange(Number.isNaN(next) ? 0 : next);
+							}}
+							aria-invalid={err ? 'true' : undefined}
+						/>
+						<span>dní</span>
+					</div>
+					{#if err}
+						<p class="borrow-error">{err}</p>
+					{/if}
+				</fieldset>
+			{/snippet}
+		</form.Field>
 
 		<div class="borrow-actions">
 			<button class="borrow-cancel" type="button" onclick={() => (open = false)}>Zrušiť</button>

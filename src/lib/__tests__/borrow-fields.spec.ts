@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	fieldIssue,
 	hasBorrowErrors,
 	normalizeClass,
 	parseLoanDays,
@@ -51,5 +52,10 @@ describe('validateBorrow', () => {
 	it('accepts school class codes', () => {
 		expect(validateBorrow({ firstName: 'Ján', lastName: 'Kováč', className: '3.INF', days: '7' }).className).toBeUndefined();
 		expect(validateBorrow({ firstName: 'Ján', lastName: 'Kováč', className: '??', days: '7' }).className).toBeTruthy();
+	});
+
+	it('reads a valibot issue from a field error', () => {
+		expect(fieldIssue('Zadaj triedu.')).toBe('Zadaj triedu.');
+		expect(fieldIssue({ message: 'Zadaj triedu.' })).toBe('Zadaj triedu.');
 	});
 });

@@ -19,8 +19,8 @@ declare global {
 	}
 }
 
-declare module '../../node_modules/@tanstack/svelte-table/dist/createTable.svelte.js' {
-	export { createTable } from '@tanstack/svelte-table';
+declare module '../../node_modules/@tanstack/svelte-form/dist/createForm.svelte.js' {
+	export { createForm } from '@tanstack/svelte-form';
 }
 
 declare module '$tanstack/flex-render' {

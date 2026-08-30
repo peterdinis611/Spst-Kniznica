@@ -6,7 +6,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
 	ssr: {
-		noExternal: ['@tanstack/svelte-table', '@uploadthing/svelte']
+		noExternal: ['@tanstack/svelte-table', '@tanstack/svelte-form', '@uploadthing/svelte']
 	},
 	server: {
 		host: true,
