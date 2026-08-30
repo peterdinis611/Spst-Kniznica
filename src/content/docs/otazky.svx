@@ -22,7 +22,19 @@ Dones knihu na pult. V aplikácii poplatok nie je. Oneskorenie rieši pavilón B
 
 ## Kniha píše nula voľných. Je preč?
 
-Nie. Všetky výtlačky sú vonku. Skús neskôr, alebo sa opýtaj na pulte, kto ju má.
+Nie. Všetky výtlačky sú vonku. Prihlás sa a na karte polož **čakací lístok**. Keď sa zväzok vráti, príde list a sedem dní ho drží pult.
+
+## Dá sa predĺžiť bez fronty v pavilóne B?
+
+Raz, z [Moje knihy](/loans), kým nie si po lehote a na knihu nikto nečaká. Ďalšie predĺženie rieši pult.
+
+## Ako zistím, čo má vonku II.A?
+
+Na pulte v zásuvke [Výpožičky](/admin/loans) zadaj triedu a stlač **Čo je vonku**. Učiteľ to uvidí, keď má pečiatku knihovník.
+
+## Dá sa vytlačiť inventúra?
+
+Áno. Na pulte v [Výkazoch](/admin/reports) je list inventúry a oneskorených lístkov. Tlač (PDF) alebo CSV. Raz za polrok stačí.
 
 ## Kde je príručka v menu?
 

@@ -25,11 +25,16 @@ Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie ide priebe
 | Knihy | `book` | zväzok, ISBN, signatúra, autori, **obálka** (UploadThing), výtlačky pri založení |
 | Väzby | `book_author` | kto je na ktorej knihe a v akom poradí |
 | Výtlačky | `holding` | inventár, stav (voľný / vonku / stratený / vyradený) |
-| Výpožičky | `loan` | lístky všetkých čitateľov, vrátenie z pultu |
+| Výpožičky | `loan` | lístky všetkých čitateľov, vrátenie z pultu, **trieda čo je vonku** |
 | Rezervácie | `reservation` | čakacie lístky |
 | Čitatelia | `user` | meno, e-mail a **rola** preukazu — heslo ostáva v Supabase |
+| Výkazy | — | inventúra a oneskorené lístky na **tlač / CSV**, raz za polrok |
 
 Účty session / account / verification tu nie sú. To je Auth, nie fond.
+
+Na prehľade `/admin` je **dnešný rad**: po lehote, rezervácie na pulte, čakajúci a nové preukazy. Riadok otvorí lístok v zásuvke.
+
+V zásuvke **Výpožičky** zadáš triedu (napr. `II.A`) a **Čo je vonku** — učiteľ aj knihovník uvidia otvorené lístky triedy. **Výkazy** sú jeden list: inventúra výtlačkov a oneskorené lístky. Tlač ide do PDF, CSV do tabuľky. Nie je to ďalší prehľad, len polročný odpis.
 
 ## Poznámky z pultu
 

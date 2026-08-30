@@ -37,6 +37,7 @@ Na cudzom počítači v študovni sa vždy odhlás.
 ## Čo účet drží
 
 - aktívne výpožičky a dátum vrátenia
+- čakacie lístky, kým sa výtlačok nevráti
 - históriu vrátených zväzkov na stránke [Moje knihy](/loans)
 - číslo preukazu, e-mail a pečiatku (čitateľ / knihovník) na [Môj profil](/profile)
 

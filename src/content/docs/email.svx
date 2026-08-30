@@ -1,6 +1,6 @@
 ---
 title: E-mail
-description: Listy z pultu — preukaz, heslo, výpožička a vrátenie.
+description: Listy z pultu — preukaz, heslo, výpožička, rezervácia a termín.
 order: 6.5
 ---
 
@@ -54,9 +54,11 @@ Aby obnova šla z pultu (nie z `noreply@mail.app.supabase.io`), doplň `SUPABASE
 
 Ak odkaz padne na [chybu účtu](/auth/error), skontroluj Site URL a že v odkaze ostal `token_hash` aj `type`.
 
-## Výpožička a vrátenie
+## Výpožička, rezervácia a termín
 
-Pri **vypožičaní** a **vrátení** ide druhý list cez poštu pultu (nie cez Supabase). Padne na e-mail z preukazu. Predmet je `Vypožičané · …` alebo `Vrátené · …`. Telo je ten istý krémový lístok s medeným chrbtom.
+Pri **vypožičaní**, **vrátení** a **predĺžení** ide list cez poštu pultu (nie cez Supabase). Padne na e-mail z preukazu. Predmet je `Vypožičané · …`, `Vrátené · …` alebo `Predĺžené · …`. Deň pred lehotou príde `Zajtra splatné · …`, po lehote `Po lehote · …`. Čakací lístok má `Čakací lístok · …`, pripravený výtlačok `Na pulte · …`. Telo je ten istý krémový lístok s medeným chrbtom.
+
+Tik týchto pripomienok beží z pultu (každých 30 minút pri návšteve) a dá sa spustiť cronom na `GET /api/desk/tick` s `DESK_TICK_SECRET`.
 
 Lokálne (`vite dev`, alebo `MAIL_DRIVER=mailtrap`) ide **Mailtrap**. Token je `MAILTRAP_TOKEN`, odosielateľ `MAILTRAP_FROM` (demo adresa `hello@demomailtrap.co`, kým nemáte overenú vlastnú doménu). Demo doména doručí **len na e-mail majiteľa Mailtrap účtu** — doplň ho do `MAILTRAP_TO`. Lístok pre iný preukaz tam padne s poznámkou pôvodnej adresy.
 

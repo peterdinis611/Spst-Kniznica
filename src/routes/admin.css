@@ -216,6 +216,93 @@
 	margin-bottom: 1rem;
 }
 
+.pult-class {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.45rem 0.65rem;
+}
+
+.pult-class label {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	height: 2.6rem;
+	padding: 0 0.2rem 0 0.75rem;
+	background: color-mix(in srgb, var(--pult-walnut) 6%, var(--pult-paper));
+	border: 1px solid color-mix(in srgb, var(--pult-walnut) 12%, transparent);
+	border-radius: 999px;
+}
+
+.pult-class label span {
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 0.62rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--pult-brass);
+}
+
+.pult-class input[type='text'],
+.pult-class input:not([type]) {
+	width: 4.6rem;
+	height: 2.2rem;
+	border: 0;
+	background: transparent;
+	color: var(--pult-ink);
+	font-family: 'Fraunces', serif;
+	font-size: 1.05rem;
+	font-weight: 650;
+	letter-spacing: -0.03em;
+	box-shadow: none;
+}
+
+.pult-class input:focus,
+.pult-class input:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.pult-class button {
+	appearance: none;
+	height: 2.6rem;
+	padding: 0 0.95rem;
+	border: 1.5px solid color-mix(in srgb, var(--pult-lamp) 80%, var(--pult-walnut));
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--pult-lamp) 18%, var(--pult-paper));
+	color: var(--pult-walnut);
+	cursor: pointer;
+	font-family: 'Fraunces', serif;
+	font-size: 0.82rem;
+	font-style: italic;
+	font-weight: 700;
+	transform: rotate(-2deg);
+}
+
+.pult-class button:hover,
+.pult-class button:focus-visible {
+	background: var(--pult-walnut);
+	color: var(--pult-paper);
+	outline: none;
+	transform: rotate(0deg);
+}
+
+.pult-class a {
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 0.62rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: var(--pult-muted);
+}
+
+.pult-class a:hover,
+.pult-class a:focus-visible {
+	color: var(--pult-walnut);
+	outline: none;
+}
+
 .pult-search {
 	display: flex;
 	flex: 1;
@@ -739,6 +826,150 @@
 	color: var(--pult-brass);
 }
 
+.pult-today {
+	display: grid;
+	gap: 1.1rem;
+	margin: 0 0 1.35rem;
+}
+
+.pult-today .pult-blot {
+	margin: 0;
+}
+
+.pult-queue-kicker,
+.pult-queue-empty {
+	margin: 0;
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 0.62rem;
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--pult-brass);
+}
+
+.pult-queue-empty {
+	max-width: 22rem;
+	padding: 0.85rem 1.05rem;
+	border: 1px dashed color-mix(in srgb, var(--pult-walnut) 22%, transparent);
+	border-radius: 0.35rem 1.05rem 0.35rem 1.05rem;
+	color: var(--pult-muted);
+	animation: pult-in 0.7s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pult-queue {
+	display: grid;
+	gap: 0.85rem;
+}
+
+.pult-rail {
+	padding: 0.7rem 0.85rem 0.75rem;
+	background: color-mix(in srgb, #fff 42%, var(--pult-paper));
+	border: 1px solid color-mix(in srgb, var(--pult-walnut) 12%, transparent);
+	border-radius: 0.35rem 1.05rem 0.35rem 1.05rem;
+	animation: pult-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pult-rail-head {
+	display: block;
+	margin: 0 0 0.55rem;
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 0.62rem;
+	font-weight: 600;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: var(--pult-brass);
+}
+
+.pult-rail-head:hover,
+.pult-rail-head:focus-visible {
+	color: var(--pult-walnut);
+	outline: none;
+}
+
+.pult-rail ul {
+	display: grid;
+	gap: 0.45rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pult-rail li a {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 0.15rem 0.7rem;
+	padding: 0.35rem 0 0.4rem;
+	border-bottom: 1px dotted color-mix(in srgb, var(--pult-walnut) 22%, transparent);
+	text-decoration: none;
+	color: inherit;
+}
+
+.pult-rail li:last-child a {
+	border-bottom: 0;
+	padding-bottom: 0;
+}
+
+.pult-rail li a em {
+	grid-row: 1 / span 2;
+	align-self: center;
+	padding: 0.2rem 0.42rem 0.14rem;
+	border: 1.5px solid color-mix(in srgb, var(--pult-lamp) 80%, var(--pult-walnut));
+	border-radius: 999px;
+	font-family: 'Fraunces', serif;
+	font-size: 0.62rem;
+	font-style: italic;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	line-height: 1;
+	text-transform: uppercase;
+	color: var(--pult-lamp);
+	transform: rotate(-7deg);
+}
+
+.pult-rail li a strong {
+	min-width: 0;
+	overflow: hidden;
+	font-family: 'Fraunces', serif;
+	font-size: 1.02rem;
+	font-weight: 650;
+	letter-spacing: -0.03em;
+	line-height: 1.15;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pult-rail li a span {
+	min-width: 0;
+	overflow: hidden;
+	font-family: 'Newsreader', serif;
+	font-size: 0.88rem;
+	color: var(--pult-muted);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pult-rail li a:hover strong,
+.pult-rail li a:focus-visible strong {
+	color: var(--pult-walnut);
+}
+
+@media (min-width: 720px) {
+	.pult-today {
+		grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+		align-items: start;
+		gap: 1.4rem 1.8rem;
+	}
+
+	.pult-queue {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.pult-queue-kicker {
+		grid-column: 1 / -1;
+	}
+}
+
 .pult-stats {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -861,5 +1092,209 @@ html.dark .pult-cabinet {
 	.pult-actions {
 		justify-content: flex-start;
 		margin-top: 0.35rem;
+	}
+}
+
+.pult-folio {
+	position: relative;
+	max-width: 52rem;
+	padding: 0.15rem 0 0.4rem;
+}
+
+.pult-folio-mast {
+	position: relative;
+	max-width: 28rem;
+	margin: 0 0 2rem;
+	animation: pult-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pult-folio-kicker {
+	margin: 0;
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 0.62rem;
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--pult-brass);
+}
+
+.pult-folio-mast h2 {
+	margin: 0.55rem 0 0;
+	max-width: 8ch;
+	font-family: 'Fraunces', serif;
+	font-size: clamp(2.4rem, 7vw, 3.8rem);
+	font-weight: 800;
+	letter-spacing: -0.07em;
+	line-height: 0.88;
+}
+
+.pult-folio-lede {
+	margin: 0.7rem 0 0;
+	max-width: 34ch;
+	font-family: 'Newsreader', serif;
+	font-size: 1.08rem;
+	line-height: 1.4;
+	color: var(--pult-muted);
+}
+
+.pult-folio-seal {
+	position: absolute;
+	top: -0.4rem;
+	right: -1.2rem;
+	display: grid;
+	place-items: center;
+	width: 4.4rem;
+	height: 4.4rem;
+	border: 2px solid color-mix(in srgb, var(--pult-lamp) 80%, var(--pult-walnut));
+	border-radius: 999px;
+	color: var(--pult-brass);
+	font-family: 'Fraunces', serif;
+	font-size: 0.78rem;
+	font-style: italic;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	transform: rotate(12deg);
+}
+
+.pult-folio-acts {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.55rem 0.85rem;
+	margin-top: 1.15rem;
+}
+
+.pult-folio-acts button,
+.pult-folio-acts a {
+	appearance: none;
+	display: inline-grid;
+	place-items: center;
+	height: 2.45rem;
+	padding: 0 0.95rem;
+	border: 1.5px solid color-mix(in srgb, var(--pult-walnut) 22%, transparent);
+	border-radius: 999px;
+	background: transparent;
+	color: var(--pult-ink);
+	cursor: pointer;
+	font-family: 'Fraunces', serif;
+	font-size: 0.8rem;
+	font-style: italic;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.pult-folio-acts button {
+	border-color: color-mix(in srgb, var(--pult-lamp) 80%, var(--pult-walnut));
+	background: color-mix(in srgb, var(--pult-lamp) 16%, var(--pult-paper));
+	transform: rotate(-3deg);
+}
+
+.pult-folio-acts button:hover,
+.pult-folio-acts a:hover,
+.pult-folio-acts button:focus-visible,
+.pult-folio-acts a:focus-visible {
+	background: var(--pult-walnut);
+	color: var(--pult-paper);
+	outline: none;
+	transform: none;
+}
+
+.pult-folio-sheet {
+	position: relative;
+	display: grid;
+	gap: 0.85rem;
+	margin: 0 0 2.1rem;
+	padding: 1.05rem 0 0.2rem;
+	border-top: 1px dashed color-mix(in srgb, var(--pult-walnut) 22%, transparent);
+	animation: pult-in 0.7s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pult-folio-index {
+	position: absolute;
+	top: 0.85rem;
+	right: 0;
+	margin: 0;
+	font-family: 'Big Shoulders Display', 'Fraunces', serif;
+	font-size: 2.4rem;
+	font-weight: 800;
+	letter-spacing: -0.04em;
+	line-height: 1;
+	color: color-mix(in srgb, var(--pult-brass) 55%, var(--pult-paper));
+}
+
+.pult-folio-sheet h3 {
+	margin: 0;
+	font-family: 'Fraunces', serif;
+	font-size: 1.55rem;
+	font-weight: 700;
+	letter-spacing: -0.04em;
+}
+
+.pult-folio-sheet p {
+	margin: 0.25rem 0 0;
+	max-width: 36ch;
+	font-family: 'Newsreader', serif;
+	color: var(--pult-muted);
+}
+
+.pult-folio-empty {
+	padding: 0.85rem 0 0.2rem;
+	font-style: italic;
+}
+
+.pult-folio .pult-table {
+	margin-top: 0.35rem;
+}
+
+@media print {
+	.pult-mast,
+	.pult-tabs,
+	.pult-folio-acts,
+	.pult-folio-seal {
+		display: none !important;
+	}
+
+	.pult {
+		animation: none;
+	}
+
+	.pult-cabinet {
+		background: #fff;
+		box-shadow: none;
+		border-radius: 0;
+	}
+
+	.pult-cabinet::before,
+	.pult-sheet::before,
+	.pult-sheet::after {
+		display: none;
+	}
+
+	.pult-sheet {
+		padding: 0;
+		background: #fff;
+	}
+
+	.pult-folio-mast h2 {
+		font-size: 2.2rem;
+	}
+
+	.pult-folio-sheet {
+		break-inside: avoid;
+		animation: none;
+	}
+
+	.pult-table,
+	.pult-table thead,
+	.pult-table tbody,
+	.pult-table tr,
+	.pult-table td,
+	.pult-table th {
+		display: revert;
+		width: auto;
+	}
+
+	.pult-table tr:hover td {
+		background: transparent;
 	}
 }

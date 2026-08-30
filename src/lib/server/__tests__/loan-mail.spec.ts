@@ -29,6 +29,27 @@ describe('loanMailCopy', () => {
 		expect(copy.html).toContain('Vrátené.');
 	});
 
+	it('stamps a renewal with the new due date', () => {
+		const copy = loanMailCopy({ kind: 'renew', ...slip });
+		expect(copy.subject).toBe('Predĺžené · Algoritmy v dielni · SPŠT knižnica');
+		expect(copy.text).toContain('predĺžená');
+		expect(copy.html).toContain('Predĺžené.');
+	});
+
+	it('warns the day before the due date', () => {
+		const copy = loanMailCopy({ kind: 'dueSoon', ...slip });
+		expect(copy.subject).toBe('Zajtra splatné · Algoritmy v dielni · SPŠT knižnica');
+		expect(copy.text).toContain('zajtra splatný');
+		expect(copy.html).toContain('Zajtra splatné.');
+	});
+
+	it('marks an overdue slip', () => {
+		const copy = loanMailCopy({ kind: 'overdue', ...slip });
+		expect(copy.subject).toBe('Po lehote · Algoritmy v dielni · SPŠT knižnica');
+		expect(copy.text).toContain('po lehote');
+		expect(copy.html).toContain('Po lehote.');
+	});
+
 	it('escapes a hostile title in HTML', () => {
 		const copy = loanMailCopy({
 			kind: 'borrow',

@@ -15,6 +15,8 @@ Výpožička je bez poplatku. Platí pre prihlásených čitateľov.
 
 Jednu knihu si naraz požičiaš len raz. Kým ju nevrátiš, druhý výtlačok toho istého zväzku si neberieš. Ďalšie tituly môžeš brať hneď, kým je voľný výtlačok.
 
+Keď je **nula voľných**, na karte položíš **čakací lístok**. Až sa výtlačok vráti, príde list **Na pulte** a sedem dní ho drží pavilón B. Rad vidíš na [Moje knihy](/loans) aj na pulte.
+
 ## Ako si požičať
 
 1. Prihlás sa.
@@ -22,7 +24,7 @@ Jednu knihu si naraz požičiaš len raz. Kým ju nevrátiš, druhý výtlačok 
 3. Ak je výtlačok voľný, otvor lístok a vyplň **meno, priezvisko, triedu a dobu**. Na karte ostane pečiatka **Vypožičané**.
 4. Zväzok si vyzdvihni na pulte — v účte uvidíš termín vrátenia. Na preukazový e-mail príde lístok **Vypožičané**.
 
-Ak je nula voľných, tlačidlo výpožičku nespustí. Kniha nie je stratená, len vonku.
+Ak je nula voľných, prihlásený čitateľ položí **čakací lístok**. Hosť uvidí výzvu na prihlásenie. Kniha nie je stratená, len vonku.
 
 ## Ako vrátiť
 
@@ -30,7 +32,9 @@ Odnes knihu do pavilónu B a na stránke [Moje knihy](/loans) ju označ ako vrá
 
 Oneskorené vrátenie rieši pult. V aplikácii poplatok nie je — termín slúži ako dohoda, nie ako pokuta.
 
-Na lístku výpožičky uvidíš, či ešte máš dni, či je splatné **dnes**, **zajtra**, alebo koľko dní ideš **po lehote**.
+Na lístku výpožičky uvidíš, či ešte máš dni, či je splatné **dnes**, **zajtra**, alebo koľko dní ideš **po lehote**. Deň pred termínom príde list **Zajtra splatné**, po lehote **Po lehote**.
+
+Predĺžiť vieš **raz** z [Moje knihy](/loans), kým nie si po lehote a na zväzok nikto nečaká. Ďalšie predĺženie rieši pult.
 
 ## Pečiatky
 
@@ -38,9 +42,12 @@ Na lístku výpožičky uvidíš, či ešte máš dni, či je splatné **dnes**,
 | --- | --- |
 | Vypožičané | Práve si vzal zväzok na účet |
 | Vrátené | Práve si ho vrátil vo fonde |
+| Čakáš | Položil si čakací lístok |
+| Predĺžené | Predĺžil si lehotu z lístka |
+| Stiahnuté | Stiahol si čakací lístok |
 
 Pečiatka je potvrdenie pohybu, nie pokuta. Papierový výtlačok ostáva rozhodujúci.
 
 ## Moje knihy
 
-Na [Moje knihy](/loans) je výpožičný lístok: čo máš vonku a čo si už vrátil. Vrátené môžeš z lístka stiahnuť tlačidlom **Vyčistiť vrátené** — vo fonde ostávajú vrátené, len ich na preukaze nevidíš. Strop na počet kníh nie je. Hostia túto stránku nevidia — najprv [účet](/docs/ucet).
+Na [Moje knihy](/loans) je výpožičný lístok: čo máš vonku, čakacie lístky a čo si už vrátil. Vrátené môžeš z lístka stiahnuť tlačidlom **Vyčistiť vrátené** — vo fonde ostávajú vrátené, len ich na preukaze nevidíš. Strop na počet kníh nie je. Hostia túto stránku nevidia — najprv [účet](/docs/ucet).

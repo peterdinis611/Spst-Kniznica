@@ -60,6 +60,7 @@ function record(
 		borrowerLastName: 'Dinis',
 		borrowerClass: 'II.A',
 		loanDays: 21,
+		renewalCount: 0,
 		book: book(title)
 	};
 }
@@ -71,6 +72,7 @@ const empty = {
 	reader,
 	loans: [] as LoanRecord[],
 	history: [] as LoanRecord[],
+	waits: [],
 	activeCount: 0,
 	maxLoans: null
 };
@@ -110,6 +112,46 @@ describe('Moje knihy folio', () => {
 		await expect.element(page.getByText('Ján Test')).toBeVisible();
 		await expect.element(page.getByRole('button', { name: 'Vrátiť' })).toBeVisible();
 		expect(document.querySelector<HTMLInputElement>('input[name="loanId"]')?.value).toBe('loan-1');
+	});
+
+	it('offers a renewal on an eligible slip', async () => {
+		render(LoansPage, {
+			data: {
+				...empty,
+				activeCount: 1,
+				loans: [{ ...record('Technické kreslenie', { id: 'loan-1' }), canRenew: true }]
+			},
+			form: null
+		} as never);
+
+		await expect.element(page.getByRole('button', { name: 'Predĺžiť' })).toBeVisible();
+	});
+
+	it('lists a wait slip on the queue tab', async () => {
+		render(LoansPage, {
+			data: {
+				...empty,
+				waits: [
+					{
+						id: 'wait-1',
+						bookId: 'stroje-1',
+						status: 'pending',
+						createdAt: new Date(2026, 7, 20),
+						expiresAt: new Date(2026, 8, 19),
+						place: 2,
+						book: book('Stroje', 'stroje-1')
+					}
+				]
+			},
+			form: null
+		} as never);
+
+		await page.getByRole('tab', { name: /Čakacie/ }).click();
+
+		await expect.element(page.getByRole('tab', { name: /Čakacie/ })).toHaveAttribute('aria-selected', 'true');
+		await expect.element(page.getByText('2. v rade')).toBeVisible();
+		await expect.element(page.getByRole('link', { name: 'Stroje' })).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Stiahnuť' })).toBeVisible();
 	});
 
 	it('switches to returned history', async () => {

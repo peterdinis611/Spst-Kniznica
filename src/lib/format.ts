@@ -98,10 +98,10 @@ export function firstName(name: string) {
 	return name.trim().split(/\s+/)[0] ?? name;
 }
 
-export function daysUntil(date: Date | string | number) {
+export function daysUntil(date: Date | string | number, now: Date | string | number = Date.now()) {
 	const due = new Date(date);
 	due.setHours(23, 59, 59, 999);
-	return Math.ceil((due.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+	return Math.ceil((due.getTime() - new Date(now).getTime()) / (1000 * 60 * 60 * 24));
 }
 
 export function dueStatus(date: Date | string | number) {

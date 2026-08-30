@@ -1,14 +1,51 @@
-import { and, desc, eq, ilike, or } from 'drizzle-orm';
+import { and, desc, eq, ilike, isNull, or } from 'drizzle-orm';
 import { LIST_LIMIT } from '$lib/admin';
-import { parseLoanDays } from '$lib/borrow-fields';
+import { normalizeClass, parseLoanDays } from '$lib/borrow-fields';
 import { refreshCatalog } from '../admin';
 import { db } from '../db';
 import { book, holding, loan, user } from '../db/schema';
+import { notifyHoldReady } from '../hold-mail';
+import { offerCopyToWaiter } from '../waitlist';
 import { syncCopies } from './copies';
 import { caught, fail, needle, ok, type DeskResult } from './shared';
 
-export async function listDeskLoans(query = '') {
-	const q = query.trim();
+export type DeskLoanFilter = {
+	q: string;
+	klass: string;
+	open: boolean;
+};
+
+export function parseDeskLoanFilter(url: URL): DeskLoanFilter {
+	return {
+		q: url.searchParams.get('q') ?? '',
+		klass: normalizeClass(url.searchParams.get('class') ?? ''),
+		open: url.searchParams.get('open') === '1'
+	};
+}
+
+function asLoanFilter(input: string | DeskLoanFilter = ''): DeskLoanFilter {
+	if (typeof input === 'string') return { q: input, klass: '', open: false };
+	return input;
+}
+
+export async function listDeskLoans(input: string | DeskLoanFilter = '') {
+	const filter = asLoanFilter(input);
+	const q = filter.q.trim();
+	const klass = normalizeClass(filter.klass);
+	const clauses = [
+		q
+			? or(
+					ilike(book.title, needle(q)),
+					ilike(user.name, needle(q)),
+					ilike(user.email, needle(q)),
+					ilike(loan.borrowerLastName, needle(q)),
+					ilike(loan.borrowerClass, needle(q))
+				)
+			: undefined,
+		klass ? ilike(loan.borrowerClass, klass) : undefined,
+		filter.open ? isNull(loan.returnedAt) : undefined
+	].filter((clause) => clause != null);
+
 	return await db
 		.select({
 			id: loan.id,
@@ -30,19 +67,25 @@ export async function listDeskLoans(query = '') {
 		.from(loan)
 		.innerJoin(book, eq(book.id, loan.bookId))
 		.innerJoin(user, eq(user.id, loan.userId))
-		.where(
-			q
-				? or(
-						ilike(book.title, needle(q)),
-						ilike(user.name, needle(q)),
-						ilike(user.email, needle(q)),
-						ilike(loan.borrowerLastName, needle(q)),
-						ilike(loan.borrowerClass, needle(q))
-					)
-				: undefined
-		)
+		.where(clauses.length > 1 ? and(...clauses) : clauses[0])
 		.orderBy(desc(loan.borrowedAt))
 		.limit(LIST_LIMIT);
+}
+
+export async function listDeskClasses() {
+	const rows = await db
+		.selectDistinct({ klass: loan.borrowerClass })
+		.from(loan)
+		.orderBy(loan.borrowerClass);
+	const seen = new Set<string>();
+	const classes: string[] = [];
+	for (const row of rows) {
+		const klass = normalizeClass(row.klass);
+		if (!klass || seen.has(klass)) continue;
+		seen.add(klass);
+		classes.push(klass);
+	}
+	return classes;
 }
 
 export async function getDeskLoan(id: string) {
@@ -88,7 +131,7 @@ export async function saveLoan(input: {
 }): Promise<DeskResult> {
 	const first = input.borrowerFirstName.trim();
 	const last = input.borrowerLastName.trim();
-	const klass = input.borrowerClass.trim();
+	const klass = normalizeClass(input.borrowerClass);
 	if (first.length < 2 || last.length < 2) return fail('Meno a priezvisko na lístku.');
 	if (!klass) return fail('Doplň triedu.');
 	const days = parseLoanDays(String(input.loanDays));
@@ -181,14 +224,17 @@ export async function returnDeskLoan(id: string): Promise<DeskResult> {
 	if (!current) return fail('Výpožička sa nenašla.');
 	if (current.returnedAt) return fail('Táto kniha je už vrátená.');
 
+	let offer = null as Awaited<ReturnType<typeof offerCopyToWaiter>>;
 	await db.transaction(async (tx) => {
 		await tx.update(loan).set({ returnedAt: new Date() }).where(eq(loan.id, id));
 		if (current.holdingId) {
 			await tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId));
 		}
 		await syncCopies(tx, current.bookId);
+		offer = await offerCopyToWaiter(tx, current.bookId);
 	});
 	await refreshCatalog({ bookId: current.bookId });
+	await notifyHoldReady(offer);
 	return ok();
 }
 

@@ -7,7 +7,8 @@ export const PULT_TABLES = [
 	{ href: '/admin/holdings', label: 'Výtlačky', code: '06', table: 'holding' },
 	{ href: '/admin/loans', label: 'Výpožičky', code: '07', table: 'loan' },
 	{ href: '/admin/reservations', label: 'Rezervácie', code: '08', table: 'reservation' },
-	{ href: '/admin/readers', label: 'Čitatelia', code: '09', table: 'user' }
+	{ href: '/admin/readers', label: 'Čitatelia', code: '09', table: 'user' },
+	{ href: '/admin/reports', label: 'Výkazy', code: '10' }
 ] as const;
 
 export const HOLDING_STATUSES = [
@@ -19,7 +20,7 @@ export const HOLDING_STATUSES = [
 
 export const RESERVATION_STATUSES = [
 	{ value: 'pending', label: 'čaká' },
-	{ value: 'fulfilled', label: 'splnená' },
+	{ value: 'fulfilled', label: 'na pulte' },
 	{ value: 'cancelled', label: 'zrušená' },
 	{ value: 'expired', label: 'exspirovaná' }
 ] as const;

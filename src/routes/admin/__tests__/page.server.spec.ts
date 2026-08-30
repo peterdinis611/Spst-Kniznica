@@ -1,10 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import { deskCounts } from '$lib/server/desk/counts';
+import { deskQueue } from '$lib/server/desk/queue';
 import { pageOf } from '$lib/page-of';
 import { load } from '../+page.server';
 
 vi.mock('$lib/server/desk/counts', () => ({
 	deskCounts: vi.fn()
+}));
+
+vi.mock('$lib/server/desk/queue', () => ({
+	deskQueue: vi.fn()
 }));
 
 describe('admin overview', () => {
@@ -20,10 +25,17 @@ describe('admin overview', () => {
 			reservations: 0,
 			readers: 3
 		});
+		vi.mocked(deskQueue).mockResolvedValue({
+			overdue: [],
+			pickup: [],
+			waiting: [],
+			passes: []
+		});
 
 		const data = pageOf(await load({} as Parameters<typeof load>[0]));
 
 		expect(data.counts.openLoans).toBe(2);
 		expect(data.counts.books).toBe(20);
+		expect(data.queue.overdue).toEqual([]);
 	});
 });

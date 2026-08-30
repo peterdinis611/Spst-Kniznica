@@ -1,8 +1,9 @@
 import { isActionFailure, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LoanRecord } from '$lib/types';
-import { countActiveLoans, listLoans, returnBook, clearReturnedLoans } from '$lib/server/library';
+import { countActiveLoans, listLoans, renewLoan, returnBook, clearReturnedLoans } from '$lib/server/library';
 import { queueLoanNotice } from '$lib/server/loan-mail';
+import { cancelHold } from '$lib/server/waitlist';
 import { pageOf } from '$lib/page-of';
 import { actions, load } from '../+page.server';
 
@@ -11,11 +12,22 @@ vi.mock('$lib/server/library', () => ({
 	listLoans: vi.fn(),
 	countActiveLoans: vi.fn(),
 	returnBook: vi.fn(),
+	renewLoan: vi.fn(),
 	clearReturnedLoans: vi.fn()
 }));
 
 vi.mock('$lib/server/loan-mail', () => ({
 	queueLoanNotice: vi.fn()
+}));
+
+vi.mock('$lib/server/hold-mail', () => ({
+	notifyHoldReady: vi.fn()
+}));
+
+vi.mock('$lib/server/waitlist', () => ({
+	listUserWaits: vi.fn(async () => []),
+	waitingBookIds: vi.fn(async () => new Set()),
+	cancelHold: vi.fn()
 }));
 
 const reader = {
@@ -50,6 +62,7 @@ function loan(partial: Partial<LoanRecord> & Pick<LoanRecord, 'id' | 'returnedAt
 		borrowerLastName: 'Dinis',
 		borrowerClass: 'II.A',
 		loanDays: 21,
+		renewalCount: 0,
 		book,
 		...partial
 	};
@@ -80,7 +93,11 @@ describe('loans load', () => {
 
 	it('splits active loans from history and exposes the reader pass', async () => {
 		vi.mocked(listLoans).mockResolvedValue([
-			loan({ id: 'open', returnedAt: null }),
+			loan({
+				id: 'open',
+				returnedAt: null,
+				dueAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+			}),
 			loan({ id: 'closed', returnedAt: new Date(2026, 7, 10), book: { ...book, title: 'Vrátená' } })
 		]);
 		vi.mocked(countActiveLoans).mockResolvedValue(1);
@@ -92,7 +109,9 @@ describe('loans load', () => {
 		expect(data.maxLoans).toBeNull();
 		expect(data.activeCount).toBe(1);
 		expect(data.loans.map((item: { id: string }) => item.id)).toEqual(['open']);
+		expect(data.loans[0].canRenew).toBe(true);
 		expect(data.history.map((item: { book: { title: string } }) => item.book.title)).toEqual(['Vrátená']);
+		expect(data.waits).toEqual([]);
 	});
 });
 
@@ -141,7 +160,7 @@ describe('loans return action', () => {
 	});
 
 	it('stamps a successful return', async () => {
-		vi.mocked(returnBook).mockResolvedValue({ ok: true });
+		vi.mocked(returnBook).mockResolvedValue({ ok: true, offer: null });
 
 		const result = await actions.return?.(event(reader));
 
@@ -156,6 +175,107 @@ describe('loans return action', () => {
 				bookTitle: 'Stroje'
 			})
 		);
+	});
+});
+
+describe('loans renew action', () => {
+	beforeEach(() => {
+		vi.mocked(renewLoan).mockReset();
+		vi.mocked(queueLoanNotice).mockReset();
+		vi.mocked(listLoans).mockResolvedValue([
+			loan({
+				id: 'open',
+				returnedAt: null,
+				dueAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+			})
+		]);
+	});
+
+	function event(user: typeof reader | undefined, loanId = 'open') {
+		return {
+			locals: { user },
+			request: {
+				formData: async () => {
+					const body = new FormData();
+					body.set('loanId', loanId);
+					return body;
+				}
+			}
+		} as unknown as Parameters<NonNullable<typeof actions.renew>>[0];
+	}
+
+	it('sends anonymous renewals to login', async () => {
+		try {
+			await actions.renew?.(event(undefined));
+			throw new Error('expected redirect');
+		} catch (error) {
+			expect(isRedirect(error)).toBe(true);
+			if (isRedirect(error)) expect(error.location).toBe('/login');
+		}
+	});
+
+	it('returns the library error as a form failure', async () => {
+		vi.mocked(renewLoan).mockResolvedValue({
+			ok: false,
+			message: 'Na zväzok čaká iný čitateľ. Predĺžiť sa nedá.'
+		});
+
+		const result = await actions.renew?.(event(reader));
+
+		expect(renewLoan).toHaveBeenCalledWith(reader.id, 'open');
+		expect(queueLoanNotice).not.toHaveBeenCalled();
+		expect(isActionFailure(result)).toBe(true);
+		if (isActionFailure(result)) {
+			expect(result.data).toEqual({ message: 'Na zväzok čaká iný čitateľ. Predĺžiť sa nedá.' });
+		}
+	});
+
+	it('stamps a successful renewal', async () => {
+		const dueAt = new Date(2026, 8, 20);
+		vi.mocked(renewLoan).mockResolvedValue({ ok: true, dueAt });
+
+		const result = await actions.renew?.(event(reader));
+
+		expect(result).toEqual({
+			stamp: 'Predĺžené',
+			sub: expect.stringMatching(/20\.\s?09\.\s?2026/)
+		});
+		expect(queueLoanNotice).toHaveBeenCalledWith(
+			expect.objectContaining({
+				kind: 'renew',
+				to: reader.email,
+				bookTitle: 'Stroje',
+				dueAt
+			})
+		);
+	});
+});
+
+describe('loans cancelWait action', () => {
+	beforeEach(() => {
+		vi.mocked(cancelHold).mockReset();
+	});
+
+	function event(user: typeof reader | undefined, reservationId = 'wait-1') {
+		return {
+			locals: { user },
+			request: {
+				formData: async () => {
+					const body = new FormData();
+					body.set('reservationId', reservationId);
+					return body;
+				}
+			}
+		} as unknown as Parameters<NonNullable<typeof actions.cancelWait>>[0];
+	}
+
+	it('stamps a cancelled wait slip', async () => {
+		vi.mocked(cancelHold).mockResolvedValue({ ok: true, offer: null });
+
+		const result = await actions.cancelWait?.(event(reader));
+
+		expect(cancelHold).toHaveBeenCalledWith(reader.id, 'wait-1');
+		expect(result).toEqual({ stamp: 'Stiahnuté', sub: 'Čakací lístok zmizol' });
 	});
 });
 

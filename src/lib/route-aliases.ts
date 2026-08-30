@@ -21,7 +21,8 @@ export const ROUTE_ALIASES = [
 	['/admin/vytlacky', '/admin/holdings'],
 	['/admin/vypozicky', '/admin/loans'],
 	['/admin/rezervacie', '/admin/reservations'],
-	['/admin/citately', '/admin/readers']
+	['/admin/citately', '/admin/readers'],
+	['/admin/vykazy', '/admin/reports']
 ] as const;
 
 export function aliasTarget(pathname: string, search = '') {

@@ -130,7 +130,9 @@ export const loan = pgTable(
 		borrowerLastName: text('borrower_last_name').notNull().default(''),
 		borrowerClass: text('borrower_class').notNull().default(''),
 		loanDays: integer('loan_days').notNull().default(21),
-		clearedAt: timestamp('cleared_at', { withTimezone: true, mode: 'date' })
+		clearedAt: timestamp('cleared_at', { withTimezone: true, mode: 'date' }),
+		dueSoonMailedAt: timestamp('due_soon_mailed_at', { withTimezone: true, mode: 'date' }),
+		overdueMailedAt: timestamp('overdue_mailed_at', { withTimezone: true, mode: 'date' })
 	},
 	(table) => [
 		index('loan_userId_idx').on(table.userId),
@@ -163,7 +165,10 @@ export const reservation = pgTable(
 	},
 	(table) => [
 		index('reservation_book_status_idx').on(table.bookId, table.status),
-		index('reservation_user_status_idx').on(table.userId, table.status)
+		index('reservation_user_status_idx').on(table.userId, table.status),
+		uniqueIndex('reservation_one_open_uidx')
+			.on(table.userId, table.bookId)
+			.where(sql`${table.status} in ('pending', 'fulfilled')`)
 	]
 );
 

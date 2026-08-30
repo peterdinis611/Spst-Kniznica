@@ -1,12 +1,18 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { deleteLoan, getDeskLoan, listDeskLoans, returnDeskLoan, saveLoan } from '$lib/server/desk/loans';
+import { deleteLoan, getDeskLoan, listDeskClasses, listDeskLoans, returnDeskLoan, saveLoan } from '$lib/server/desk/loans';
 import { bookOptions, readerOptions } from '$lib/server/desk/options';
 import { queueLoanNotice } from '$lib/server/loan-mail';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/desk/loans', () => ({
 	listDeskLoans: vi.fn(),
+	listDeskClasses: vi.fn(),
+	parseDeskLoanFilter: (url: URL) => ({
+		q: url.searchParams.get('q') ?? '',
+		klass: (url.searchParams.get('class') ?? '').trim().replace(/\s+/g, '').toUpperCase(),
+		open: url.searchParams.get('open') === '1'
+	}),
 	getDeskLoan: vi.fn(),
 	saveLoan: vi.fn(),
 	returnDeskLoan: vi.fn(),
@@ -59,6 +65,7 @@ describe('admin vypozicky load', () => {
 				readerEmail: 'peter@spst.sk'
 			}
 		]);
+		vi.mocked(listDeskClasses).mockResolvedValue(['II.A']);
 		vi.mocked(bookOptions).mockResolvedValue([]);
 		vi.mocked(readerOptions).mockResolvedValue([]);
 
@@ -67,6 +74,21 @@ describe('admin vypozicky load', () => {
 		} as Parameters<typeof load>[0])) as { current: { id: string } | null };
 
 		expect(data.current?.id).toBe('loan-1');
+	});
+
+	it('asks the drawer for a class that is still out', async () => {
+		vi.mocked(listDeskLoans).mockResolvedValue([]);
+		vi.mocked(listDeskClasses).mockResolvedValue(['II.A']);
+		vi.mocked(bookOptions).mockResolvedValue([]);
+		vi.mocked(readerOptions).mockResolvedValue([]);
+
+		const data = (await load({
+			url: new URL('http://localhost/admin/loans?class=ii.a&open=1')
+		} as Parameters<typeof load>[0])) as { klass: string; open: boolean };
+
+		expect(listDeskLoans).toHaveBeenCalledWith({ q: '', klass: 'II.A', open: true });
+		expect(data.klass).toBe('II.A');
+		expect(data.open).toBe(true);
 	});
 });
 

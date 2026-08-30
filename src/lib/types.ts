@@ -96,6 +96,17 @@ export type LoanRecord = {
 	borrowerLastName: string;
 	borrowerClass: string;
 	loanDays: number;
+	renewalCount: number;
+	book: BookSlip;
+};
+
+export type WaitSlip = {
+	id: string;
+	bookId: string;
+	status: 'pending' | 'fulfilled';
+	createdAt: Date;
+	expiresAt: Date;
+	place: number;
 	book: BookSlip;
 };
 

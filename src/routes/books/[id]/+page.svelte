@@ -119,22 +119,48 @@
 			{#if data.userLoan}
 				<p class="text-sm">U teba do <strong>{shortDate(data.userLoan.dueAt)}</strong></p>
 				<Button href={resolve('/loans')}>Vrátiť v Moja knižnica</Button>
+			{:else if data.wait?.status === 'fulfilled'}
+				<p class="text-sm">
+					Výtlačok je na pulte do <strong>{shortDate(data.wait.expiresAt)}</strong>.
+				</p>
+				<Button type="button" onclick={() => (slipOpen = true)}>Vypožičať</Button>
+				<BorrowSlip
+					title={book.title}
+					defaults={borrower}
+					errors={formErrors ?? {}}
+					message={form && 'errors' in form ? form.message : ''}
+					bind:open={slipOpen}
+				/>
+			{:else if data.wait?.status === 'pending'}
+				<p class="text-muted-foreground text-sm">Čakací lístok je na pulte. Ozveme sa, keď sa výtlačok vráti.</p>
+				<Button href={resolve('/loans')} variant="outline">Otvoriť lístok</Button>
 			{:else if !data.user}
-				<p class="text-muted-foreground text-sm">Na výpožičku treba účet.</p>
-				<Button href={resolve('/login')}>Prihlásiť sa</Button>
-			{:else}
 				<p class="text-muted-foreground text-sm">
 					{#if !available}
-						Momentálne nie je voľný výtlačok.
-					{:else if atLimit}
-						Limit {data.maxLoans} výpožičiek je plný.
+						Momentálne nie je voľný výtlačok. Po prihlásení necháš čakací lístok.
 					{:else}
-						7–90 dní · {loanedLabel(data.activeCount)} u teba
+						Na výpožičku treba účet.
 					{/if}
 				</p>
-				<Button type="button" disabled={!available || atLimit} onclick={() => (slipOpen = true)}>
-					Vypožičať
-				</Button>
+				<Button href={resolve('/login')}>Prihlásiť sa</Button>
+			{:else if data.heldForOther}
+				<p class="text-muted-foreground text-sm">Výtlačok čaká na iného čitateľa. Skús neskôr, alebo nechaj čakací lístok.</p>
+				<form method="POST" action="?/reserve">
+					<Button type="submit" variant="outline">Položiť čakací lístok</Button>
+				</form>
+			{:else if !available}
+				<p class="text-muted-foreground text-sm">Momentálne nie je voľný výtlačok. Lístok ťa zaradí do radu.</p>
+				<form method="POST" action="?/reserve">
+					<Button type="submit">Položiť čakací lístok</Button>
+				</form>
+			{:else if atLimit}
+				<p class="text-muted-foreground text-sm">Limit {data.maxLoans} výpožičiek je plný.</p>
+				<Button type="button" disabled>Vypožičať</Button>
+			{:else}
+				<p class="text-muted-foreground text-sm">
+					7–90 dní · {loanedLabel(data.activeCount)} u teba
+				</p>
+				<Button type="button" onclick={() => (slipOpen = true)}>Vypožičať</Button>
 				<BorrowSlip
 					title={book.title}
 					defaults={borrower}

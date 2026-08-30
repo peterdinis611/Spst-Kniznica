@@ -4,16 +4,20 @@ import { formDate, formInt, formText } from '$lib/server/admin';
 import { pickCurrent } from '$lib/pult-ledger';
 import { getBook } from '$lib/server/library';
 import { queueLoanNotice } from '$lib/server/loan-mail';
-import { deleteLoan, getDeskLoan, listDeskLoans, returnDeskLoan, saveLoan } from '$lib/server/desk/loans';
+import { deleteLoan, getDeskLoan, listDeskClasses, listDeskLoans, parseDeskLoanFilter, returnDeskLoan, saveLoan } from '$lib/server/desk/loans';
 import { bookOptions, readerOptions } from '$lib/server/desk/options';
 
 export const load: PageServerLoad = async ({ url }) => {
-	const q = url.searchParams.get('q') ?? '';
+	const filter = parseDeskLoanFilter(url);
 	const edit = url.searchParams.get('edit') ?? '';
-	const rows = await listDeskLoans(q);
+	const [rows, classes, books, readers] = await Promise.all([
+		listDeskLoans(filter),
+		listDeskClasses(),
+		bookOptions(),
+		readerOptions()
+	]);
 	const current = await pickCurrent(rows, edit, getDeskLoan);
-	const [books, readers] = await Promise.all([bookOptions(), readerOptions()]);
-	return { q, rows, current, books, readers };
+	return { ...filter, rows, current, books, readers, classes };
 };
 
 export const actions: Actions = {

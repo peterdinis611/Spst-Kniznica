@@ -32,6 +32,7 @@ describe('ledger labels', () => {
 		expect(holdingLabel('loaned')).toBe('vonku');
 		expect(holdingLabel('mystery')).toBe('mystery');
 		expect(reservationLabel('pending')).toBe('čaká');
+		expect(reservationLabel('fulfilled')).toBe('na pulte');
 		expect(reservationLabel('expired')).toBe('exspirovaná');
 	});
 
@@ -45,7 +46,8 @@ describe('ledger labels', () => {
 			'/admin/holdings',
 			'/admin/loans',
 			'/admin/reservations',
-			'/admin/readers'
+			'/admin/readers',
+			'/admin/reports'
 		]);
 	});
 });

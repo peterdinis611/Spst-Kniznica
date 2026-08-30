@@ -30,6 +30,7 @@ describe('aliasTarget', () => {
 		expect(aliasTarget('/admin/vypozicky')).toBe('/admin/loans');
 		expect(aliasTarget('/admin/rezervacie')).toBe('/admin/reservations');
 		expect(aliasTarget('/admin/citately')).toBe('/admin/readers');
+		expect(aliasTarget('/admin/vykazy')).toBe('/admin/reports');
 		expect(aliasTarget('/admin/autori')).toBe('/admin/authors');
 	});
 

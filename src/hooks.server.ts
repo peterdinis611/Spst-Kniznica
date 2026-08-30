@@ -7,6 +7,7 @@ import { aliasTarget } from '$lib/route-aliases';
 import { deskGate } from '$lib/server/admin-access';
 import { ensureSeeded } from '$lib/server/db/seed';
 import { warmCatalog } from '$lib/server/library';
+import { runDeskTick } from '$lib/server/desk-tick';
 import { publicErrorMessage } from '$lib/server/public-error';
 import { ensureLocalReader, readerFromClaims } from '$lib/server/readers';
 import { supabasePublic } from '$lib/supabase/config';
@@ -17,6 +18,9 @@ const handleAliases: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
+let lastTick = 0;
+const TICK_EVERY_MS = 30 * 60 * 1000;
+
 const handleCatalog: Handle = async ({ event, resolve }) => {
 	if (!building) {
 		try {
@@ -24,6 +28,17 @@ const handleCatalog: Handle = async ({ event, resolve }) => {
 			await warmCatalog();
 		} catch {
 			// Tables may not exist until `bun run db:migrate`.
+		}
+
+		if (
+			!import.meta.env.VITEST &&
+			!event.url.pathname.startsWith('/api/desk/tick') &&
+			Date.now() - lastTick >= TICK_EVERY_MS
+		) {
+			lastTick = Date.now();
+			void runDeskTick().catch(() => {
+				lastTick = 0;
+			});
 		}
 	}
 

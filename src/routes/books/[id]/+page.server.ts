@@ -9,6 +9,8 @@ import {
 	MAX_ACTIVE_LOANS,
 	relatedBookSlips
 } from '$lib/server/library';
+import { bookHoldUserId, getOpenHold, reserveBook } from '$lib/server/waitlist';
+import { queueHoldNotice } from '$lib/server/hold-mail';
 import {
 	hasBorrowErrors,
 	normalizeClass,
@@ -23,11 +25,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const current = await getBook(params.id);
 	if (!current) error(404, 'Karta v katalógu chýba.');
 
-	const [userLoan, activeCount, lastBorrower, related] = await Promise.all([
+	const [userLoan, activeCount, lastBorrower, related, wait, holdUserId] = await Promise.all([
 		locals.user ? getActiveLoan(locals.user.id, current.id) : null,
 		locals.user ? countActiveLoans(locals.user.id) : 0,
 		locals.user ? getLastBorrower(locals.user.id) : null,
-		relatedBookSlips(current.id, current.category.id)
+		relatedBookSlips(current.id, current.category.id),
+		locals.user ? getOpenHold(locals.user.id, current.id) : null,
+		bookHoldUserId(current.id)
 	]);
 	const fromName = locals.user ? splitReaderName(locals.user.name) : { firstName: '', lastName: '' };
 
@@ -35,6 +39,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		book: current,
 		related,
 		userLoan,
+		wait,
+		heldForOther: Boolean(holdUserId && holdUserId !== locals.user?.id),
 		activeCount,
 		maxLoans: MAX_ACTIVE_LOANS,
 		borrower: lastBorrower ?? {
@@ -92,5 +98,27 @@ export const actions: Actions = {
 		});
 
 		return { stamp: 'Vypožičané', sub: stampDate(result.dueAt) };
+	},
+	reserve: async ({ locals, params }) => {
+		if (!locals.user) {
+			redirect(302, '/login');
+		}
+
+		const result = await reserveBook(locals.user.id, params.id);
+		if (!result.ok) {
+			return fail(400, { message: result.message });
+		}
+
+		const held = await getBook(params.id);
+		await queueHoldNotice({
+			kind: 'queued',
+			to: locals.user.email,
+			readerName: locals.user.name,
+			bookTitle: held?.title ?? 'Zväzok',
+			callNumber: held?.callNumber,
+			place: result.place
+		});
+
+		return { stamp: 'Čakáš', sub: `${result.place}. v rade` };
 	}
 };

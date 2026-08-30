@@ -38,8 +38,38 @@
 
 <Seo title="Výpožičky · Pult" description="CRUD výpožičných lístkov." index={false} />
 
-<div class="pult-toolbar">
+		<div class="pult-toolbar">
 	<PultSearch query={data.q} placeholder="kniha, čitateľ, trieda" />
+	<form class="pult-class" method="GET">
+		{#if data.q}
+			<input type="hidden" name="q" value={data.q} />
+		{/if}
+		<input type="hidden" name="open" value="1" />
+		<label>
+			<span>Trieda</span>
+			<input
+				name="class"
+				type="text"
+				list="desk-classes"
+				value={data.klass}
+				placeholder="II.A"
+				autocomplete="off"
+				aria-label="Trieda"
+			/>
+			<datalist id="desk-classes">
+				{#each data.classes as item (item)}
+					<option value={item}></option>
+				{/each}
+			</datalist>
+		</label>
+		<button type="submit">Čo je vonku</button>
+		{#if data.klass}
+			<a href={pultHref(page.url, { class: data.klass, open: null })}>aj vrátené</a>
+		{/if}
+		{#if data.klass || data.open}
+			<a href={pultHref(page.url, { class: null, open: null })}>zrušiť</a>
+		{/if}
+	</form>
 </div>
 
 {#if form?.message}
@@ -49,7 +79,17 @@
 {/if}
 
 <div class="pult-grid is-split">
-	<PultLedger rows={data.rows} {columns} empty="Žiadny výpožičný lístok.">
+	<PultLedger
+		rows={data.rows}
+		{columns}
+		empty={data.klass
+			? data.open
+				? `V triede ${data.klass} nie je nič vonku.`
+				: `V triede ${data.klass} nie je lístok.`
+			: data.open
+				? 'Nič nie je vonku.'
+				: 'Žiadny výpožičný lístok.'}
+	>
 		{#snippet actions({ row })}
 			<Button href={pultHref(page.url, { edit: row.id })} size="sm" variant="outline">Upraviť</Button>
 			{#if !row.returnedAt}

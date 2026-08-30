@@ -3,7 +3,7 @@ import { sendMail } from '$lib/server/mail';
 import { escapeHtml, mailOrigin, slipHtml } from '$lib/server/mail-slip';
 
 export type LoanNotice = {
-	kind: 'borrow' | 'return';
+	kind: 'borrow' | 'return' | 'renew' | 'dueSoon' | 'overdue';
 	to: string;
 	readerName: string;
 	bookTitle: string;
@@ -46,6 +46,73 @@ export function loanMailCopy(notice: LoanNotice) {
 			ctaHref: loansHref,
 			cta: 'Otvoriť Moje knihy',
 			foot: 'List je pečiatka pohybu, nie pokuta. Papierový výtlačok ostáva rozhodujúci.'
+		});
+		return { subject, text, html };
+	}
+
+	if (notice.kind === 'renew') {
+		const subject = `Predĺžené · ${title} · SPŠT knižnica`;
+		const text = [
+			`${name}, výpožička ${title} je predĺžená.`,
+			due ? `Nový termín: ${due}.` : 'Nový termín je na lístku.',
+			notice.callNumber ? `Signatúra: ${notice.callNumber}` : '',
+			`Lístok: ${loansHref}`
+		]
+			.filter(Boolean)
+			.join('\n');
+		const html = slipHtml({
+			kicker: 'predĺženie lístka',
+			heading: 'Predĺžené.',
+			body: `${escapeHtml(name)}, <strong>${escapeHtml(title)}</strong> ostáva na preukaze. Ďalšie predĺženie z lístka už nejde.`,
+			chips: [notice.callNumber || null, dueStamp ? `do ${dueStamp}` : null, 'pavilón B'],
+			ctaHref: loansHref,
+			cta: 'Otvoriť Moje knihy',
+			foot: 'Predĺženie je raz. Ak na zväzok čaká iný čitateľ, lístok sa nepredĺži.'
+		});
+		return { subject, text, html };
+	}
+
+	if (notice.kind === 'dueSoon') {
+		const subject = `Zajtra splatné · ${title} · SPŠT knižnica`;
+		const text = [
+			`${name}, zväzok ${title} je zajtra splatný.`,
+			due ? `Vráť ho do ${due} v pavilóne B.` : 'Vráť ho zajtra v pavilóne B.',
+			notice.callNumber ? `Signatúra: ${notice.callNumber}` : '',
+			`Lístok: ${loansHref}`
+		]
+			.filter(Boolean)
+			.join('\n');
+		const html = slipHtml({
+			kicker: 'termín na lístku',
+			heading: 'Zajtra splatné.',
+			body: `${escapeHtml(name)}, <strong>${escapeHtml(title)}</strong> treba vrátiť zajtra. Pavilón B, 1. poschodie, po–pia 7:30–15:30.`,
+			chips: [notice.callNumber || null, dueStamp ? `do ${dueStamp}` : 'zajtra', 'pavilón B'],
+			ctaHref: loansHref,
+			cta: 'Otvoriť Moje knihy',
+			foot: 'List je dohoda, nie pokuta. Papierový výtlačok ostáva rozhodujúci.'
+		});
+		return { subject, text, html };
+	}
+
+	if (notice.kind === 'overdue') {
+		const subject = `Po lehote · ${title} · SPŠT knižnica`;
+		const text = [
+			`${name}, zväzok ${title} je po lehote.`,
+			due ? `Termín bol ${due}.` : '',
+			'Dones ho do pavilónu B, 1. poschodie.',
+			notice.callNumber ? `Signatúra: ${notice.callNumber}` : '',
+			`Lístok: ${loansHref}`
+		]
+			.filter(Boolean)
+			.join('\n');
+		const html = slipHtml({
+			kicker: 'lístok po lehote',
+			heading: 'Po lehote.',
+			body: `${escapeHtml(name)}, <strong>${escapeHtml(title)}</strong> mal byť vo fonde. Dones výtlačok do pavilónu B — v aplikácii poplatok nie je.`,
+			chips: [notice.callNumber || null, dueStamp ? `bolo ${dueStamp}` : null, 'pavilón B'],
+			ctaHref: loansHref,
+			cta: 'Otvoriť Moje knihy',
+			foot: 'Oneskorenie rieši pult. Pečiatka nie je pokuta.'
 		});
 		return { subject, text, html };
 	}

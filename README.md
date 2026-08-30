@@ -56,7 +56,8 @@ Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, kt
 Ďalšie voliteľné:
 
 - **UploadThing** (`UPLOADTHING_TOKEN`) — obálky kníh z pultu
-- **Mail** — lokálne Mailtrap (`MAIL_DRIVER=mailtrap`), na ostrej Mailgun. Listy idú pri výpožičke, vrátení a zmene hesla. S `SUPABASE_SERVICE_ROLE_KEY` ide obnova hesla z pultu, nie z predvolenej pošty Supabase.
+- **Mail** — lokálne Mailtrap (`MAIL_DRIVER=mailtrap`), na ostrej Mailgun. Listy idú pri výpožičke, vrátení, predĺžení, čakacom lístku, termíne a zmene hesla. S `SUPABASE_SERVICE_ROLE_KEY` ide obnova hesla z pultu, nie z predvolenej pošty Supabase.
+- **Tik pultu** (`DESK_TICK_SECRET`) — cron `GET /api/desk/tick` (Bearer alebo `?secret=`). Bez secretu → 403. Pri návšteve fondu beží tik aj sám, raz za 30 minút.
 - **Rate limit** — prihlásenie, registrácia a obnova hesla. `RATE_LIMIT=off` vypne.
 
 ## Mapa
@@ -69,7 +70,7 @@ Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, kt
 | `/departments`, `/authors` | odbory a autori |
 | `/login` | prihlásenie / registrácia (`?mod=novy`) |
 | `/loans`, `/profile` | lístok a preukaz (po prihlásení) |
-| `/admin` | pult — CRUD fondu (knihovník) |
+| `/admin` | pult — CRUD fondu, trieda vonku, výkazy (knihovník) |
 | `/docs` | príručka |
 
 Slovenské aliasy (`/knihy`, `/pult`, `/profil`…) sa 308 presmerujú na kanonické cesty.

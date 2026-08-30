@@ -8,7 +8,7 @@
 	import Seo from '$lib/components/Seo.svelte';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
-	let pane = $state<'aktivne' | 'historia'>('aktivne');
+	let pane = $state<'aktivne' | 'historia' | 'rada'>('aktivne');
 	const serial = $derived(readerNumber(data.reader.id));
 	const shownSlots = $derived(Math.min(data.activeCount, 8));
 	const slots = $derived(Array.from({ length: shownSlots }, () => true));
@@ -84,6 +84,16 @@
 			<button
 				type="button"
 				role="tab"
+				id="tab-rada"
+				aria-selected={pane === 'rada'}
+				aria-controls="panel-rada"
+				onclick={() => (pane = 'rada')}
+			>
+				Čakacie <em>{data.waits.length}</em>
+			</button>
+			<button
+				type="button"
+				role="tab"
 				id="tab-historia"
 				aria-selected={pane === 'historia'}
 				aria-controls="panel-historia"
@@ -124,9 +134,49 @@
 										{item.borrowerClass ? `${item.borrowerClass} · ` : ''}{daysLabel(item.loanDays)} · od {shortDate(item.borrowedAt)}
 									</p>
 								</div>
-								<form method="POST" action="?/return" use:enhance>
-									<input type="hidden" name="loanId" value={item.id} />
-									<button type="submit">Vrátiť</button>
+								<div class="slip-acts">
+									{#if item.canRenew}
+										<form method="POST" action="?/renew" use:enhance>
+											<input type="hidden" name="loanId" value={item.id} />
+											<button type="submit" class="is-renew">Predĺžiť</button>
+										</form>
+									{/if}
+									<form method="POST" action="?/return" use:enhance>
+										<input type="hidden" name="loanId" value={item.id} />
+										<button type="submit">Vrátiť</button>
+									</form>
+								</div>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</div>
+		{:else if pane === 'rada'}
+			<div class="folio-pane" id="panel-rada" role="tabpanel" aria-labelledby="tab-rada">
+				{#if data.waits.length === 0}
+					<div class="folio-empty is-quiet">
+						<div class="folio-empty-copy">
+							<h3>Žiadny čakací lístok</h3>
+							<p>Keď je nula voľných, na karte knihy položíš lístok. Ozveme sa, keď sa výtlačok vráti.</p>
+						</div>
+					</div>
+				{:else}
+					<ul class="folio-slips">
+						{#each data.waits as item (item.id)}
+							<li class="slip" data-tone={item.status === 'fulfilled' ? 'soon' : 'ok'}>
+								<BookCover book={item.book} size="thumb" />
+								<div class="slip-copy">
+									<p class="slip-due">
+										{item.status === 'fulfilled'
+											? `Na pulte do ${shortDate(item.expiresAt)}`
+											: `${item.place}. v rade`}
+									</p>
+									<a href={resolve('/books/[id]', { id: item.book.id })}>{item.book.title}</a>
+									<p class="slip-meta">{item.book.callNumber}</p>
+								</div>
+								<form method="POST" action="?/cancelWait" use:enhance>
+									<input type="hidden" name="reservationId" value={item.id} />
+									<button type="submit">Stiahnuť</button>
 								</form>
 							</li>
 						{/each}
@@ -467,7 +517,7 @@
 
 	.folio-tabs {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 1fr 1fr 1fr;
 		gap: 0.35rem;
 		margin: 0 0 0.15rem;
 		padding: 0.28rem;
@@ -485,7 +535,7 @@
 		color: var(--muted);
 		cursor: pointer;
 		font-family: var(--font-body, Newsreader, serif);
-		font-size: 1rem;
+		font-size: 0.92rem;
 		transition: background 0.2s ease, color 0.2s ease;
 	}
 
@@ -738,10 +788,28 @@
 		transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 	}
 
+	.slip-acts {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.4rem;
+	}
+
+	.slip form button.is-renew {
+		border-color: color-mix(in srgb, #3f6b48 70%, var(--ink));
+		color: #3f6b48;
+		transform: rotate(-4deg);
+	}
+
 	.slip form button:hover {
 		background: #9a3b28;
 		color: var(--ticket);
 		transform: rotate(0deg);
+	}
+
+	.slip form button.is-renew:hover {
+		background: #3f6b48;
+		color: var(--ticket);
 	}
 
 	.folio-clear {
@@ -920,7 +988,8 @@
 			grid-template-columns: auto minmax(0, 1fr);
 		}
 
-		.slip form {
+		.slip form,
+		.slip-acts {
 			grid-column: 1 / -1;
 		}
 

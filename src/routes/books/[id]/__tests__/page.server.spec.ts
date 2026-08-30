@@ -2,6 +2,8 @@ import { isActionFailure, isHttpError, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { borrowBook, getActiveLoan, getBook, getLastBorrower, countActiveLoans, relatedBookSlips } from '$lib/server/library';
 import { queueLoanNotice } from '$lib/server/loan-mail';
+import { queueHoldNotice } from '$lib/server/hold-mail';
+import { getOpenHold, bookHoldUserId, reserveBook } from '$lib/server/waitlist';
 import { pageOf } from '$lib/page-of';
 import { actions, load } from '../+page.server';
 
@@ -17,6 +19,16 @@ vi.mock('$lib/server/library', () => ({
 
 vi.mock('$lib/server/loan-mail', () => ({
 	queueLoanNotice: vi.fn()
+}));
+
+vi.mock('$lib/server/hold-mail', () => ({
+	queueHoldNotice: vi.fn()
+}));
+
+vi.mock('$lib/server/waitlist', () => ({
+	getOpenHold: vi.fn(),
+	bookHoldUserId: vi.fn(),
+	reserveBook: vi.fn()
 }));
 
 const reader = { id: 'user-509a', name: 'Peter Dinis', email: 'peter@spst.sk', role: 'reader' as const };
@@ -52,6 +64,8 @@ describe('book card load', () => {
 		vi.mocked(getActiveLoan).mockResolvedValue(null);
 		vi.mocked(countActiveLoans).mockResolvedValue(0);
 		vi.mocked(getLastBorrower).mockResolvedValue(null);
+		vi.mocked(getOpenHold).mockResolvedValue(null);
+		vi.mocked(bookHoldUserId).mockResolvedValue(null);
 	});
 
 	it('prefills the slip from the account name', async () => {
@@ -68,6 +82,21 @@ describe('book card load', () => {
 			className: '',
 			days: 21
 		});
+		expect(data.wait).toBeNull();
+		expect(data.heldForOther).toBe(false);
+	});
+
+	it('marks a card held for another reader', async () => {
+		vi.mocked(bookHoldUserId).mockResolvedValue('other-user');
+
+		const data = pageOf(
+			await load({
+				params: { id: 'stroje-1' },
+				locals: { user: reader }
+			} as Parameters<typeof load>[0])
+		);
+
+		expect(data.heldForOther).toBe(true);
 	});
 
 	it('404s a missing card', async () => {
@@ -202,5 +231,66 @@ describe('book borrow action', () => {
 			});
 		}
 		expect(queueLoanNotice).not.toHaveBeenCalled();
+	});
+});
+
+describe('book reserve action', () => {
+	beforeEach(() => {
+		vi.mocked(reserveBook).mockReset();
+		vi.mocked(queueHoldNotice).mockReset();
+		vi.mocked(getBook).mockResolvedValue(book);
+	});
+
+	function event(user: typeof reader | undefined) {
+		return {
+			locals: { user },
+			params: { id: 'stroje-1' }
+		} as unknown as Parameters<NonNullable<typeof actions.reserve>>[0];
+	}
+
+	it('sends anonymous reserves to login', async () => {
+		try {
+			await actions.reserve?.(event(undefined));
+			throw new Error('expected redirect');
+		} catch (error) {
+			expect(isRedirect(error)).toBe(true);
+			if (isRedirect(error)) expect(error.location).toBe('/login');
+		}
+	});
+
+	it('stamps a wait slip and mails the place in line', async () => {
+		vi.mocked(reserveBook).mockResolvedValue({
+			ok: true,
+			expiresAt: new Date(2026, 8, 29),
+			place: 1
+		});
+
+		const result = await actions.reserve?.(event(reader));
+
+		expect(reserveBook).toHaveBeenCalledWith(reader.id, 'stroje-1');
+		expect(result).toEqual({ stamp: 'Čakáš', sub: '1. v rade' });
+		expect(queueHoldNotice).toHaveBeenCalledWith(
+			expect.objectContaining({
+				kind: 'queued',
+				to: reader.email,
+				bookTitle: 'Stroje',
+				place: 1
+			})
+		);
+	});
+
+	it('keeps a waitlist refusal on the card', async () => {
+		vi.mocked(reserveBook).mockResolvedValue({
+			ok: false,
+			message: 'Čakací lístok na tento zväzok už máš.'
+		});
+
+		const result = await actions.reserve?.(event(reader));
+
+		expect(isActionFailure(result)).toBe(true);
+		if (isActionFailure(result)) {
+			expect(result.data).toMatchObject({ message: 'Čakací lístok na tento zväzok už máš.' });
+		}
+		expect(queueHoldNotice).not.toHaveBeenCalled();
 	});
 });

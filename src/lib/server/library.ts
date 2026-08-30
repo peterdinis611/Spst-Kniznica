@@ -1,6 +1,6 @@
-import { and, asc, count, desc, eq, isNotNull, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, isNotNull, isNull } from 'drizzle-orm';
 import { db } from './db';
-import { author, book, bookAuthor, category, holding, loan } from './db/schema';
+import { author, book, bookAuthor, category, holding, loan, reservation } from './db/schema';
 import { ftsBookIds } from './db/catalog-fts';
 import {
 	getCatalogCache,
@@ -10,7 +10,9 @@ import {
 	type CatalogSnapshot
 } from './catalog-cache';
 import { parseLoanDays } from '$lib/borrow-fields';
-import { authorLine } from '$lib/format';
+import { authorLine, daysUntil } from '$lib/format';
+import { MAX_RENEWALS } from '$lib/hold';
+import { closeHoldOnBorrow, offerCopyToWaiter, waitingBookIds, type HoldOffer } from './waitlist';
 import type { CatalogSearchItem } from '$lib/search';
 import type {
 	AuthorRecord,
@@ -396,6 +398,7 @@ export async function listLoans(userId: string): Promise<LoanRecord[]> {
 			borrowerLastName: row.loan.borrowerLastName,
 			borrowerClass: row.loan.borrowerClass,
 			loanDays: row.loan.loanDays,
+			renewalCount: row.loan.renewalCount,
 			book: toSlip(catalogBook)
 		});
 	}
@@ -444,6 +447,33 @@ export async function borrowBook(userId: string, bookId: string, draft: Borrower
 			return { ok: false, message: 'Žiadny voľný výtlačok. Skúste neskôr.' };
 		}
 
+		const hold = await tx
+			.select({ userId: reservation.userId })
+			.from(reservation)
+			.where(
+				and(
+					eq(reservation.bookId, bookId),
+					eq(reservation.status, 'fulfilled'),
+					gt(reservation.expiresAt, new Date())
+				)
+			)
+			.orderBy(asc(reservation.createdAt))
+			.then((rows) => rows[0]);
+		if (hold && hold.userId !== userId) {
+			return { ok: false, message: 'Tento výtlačok čaká na rezerváciu. Vyzdvihne ho iný čitateľ.' };
+		}
+		if (!hold) {
+			const firstWait = await tx
+				.select({ userId: reservation.userId })
+				.from(reservation)
+				.where(and(eq(reservation.bookId, bookId), eq(reservation.status, 'pending')))
+				.orderBy(asc(reservation.createdAt), asc(reservation.id))
+				.then((rows) => rows[0]);
+			if (firstWait && firstWait.userId !== userId) {
+				return { ok: false, message: 'Tento výtlačok čaká na rezerváciu. Vyzdvihne ho iný čitateľ.' };
+			}
+		}
+
 		const already = await tx
 			.select()
 			.from(loan)
@@ -488,6 +518,8 @@ export async function borrowBook(userId: string, bookId: string, draft: Borrower
 			.where(eq(book.id, bookId))
 			;
 
+		await closeHoldOnBorrow(tx, userId, bookId);
+
 		return { ok: true as const, dueAt };
 	});
 
@@ -500,7 +532,7 @@ export async function borrowBook(userId: string, bookId: string, draft: Borrower
 	return result;
 }
 
-export type ReturnResult = { ok: true } | { ok: false; message: string };
+export type ReturnResult = { ok: true; offer: HoldOffer | null } | { ok: false; message: string };
 
 export async function returnBook(userId: string, loanId: string): Promise<ReturnResult> {
 	let bookId: string | null = null;
@@ -542,7 +574,7 @@ export async function returnBook(userId: string, loanId: string): Promise<Return
 
 		bookId = current.bookId;
 		copiesAvailable = copies;
-		return { ok: true as const };
+		return { ok: true as const, offer: await offerCopyToWaiter(tx, current.bookId) };
 	});
 
 	if (result.ok && bookId && copiesAvailable !== null) {
@@ -550,6 +582,37 @@ export async function returnBook(userId: string, loanId: string): Promise<Return
 	}
 
 	return result;
+}
+
+export type RenewResult = { ok: true; dueAt: Date } | { ok: false; message: string };
+
+export async function renewLoan(userId: string, loanId: string): Promise<RenewResult> {
+	const current = await db
+		.select()
+		.from(loan)
+		.where(and(eq(loan.id, loanId), eq(loan.userId, userId)))
+		.then((rows) => rows[0]);
+	if (!current) return { ok: false, message: 'Výpožička sa nenašla.' };
+	if (current.returnedAt) return { ok: false, message: 'Táto kniha je už vrátená.' };
+	if (current.renewalCount >= MAX_RENEWALS) {
+		return { ok: false, message: 'Túto výpožičku už máš predĺženú.' };
+	}
+	if (daysUntil(current.dueAt) < 0) {
+		return { ok: false, message: 'Po lehote sa z lístka predĺžiť nedá. Dones knihu na pult.' };
+	}
+
+	const waiting = await waitingBookIds([current.bookId]);
+	if (waiting.has(current.bookId)) {
+		return { ok: false, message: 'Na zväzok čaká iný čitateľ. Predĺžiť sa nedá.' };
+	}
+
+	const dueAt = new Date(current.dueAt.getTime() + current.loanDays * 24 * 60 * 60 * 1000);
+	await db
+		.update(loan)
+		.set({ dueAt, renewalCount: current.renewalCount + 1 })
+		.where(eq(loan.id, loanId));
+
+	return { ok: true, dueAt };
 }
 
 export async function clearReturnedLoans(userId: string) {
