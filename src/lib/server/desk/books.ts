@@ -1,5 +1,6 @@
 import { and, asc, count, eq, ilike, isNull, or } from 'drizzle-orm';
 import { LIST_LIMIT } from '$lib/admin';
+import { bookSchema, deskIssue } from '$lib/desk-fields';
 import { refreshCatalog } from '../admin';
 import { forgetCover, parseCover } from '../cover-files';
 import { db } from '../db';
@@ -106,13 +107,21 @@ export async function saveBook(input: {
 	const publisher = input.publisher.trim();
 	const language = (input.language.trim() || 'sk').slice(0, 8);
 	const subtitle = input.subtitle.trim() || null;
-	if (title.length < 2) return fail('Názov knihy je krátky.');
-	if (!isbn) return fail('Doplň ISBN.');
-	if (!callNumber) return fail('Doplň signatúru.');
-	if (!description) return fail('Doplň anotáciu.');
-	if (!publisher) return fail('Doplň vydavateľa.');
-	if (input.year < 1400 || input.year > 2100) return fail('Rok vydania nevyzerá.');
-	if (input.pages < 1) return fail('Počet strán musí byť kladný.');
+	const issue = deskIssue(bookSchema, {
+		title,
+		subtitle: input.subtitle,
+		isbn,
+		callNumber,
+		description,
+		publisher,
+		categoryId: input.categoryId,
+		language,
+		year: input.year,
+		pages: input.pages,
+		copies: input.copies,
+		featured: input.featured
+	});
+	if (issue) return fail(issue);
 	const cat = await db
 		.select()
 		.from(category)

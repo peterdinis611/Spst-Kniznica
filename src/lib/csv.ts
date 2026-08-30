@@ -9,6 +9,61 @@ export function toCsv(headers: string[], rows: Array<Array<string | number>>) {
 	return `\uFEFF${lines.join('\r\n')}\r\n`;
 }
 
+export function parseCsv(body: string): { headers: string[]; rows: string[][] } {
+	const text = body.replace(/^\uFEFF/, '');
+	const rows: string[][] = [];
+	let row: string[] = [];
+	let cell = '';
+	let quoted = false;
+
+	for (let i = 0; i < text.length; i += 1) {
+		const ch = text[i];
+		if (quoted) {
+			if (ch === '"') {
+				if (text[i + 1] === '"') {
+					cell += '"';
+					i += 1;
+				} else {
+					quoted = false;
+				}
+				continue;
+			}
+			cell += ch;
+			continue;
+		}
+		if (ch === '"') {
+			quoted = true;
+			continue;
+		}
+		if (ch === ',') {
+			row.push(cell);
+			cell = '';
+			continue;
+		}
+		if (ch === '\n') {
+			row.push(cell);
+			rows.push(row);
+			row = [];
+			cell = '';
+			continue;
+		}
+		if (ch === '\r') continue;
+		cell += ch;
+	}
+
+	if (quoted || cell.length > 0 || row.length > 0) {
+		row.push(cell);
+		rows.push(row);
+	}
+
+	while (rows.length && rows.at(-1)?.length === 1 && rows.at(-1)?.[0] === '') {
+		rows.pop();
+	}
+
+	const headers = rows.shift() ?? [];
+	return { headers, rows };
+}
+
 export function csvFileStamp(now = new Date()) {
 	const pad = (n: number) => String(n).padStart(2, '0');
 	return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;

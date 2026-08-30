@@ -34,7 +34,7 @@ Na pulte v zásuvke [Výpožičky](/admin/loans) zadaj triedu a stlač **Čo je 
 
 ## Dá sa vytlačiť inventúra?
 
-Áno. Na pulte v [Výkazoch](/admin/reports) je list inventúry a oneskorených lístkov. Tlač (PDF) alebo CSV. Raz za polrok stačí.
+Áno. Na pulte v [Výkazoch](/admin/reports) je list inventúry a oneskorených lístkov. Tlač (PDF), CSV alebo XML. Raz za polrok stačí.
 
 ## Kde je príručka v menu?
 

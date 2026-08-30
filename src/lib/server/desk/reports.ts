@@ -1,31 +1,11 @@
 import { and, asc, eq, isNull, lte } from 'drizzle-orm';
-import { holdingLabel } from '$lib/admin';
-import { toCsv } from '$lib/csv';
-import { daysUntil, stampDate } from '$lib/format';
+import type { InventoryRow, OverdueRow } from '$lib/desk-export';
+import { daysUntil } from '$lib/format';
 import { db } from '../db';
 import { book, category, holding, loan, user } from '../db/schema';
 
-export type InventoryRow = {
-	inventoryNo: string;
-	status: string;
-	title: string;
-	callNumber: string;
-	isbn: string;
-	year: number;
-	categoryName: string;
-	categoryCode: string;
-};
-
-export type OverdueRow = {
-	id: string;
-	klass: string;
-	firstName: string;
-	lastName: string;
-	title: string;
-	callNumber: string;
-	dueAt: Date;
-	lateDays: number;
-};
+export type { InventoryRow, OverdueRow };
+export { inventoryCsv, inventoryXml, overdueCsv, overdueXml } from '$lib/desk-export';
 
 function startOfToday(now = new Date()) {
 	const day = new Date(now);
@@ -76,35 +56,4 @@ export async function listOverdueRows(now = new Date()): Promise<OverdueRow[]> {
 			lateDays: days < 0 ? Math.abs(days) : 1
 		};
 	});
-}
-
-export function inventoryCsv(rows: InventoryRow[]) {
-	return toCsv(
-		['inventár', 'stav', 'signatúra', 'názov', 'odbor', 'kód', 'isbn', 'rok'],
-		rows.map((row) => [
-			row.inventoryNo,
-			holdingLabel(row.status),
-			row.callNumber,
-			row.title,
-			row.categoryName,
-			row.categoryCode,
-			row.isbn,
-			row.year
-		])
-	);
-}
-
-export function overdueCsv(rows: OverdueRow[]) {
-	return toCsv(
-		['trieda', 'meno', 'priezvisko', 'zväzok', 'signatúra', 'termín', 'dni po lehote'],
-		rows.map((row) => [
-			row.klass,
-			row.firstName,
-			row.lastName,
-			row.title,
-			row.callNumber,
-			stampDate(row.dueAt),
-			row.lateDays
-		])
-	);
 }

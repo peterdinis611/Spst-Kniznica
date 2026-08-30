@@ -4,11 +4,16 @@
 	import { toDatetimeLocal } from '$lib/admin';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultDelete from '$lib/components/PultDelete.svelte';
+	import PultField from '$lib/components/PultField.svelte';
 	import PultLedger from '$lib/components/PultLedger.svelte';
+	import PultSaveForm from '$lib/components/PultSaveForm.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { deskClassFilterSchema, deskLoanSchema } from '$lib/desk-fields';
+	import { firstSchemaIssue, applyToast } from '$lib/form-kit';
 	import { shortDate } from '$lib/format';
 	import { pultHref, type PultColumn } from '$lib/pult-ledger';
+	import { toast } from 'svelte-sonner';
 	import type { ActionData, PageProps } from './$types';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
@@ -34,13 +39,23 @@
 			})
 		}
 	];
+
+	function checkClass(event: SubmitEvent) {
+		const box = event.currentTarget as HTMLFormElement;
+		const className = String(new FormData(box).get('class') ?? '');
+		const issue = firstSchemaIssue(deskClassFilterSchema, { className });
+		if (issue) {
+			event.preventDefault();
+			toast.error(issue);
+		}
+	}
 </script>
 
 <Seo title="Výpožičky · Pult" description="CRUD výpožičných lístkov." index={false} />
 
-		<div class="pult-toolbar">
+<div class="pult-toolbar">
 	<PultSearch query={data.q} placeholder="kniha, čitateľ, trieda" />
-	<form class="pult-class" method="GET">
+	<form class="pult-class" method="GET" novalidate onsubmit={checkClass}>
 		{#if data.q}
 			<input type="hidden" name="q" value={data.q} />
 		{/if}
@@ -93,7 +108,7 @@
 		{#snippet actions({ row })}
 			<Button href={pultHref(page.url, { edit: row.id })} size="sm" variant="outline">Upraviť</Button>
 			{#if !row.returnedAt}
-				<form method="POST" action="?/return" use:enhance>
+				<form method="POST" action="?/return" use:enhance={applyToast()}>
 					<input type="hidden" name="id" value={row.id} />
 					<Button size="sm" type="submit">Vrátiť</Button>
 				</form>
@@ -103,75 +118,63 @@
 	</PultLedger>
 
 	{#key current?.id ?? 'new'}
-	<form class="pult-form" method="POST" action="?/save" use:enhance>
-		<h2>{current ? 'Opraviť lístok' : 'Nový lístok'}</h2>
-		<input type="hidden" name="id" value={current?.id ?? ''} />
-		<div class="pult-fields is-2">
-			<label class="pult-field is-wide">
-				<span>Kniha</span>
-				<select name="bookId" required disabled={Boolean(current)}>
-					{#each data.books as item (item.id)}
-						<option value={item.id} selected={current?.bookId === item.id}>{item.title}</option>
-					{/each}
-				</select>
-				{#if current}
-					<input type="hidden" name="bookId" value={current.bookId} />
-				{/if}
-			</label>
-			<label class="pult-field is-wide">
-				<span>Čitateľ</span>
-				<select name="userId" required disabled={Boolean(current)}>
-					{#each data.readers as person (person.id)}
-						<option value={person.id} selected={current?.userId === person.id}>
-							{person.name} · {person.email}
-						</option>
-					{/each}
-				</select>
-				{#if current}
-					<input type="hidden" name="userId" value={current.userId} />
-				{/if}
-			</label>
-			<label class="pult-field">
-				<span>Meno</span>
-				<input name="borrowerFirstName" required value={current?.borrowerFirstName ?? ''} />
-			</label>
-			<label class="pult-field">
-				<span>Priezvisko</span>
-				<input name="borrowerLastName" required value={current?.borrowerLastName ?? ''} />
-			</label>
-			<label class="pult-field">
-				<span>Trieda</span>
-				<input name="borrowerClass" required value={current?.borrowerClass ?? ''} />
-			</label>
-			<label class="pult-field">
-				<span>Dni</span>
-				<input name="loanDays" type="number" min="1" max="90" value={current?.loanDays ?? 21} />
-			</label>
-			<label class="pult-field">
-				<span>Požičané</span>
-				<input name="borrowedAt" type="datetime-local" value={toDatetimeLocal(current?.borrowedAt)} />
-			</label>
-			<label class="pult-field">
-				<span>Termín</span>
-				<input name="dueAt" type="datetime-local" value={toDatetimeLocal(current?.dueAt)} />
-			</label>
-			{#if current}
-				<label class="pult-field">
-					<span>Vrátené</span>
-					<input name="returnedAt" type="datetime-local" value={toDatetimeLocal(current.returnedAt)} />
-				</label>
-				<label class="pult-field">
-					<span>Predĺženia</span>
-					<input name="renewalCount" type="number" min="0" value={current.renewalCount} />
-				</label>
-			{/if}
-		</div>
-		<div class="pult-submit">
-			<Button type="submit">{current ? 'Uložiť' : 'Založiť'}</Button>
-			{#if current}
-				<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
-			{/if}
-		</div>
-	</form>
+		<PultSaveForm
+			schema={deskLoanSchema}
+			defaults={{
+				bookId: current?.bookId ?? data.books[0]?.id ?? '',
+				userId: current?.userId ?? data.readers[0]?.id ?? '',
+				borrowerFirstName: current?.borrowerFirstName ?? '',
+				borrowerLastName: current?.borrowerLastName ?? '',
+				borrowerClass: current?.borrowerClass ?? '',
+				loanDays: current?.loanDays ?? 21,
+				borrowedAt: toDatetimeLocal(current?.borrowedAt),
+				dueAt: toDatetimeLocal(current?.dueAt),
+				returnedAt: toDatetimeLocal(current?.returnedAt),
+				renewalCount: current?.renewalCount ?? 0
+			}}
+		>
+			{#snippet children({ form: slip })}
+				<h2>{current ? 'Opraviť lístok' : 'Nový lístok'}</h2>
+				<input type="hidden" name="id" value={current?.id ?? ''} />
+				<div class="pult-fields is-2">
+					<PultField form={slip} name="bookId" label="Kniha" as="select" wide disabled={Boolean(current)}>
+						{#snippet options()}
+							{#each data.books as item (item.id)}
+								<option value={item.id}>{item.title}</option>
+							{/each}
+						{/snippet}
+					</PultField>
+					{#if current}
+						<input type="hidden" name="bookId" value={current.bookId} />
+					{/if}
+					<PultField form={slip} name="userId" label="Čitateľ" as="select" wide disabled={Boolean(current)}>
+						{#snippet options()}
+							{#each data.readers as person (person.id)}
+								<option value={person.id}>{person.name} · {person.email}</option>
+							{/each}
+						{/snippet}
+					</PultField>
+					{#if current}
+						<input type="hidden" name="userId" value={current.userId} />
+					{/if}
+					<PultField form={slip} name="borrowerFirstName" label="Meno" />
+					<PultField form={slip} name="borrowerLastName" label="Priezvisko" />
+					<PultField form={slip} name="borrowerClass" label="Trieda" />
+					<PultField form={slip} name="loanDays" label="Dni" type="number" numeric min={1} max={90} />
+					<PultField form={slip} name="borrowedAt" label="Požičané" type="datetime-local" />
+					<PultField form={slip} name="dueAt" label="Termín" type="datetime-local" />
+					{#if current}
+						<PultField form={slip} name="returnedAt" label="Vrátené" type="datetime-local" />
+						<PultField form={slip} name="renewalCount" label="Predĺženia" type="number" numeric min={0} />
+					{/if}
+				</div>
+				<div class="pult-submit">
+					<Button type="submit">{current ? 'Uložiť' : 'Založiť'}</Button>
+					{#if current}
+						<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
+					{/if}
+				</div>
+			{/snippet}
+		</PultSaveForm>
 	{/key}
 </div>

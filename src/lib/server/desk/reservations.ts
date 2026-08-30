@@ -1,5 +1,6 @@
 import { desc, eq, ilike, or } from 'drizzle-orm';
 import { LIST_LIMIT } from '$lib/admin';
+import { deskIssue, reservationSchema } from '$lib/desk-fields';
 import { db } from '../db';
 import { book, reservation, reservationStatus, user } from '../db/schema';
 import { caught, fail, needle, ok, type DeskResult } from './shared';
@@ -63,9 +64,12 @@ export async function saveReservation(input: {
 	createdAt?: Date | null;
 	expiresAt?: Date | null;
 }): Promise<DeskResult> {
-	if (!reservationStatus.includes(input.status as (typeof reservationStatus)[number])) {
-		return fail('Stav rezervácie nie je v zozname.');
-	}
+	const issue = deskIssue(reservationSchema, {
+		bookId: input.bookId,
+		userId: input.userId,
+		status: input.status
+	});
+	if (issue) return fail(issue);
 	const status = input.status as (typeof reservationStatus)[number];
 	const held = await db
 		.select({ id: book.id })

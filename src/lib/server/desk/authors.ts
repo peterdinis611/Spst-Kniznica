@@ -1,5 +1,6 @@
 import { asc, count, eq, ilike, or } from 'drizzle-orm';
 import { LIST_LIMIT, slugify } from '$lib/admin';
+import { authorSchema, deskIssue } from '$lib/desk-fields';
 import { refreshCatalog } from '../admin';
 import { db } from '../db';
 import { author, bookAuthor } from '../db/schema';
@@ -61,10 +62,8 @@ export async function saveAuthor(input: {
 	const bio = input.bio.trim();
 	const lifespan = input.lifespan.trim();
 	const role = input.role.trim();
-	if (name.length < 2) return fail('Meno autora je krátke.');
-	if (!role) return fail('Doplň rolu autora.');
-	if (!bio) return fail('Doplň medailón.');
-	if (!lifespan) return fail('Doplň roky.');
+	const issue = deskIssue(authorSchema, { name, role, bio, lifespan });
+	if (issue) return fail(issue);
 
 	try {
 		if (input.id) {

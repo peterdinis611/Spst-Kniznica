@@ -1,5 +1,6 @@
 import { asc, count, eq, ilike, or } from 'drizzle-orm';
 import { LIST_LIMIT, slugify } from '$lib/admin';
+import { categorySchema, deskIssue } from '$lib/desk-fields';
 import { refreshCatalog } from '../admin';
 import { db } from '../db';
 import { book, category } from '../db/schema';
@@ -84,9 +85,14 @@ export async function saveCategory(input: {
 	const description = input.description.trim();
 	const code = input.code.trim().toUpperCase();
 	const accent = input.accent.trim() || '#3c2a21';
-	if (name.length < 2) return fail('Názov odboru je krátky.');
-	if (code.length < 2 || code.length > 8) return fail('Kód odboru má 2–8 znakov.');
-	if (!description) return fail('Dopíš popis odboru.');
+	const issue = deskIssue(categorySchema, {
+		name,
+		code,
+		description,
+		accent,
+		sortOrder: input.sortOrder
+	});
+	if (issue) return fail(issue);
 
 	try {
 		if (input.id) {

@@ -1,3 +1,6 @@
+import { flattenFields } from '$lib/form-kit';
+import * as v from 'valibot';
+
 export type AuthFields = {
 	name?: string;
 	email?: string;
@@ -18,64 +21,125 @@ export function hasFieldErrors(errors: FieldErrors) {
 	return Boolean(errors.name || errors.email || errors.password || errors.confirm);
 }
 
+const nameSchema = v.pipe(
+	v.string(),
+	v.trim(),
+	v.minLength(2, 'Meno na preukaze musí mať aspoň dve písmená.'),
+	v.maxLength(80, 'Meno je príliš dlhé.'),
+	v.regex(/\p{L}/u, 'Meno musí obsahovať písmeno.')
+);
+
+export const emailSchema = v.pipe(
+	v.string(),
+	v.trim(),
+	v.minLength(1, 'Zadaj e-mail.'),
+	v.maxLength(254, 'E-mail je príliš dlhý.'),
+	v.regex(EMAIL_RE, 'E-mail nevyzerá ako adresa.')
+);
+
+function passwordSchema(kind: 'login' | 'new') {
+	const base = v.pipe(
+		v.string(),
+		v.minLength(1, 'Zadaj heslo.'),
+		v.check((value) => !/\s/.test(value), 'Heslo nesmie obsahovať medzeru.'),
+		v.minLength(8, 'Heslo musí mať aspoň 8 znakov.'),
+		v.maxLength(72, 'Heslo môže mať najviac 72 znakov.')
+	);
+	if (kind === 'login') return base;
+	return v.pipe(
+		base,
+		v.check(
+			(value) => /\p{L}/u.test(value) && /\d/.test(value),
+			'Pridaj aspoň jedno písmeno a jednu číslicu.'
+		)
+	);
+}
+
+export const signInSchema = v.object({
+	email: emailSchema,
+	password: passwordSchema('login')
+});
+
+export const signUpSchema = v.pipe(
+	v.object({
+		name: nameSchema,
+		email: emailSchema,
+		password: passwordSchema('new'),
+		confirm: v.pipe(v.string(), v.minLength(1, 'Zopakuj heslo.'))
+	}),
+	v.forward(
+		v.partialCheck(
+			[['password'], ['confirm']],
+			(input) => input.password === input.confirm,
+			'Heslá sa nezhodujú.'
+		),
+		['confirm']
+	)
+);
+
+export const resetEmailSchema = v.object({
+	email: emailSchema
+});
+
+export const newPasswordSchema = v.pipe(
+	v.object({
+		password: passwordSchema('new'),
+		confirm: v.pipe(v.string(), v.minLength(1, 'Zopakuj heslo.'))
+	}),
+	v.forward(
+		v.partialCheck(
+			[['password'], ['confirm']],
+			(input) => input.password === input.confirm,
+			'Heslá sa nezhodujú.'
+		),
+		['confirm']
+	)
+);
+
 export function validateName(raw: string) {
-	const name = raw.trim();
-	if (name.length < 2) return 'Meno na preukaze musí mať aspoň dve písmená.';
-	if (name.length > 80) return 'Meno je príliš dlhé.';
-	if (!/\p{L}/u.test(name)) return 'Meno musí obsahovať písmeno.';
-	return undefined;
+	return flattenFields(v.object({ name: nameSchema }), { name: raw }).name;
 }
 
 export function validateEmail(raw: string) {
-	const email = raw.trim();
-	if (!email) return 'Zadaj e-mail.';
-	if (email.length > 254) return 'E-mail je príliš dlhý.';
-	if (!EMAIL_RE.test(email)) return 'E-mail nevyzerá ako adresa.';
-	return undefined;
+	return flattenFields(resetEmailSchema, { email: raw }).email;
 }
 
 export function validatePassword(raw: string, kind: 'login' | 'new' = 'new') {
-	if (!raw) return 'Zadaj heslo.';
-	if (/\s/.test(raw)) return 'Heslo nesmie obsahovať medzeru.';
-	if (raw.length < 8) return 'Heslo musí mať aspoň 8 znakov.';
-	if (raw.length > 72) return 'Heslo môže mať najviac 72 znakov.';
-	if (kind === 'new' && (!/\p{L}/u.test(raw) || !/\d/.test(raw))) {
-		return 'Pridaj aspoň jedno písmeno a jednu číslicu.';
-	}
-	return undefined;
+	return flattenFields(v.object({ password: passwordSchema(kind) }), { password: raw }).password;
 }
 
 export function validateConfirm(password: string, confirm: string) {
-	if (!confirm) return 'Zopakuj heslo.';
-	if (confirm !== password) return 'Heslá sa nezhodujú.';
-	return undefined;
+	return flattenFields(newPasswordSchema, { password, confirm }).confirm;
 }
 
 export function validateSignIn(fields: Pick<AuthFields, 'email' | 'password'>): FieldErrors {
-	return {
-		email: validateEmail(fields.email ?? ''),
-		password: validatePassword(fields.password ?? '', 'login')
-	};
+	const next = flattenFields(signInSchema, {
+		email: fields.email ?? '',
+		password: fields.password ?? ''
+	});
+	return { email: next.email, password: next.password };
 }
 
 export function validateSignUp(fields: AuthFields): FieldErrors {
-	return {
-		name: validateName(fields.name ?? ''),
-		email: validateEmail(fields.email ?? ''),
-		password: validatePassword(fields.password ?? '', 'new'),
-		confirm: validateConfirm(fields.password ?? '', fields.confirm ?? '')
-	};
+	const next = flattenFields(signUpSchema, {
+		name: fields.name ?? '',
+		email: fields.email ?? '',
+		password: fields.password ?? '',
+		confirm: fields.confirm ?? ''
+	});
+	return { name: next.name, email: next.email, password: next.password, confirm: next.confirm };
 }
 
 export function validateResetEmail(fields: Pick<AuthFields, 'email'>): FieldErrors {
-	return { email: validateEmail(fields.email ?? '') };
+	return { email: flattenFields(resetEmailSchema, { email: fields.email ?? '' }).email };
 }
 
 export function validateNewPassword(fields: Pick<AuthFields, 'password' | 'confirm'>): FieldErrors {
-	return {
-		password: validatePassword(fields.password ?? '', 'new'),
-		confirm: validateConfirm(fields.password ?? '', fields.confirm ?? '')
-	};
+	const next = flattenFields(newPasswordSchema, {
+		password: fields.password ?? '',
+		confirm: fields.confirm ?? ''
+	});
+	return { password: next.password, confirm: next.confirm };
 }
 
 export function passwordStrength(password: string) {

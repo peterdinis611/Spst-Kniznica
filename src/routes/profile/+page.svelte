@@ -5,8 +5,10 @@
 	import AuthPass from '$lib/components/AuthPass.svelte';
 	import PassSecret from '$lib/components/PassSecret.svelte';
 	import { ROLE_LABELS } from '$lib/ability';
-	import { hasFieldErrors, validateNewPassword, type FieldErrors } from '$lib/auth-fields';
+	import { newPasswordSchema, type FieldErrors } from '$lib/auth-fields';
+	import { applyToast, fieldIssue, gateSubmit } from '$lib/form-kit';
 	import { firstName, loanedLabel, readerNumber } from '$lib/format';
+	import { createForm } from '$lib/tanstack-create-form';
 	import type { ActionData, PageProps } from './$types';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
@@ -14,21 +16,27 @@
 	const given = $derived(firstName(data.reader.name));
 	const stamp = $derived(ROLE_LABELS[data.reader.role]);
 	const noteOk = $derived(Boolean(form && 'ok' in form && form.ok));
-
-	let password = $state('');
-	let confirm = $state('');
 	let submitted = $state(false);
 
-	const errors = $derived.by((): FieldErrors => {
-		if (noteOk) return {};
-		const next = validateNewPassword({ password, confirm });
-		if (!submitted) return form && 'errors' in form ? (form.errors ?? {}) : {};
-		return next;
-	});
+	const slip = createForm(() => ({
+		defaultValues: {
+			password: '',
+			confirm: ''
+		},
+		validators: {
+			onSubmit: newPasswordSchema
+		}
+	}));
+
+	function shown(name: keyof FieldErrors, issues: unknown[]) {
+		if (noteOk) return undefined;
+		if (submitted) return fieldIssue(issues[0]) || undefined;
+		return form && 'errors' in form ? form.errors?.[name] : undefined;
+	}
 
 	function check(event: SubmitEvent) {
 		submitted = true;
-		if (hasFieldErrors(validateNewPassword({ password, confirm }))) event.preventDefault();
+		gateSubmit(slip, event, 'Doplň heslo.');
 	}
 </script>
 
@@ -72,42 +80,50 @@
 		class="pass-form profile-pass"
 		method="POST"
 		action="?/password"
-		use:enhance={() => {
-			return async ({ result, update }) => {
-				await update({ reset: result.type === 'success' });
-				if (result.type === 'success') {
-					password = '';
-					confirm = '';
-					submitted = false;
-				}
-			};
-		}}
+		use:enhance={applyToast({
+			resetOn: (result) => result.type === 'success',
+			after: (result) => {
+				if (result.type === 'success') submitted = false;
+			}
+		})}
 		novalidate
 		onsubmit={check}
 	>
 		<p class="profile-pass-kicker">Nové heslo</p>
-		<PassSecret
-			id="password"
-			label="Nové heslo"
-			autocomplete="new-password"
-			bind:value={password}
-			error={errors.password}
-			meter
-		/>
-		<PassSecret
-			id="confirm"
-			name="confirm"
-			label="Znova"
-			autocomplete="new-password"
-			bind:value={confirm}
-			error={errors.confirm}
-		/>
+		<slip.Field name="password">
+			{#snippet children(field)}
+				<PassSecret
+					id="password"
+					label="Nové heslo"
+					autocomplete="new-password"
+					value={field.state.value}
+					onValue={field.handleChange}
+					onBlur={field.handleBlur}
+					error={shown('password', field.state.meta.errors)}
+					meter
+				/>
+			{/snippet}
+		</slip.Field>
+		<slip.Field name="confirm">
+			{#snippet children(field)}
+				<PassSecret
+					id="confirm"
+					name="confirm"
+					label="Znova"
+					autocomplete="new-password"
+					value={field.state.value}
+					onValue={field.handleChange}
+					onBlur={field.handleBlur}
+					error={shown('confirm', field.state.meta.errors)}
+				/>
+			{/snippet}
+		</slip.Field>
 		<button class="pass-go" type="submit">Uložiť heslo</button>
 	</form>
 
 	<div class="profile-actions">
 		<a class="profile-go" href={resolve('/loans')}>Moje knihy</a>
-		<form method="POST" action="?/recover" use:enhance>
+		<form method="POST" action="?/recover" use:enhance={applyToast()}>
 			<button class="profile-ghost" type="submit">Poslať odkaz e-mailom</button>
 		</form>
 		{#if data.admin}

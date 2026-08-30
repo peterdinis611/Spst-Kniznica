@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultDelete from '$lib/components/PultDelete.svelte';
+	import PultField from '$lib/components/PultField.svelte';
 	import PultLedger from '$lib/components/PultLedger.svelte';
+	import PultSaveForm from '$lib/components/PultSaveForm.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { authorSchema } from '$lib/desk-fields';
 	import { pultHref, type PultColumn } from '$lib/pult-ledger';
 	import type { ActionData, PageProps } from './$types';
 
@@ -44,37 +46,35 @@
 	</PultLedger>
 
 	{#key current?.id ?? 'new'}
-	<form class="pult-form" method="POST" action="?/save" use:enhance>
-		<h2>{current ? 'Opraviť autora' : 'Nový autor'}</h2>
-		<input type="hidden" name="id" value={current?.id ?? ''} />
-		<div class="pult-fields is-2">
-			<label class="pult-field">
-				<span>Meno</span>
-				<input name="name" required value={current?.name ?? ''} />
-			</label>
-			<label class="pult-field">
-				<span>Slug</span>
-				<input name="slug" value={current?.slug ?? ''} placeholder="z mena" />
-			</label>
-			<label class="pult-field">
-				<span>Rola</span>
-				<input name="role" required value={current?.role ?? ''} />
-			</label>
-			<label class="pult-field">
-				<span>Roky</span>
-				<input name="lifespan" required value={current?.lifespan ?? ''} placeholder="1952 —" />
-			</label>
-			<label class="pult-field is-wide">
-				<span>Medailón</span>
-				<textarea name="bio" required>{current?.bio ?? ''}</textarea>
-			</label>
-		</div>
-		<div class="pult-submit">
-			<Button type="submit">{current ? 'Uložiť' : 'Založiť'}</Button>
-			{#if current}
-				<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
-			{/if}
-		</div>
-	</form>
+		<PultSaveForm
+			schema={authorSchema}
+			defaults={{
+				name: current?.name ?? '',
+				role: current?.role ?? '',
+				lifespan: current?.lifespan ?? '',
+				bio: current?.bio ?? ''
+			}}
+		>
+			{#snippet children({ form: slip })}
+				<h2>{current ? 'Opraviť autora' : 'Nový autor'}</h2>
+				<input type="hidden" name="id" value={current?.id ?? ''} />
+				<div class="pult-fields is-2">
+					<PultField form={slip} name="name" label="Meno" />
+					<label class="pult-field">
+						<span>Slug</span>
+						<input name="slug" value={current?.slug ?? ''} placeholder="z mena" />
+					</label>
+					<PultField form={slip} name="role" label="Rola" />
+					<PultField form={slip} name="lifespan" label="Roky" placeholder="1952 —" />
+					<PultField form={slip} name="bio" label="Medailón" as="textarea" wide />
+				</div>
+				<div class="pult-submit">
+					<Button type="submit">{current ? 'Uložiť' : 'Založiť'}</Button>
+					{#if current}
+						<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
+					{/if}
+				</div>
+			{/snippet}
+		</PultSaveForm>
 	{/key}
 </div>

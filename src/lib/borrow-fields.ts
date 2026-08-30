@@ -1,3 +1,4 @@
+import { fieldIssue } from '$lib/form-kit';
 import * as v from 'valibot';
 
 export const LOAN_DAY_OPTIONS = [7, 14, 21] as const;
@@ -101,10 +102,4 @@ export function parseLoanDays(raw: string) {
 	return days;
 }
 
-export function fieldIssue(error: unknown): string {
-	if (!error) return '';
-	if (typeof error === 'string') return error;
-	if (Array.isArray(error)) return fieldIssue(error[0]);
-	if (typeof error === 'object' && 'message' in error) return String(error.message ?? '');
-	return String(error);
-}
+export { fieldIssue };

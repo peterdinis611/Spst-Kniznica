@@ -4,29 +4,34 @@
 	import type { ActionData, PageProps } from './$types';
 	import Seo from '$lib/components/Seo.svelte';
 	import AuthPass from '$lib/components/AuthPass.svelte';
-	import { hasFieldErrors, validateResetEmail, type FieldErrors } from '$lib/auth-fields';
+	import { resetEmailSchema, type FieldErrors } from '$lib/auth-fields';
+	import { applyToast, fieldIssue, gateSubmit } from '$lib/form-kit';
+	import { createForm } from '$lib/tanstack-create-form';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const noteOk = $derived(Boolean(form && 'ok' in form && form.ok));
+	const seeded = $derived(form && 'values' in form ? form.values?.email : undefined);
 
-	let email = $state(data.email);
 	let submitted = $state(false);
 
-	$effect(() => {
-		const values = form && 'values' in form ? form.values : undefined;
-		if (values?.email) email = values.email;
-	});
+	const slip = createForm(() => ({
+		defaultValues: {
+			email: seeded || data.email
+		},
+		validators: {
+			onSubmit: resetEmailSchema
+		}
+	}));
 
-	const errors = $derived.by((): FieldErrors => {
-		if (noteOk) return {};
-		const next = validateResetEmail({ email });
-		if (!submitted) return form && 'errors' in form ? (form.errors ?? {}) : {};
-		return next;
-	});
+	function shown(name: keyof FieldErrors, issues: unknown[]) {
+		if (noteOk) return undefined;
+		if (submitted) return fieldIssue(issues[0]) || undefined;
+		return form && 'errors' in form ? form.errors?.[name] : undefined;
+	}
 
 	function check(event: SubmitEvent) {
 		submitted = true;
-		if (hasFieldErrors(validateResetEmail({ email }))) event.preventDefault();
+		gateSubmit(slip, event, 'Doplň e-mail.');
 	}
 </script>
 
@@ -45,33 +50,39 @@
 >
 	<form
 		method="POST"
-		use:enhance={() => {
-			return async ({ result, update }) => {
-				await update({ reset: result.type !== 'success' });
+		use:enhance={applyToast({
+			resetOn: (result) => result.type !== 'success',
+			after: (result) => {
 				if (result.type === 'success') submitted = false;
-			};
-		}}
+			}
+		})}
 		class="pass-form"
 		novalidate
 		onsubmit={check}
 	>
-		<div class="pass-field" class:is-bad={Boolean(errors.email)}>
-			<label for="email">E-mail</label>
-			<input
-				id="email"
-				type="email"
-				name="email"
-				autocomplete="email"
-				bind:value={email}
-				required
-				maxlength={254}
-				aria-invalid={errors.email ? 'true' : undefined}
-				aria-describedby={errors.email ? 'email-chyba' : undefined}
-			/>
-			{#if errors.email}
-				<p class="pass-error" id="email-chyba">{errors.email}</p>
-			{/if}
-		</div>
+		<slip.Field name="email">
+			{#snippet children(field)}
+				{@const err = shown('email', field.state.meta.errors)}
+				<div class="pass-field" class:is-bad={Boolean(err)}>
+					<label for="email">E-mail</label>
+					<input
+						id="email"
+						type="email"
+						name={field.name}
+						autocomplete="email"
+						value={field.state.value}
+						onblur={field.handleBlur}
+						oninput={(event) => field.handleChange(event.currentTarget.value)}
+						maxlength={254}
+						aria-invalid={err ? 'true' : undefined}
+						aria-describedby={err ? 'email-chyba' : undefined}
+					/>
+					{#if err}
+						<p class="pass-error" id="email-chyba">{err}</p>
+					{/if}
+				</div>
+			{/snippet}
+		</slip.Field>
 		{#if !data.configured}
 			<p class="pass-note">
 				Pult ešte nemá kľúč od skrine. Doplň kľúče do <code>.env</code>.

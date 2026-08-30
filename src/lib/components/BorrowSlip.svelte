@@ -8,6 +8,7 @@
 		LOAN_DAYS_MIN,
 		type BorrowErrors
 	} from '$lib/borrow-fields';
+	import { applyToast, gateSubmit } from '$lib/form-kit';
 	import { daysLabel } from '$lib/format';
 	import { createForm } from '$lib/tanstack-create-form';
 	import type { BorrowerDraft } from '$lib/types';
@@ -54,9 +55,7 @@
 
 	function check(event: SubmitEvent) {
 		submitted = true;
-		if (form.validateSync('submit').hasErrored) {
-			event.preventDefault();
-		}
+		gateSubmit(form, event, 'Doplň výpožičný lístok.');
 	}
 </script>
 
@@ -71,7 +70,7 @@
 		action="?/borrow"
 		class="borrow-slip"
 		novalidate
-		use:enhance
+		use:enhance={applyToast()}
 		onsubmit={check}
 	>
 		<span class="borrow-spine" aria-hidden="true"></span>

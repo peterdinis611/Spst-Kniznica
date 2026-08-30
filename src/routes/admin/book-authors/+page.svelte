@@ -1,10 +1,12 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultDelete from '$lib/components/PultDelete.svelte';
+	import PultField from '$lib/components/PultField.svelte';
 	import PultLedger from '$lib/components/PultLedger.svelte';
+	import PultSaveForm from '$lib/components/PultSaveForm.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { linkSchema } from '$lib/desk-fields';
 	import type { PultColumn } from '$lib/pult-ledger';
 	import type { ActionData, PageProps } from './$types';
 
@@ -43,32 +45,36 @@
 		{/snippet}
 	</PultLedger>
 
-	<form class="pult-form" method="POST" action="?/save" use:enhance>
-		<h2>Nová väzba</h2>
-		<div class="pult-fields is-2">
-			<label class="pult-field is-wide">
-				<span>Kniha</span>
-				<select name="bookId" required>
-					{#each data.books as item (item.id)}
-						<option value={item.id}>{item.title}</option>
-					{/each}
-				</select>
-			</label>
-			<label class="pult-field is-wide">
-				<span>Autor</span>
-				<select name="authorId" required>
-					{#each data.authors as person (person.id)}
-						<option value={person.id}>{person.name}</option>
-					{/each}
-				</select>
-			</label>
-			<label class="pult-field">
-				<span>Poradie</span>
-				<input name="position" type="number" min="0" value="0" />
-			</label>
-		</div>
-		<div class="pult-submit">
-			<Button type="submit">Založiť</Button>
-		</div>
-	</form>
+	<PultSaveForm
+		schema={linkSchema}
+		defaults={{
+			bookId: data.books[0]?.id ?? '',
+			authorId: data.authors[0]?.id ?? '',
+			position: 0
+		}}
+	>
+		{#snippet children({ form: slip })}
+			<h2>Nová väzba</h2>
+			<div class="pult-fields is-2">
+				<PultField form={slip} name="bookId" label="Kniha" as="select" wide>
+					{#snippet options()}
+						{#each data.books as item (item.id)}
+							<option value={item.id}>{item.title}</option>
+						{/each}
+					{/snippet}
+				</PultField>
+				<PultField form={slip} name="authorId" label="Autor" as="select" wide>
+					{#snippet options()}
+						{#each data.authors as person (person.id)}
+							<option value={person.id}>{person.name}</option>
+						{/each}
+					{/snippet}
+				</PultField>
+				<PultField form={slip} name="position" label="Poradie" type="number" numeric min={0} />
+			</div>
+			<div class="pult-submit">
+				<Button type="submit">Založiť</Button>
+			</div>
+		{/snippet}
+	</PultSaveForm>
 </div>

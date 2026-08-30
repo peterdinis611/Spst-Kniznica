@@ -1,12 +1,14 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { DESK_ROLES, ROLE_LABELS, parseRole } from '$lib/ability';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultDelete from '$lib/components/PultDelete.svelte';
+	import PultField from '$lib/components/PultField.svelte';
 	import PultLedger from '$lib/components/PultLedger.svelte';
+	import PultSaveForm from '$lib/components/PultSaveForm.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { readerSchema } from '$lib/desk-fields';
 	import { readerNumber, shortDate } from '$lib/format';
 	import { pultHref, type PultColumn } from '$lib/pult-ledger';
 	import type { ActionData, PageProps } from './$types';
@@ -66,35 +68,35 @@
 
 	{#if current}
 		{#key current.id}
-		<form class="pult-form" method="POST" action="?/save" use:enhance>
-			<h2>Opraviť preukaz</h2>
-			<input type="hidden" name="id" value={current.id} />
-			<div class="pult-fields is-2">
-				<label class="pult-field">
-					<span>Meno</span>
-					<input name="name" required value={current.name} />
-				</label>
-				<label class="pult-field">
-					<span>E-mail</span>
-					<input name="email" type="email" required value={current.email} />
-				</label>
-				<label class="pult-field">
-					<span>Rola</span>
-					<select name="role">
-						{#each DESK_ROLES as option (option.value)}
-							<option value={option.value} selected={parseRole(current.role) === option.value}>
-								{option.label}
-							</option>
-						{/each}
-					</select>
-				</label>
-			</div>
-			<p class="pult-count">založený {shortDate(current.createdAt)}</p>
-			<div class="pult-submit">
-				<Button type="submit">Uložiť</Button>
-				<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
-			</div>
-		</form>
+			<PultSaveForm
+				schema={readerSchema}
+				defaults={{
+					name: current.name,
+					email: current.email,
+					role: parseRole(current.role)
+				}}
+			>
+				{#snippet children({ form: slip })}
+					<h2>Opraviť preukaz</h2>
+					<input type="hidden" name="id" value={current.id} />
+					<div class="pult-fields is-2">
+						<PultField form={slip} name="name" label="Meno" />
+						<PultField form={slip} name="email" label="E-mail" type="email" />
+						<PultField form={slip} name="role" label="Rola" as="select">
+							{#snippet options()}
+								{#each DESK_ROLES as option (option.value)}
+									<option value={option.value}>{option.label}</option>
+								{/each}
+							{/snippet}
+						</PultField>
+					</div>
+					<p class="pult-count">založený {shortDate(current.createdAt)}</p>
+					<div class="pult-submit">
+						<Button type="submit">Uložiť</Button>
+						<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
+					</div>
+				{/snippet}
+			</PultSaveForm>
 		{/key}
 	{/if}
 </div>

@@ -1,5 +1,6 @@
 import { and, count, desc, eq, ilike, isNull, or } from 'drizzle-orm';
 import { LIST_LIMIT } from '$lib/admin';
+import { deskIssue, holdingSchema } from '$lib/desk-fields';
 import { refreshCatalog } from '../admin';
 import { db } from '../db';
 import { book, category, holding, holdingStatus, loan } from '../db/schema';
@@ -57,9 +58,12 @@ export async function saveHolding(input: {
 	acquiredAt?: Date | null;
 }): Promise<DeskResult> {
 	const inventoryNo = input.inventoryNo.trim();
-	if (!holdingStatus.includes(input.status as (typeof holdingStatus)[number])) {
-		return fail('Stav výtlačka nie je v zozname.');
-	}
+	const issue = deskIssue(holdingSchema, {
+		bookId: input.bookId,
+		inventoryNo,
+		status: input.status
+	});
+	if (issue) return fail(issue);
 	const status = input.status as (typeof holdingStatus)[number];
 	const held = await db.select().from(book).where(eq(book.id, input.bookId)).then((rows) => rows[0]);
 	if (!held) return fail('Vyber knihu.');

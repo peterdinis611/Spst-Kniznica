@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { csvCell, csvFileStamp, csvResponse, toCsv } from '../csv';
+import { csvCell, csvFileStamp, csvResponse, parseCsv, toCsv } from '../csv';
 
 describe('toCsv', () => {
 	it('writes a BOM and quotes hostile cells', () => {
@@ -20,6 +20,24 @@ describe('toCsv', () => {
 	it('leaves a plain cell alone', () => {
 		expect(csvCell('II.A')).toBe('II.A');
 		expect(csvCell(21)).toBe('21');
+	});
+});
+
+describe('parseCsv', () => {
+	it('reads back a stamped sheet with quotes', () => {
+		const body = toCsv(
+			['názov', 'poznámka'],
+			[
+				['Algoritmy', 'ok'],
+				['Stroje, dielňa', 'riadok\n"x"']
+			]
+		);
+		const sheet = parseCsv(body);
+		expect(sheet.headers).toEqual(['názov', 'poznámka']);
+		expect(sheet.rows).toEqual([
+			['Algoritmy', 'ok'],
+			['Stroje, dielňa', 'riadok\n"x"']
+		]);
 	});
 });
 

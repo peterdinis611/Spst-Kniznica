@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { applyToast } from '$lib/form-kit';
 	import { Button } from '$lib/components/ui/button/index.js';
 
 	let {
@@ -17,7 +18,7 @@
 	}
 </script>
 
-<form method="POST" action="?/delete" use:enhance onsubmit={check}>
+<form method="POST" action="?/delete" use:enhance={applyToast()} onsubmit={check}>
 	{#each Object.entries(fields) as [name, value] (name)}
 		<input type="hidden" {name} {value} />
 	{/each}

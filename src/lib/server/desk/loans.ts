@@ -1,6 +1,7 @@
 import { and, desc, eq, ilike, isNull, or } from 'drizzle-orm';
 import { LIST_LIMIT } from '$lib/admin';
 import { normalizeClass, parseLoanDays } from '$lib/borrow-fields';
+import { deskIssue, deskLoanSchema } from '$lib/desk-fields';
 import { refreshCatalog } from '../admin';
 import { db } from '../db';
 import { book, holding, loan, user } from '../db/schema';
@@ -132,8 +133,15 @@ export async function saveLoan(input: {
 	const first = input.borrowerFirstName.trim();
 	const last = input.borrowerLastName.trim();
 	const klass = normalizeClass(input.borrowerClass);
-	if (first.length < 2 || last.length < 2) return fail('Meno a priezvisko na lístku.');
-	if (!klass) return fail('Doplň triedu.');
+	const issue = deskIssue(deskLoanSchema, {
+		bookId: input.bookId,
+		userId: input.userId,
+		borrowerFirstName: first,
+		borrowerLastName: last,
+		borrowerClass: klass,
+		loanDays: input.loanDays
+	});
+	if (issue) return fail(issue);
 	const days = parseLoanDays(String(input.loanDays));
 	if (!days) return fail('Doba výpožičky nie je v rozsahu.');
 	const held = await db

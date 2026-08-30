@@ -1,12 +1,14 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultCover from '$lib/components/PultCover.svelte';
 	import PultDelete from '$lib/components/PultDelete.svelte';
+	import PultField from '$lib/components/PultField.svelte';
 	import PultLedger from '$lib/components/PultLedger.svelte';
+	import PultSaveForm from '$lib/components/PultSaveForm.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { bookSchema } from '$lib/desk-fields';
 	import { pultHref, type PultColumn } from '$lib/pult-ledger';
 	import type { ActionData, PageProps } from './$types';
 
@@ -53,96 +55,93 @@
 	</PultLedger>
 
 	{#key current?.id ?? 'new'}
-	<form class="pult-form" method="POST" action="?/save" use:enhance>
-		<h2>{current ? 'Opraviť zväzok' : 'Nový zväzok'}</h2>
-		<input type="hidden" name="id" value={current?.id ?? ''} />
-		<div class="pult-field is-wide">
-			<span>Obálka</span>
-			<PultCover url={current?.coverUrl} fileKey={current?.coverKey} ready={data.uploadReady} />
-		</div>
-		<div class="pult-fields is-2">
-			<label class="pult-field is-wide">
-				<span>Názov</span>
-				<input name="title" required value={current?.title ?? ''} />
-			</label>
-			<label class="pult-field is-wide">
-				<span>Podtitul</span>
-				<input name="subtitle" value={current?.subtitle ?? ''} />
-			</label>
-			<label class="pult-field">
-				<span>Rok</span>
-				<input name="year" type="number" required value={current?.year ?? 2020} />
-			</label>
-			<label class="pult-field">
-				<span>Strany</span>
-				<input name="pages" type="number" required value={current?.pages ?? 200} />
-			</label>
-			<label class="pult-field">
-				<span>ISBN</span>
-				<input name="isbn" required value={current?.isbn ?? ''} />
-			</label>
-			<label class="pult-field">
-				<span>Signatúra</span>
-				<input name="callNumber" required value={current?.callNumber ?? ''} />
-			</label>
-			<label class="pult-field">
-				<span>Odbor</span>
-				<select name="categoryId" required>
-					{#each data.categories as cat (cat.id)}
-						<option value={cat.id} selected={current?.categoryId === cat.id}>{cat.code} · {cat.name}</option>
-					{/each}
-				</select>
-			</label>
-			<label class="pult-field">
-				<span>Vydavateľ</span>
-				<input name="publisher" required value={current?.publisher ?? ''} />
-			</label>
-			<label class="pult-field">
-				<span>Jazyk</span>
-				<input name="language" value={current?.language ?? 'sk'} />
-			</label>
-			{#if !current}
-				<label class="pult-field">
-					<span>Výtlačky</span>
-					<input name="copies" type="number" min="0" max="40" value="1" />
-				</label>
-			{/if}
-			<label class="pult-field is-wide">
-				<span>Anotácia</span>
-				<textarea name="description" required>{current?.description ?? ''}</textarea>
-			</label>
-			<label class="pult-field is-wide">
-				<span>Autori</span>
-				<div class="pult-checks">
-					{#each data.authors as person (person.id)}
-						<label>
-							<input
-								type="checkbox"
-								name="authorIds"
-								value={person.id}
-								checked={data.linkedIds.includes(person.id)}
-							/>
-							{person.name}
-						</label>
-					{/each}
+		<PultSaveForm
+			schema={bookSchema}
+			defaults={{
+				title: current?.title ?? '',
+				subtitle: current?.subtitle ?? '',
+				year: current?.year ?? 2020,
+				pages: current?.pages ?? 200,
+				isbn: current?.isbn ?? '',
+				callNumber: current?.callNumber ?? '',
+				categoryId: current?.categoryId ?? data.categories[0]?.id ?? '',
+				publisher: current?.publisher ?? '',
+				language: current?.language ?? 'sk',
+				description: current?.description ?? '',
+				copies: 1,
+				featured: Boolean(current?.featured)
+			}}
+		>
+			{#snippet children({ form: slip })}
+				<h2>{current ? 'Opraviť zväzok' : 'Nový zväzok'}</h2>
+				<input type="hidden" name="id" value={current?.id ?? ''} />
+				<div class="pult-field is-wide">
+					<span>Obálka</span>
+					<PultCover url={current?.coverUrl} fileKey={current?.coverKey} ready={data.uploadReady} />
 				</div>
-			</label>
-			<label class="pult-field">
-				<span>Na pulte</span>
-				<div class="pult-checks">
-					<label>
-						<input type="checkbox" name="featured" value="1" checked={Boolean(current?.featured)} />
-						odporúčaný zväzok
+				<div class="pult-fields is-2">
+					<PultField form={slip} name="title" label="Názov" wide />
+					<PultField form={slip} name="subtitle" label="Podtitul" wide />
+					<PultField form={slip} name="year" label="Rok" type="number" numeric />
+					<PultField form={slip} name="pages" label="Strany" type="number" numeric />
+					<PultField form={slip} name="isbn" label="ISBN" />
+					<PultField form={slip} name="callNumber" label="Signatúra" />
+					<PultField form={slip} name="categoryId" label="Odbor" as="select">
+						{#snippet options()}
+							{#each data.categories as cat (cat.id)}
+								<option value={cat.id}>{cat.code} · {cat.name}</option>
+							{/each}
+						{/snippet}
+					</PultField>
+					<PultField form={slip} name="publisher" label="Vydavateľ" />
+					<PultField form={slip} name="language" label="Jazyk" />
+					{#if !current}
+						<PultField form={slip} name="copies" label="Výtlačky" type="number" numeric min={0} max={40} />
+					{/if}
+					<PultField form={slip} name="description" label="Anotácia" as="textarea" wide />
+					<label class="pult-field is-wide">
+						<span>Autori</span>
+						<div class="pult-checks">
+							{#each data.authors as person (person.id)}
+								<label>
+									<input
+										type="checkbox"
+										name="authorIds"
+										value={person.id}
+										checked={data.linkedIds.includes(person.id)}
+									/>
+									{person.name}
+								</label>
+							{/each}
+						</div>
 					</label>
+					<slip.Field name="featured">
+						{#snippet children(field: any)}
+							<label class="pult-field">
+								<span>Na pulte</span>
+								<div class="pult-checks">
+									<label>
+										<input
+											type="checkbox"
+											name="featured"
+											value="1"
+											checked={Boolean(field.state.value)}
+											onchange={(event) => field.handleChange(event.currentTarget.checked)}
+										/>
+										odporúčaný zväzok
+									</label>
+								</div>
+							</label>
+						{/snippet}
+					</slip.Field>
 				</div>
-			</label>
-		</div>
-		<div class="pult-submit">
-			<Button type="submit">{current ? 'Uložiť' : 'Založiť'}</Button>
-			{#if current}
-				<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
-			{/if}
-		</div>
-	</form>
+				<div class="pult-submit">
+					<Button type="submit">{current ? 'Uložiť' : 'Založiť'}</Button>
+					{#if current}
+						<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
+					{/if}
+				</div>
+			{/snippet}
+		</PultSaveForm>
 	{/key}
 </div>

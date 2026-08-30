@@ -4,6 +4,22 @@
 
 Fond sídli v pavilóne B. Výpožička je bez poplatku — **7, 14 alebo 21 dní**, strop na počet kníh nie je.
 
+## Ako to vyzerá
+
+Vstupná sieň je polica. Výpožička je lístok. Účet je preukaz.
+
+![Vstupná sieň — police fondu](docs/screenshots/sien.png)
+
+| Pracovné zväzky | Register kníh |
+| :---: | :---: |
+| ![Otočná polica zväzkov](docs/screenshots/police.png) | ![Riadky katalógu s voľnými výtlačkami](docs/screenshots/katalog.png) |
+
+| Čitateľský preukaz | Výpožičný lístok |
+| :---: | :---: |
+| ![Prihlásenie ako preukaz](docs/screenshots/preukaz.png) | ![Lístok s menom, triedou a dobou](docs/screenshots/listok.png) |
+
+![Kartotéka pultu](docs/screenshots/pult.png)
+
 ## Stack
 
 - **SvelteKit 2** + Svelte 5, Vite, Tailwind CSS 4
@@ -70,7 +86,7 @@ Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, kt
 | `/departments`, `/authors` | odbory a autori |
 | `/login` | prihlásenie / registrácia (`?mod=novy`) |
 | `/loans`, `/profile` | lístok a preukaz (po prihlásení) |
-| `/admin` | pult — CRUD fondu, trieda vonku, výkazy (knihovník) |
+| `/admin` | pult — CRUD fondu, trieda vonku, výkazy CSV/XML (knihovník) |
 | `/docs` | príručka |
 
 Slovenské aliasy (`/knihy`, `/pult`, `/profil`…) sa 308 presmerujú na kanonické cesty.

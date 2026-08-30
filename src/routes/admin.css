@@ -508,6 +508,20 @@
 	resize: vertical;
 }
 
+.pult-field.is-bad input,
+.pult-field.is-bad textarea,
+.pult-field.is-bad select {
+	border-color: color-mix(in srgb, #9a3b28 55%, var(--pult-walnut));
+	background: color-mix(in srgb, #9a3b28 6%, #fff);
+}
+
+.pult-error {
+	margin: 0;
+	color: #9a3b28;
+	font-family: 'Newsreader', serif;
+	font-size: 0.88rem;
+}
+
 .pult-field input:focus-visible,
 .pult-field textarea:focus-visible,
 .pult-field select:focus-visible {
@@ -1250,7 +1264,8 @@ html.dark .pult-cabinet {
 	.pult-mast,
 	.pult-tabs,
 	.pult-folio-acts,
-	.pult-folio-seal {
+	.pult-folio-seal,
+	.slip-file {
 		display: none !important;
 	}
 

@@ -30,7 +30,7 @@
 	defaultMode="system"
 	themeColors={{ light: '#f6f0e6', dark: '#16120e' }}
 />
-<Toaster />
+<Toaster position="top-right" closeButton richColors />
 
 <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
 <form id="logout-form" method="POST" action={resolve('/logout')} class="hidden"></form>

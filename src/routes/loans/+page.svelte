@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
+	import { applyToast } from '$lib/form-kit';
 	import BookCover from '$lib/components/BookCover.svelte';
 	import StampBurst from '$lib/components/StampBurst.svelte';
 	import { authorLine, daysLabel, dueStatus, firstName, loanedLabel, readerNumber, shortDate } from '$lib/format';
@@ -136,12 +137,12 @@
 								</div>
 								<div class="slip-acts">
 									{#if item.canRenew}
-										<form method="POST" action="?/renew" use:enhance>
+										<form method="POST" action="?/renew" use:enhance={applyToast()}>
 											<input type="hidden" name="loanId" value={item.id} />
 											<button type="submit" class="is-renew">Predĺžiť</button>
 										</form>
 									{/if}
-									<form method="POST" action="?/return" use:enhance>
+									<form method="POST" action="?/return" use:enhance={applyToast()}>
 										<input type="hidden" name="loanId" value={item.id} />
 										<button type="submit">Vrátiť</button>
 									</form>
@@ -174,7 +175,7 @@
 									<a href={resolve('/books/[id]', { id: item.book.id })}>{item.book.title}</a>
 									<p class="slip-meta">{item.book.callNumber}</p>
 								</div>
-								<form method="POST" action="?/cancelWait" use:enhance>
+								<form method="POST" action="?/cancelWait" use:enhance={applyToast()}>
 									<input type="hidden" name="reservationId" value={item.id} />
 									<button type="submit">Stiahnuť</button>
 								</form>
@@ -193,7 +194,7 @@
 						</div>
 					</div>
 				{:else}
-					<form class="folio-clear" method="POST" action="?/clearHistory" use:enhance>
+					<form class="folio-clear" method="POST" action="?/clearHistory" use:enhance={applyToast()}>
 						<p>Vrátené ostávajú na lístku, kým ich stiahneš.</p>
 						<button type="submit">Vyčistiť vrátené</button>
 					</form>

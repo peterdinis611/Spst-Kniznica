@@ -1,12 +1,14 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { HOLDING_STATUSES, holdingLabel, toDatetimeLocal } from '$lib/admin';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultDelete from '$lib/components/PultDelete.svelte';
+	import PultField from '$lib/components/PultField.svelte';
 	import PultLedger from '$lib/components/PultLedger.svelte';
+	import PultSaveForm from '$lib/components/PultSaveForm.svelte';
 	import PultSearch from '$lib/components/PultSearch.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { holdingSchema } from '$lib/desk-fields';
 	import { shortDate } from '$lib/format';
 	import { pultHref, type PultColumn } from '$lib/pult-ledger';
 	import type { ActionData, PageProps } from './$types';
@@ -54,41 +56,43 @@
 	</PultLedger>
 
 	{#key current?.id ?? 'new'}
-	<form class="pult-form" method="POST" action="?/save" use:enhance>
-		<h2>{current ? 'Opraviť výtlačok' : 'Nový výtlačok'}</h2>
-		<input type="hidden" name="id" value={current?.id ?? ''} />
-		<div class="pult-fields is-2">
-			<label class="pult-field is-wide">
-				<span>Kniha</span>
-				<select name="bookId" required>
-					{#each data.books as item (item.id)}
-						<option value={item.id} selected={current?.bookId === item.id}>{item.title}</option>
-					{/each}
-				</select>
-			</label>
-			<label class="pult-field">
-				<span>Inventár</span>
-				<input name="inventoryNo" value={current?.inventoryNo ?? ''} placeholder="doplní sa samo" />
-			</label>
-			<label class="pult-field">
-				<span>Stav</span>
-				<select name="status">
-					{#each HOLDING_STATUSES as item (item.value)}
-						<option value={item.value} selected={current?.status === item.value}>{item.label}</option>
-					{/each}
-				</select>
-			</label>
-			<label class="pult-field is-wide">
-				<span>Zaradený</span>
-				<input name="acquiredAt" type="datetime-local" value={toDatetimeLocal(current?.acquiredAt)} />
-			</label>
-		</div>
-		<div class="pult-submit">
-			<Button type="submit">{current ? 'Uložiť' : 'Založiť'}</Button>
-			{#if current}
-				<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
-			{/if}
-		</div>
-	</form>
+		<PultSaveForm
+			schema={holdingSchema}
+			defaults={{
+				bookId: current?.bookId ?? data.books[0]?.id ?? '',
+				inventoryNo: current?.inventoryNo ?? '',
+				status: current?.status ?? 'available',
+				acquiredAt: toDatetimeLocal(current?.acquiredAt)
+			}}
+		>
+			{#snippet children({ form: slip })}
+				<h2>{current ? 'Opraviť výtlačok' : 'Nový výtlačok'}</h2>
+				<input type="hidden" name="id" value={current?.id ?? ''} />
+				<div class="pult-fields is-2">
+					<PultField form={slip} name="bookId" label="Kniha" as="select" wide>
+						{#snippet options()}
+							{#each data.books as item (item.id)}
+								<option value={item.id}>{item.title}</option>
+							{/each}
+						{/snippet}
+					</PultField>
+					<PultField form={slip} name="inventoryNo" label="Inventár" placeholder="doplní sa samo" />
+					<PultField form={slip} name="status" label="Stav" as="select">
+						{#snippet options()}
+							{#each HOLDING_STATUSES as item (item.value)}
+								<option value={item.value}>{item.label}</option>
+							{/each}
+						{/snippet}
+					</PultField>
+					<PultField form={slip} name="acquiredAt" label="Zaradený" type="datetime-local" wide />
+				</div>
+				<div class="pult-submit">
+					<Button type="submit">{current ? 'Uložiť' : 'Založiť'}</Button>
+					{#if current}
+						<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>
+					{/if}
+				</div>
+			{/snippet}
+		</PultSaveForm>
 	{/key}
 </div>

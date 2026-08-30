@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { holdingLabel } from '$lib/admin';
+	import SlipFileFolio from '$lib/components/SlipFileFolio.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { inventoryCsv, inventoryXml, overdueCsv, overdueXml } from '$lib/desk-export';
 	import { daysLabel, stampDate } from '$lib/format';
 	import type { PageProps } from './$types';
 
@@ -8,11 +10,16 @@
 
 	const out = $derived(data.inventory.filter((row) => row.status === 'loaned').length);
 	const late = $derived(data.overdue.length);
+	const peciatka = $derived(stampDate(new Date()));
+	const inventorySheet = $derived(inventoryCsv(data.inventory));
+	const overdueSheet = $derived(overdueCsv(data.overdue));
+	const inventoryDoc = $derived(inventoryXml(data.inventory, peciatka));
+	const overdueDoc = $derived(overdueXml(data.overdue, peciatka));
 </script>
 
 <Seo
 	title="Výkazy · Pult"
-	description="Inventúra fondu a oneskorené lístky — na tlač a CSV, raz za polrok."
+	description="Inventúra fondu a oneskorené lístky — na tlač, CSV a XML, raz za polrok."
 	index={false}
 />
 
@@ -21,14 +28,16 @@
 		<p class="pult-folio-kicker">pavilón B · stav k {data.stamp}</p>
 		<h2>Stav fondu.</h2>
 		<p class="pult-folio-lede">
-			Dva listy pre polrok: inventúra výtlačkov a lístky po lehote. Tlač ide do PDF. CSV otvoríš v
-			tabuľke.
+			Dva listy pre polrok: inventúra výtlačkov a lístky po lehote. Tlač ide do PDF. CSV a XML
+			otvoríš na pulte, alebo stiahneš.
 		</p>
 		<em class="pult-folio-seal" aria-hidden="true">SPŠT</em>
 		<div class="pult-folio-acts">
 			<button type="button" onclick={() => window.print()}>Tlačiť list</button>
 			<a href="/admin/reports/inventory.csv">CSV inventúra</a>
+			<a href="/admin/reports/inventory.xml">XML inventúra</a>
 			<a href="/admin/reports/overdue.csv">CSV po lehote</a>
+			<a href="/admin/reports/overdue.xml">XML po lehote</a>
 		</div>
 	</header>
 
@@ -69,6 +78,13 @@
 				</tbody>
 			</table>
 		{/if}
+		<SlipFileFolio
+			title="Inventúra · súbor"
+			csv={inventorySheet}
+			xml={inventoryDoc}
+			csvHref="/admin/reports/inventory.csv"
+			xmlHref="/admin/reports/inventory.xml"
+		/>
 	</section>
 
 	<section class="pult-folio-sheet" aria-labelledby="folio-late">
@@ -110,5 +126,12 @@
 				</tbody>
 			</table>
 		{/if}
+		<SlipFileFolio
+			title="Po lehote · súbor"
+			csv={overdueSheet}
+			xml={overdueDoc}
+			csvHref="/admin/reports/overdue.csv"
+			xmlHref="/admin/reports/overdue.xml"
+		/>
 	</section>
 </div>

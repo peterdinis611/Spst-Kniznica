@@ -8,7 +8,9 @@
 		autocomplete,
 		value = $bindable(''),
 		error = '',
-		meter = false
+		meter = false,
+		onValue,
+		onBlur
 	}: {
 		id: string;
 		name?: string;
@@ -17,6 +19,8 @@
 		value?: string;
 		error?: string;
 		meter?: boolean;
+		onValue?: (value: string) => void;
+		onBlur?: () => void;
 	} = $props();
 
 	let shown = $state(false);
@@ -35,6 +39,8 @@
 			type={shown ? 'text' : 'password'}
 			{autocomplete}
 			bind:value
+			oninput={() => onValue?.(value)}
+			onblur={onBlur}
 			required
 			minlength={8}
 			maxlength={72}

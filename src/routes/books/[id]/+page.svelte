@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { enhance } from '$app/forms';
 	import BookCover from '$lib/components/BookCover.svelte';
 	import BorrowSlip from '$lib/components/BorrowSlip.svelte';
 	import LockerCard from '$lib/components/LockerCard.svelte';
@@ -14,6 +15,7 @@
 		type BorrowErrors
 	} from '$lib/borrow-fields';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { applyToast } from '$lib/form-kit';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Alert from '$lib/components/ui/alert/index.js';
@@ -145,12 +147,12 @@
 				<Button href={resolve('/login')}>Prihlásiť sa</Button>
 			{:else if data.heldForOther}
 				<p class="text-muted-foreground text-sm">Výtlačok čaká na iného čitateľa. Skús neskôr, alebo nechaj čakací lístok.</p>
-				<form method="POST" action="?/reserve">
+				<form method="POST" action="?/reserve" use:enhance={applyToast()}>
 					<Button type="submit" variant="outline">Položiť čakací lístok</Button>
 				</form>
 			{:else if !available}
 				<p class="text-muted-foreground text-sm">Momentálne nie je voľný výtlačok. Lístok ťa zaradí do radu.</p>
-				<form method="POST" action="?/reserve">
+				<form method="POST" action="?/reserve" use:enhance={applyToast()}>
 					<Button type="submit">Položiť čakací lístok</Button>
 				</form>
 			{:else if atLimit}

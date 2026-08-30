@@ -1,5 +1,6 @@
 import { and, asc, eq, ilike, or } from 'drizzle-orm';
 import { LIST_LIMIT } from '$lib/admin';
+import { deskIssue, linkSchema } from '$lib/desk-fields';
 import { refreshCatalog } from '../admin';
 import { db } from '../db';
 import { author, book, bookAuthor } from '../db/schema';
@@ -28,6 +29,12 @@ export async function saveLink(input: {
 	authorId: string;
 	position: number;
 }): Promise<DeskResult> {
+	const issue = deskIssue(linkSchema, {
+		bookId: input.bookId,
+		authorId: input.authorId,
+		position: input.position
+	});
+	if (issue) return fail(issue);
 	const held = await db.select({ id: book.id }).from(book).where(eq(book.id, input.bookId)).then((rows) => rows[0]);
 	const person = await db
 		.select({ id: author.id })

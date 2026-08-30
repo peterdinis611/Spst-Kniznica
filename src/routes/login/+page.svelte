@@ -1,72 +1,50 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
-	import type { ActionResult } from '@sveltejs/kit';
 	import type { ActionData, PageProps } from './$types';
 	import Seo from '$lib/components/Seo.svelte';
 	import AuthPass from '$lib/components/AuthPass.svelte';
 	import PassSecret from '$lib/components/PassSecret.svelte';
-	import {
-		hasFieldErrors,
-		validateSignIn,
-		validateSignUp,
-		type FieldErrors
-	} from '$lib/auth-fields';
+	import { signInSchema, signUpSchema, type FieldErrors } from '$lib/auth-fields';
+	import { applyToast, fieldIssue, gateSubmit, schemaValidator } from '$lib/form-kit';
+	import { createForm } from '$lib/tanstack-create-form';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const register = $derived(form?.mode === 'novy' || data.mode === 'novy');
 	const noteOk = $derived(Boolean(form && 'ok' in form && form.ok));
+	const seeded = $derived.by(() => {
+		const values = form && 'values' in form ? form.values : undefined;
+		if (!values) return { name: '', email: '' };
+		return {
+			name: 'name' in values && typeof values.name === 'string' ? values.name : '',
+			email: typeof values.email === 'string' ? values.email : ''
+		};
+	});
 
-	let name = $state('');
-	let email = $state('');
-	let password = $state('');
-	let confirm = $state('');
 	let submitted = $state(false);
 
-	$effect(() => {
-		const values = form && 'values' in form ? form.values : undefined;
-		if (values && 'email' in values && typeof values.email === 'string' && values.email) {
-			email = values.email;
+	const slip = createForm(() => ({
+		defaultValues: {
+			name: seeded.name,
+			email: seeded.email,
+			password: '',
+			confirm: ''
+		},
+		validators: {
+			onSubmit: schemaValidator(register ? signUpSchema : signInSchema)
 		}
-		if (values && 'name' in values && typeof values.name === 'string' && values.name) {
-			name = values.name;
-		}
-	});
+	}));
 
-	const errors = $derived.by((): FieldErrors => {
-		if (noteOk) return {};
-		if (submitted) {
-			return register
-				? validateSignUp({ name, email, password, confirm })
-				: validateSignIn({ email, password });
-		}
-		return form && 'errors' in form ? (form.errors ?? {}) : {};
-	});
+	function shown(name: keyof FieldErrors, issues: unknown[]) {
+		if (noteOk) return undefined;
+		if (submitted) return fieldIssue(issues[0]) || undefined;
+		return form && 'errors' in form ? form.errors?.[name] : undefined;
+	}
 
 	function check(event: SubmitEvent) {
 		submitted = true;
-		const next = register
-			? validateSignUp({ name, email, password, confirm })
-			: validateSignIn({ email, password });
-		if (hasFieldErrors(next)) event.preventDefault();
+		gateSubmit(slip, event, 'Doplň preukaz.');
 	}
-
-	const applyForm = () => {
-		return async ({
-			result,
-			update
-		}: {
-			result: ActionResult;
-			update: (opts?: { reset?: boolean }) => Promise<void>;
-		}) => {
-			await update({ reset: result.type !== 'success' });
-			if (result.type === 'success') {
-				submitted = false;
-				password = '';
-				confirm = '';
-			}
-		};
-	};
 </script>
 
 <Seo
@@ -91,65 +69,93 @@
 	<form
 		method="POST"
 		action={register ? '?/signUp' : '?/signIn'}
-		use:enhance={applyForm}
+		use:enhance={applyToast({
+			resetOn: (result) => result.type !== 'success',
+			after: (result) => {
+				if (result.type === 'success') submitted = false;
+			}
+		})}
 		class="pass-form"
 		novalidate
 		onsubmit={check}
 	>
 		{#if register}
-			<div class="pass-field" class:is-bad={Boolean(errors.name)}>
-				<label for="name">Meno</label>
-				<input
-					id="name"
-					name="name"
-					autocomplete="name"
-					bind:value={name}
-					required
-					minlength={2}
-					maxlength={80}
-					aria-invalid={errors.name ? 'true' : undefined}
-					aria-describedby={errors.name ? 'name-chyba' : undefined}
-				/>
-				{#if errors.name}
-					<p class="pass-error" id="name-chyba">{errors.name}</p>
-				{/if}
-			</div>
+			<slip.Field name="name">
+				{#snippet children(field)}
+					{@const err = shown('name', field.state.meta.errors)}
+					<div class="pass-field" class:is-bad={Boolean(err)}>
+						<label for="name">Meno</label>
+						<input
+							id="name"
+							name={field.name}
+							autocomplete="name"
+							value={field.state.value}
+							onblur={field.handleBlur}
+							oninput={(event) => field.handleChange(event.currentTarget.value)}
+							maxlength={80}
+							aria-invalid={err ? 'true' : undefined}
+							aria-describedby={err ? 'name-chyba' : undefined}
+						/>
+						{#if err}
+							<p class="pass-error" id="name-chyba">{err}</p>
+						{/if}
+					</div>
+				{/snippet}
+			</slip.Field>
 		{/if}
-		<div class="pass-field" class:is-bad={Boolean(errors.email)}>
-			<label for="email">E-mail</label>
-			<input
-				id="email"
-				type="email"
-				name="email"
-				autocomplete="email"
-				bind:value={email}
-				required
-				maxlength={254}
-				aria-invalid={errors.email ? 'true' : undefined}
-				aria-describedby={errors.email ? 'email-chyba' : undefined}
-			/>
-			{#if errors.email}
-				<p class="pass-error" id="email-chyba">{errors.email}</p>
-			{/if}
-		</div>
+		<slip.Field name="email">
+			{#snippet children(field)}
+				{@const err = shown('email', field.state.meta.errors)}
+				<div class="pass-field" class:is-bad={Boolean(err)}>
+					<label for="email">E-mail</label>
+					<input
+						id="email"
+						type="email"
+						name={field.name}
+						autocomplete="email"
+						value={field.state.value}
+						onblur={field.handleBlur}
+						oninput={(event) => field.handleChange(event.currentTarget.value)}
+						maxlength={254}
+						aria-invalid={err ? 'true' : undefined}
+						aria-describedby={err ? 'email-chyba' : undefined}
+					/>
+					{#if err}
+						<p class="pass-error" id="email-chyba">{err}</p>
+					{/if}
+				</div>
+			{/snippet}
+		</slip.Field>
 		{#if !noteOk}
-			<PassSecret
-				id="password"
-				label="Heslo"
-				autocomplete={register ? 'new-password' : 'current-password'}
-				bind:value={password}
-				error={errors.password}
-				meter={register}
-			/>
+			<slip.Field name="password">
+				{#snippet children(field)}
+					<PassSecret
+						id="password"
+						label="Heslo"
+						autocomplete={register ? 'new-password' : 'current-password'}
+						value={field.state.value}
+						onValue={field.handleChange}
+						onBlur={field.handleBlur}
+						error={shown('password', field.state.meta.errors)}
+						meter={register}
+					/>
+				{/snippet}
+			</slip.Field>
 			{#if register}
-				<PassSecret
-					id="confirm"
-					name="confirm"
-					label="Heslo znova"
-					autocomplete="new-password"
-					bind:value={confirm}
-					error={errors.confirm}
-				/>
+				<slip.Field name="confirm">
+					{#snippet children(field)}
+						<PassSecret
+							id="confirm"
+							name="confirm"
+							label="Heslo znova"
+							autocomplete="new-password"
+							value={field.state.value}
+							onValue={field.handleChange}
+							onBlur={field.handleBlur}
+							error={shown('confirm', field.state.meta.errors)}
+						/>
+					{/snippet}
+				</slip.Field>
 			{/if}
 		{/if}
 		{#if !register}

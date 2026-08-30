@@ -1,6 +1,7 @@
 import { and, asc, count, eq, ilike, isNull, ne, or, sql } from 'drizzle-orm';
-import { isRole, parseRole } from '$lib/ability';
+import { parseRole } from '$lib/ability';
 import { LIST_LIMIT } from '$lib/admin';
+import { deskIssue, readerSchema } from '$lib/desk-fields';
 import { db } from '../db';
 import { loan, user } from '../db/schema';
 import { caught, fail, needle, ok, type DeskResult } from './shared';
@@ -52,9 +53,8 @@ export async function saveReader(input: {
 }): Promise<DeskResult> {
 	const name = input.name.trim();
 	const email = input.email.trim().toLowerCase();
-	if (name.length < 2) return fail('Meno čitateľa je krátke.');
-	if (!email.includes('@')) return fail('E-mail nevyzerá ako adresa.');
-	if (input.role !== undefined && !isRole(input.role)) return fail('Rola nie je v zozname.');
+	const issue = deskIssue(readerSchema, { name, email, role: input.role });
+	if (issue) return fail(issue);
 
 	try {
 		const current = await db
