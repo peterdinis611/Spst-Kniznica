@@ -27,6 +27,27 @@ describe('holdMailCopy', () => {
 		expect(copy.html).toContain('Pripravené.');
 	});
 
+	it('warns the day before a hold lapses', () => {
+		const copy = holdMailCopy({ kind: 'expireSoon', ...slip });
+		expect(copy.subject).toBe('Zajtra vyprší lístok · Algoritmy v dielni · SPŠT knižnica');
+		expect(copy.text).toContain('vyprší zajtra');
+		expect(copy.html).toContain('Zajtra vyprší.');
+	});
+
+	it('tells the waiter the slip lapsed', () => {
+		const copy = holdMailCopy({ kind: 'expired', ...slip });
+		expect(copy.subject).toBe('Lístok vypršal · Algoritmy v dielni · SPŠT knižnica');
+		expect(copy.text).toContain('vypršal');
+		expect(copy.html).toContain('Vypršalo.');
+	});
+
+	it('tells the waiter the desk cancelled the queue', () => {
+		const copy = holdMailCopy({ kind: 'cancelled', ...slip });
+		expect(copy.subject).toBe('Rad zrušený · Algoritmy v dielni · SPŠT knižnica');
+		expect(copy.text).toContain('pult zrušil');
+		expect(copy.html).toContain('Zrušené.');
+	});
+
 	it('escapes a hostile title in HTML', () => {
 		const copy = holdMailCopy({
 			kind: 'queued',

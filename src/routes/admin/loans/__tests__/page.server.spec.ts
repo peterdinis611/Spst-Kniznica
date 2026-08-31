@@ -107,6 +107,24 @@ describe('admin vypozicky load', () => {
 		expect(data.rows).toEqual([]);
 		expect(listDeskLoans).not.toHaveBeenCalled();
 	});
+
+	it('opens the teacher class from the pass', async () => {
+		vi.mocked(listDeskLoans).mockResolvedValue([]);
+		vi.mocked(listDeskClasses).mockResolvedValue(['II.A']);
+		vi.mocked(bookOptions).mockResolvedValue([]);
+		vi.mocked(readerOptions).mockResolvedValue([]);
+
+		const data = (await load({
+			url: new URL('http://localhost/admin/loans'),
+			locals: {
+				user: { id: 't1', name: 'Eva', email: 'eva@spst.sk', role: 'teacher', className: 'II.A' }
+			}
+		} as Parameters<typeof load>[0])) as { klass: string; open: boolean };
+
+		expect(listDeskLoans).toHaveBeenCalledWith({ q: '', klass: 'II.A', open: true });
+		expect(data.klass).toBe('II.A');
+		expect(data.open).toBe(true);
+	});
 });
 
 describe('admin vypozicky actions', () => {
@@ -133,6 +151,7 @@ describe('admin vypozicky actions', () => {
 			borrowerClass: 'II.A',
 			loanDays: 21,
 			bookTitle: 'Algoritmy',
+			callNumber: 'INF 004.4 ALG',
 			readerName: 'Peter Dinis',
 			readerEmail: 'peter@spst.sk'
 		});
@@ -157,6 +176,52 @@ describe('admin vypozicky actions', () => {
 	it('stamps a deleted slip', async () => {
 		vi.mocked(deleteLoan).mockResolvedValue({ ok: true });
 		expect(await actions.delete?.(event({ id: 'loan-1' }))).toEqual({ stamp: 'Zmazané' });
+	});
+
+	it('mails a new due date when the desk repairs the term', async () => {
+		const dueAt = new Date('2026-09-13T12:00:00Z');
+		const nextDue = new Date('2026-09-20T12:00:00Z');
+		vi.mocked(getDeskLoan).mockResolvedValue({
+			id: 'loan-1',
+			bookId: 'book-1',
+			holdingId: 'h-1',
+			userId: 'user-1',
+			borrowedAt: new Date('2026-08-23T12:00:00Z'),
+			dueAt,
+			returnedAt: null,
+			renewalCount: 0,
+			borrowerFirstName: 'Peter',
+			borrowerLastName: 'Dinis',
+			borrowerClass: 'II.A',
+			loanDays: 21,
+			bookTitle: 'Algoritmy',
+			callNumber: 'INF 004.4 ALG',
+			readerName: 'Peter Dinis',
+			readerEmail: 'peter@spst.sk'
+		});
+		vi.mocked(saveLoan).mockResolvedValue({ ok: true });
+		expect(
+			await actions.save?.(
+				event({
+					id: 'loan-1',
+					bookId: 'book-1',
+					userId: 'user-1',
+					borrowerFirstName: 'Peter',
+					borrowerLastName: 'Dinis',
+					borrowerClass: 'II.A',
+					loanDays: '21',
+					dueAt: nextDue.toISOString()
+				})
+			)
+		).toEqual({ stamp: 'Uložené' });
+		expect(queueLoanNotice).toHaveBeenCalledWith(
+			expect.objectContaining({
+				kind: 'dueChanged',
+				to: 'peter@spst.sk',
+				bookTitle: 'Algoritmy',
+				dueAt: nextDue
+			})
+		);
 	});
 
 	it('keeps a teacher from returning a slip', async () => {

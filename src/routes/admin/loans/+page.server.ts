@@ -1,5 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import { normalizeClass } from '$lib/borrow-fields';
 import { formDate, formInt, formText } from '$lib/server/admin';
 import { pickCurrent } from '$lib/pult-ledger';
 import { canOperateDesk } from '$lib/server/admin-access';
@@ -13,6 +14,9 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const filter = parseDeskLoanFilter(url);
 	if (!manage) {
 		filter.open = true;
+		if (!filter.klass) {
+			filter.klass = normalizeClass(locals.user?.className ?? '');
+		}
 		if (!filter.klass) {
 			return {
 				manage,
@@ -48,10 +52,13 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const userId = formText(data, 'userId');
 		const bookId = formText(data, 'bookId');
-		const isNew = !formText(data, 'id');
+		const id = formText(data, 'id');
+		const isNew = !id;
 		const days = formInt(data, 'loanDays') ?? 0;
+		const dueAt = formDate(data, 'dueAt');
+		const current = isNew ? null : await getDeskLoan(id);
 		const result = await saveLoan({
-			id: formText(data, 'id') || undefined,
+			id: id || undefined,
 			bookId,
 			holdingId: formText(data, 'holdingId'),
 			userId,
@@ -60,7 +67,7 @@ export const actions: Actions = {
 			borrowerClass: formText(data, 'borrowerClass'),
 			loanDays: days,
 			borrowedAt: formDate(data, 'borrowedAt'),
-			dueAt: formDate(data, 'dueAt'),
+			dueAt,
 			returnedAt: formDate(data, 'returnedAt'),
 			renewalCount: formInt(data, 'renewalCount') ?? 0
 		});
@@ -68,9 +75,8 @@ export const actions: Actions = {
 		if (isNew) {
 			const held = await getBook(bookId);
 			const pass = (await readerOptions()).find((item) => item.id === userId);
-			const dueAt =
-				formDate(data, 'dueAt') ??
-				new Date(Date.now() + Math.max(days, 1) * 24 * 60 * 60 * 1000);
+			const stamp =
+				dueAt ?? new Date(Date.now() + Math.max(days, 1) * 24 * 60 * 60 * 1000);
 			if (held && pass?.email) {
 				await queueLoanNotice({
 					kind: 'borrow',
@@ -79,11 +85,27 @@ export const actions: Actions = {
 						pass.name,
 					bookTitle: held.title,
 					callNumber: held.callNumber,
-					dueAt,
+					dueAt: stamp,
 					className: formText(data, 'borrowerClass'),
 					days
 				});
 			}
+		} else if (
+			current &&
+			!current.returnedAt &&
+			!formDate(data, 'returnedAt') &&
+			dueAt &&
+			Math.abs(dueAt.getTime() - current.dueAt.getTime()) > 60_000
+		) {
+			await queueLoanNotice({
+				kind: 'dueChanged',
+				to: current.readerEmail,
+				readerName: current.readerName,
+				bookTitle: current.bookTitle,
+				callNumber: current.callNumber,
+				dueAt,
+				className: formText(data, 'borrowerClass') || current.borrowerClass
+			});
 		}
 		return { stamp: 'Uložené' };
 	},

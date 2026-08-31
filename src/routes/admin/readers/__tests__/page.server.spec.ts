@@ -15,6 +15,7 @@ const row = {
 	name: 'Anna Pult',
 	email: 'anna@spst.sk',
 	role: 'librarian',
+	className: '',
 	emailVerified: true,
 	createdAt: new Date(2026, 7, 1),
 	loanCount: 2
@@ -57,7 +58,8 @@ describe('admin citately actions', () => {
 			id: 'user-1',
 			name: 'Anna Pult',
 			email: 'anna@spst.sk',
-			role: 'librarian'
+			role: 'librarian',
+			className: ''
 		});
 		expect(result).toEqual({ stamp: 'Uložené' });
 	});

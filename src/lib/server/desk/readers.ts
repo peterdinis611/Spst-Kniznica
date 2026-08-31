@@ -1,6 +1,7 @@
 import { and, asc, count, eq, ilike, isNull, ne, or, sql } from 'drizzle-orm';
 import { parseRole } from '$lib/ability';
 import { LIST_LIMIT } from '$lib/admin';
+import { normalizeClass } from '$lib/borrow-fields';
 import { deskIssue, readerSchema } from '$lib/desk-fields';
 import { db } from '../db';
 import { loan, user } from '../db/schema';
@@ -14,6 +15,7 @@ export async function listDeskReaders(query = '') {
 			name: user.name,
 			email: user.email,
 			role: user.role,
+			className: user.className,
 			emailVerified: user.emailVerified,
 			createdAt: user.createdAt,
 			loanCount: sql<number>`(select count(*) from loan where loan.user_id = ${user.id})`.as(
@@ -34,6 +36,7 @@ export async function getDeskReader(id: string) {
 			name: user.name,
 			email: user.email,
 			role: user.role,
+			className: user.className,
 			emailVerified: user.emailVerified,
 			createdAt: user.createdAt,
 			loanCount: sql<number>`(select count(*) from loan where loan.user_id = ${user.id})`.as(
@@ -50,10 +53,12 @@ export async function saveReader(input: {
 	name: string;
 	email: string;
 	role?: string;
+	className?: string;
 }): Promise<DeskResult> {
 	const name = input.name.trim();
 	const email = input.email.trim().toLowerCase();
-	const issue = deskIssue(readerSchema, { name, email, role: input.role });
+	const className = normalizeClass(input.className ?? '');
+	const issue = deskIssue(readerSchema, { name, email, role: input.role, className });
 	if (issue) return fail(issue);
 
 	try {
@@ -77,7 +82,7 @@ export async function saveReader(input: {
 		}
 		await db
 			.update(user)
-			.set({ name, email, role, updatedAt: new Date() })
+			.set({ name, email, role, className, updatedAt: new Date() })
 			.where(eq(user.id, input.id));
 	} catch (cause) {
 		return caught(cause, 'Tento e-mail už má preukaz.');

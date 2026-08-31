@@ -15,7 +15,7 @@ Výpožička je bez poplatku. Platí pre prihlásených čitateľov.
 
 Jednu knihu si naraz požičiaš len raz. Kým ju nevrátiš, druhý výtlačok toho istého zväzku si neberieš. Ďalšie tituly môžeš brať hneď, kým je voľný výtlačok.
 
-Keď je **nula voľných**, na karte položíš **čakací lístok**. Až sa výtlačok vráti, príde list **Na pulte** a sedem dní ho drží pavilón B. Rad vidíš na [Moje knihy](/loans) aj na pulte.
+Keď je **nula voľných**, na karte položíš **čakací lístok**. Až sa výtlačok vráti, príde list **Na pulte** a sedem dní ho drží pavilón B. Deň pred koncom **Zajtra vyprší lístok**. Ak ho nevyzdvihneš, **Lístok vypršal** a zväzok ide ďalšiemu v rade. Rad vidíš na [Moje knihy](/loans) aj na pulte.
 
 ## Ako si požičať
 
@@ -32,7 +32,7 @@ Odnes knihu do pavilónu B a na stránke [Moje knihy](/loans) ju označ ako vrá
 
 Oneskorené vrátenie rieši pult. V aplikácii poplatok nie je — termín slúži ako dohoda, nie ako pokuta.
 
-Na lístku výpožičky uvidíš, či ešte máš dni, či je splatné **dnes**, **zajtra**, alebo koľko dní ideš **po lehote**. Deň pred termínom príde list **Zajtra splatné**, po lehote **Po lehote**.
+Na lístku výpožičky uvidíš, či ešte máš dni, či je splatné **dnes**, **zajtra**, alebo koľko dní ideš **po lehote**. Deň pred termínom príde list **Zajtra splatné**, po lehote **Po lehote**. Keď pult opraví termín v zásuvke, ide **Nový termín** — to nie je predĺženie z lístka.
 
 Predĺžiť vieš **raz** z [Moje knihy](/loans), kým nie si po lehote a na zväzok nikto nečaká. Ďalšie predĺženie rieši pult.
 

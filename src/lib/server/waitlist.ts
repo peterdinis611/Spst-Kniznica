@@ -15,6 +15,15 @@ export type HoldOffer = {
 	expiresAt: Date;
 };
 
+export type HoldLapse = {
+	reservationId: string;
+	userId: string;
+	email: string;
+	name: string;
+	bookTitle: string;
+	callNumber: string;
+};
+
 export type ReserveResult = { ok: true; expiresAt: Date; place: number } | { ok: false; message: string };
 export type CancelHoldResult = { ok: true; offer: HoldOffer | null } | { ok: false; message: string };
 
@@ -317,12 +326,19 @@ export async function expireHolds(now = new Date()) {
 		.select({
 			id: reservation.id,
 			bookId: reservation.bookId,
-			userId: reservation.userId
+			userId: reservation.userId,
+			email: user.email,
+			name: user.name,
+			bookTitle: book.title,
+			callNumber: book.callNumber
 		})
 		.from(reservation)
+		.innerJoin(user, eq(user.id, reservation.userId))
+		.innerJoin(book, eq(book.id, reservation.bookId))
 		.where(and(eq(reservation.status, 'fulfilled'), lt(reservation.expiresAt, now)));
 
 	const offers: HoldOffer[] = [];
+	const lapsed: HoldLapse[] = [];
 	for (const row of stale) {
 		const stillOut = await db
 			.select({ id: loan.id })
@@ -335,8 +351,16 @@ export async function expireHolds(now = new Date()) {
 			await tx.update(reservation).set({ status: 'expired' }).where(eq(reservation.id, row.id));
 			return offerCopyToWaiter(tx, row.bookId);
 		});
+		lapsed.push({
+			reservationId: row.id,
+			userId: row.userId,
+			email: row.email,
+			name: row.name,
+			bookTitle: row.bookTitle,
+			callNumber: row.callNumber
+		});
 		if (offer) offers.push(offer);
 	}
 
-	return offers;
+	return { offers, lapsed };
 }

@@ -8,7 +8,7 @@ import { deskQueue, emptyDeskQueue } from '$lib/server/desk/queue';
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const manage = canOperateDesk(locals.user);
 	if (!manage) {
-		const klass = normalizeClass(url.searchParams.get('class') ?? '');
+		const klass = normalizeClass(url.searchParams.get('class') ?? locals.user?.className ?? '');
 		const [queue, open, classes] = await Promise.all([
 			klass ? deskQueue(new Date(), klass) : Promise.resolve(emptyDeskQueue()),
 			klass ? countOpenClassLoans(klass) : Promise.resolve(0),

@@ -24,6 +24,7 @@ export default function () {
 	jsonOk(get('/api/search?q=algoritm', 'Hľadanie'), 'Hľadanie');
 	pageOk(get('/books/book-algoritmy', 'Karta'), 'Karta');
 	pageOk(get('/authors/jan-belko', 'Autor'), 'Autor');
+	pageOk(get('/docs/email', 'Listy'), 'Listy');
 	browseOnce();
 	sleep(0.3);
 }

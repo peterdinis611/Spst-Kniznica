@@ -16,6 +16,7 @@ export async function listDeskReservations(query = '') {
 			expiresAt: reservation.expiresAt,
 			status: reservation.status,
 			bookTitle: book.title,
+			callNumber: book.callNumber,
 			readerName: user.name,
 			readerEmail: user.email
 		})
@@ -46,6 +47,7 @@ export async function getDeskReservation(id: string) {
 			expiresAt: reservation.expiresAt,
 			status: reservation.status,
 			bookTitle: book.title,
+			callNumber: book.callNumber,
 			readerName: user.name,
 			readerEmail: user.email
 		})
@@ -63,7 +65,7 @@ export async function saveReservation(input: {
 	status: string;
 	createdAt?: Date | null;
 	expiresAt?: Date | null;
-}): Promise<DeskResult> {
+}): Promise<DeskResult & { id?: string }> {
 	const issue = deskIssue(reservationSchema, {
 		bookId: input.bookId,
 		userId: input.userId,
@@ -94,24 +96,39 @@ export async function saveReservation(input: {
 				.where(eq(reservation.id, input.id))
 				.then((rows) => rows[0]);
 			if (!current) return fail('Rezervácia sa nenašla.');
+			const expireSoonMailedAt =
+				status === 'fulfilled' &&
+				current.status === 'fulfilled' &&
+				current.expiresAt.getTime() === expiresAt.getTime()
+					? current.expireSoonMailedAt
+					: null;
 			await db
 				.update(reservation)
-				.set({ bookId: input.bookId, userId: input.userId, status, createdAt, expiresAt })
+				.set({
+					bookId: input.bookId,
+					userId: input.userId,
+					status,
+					createdAt,
+					expiresAt,
+					expireSoonMailedAt
+				})
 				.where(eq(reservation.id, input.id));
-		} else {
-			await db.insert(reservation).values({
+			return { ok: true, id: input.id };
+		}
+		const inserted = await db
+			.insert(reservation)
+			.values({
 				bookId: input.bookId,
 				userId: input.userId,
 				status,
 				createdAt,
 				expiresAt
-			});
-		}
+			})
+			.returning({ id: reservation.id });
+		return { ok: true, id: inserted[0]?.id };
 	} catch (cause) {
 		return caught(cause, 'Rezervácia sa neuložila.');
 	}
-
-	return ok();
 }
 
 export async function deleteReservation(id: string): Promise<DeskResult> {

@@ -20,7 +20,10 @@
 			id: 'name',
 			accessorKey: 'name',
 			header: 'Čitateľ',
-			cell: (info) => ({ title: info.row.original.name, hint: info.row.original.email })
+			cell: (info) => ({
+				title: info.row.original.name,
+				hint: [info.row.original.email, info.row.original.className].filter(Boolean).join(' · ')
+			})
 		},
 		{
 			id: 'pass',
@@ -54,9 +57,9 @@
 {/if}
 
 <p class="pult-lede" style="margin-bottom: 1rem">
-	Nový preukaz vzniká registráciou. Tu opravíš meno, e-mail a rolu — heslo ostáva v Supabase. Pult
-	otvorí pečiatka <strong>knihovník</strong> (celý fond) alebo <strong>učiteľ</strong> (trieda vonku,
-	bez mazania).
+	Nový preukaz vzniká registráciou. Tu opravíš meno, e-mail, rolu a triedu učiteľa — heslo ostáva
+	v Supabase. Pult otvorí pečiatka <strong>knihovník</strong> (celý fond) alebo
+	<strong>učiteľ</strong> (trieda vonku, bez mazania).
 </p>
 
 <div class="pult-grid is-split">
@@ -74,7 +77,8 @@
 				defaults={{
 					name: current.name,
 					email: current.email,
-					role: parseRole(current.role)
+					role: parseRole(current.role),
+					className: current.className ?? ''
 				}}
 			>
 				{#snippet children({ form: slip })}
@@ -90,8 +94,12 @@
 								{/each}
 							{/snippet}
 						</PultField>
+						<PultField form={slip} name="className" label="Trieda" placeholder="II.A" />
 					</div>
-					<p class="pult-count">založený {shortDate(current.createdAt)}</p>
+					<p class="pult-count">
+						založený {shortDate(current.createdAt)}. Trieda na preukaze učiteľa otvorí pult a týždenný
+						list.
+					</p>
 					<div class="pult-submit">
 						<Button type="submit">Uložiť</Button>
 						<Button href={pultHref(page.url, { edit: null })} variant="ghost">Zrušiť</Button>

@@ -73,17 +73,38 @@ export const bookSchema = v.object({
 	featured: v.optional(v.boolean(), false)
 });
 
-export const readerSchema = v.object({
-	name: titled('Meno čitateľa je krátke.'),
-	email: v.pipe(
-		v.string(),
-		v.trim(),
-		v.toLowerCase(),
-		v.minLength(1, 'E-mail nevyzerá ako adresa.'),
-		v.check((value) => value.includes('@'), 'E-mail nevyzerá ako adresa.')
-	),
-	role: v.optional(v.picklist(roleValues, 'Rola nie je v zozname.'))
-});
+export const readerSchema = v.pipe(
+	v.object({
+		name: titled('Meno čitateľa je krátke.'),
+		email: v.pipe(
+			v.string(),
+			v.trim(),
+			v.toLowerCase(),
+			v.minLength(1, 'E-mail nevyzerá ako adresa.'),
+			v.check((value) => value.includes('@'), 'E-mail nevyzerá ako adresa.')
+		),
+		role: v.optional(v.picklist(roleValues, 'Rola nie je v zozname.')),
+		className: v.optional(
+			v.pipe(
+				v.string(),
+				v.transform(normalizeClass),
+				v.check(
+					(value) => !value || /^[\p{L}0-9]+([./-][\p{L}0-9]+)?$/u.test(value),
+					'Trieda ako II.A alebo 3.INF.'
+				)
+			),
+			''
+		)
+	}),
+	v.forward(
+		v.partialCheck(
+			[['role'], ['className']],
+			(input) => input.role !== 'teacher' || Boolean(input.className),
+			'Doplň triedu učiteľa.'
+		),
+		['className']
+	)
+);
 
 export const holdingSchema = v.object({
 	bookId: filled('Vyber knihu.'),

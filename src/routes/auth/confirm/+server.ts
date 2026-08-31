@@ -6,7 +6,10 @@ import { safeAuthNext } from '$lib/server/auth-message';
 export const GET: RequestHandler = async ({ url, locals }) => {
 	const tokenHash = url.searchParams.get('token_hash');
 	const type = url.searchParams.get('type') as EmailOtpType | null;
-	const next = safeAuthNext(url.searchParams.get('next'), type === 'recovery' ? '/login/password' : '/loans');
+	const next = safeAuthNext(
+		url.searchParams.get('next'),
+		type === 'recovery' ? '/login/password' : type === 'reauthentication' ? '/profile' : '/loans'
+	);
 
 	const redirectTo = new URL(url);
 	redirectTo.pathname = next;

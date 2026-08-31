@@ -20,7 +20,14 @@ describe('desk tick api', () => {
 	beforeEach(() => {
 		env.DESK_TICK_SECRET = 'tick-secret';
 		vi.mocked(runDeskTick).mockReset();
-		vi.mocked(runDeskTick).mockResolvedValue({ dueSoon: 1, overdue: 0, holds: 0 });
+		vi.mocked(runDeskTick).mockResolvedValue({
+			dueSoon: 1,
+			overdue: 0,
+			holds: 0,
+			expireSoon: 0,
+			expired: 0,
+			classDigests: 0
+		});
 	});
 
 	it('refuses a tick without the desk secret', async () => {
@@ -41,7 +48,15 @@ describe('desk tick api', () => {
 		const body = await response.json();
 
 		expect(response.status).toBe(200);
-		expect(body).toEqual({ ok: true, dueSoon: 1, overdue: 0, holds: 0 });
+		expect(body).toEqual({
+			ok: true,
+			dueSoon: 1,
+			overdue: 0,
+			holds: 0,
+			expireSoon: 0,
+			expired: 0,
+			classDigests: 0
+		});
 		expect(runDeskTick).toHaveBeenCalledOnce();
 	});
 

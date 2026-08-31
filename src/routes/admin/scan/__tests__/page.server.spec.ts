@@ -80,6 +80,7 @@ describe('admin scan return', () => {
 			borrowerClass: 'II.A',
 			loanDays: 21,
 			bookTitle: 'Algoritmy',
+			callNumber: 'INF 004.4 ALG',
 			readerName: 'Peter Dinis',
 			readerEmail: 'peter@spst.sk'
 		});

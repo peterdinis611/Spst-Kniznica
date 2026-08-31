@@ -19,8 +19,8 @@ function metaValue(meta: unknown, key: string): unknown {
 	return undefined;
 }
 
-function pass(id: string, name: string, email: string, role: Role): SignedReader {
-	return { id, name, email, role };
+function pass(id: string, name: string, email: string, role: Role, className = ''): SignedReader {
+	return { id, name, email, role, className };
 }
 
 function resolvedRole(email: string, stored: unknown, fromMeta: unknown): Role {
@@ -56,7 +56,7 @@ export async function ensureLocalReader(input: {
 				;
 		}
 
-		return pass(existing.id, name, email, role);
+		return pass(existing.id, name, email, role, existing.className ?? '');
 	}
 
 	const role = resolvedRole(email, 'reader', input.role);
@@ -70,7 +70,7 @@ export async function ensureLocalReader(input: {
 		})
 		;
 
-	return pass(input.id, name, email, role);
+	return pass(input.id, name, email, role, '');
 }
 
 export async function readerFromClaims(claims: {

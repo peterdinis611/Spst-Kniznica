@@ -19,7 +19,8 @@ export const actions: Actions = {
 			id: formText(data, 'id'),
 			name: formText(data, 'name'),
 			email: formText(data, 'email'),
-			role: formText(data, 'role')
+			role: formText(data, 'role'),
+			className: formText(data, 'className')
 		});
 		if (!result.ok) return fail(400, { message: result.message });
 		return { stamp: 'Uložené' };

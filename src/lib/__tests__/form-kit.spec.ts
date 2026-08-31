@@ -63,7 +63,17 @@ describe('deskIssue', () => {
 		expect(deskIssue(readerSchema, { name: 'Anna Pult', email: 'nie-adresa' })).toBe(
 			'E-mail nevyzerá ako adresa.'
 		);
-		expect(deskIssue(readerSchema, { name: 'Eva Učiteľ', email: 'eva@spst.sk', role: 'teacher' })).toBeUndefined();
+		expect(deskIssue(readerSchema, { name: 'Eva Učiteľ', email: 'eva@spst.sk', role: 'teacher' })).toBe(
+			'Doplň triedu učiteľa.'
+		);
+		expect(
+			deskIssue(readerSchema, {
+				name: 'Eva Učiteľ',
+				email: 'eva@spst.sk',
+				role: 'teacher',
+				className: 'II.A'
+			})
+		).toBeUndefined();
 		expect(deskIssue(holdingSchema, { bookId: 'book-1', status: 'broken' })).toBe(
 			'Stav výtlačka nie je v zozname.'
 		);

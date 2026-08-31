@@ -3,7 +3,7 @@ import { sendMail } from '$lib/server/mail';
 import { escapeHtml, mailOrigin, slipHtml } from '$lib/server/mail-slip';
 
 export type LoanNotice = {
-	kind: 'borrow' | 'return' | 'renew' | 'dueSoon' | 'overdue';
+	kind: 'borrow' | 'return' | 'renew' | 'dueChanged' | 'dueSoon' | 'overdue';
 	to: string;
 	readerName: string;
 	bookTitle: string;
@@ -68,6 +68,28 @@ export function loanMailCopy(notice: LoanNotice) {
 			ctaHref: loansHref,
 			cta: 'Otvoriť Moje knihy',
 			foot: 'Predĺženie je raz. Ak na zväzok čaká iný čitateľ, lístok sa nepredĺži.'
+		});
+		return { subject, text, html };
+	}
+
+	if (notice.kind === 'dueChanged') {
+		const subject = `Nový termín · ${title} · SPŠT knižnica`;
+		const text = [
+			`${name}, pult opravil termín výpožičky ${title}.`,
+			due ? `Nový termín: ${due}.` : 'Nový termín je na lístku.',
+			notice.callNumber ? `Signatúra: ${notice.callNumber}` : '',
+			`Lístok: ${loansHref}`
+		]
+			.filter(Boolean)
+			.join('\n');
+		const html = slipHtml({
+			kicker: 'termín z pultu',
+			heading: 'Nový termín.',
+			body: `${escapeHtml(name)}, knihovník na pulte zmenil lehotu na <strong>${escapeHtml(title)}</strong>. Vráť zväzok v pavilóne B do nového dátumu.`,
+			chips: [notice.callNumber || null, dueStamp ? `do ${dueStamp}` : null, 'pavilón B'],
+			ctaHref: loansHref,
+			cta: 'Otvoriť Moje knihy',
+			foot: 'Toto nie je predĺženie z lístka. Papierový výtlačok ostáva rozhodujúci.'
 		});
 		return { subject, text, html };
 	}

@@ -57,7 +57,8 @@ describe('ensureLocalReader', () => {
 			id: 'user-1',
 			name: 'peter',
 			email: 'peter@spst.sk',
-			role: 'reader'
+			role: 'reader',
+			className: ''
 		});
 	});
 
@@ -102,7 +103,8 @@ describe('ensureLocalReader', () => {
 			id: 'user-1',
 			name: 'Peter Dinis',
 			email: 'peter@spst.sk',
-			role: 'reader'
+			role: 'reader',
+			className: ''
 		});
 	});
 });

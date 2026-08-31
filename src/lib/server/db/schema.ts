@@ -161,7 +161,8 @@ export const reservation = pgTable(
 			.references(() => user.id, { onDelete: 'cascade' }),
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 		expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
-		status: text('status', { enum: reservationStatus }).notNull().default('pending')
+		status: text('status', { enum: reservationStatus }).notNull().default('pending'),
+		expireSoonMailedAt: timestamp('expire_soon_mailed_at', { withTimezone: true, mode: 'date' })
 	},
 	(table) => [
 		index('reservation_book_status_idx').on(table.bookId, table.status),

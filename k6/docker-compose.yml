@@ -37,7 +37,7 @@ services:
     restart: unless-stopped
 
   k6:
-    image: grafana/k6:1.0.0
+    image: grafana/k6:2.2.0
     profiles: ['run']
     depends_on:
       - prometheus

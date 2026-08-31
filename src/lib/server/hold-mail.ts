@@ -5,7 +5,7 @@ import { escapeHtml, mailOrigin, slipHtml } from '$lib/server/mail-slip';
 import type { HoldOffer } from './waitlist';
 
 export type HoldNotice = {
-	kind: 'queued' | 'ready';
+	kind: 'queued' | 'ready' | 'expireSoon' | 'expired' | 'cancelled';
 	to: string;
 	readerName: string;
 	bookTitle: string;
@@ -41,6 +41,73 @@ export function holdMailCopy(notice: HoldNotice) {
 			ctaHref: loansHref,
 			cta: 'Otvoriť Moje knihy',
 			foot: 'Lístok drží miesto v rade. Výtlačok ostáva na pulte, kým sa nevráti.'
+		});
+		return { subject, text, html };
+	}
+
+	if (notice.kind === 'expireSoon') {
+		const subject = `Zajtra vyprší lístok · ${title} · SPŠT knižnica`;
+		const text = [
+			`${name}, lístok na ${title} na pulte vyprší zajtra.`,
+			due ? `Vyzdvihni ho do ${due} v pavilóne B.` : 'Vyzdvihni ho zajtra v pavilóne B.',
+			notice.callNumber ? `Signatúra: ${notice.callNumber}` : '',
+			`Lístok: ${loansHref}`
+		]
+			.filter(Boolean)
+			.join('\n');
+		const html = slipHtml({
+			kicker: 'lístok na pulte',
+			heading: 'Zajtra vyprší.',
+			body: `${escapeHtml(name)}, <strong>${escapeHtml(title)}</strong> ešte drží pavilón B. Požičaj ho z karty, kým lístok platí — potom ide ďalšiemu v rade.`,
+			chips: [notice.callNumber || null, dueStamp ? `do ${dueStamp}` : 'zajtra', 'pavilón B'],
+			ctaHref: loansHref,
+			cta: 'Otvoriť Moje knihy',
+			foot: 'Ak lístok vyprší, zväzok prejde na ďalšieho. Môžeš si ho znova dať do radu.'
+		});
+		return { subject, text, html };
+	}
+
+	if (notice.kind === 'expired') {
+		const subject = `Lístok vypršal · ${title} · SPŠT knižnica`;
+		const text = [
+			`${name}, lístok na ${title} na pulte vypršal.`,
+			'Zväzok šiel ďalšiemu v rade, alebo spätne na policu.',
+			notice.callNumber ? `Signatúra: ${notice.callNumber}` : '',
+			'Príď do pavilónu B, alebo si ho znova daj do radu z karty.',
+			`Lístok: ${loansHref}`
+		]
+			.filter(Boolean)
+			.join('\n');
+		const html = slipHtml({
+			kicker: 'lístok vypršal',
+			heading: 'Vypršalo.',
+			body: `${escapeHtml(name)}, sedem dní na <strong>${escapeHtml(title)}</strong> prešlo. Výtlačok šiel ďalej. Ak ho ešte chceš, daj si ho znova do radu na karte, alebo sa opýtaj na pulte.`,
+			chips: [notice.callNumber || null, dueStamp ? `do ${dueStamp}` : null, 'pavilón B'],
+			ctaHref: loansHref,
+			cta: 'Otvoriť Moje knihy',
+			foot: 'Lístok na pulte drží sedem dní. Ďalší v rade dostane svoj list zvlášť.'
+		});
+		return { subject, text, html };
+	}
+
+	if (notice.kind === 'cancelled') {
+		const subject = `Rad zrušený · ${title} · SPŠT knižnica`;
+		const text = [
+			`${name}, čakací lístok na ${title} pult zrušil.`,
+			notice.callNumber ? `Signatúra: ${notice.callNumber}` : '',
+			'Ak ho ešte chceš, daj si ho znova do radu z karty.',
+			`Lístok: ${loansHref}`
+		]
+			.filter(Boolean)
+			.join('\n');
+		const html = slipHtml({
+			kicker: 'rad z pultu',
+			heading: 'Zrušené.',
+			body: `${escapeHtml(name)}, lístok na <strong>${escapeHtml(title)}</strong> už v rade nie je. Zväzok ostáva vo fonde — z karty si ho môžeš znova rezervovať, ak je vonku.`,
+			chips: [notice.callNumber || null, 'pavilón B'],
+			ctaHref: loansHref,
+			cta: 'Otvoriť Moje knihy',
+			foot: 'Zmenu spravil pult v pavilóne B. Nie je to pokuta.'
 		});
 		return { subject, text, html };
 	}
@@ -85,5 +152,21 @@ export async function notifyHoldReady(offer: HoldOffer | null) {
 		bookTitle: offer.bookTitle,
 		callNumber: offer.callNumber,
 		expiresAt: offer.expiresAt
+	});
+}
+
+export async function notifyHoldExpired(lapse: {
+	email: string;
+	name: string;
+	bookTitle: string;
+	callNumber: string;
+} | null) {
+	if (!lapse?.email) return;
+	await queueHoldNotice({
+		kind: 'expired',
+		to: lapse.email,
+		readerName: lapse.name,
+		bookTitle: lapse.bookTitle,
+		callNumber: lapse.callNumber
 	});
 }

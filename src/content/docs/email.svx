@@ -6,7 +6,7 @@ order: 6.5
 
 Správy o účte môžu ísť dvoma cestami. **Výpožička, vrátenie, nové heslo z preukazu a obnova** idú cez poštu pultu (Mailtrap / Mailgun). **Potvrdenie registrácie** ostáva na **Supabase**, kým v dashboarde nenastavíš vlastné SMTP.
 
-Aby odkaz z listu otvoril `/auth/confirm`, vlož šablóny z priečinka `supabase/templates` (aspoň Confirm signup). Obnova hesla šablónu v dashboarde nepotrebuje, keď ide list z pultu.
+Aby odkaz z listu otvoril `/auth/confirm`, vlož šablóny z priečinka `supabase/templates` (aspoň Confirm signup). **Invite user** a **Reauthentication** sú v tom istom priečinku — vlož ich, ak z dashboardu pozývaš čitateľa, alebo keď Auth chce znova overiť preukaz. Obnova hesla šablónu v dashboarde nepotrebuje, keď ide list z pultu.
 
 ## Predtým
 
@@ -24,15 +24,17 @@ Bez toho odkaz z listu nesmeruje na pult.
 | List v dashboarde | Súbor | Predmet |
 | --- | --- | --- |
 | Confirm signup | `supabase/templates/confirmation.html` | Potvrď preukaz · SPŠT knižnica |
-| Reset password | `supabase/templates/recovery.html` | Nové heslo · SPŠT knižnica |
+| Invite user | `supabase/templates/invite.html` | Pozvánka · SPŠT knižnica |
 | Magic link | `supabase/templates/magic_link.html` | Vstup do fondu · SPŠT knižnica |
 | Change email address | `supabase/templates/email_change.html` | Nová adresa · SPŠT knižnica |
+| Reset password | `supabase/templates/recovery.html` | Nové heslo · SPŠT knižnica |
+| Reauthentication | `supabase/templates/reauthentication.html` | Overenie · SPŠT knižnica |
 
 Odkaz v šablóne **nestavaj** na predvolené ConfirmationURL (to ide na Supabase, nie na pult). V HTML je už poskladaný odkaz:
 
 `/auth/confirm?token_hash=…&type=…&next=…`
 
-Typ `email` ide na Moje knihy, `recovery` na [nové heslo](/login/password). TokenHash a SiteURL dopĺňa Supabase.
+Typ `email` ide na Moje knihy, `invite` tiež, `recovery` na [nové heslo](/login/password). Overenie (`reauthentication`) nemá odkaz s `token_hash` — v liste je kód, preukaz je na [profile](/profile). TokenHash a SiteURL dopĺňa Supabase.
 
 Pod odkazom je aj **šesťmiestny kód**. Keď pošta odkaz „otvorí“ skôr ako čitateľ (Safe Links), kód ešte platí.
 
@@ -56,7 +58,11 @@ Ak odkaz padne na [chybu účtu](/auth/error), skontroluj Site URL a že v odkaz
 
 ## Výpožička, rezervácia a termín
 
-Pri **vypožičaní**, **vrátení** a **predĺžení** ide list cez poštu pultu (nie cez Supabase). Padne na e-mail z preukazu. Predmet je `Vypožičané · …`, `Vrátené · …` alebo `Predĺžené · …`. Deň pred lehotou príde `Zajtra splatné · …`, po lehote `Po lehote · …`. Čakací lístok má `Čakací lístok · …`, pripravený výtlačok `Na pulte · …`. Telo je ten istý krémový lístok s medeným chrbtom.
+Pri **vypožičaní**, **vrátení** a **predĺžení** ide list cez poštu pultu (nie cez Supabase). Padne na e-mail z preukazu. Predmet je `Vypožičané · …`, `Vrátené · …` alebo `Predĺžené · …`. Keď pult v zásuvke opraví termín (nie predĺženie z Moje knihy), ide `Nový termín · …`. Deň pred lehotou príde `Zajtra splatné · …`, po lehote `Po lehote · …`.
+
+Čakací lístok má `Čakací lístok · …`, pripravený výtlačok `Na pulte · …`. Deň pred koncom držania `Zajtra vyprší lístok · …`. Keď sedem dní prejde a žiak si zväzok nevyzdvihol, dostane `Lístok vypršal · …` — ďalší v rade dostane `Na pulte · …` zvlášť. Keď pult v zásuvke Rezervácie dá stav na pulte, zruší rad, alebo lístok zmaže, ide `Na pulte · …`, `Rad zrušený · …` alebo `Čakací lístok · …` podľa zmeny.
+
+Učiteľ s triedou na preukaze dostane raz za týždeň (alebo keď pribudne oneskorenie) `II.A vonku · N lístkov, M po lehote · …`. Nie denne. Telo je ten istý krémový lístok s medeným chrbtom.
 
 Tik týchto pripomienok beží z pultu (každých 30 minút pri návšteve) a dá sa spustiť cronom na `GET /api/desk/tick` s `DESK_TICK_SECRET`.
 

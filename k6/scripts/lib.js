@@ -7,7 +7,7 @@ export const BASE_URL = BASE;
 
 export const TESTID = __ENV.TESTID || `fond-${Date.now()}`;
 
-export const SEARCHES = ['algoritm', 'sql', 'siet', 'pascal', 'INF', 'stroj', 'sloh', 'belko'];
+export const SEARCHES = ['algoritm', 'sql', 'siet', 'pascal', 'INF', 'stroj', 'sloh', 'belko', 'rezerv'];
 
 export const BOOKS = [
 	'book-algoritmy',
@@ -17,12 +17,36 @@ export const BOOKS = [
 	'book-kreslenie',
 	'book-casti',
 	'book-elektro',
-	'book-sloh'
+	'book-sloh',
+	'book-english',
+	'book-materialy'
 ];
 
-export const AUTHORS = ['jan-belko', 'maria-kovacova', 'ludovit-stur'];
+export const AUTHORS = [
+	'jan-belko',
+	'maria-kovacova',
+	'ludovit-stur',
+	'eva-tothova',
+	'milan-rufus'
+];
 
-export const DEPARTMENTS = ['informatika', 'strojarstvo', 'elektrotechnika', 'literatura'];
+export const DEPARTMENTS = [
+	'informatika',
+	'strojarstvo',
+	'elektrotechnika',
+	'literatura',
+	'matematika',
+	'fyzika'
+];
+
+export const DOCS = [
+	'/docs',
+	'/docs/pult',
+	'/docs/katalog',
+	'/docs/vypozicky',
+	'/docs/email',
+	'/docs/zataz'
+];
 
 export const DESK = [
 	{ name: 'Sieň', path: '/' },
@@ -36,21 +60,40 @@ export const DESK = [
 ];
 
 export const ALIASES = [
-	{ from: '/knihy', to: '/books' },
 	{ from: '/vsetky-knihy', to: '/holdings' },
+	{ from: '/knihy', to: '/books' },
 	{ from: '/odbory', to: '/departments' },
 	{ from: '/autori', to: '/authors' },
+	{ from: '/vypozicky', to: '/loans' },
+	{ from: '/preukaz', to: '/profile' },
 	{ from: '/profil', to: '/profile' },
 	{ from: '/prihlasenie', to: '/login' },
+	{ from: '/registracia', to: '/login?mod=novy' },
+	{ from: '/zabudnute-heslo', to: '/login/recovery' },
+	{ from: '/nove-heslo', to: '/login/password' },
+	{ from: '/login/obnova', to: '/login/recovery' },
+	{ from: '/login/heslo', to: '/login/password' },
+	{ from: '/odhlasenie', to: '/logout' },
 	{ from: '/pult', to: '/admin' },
-	{ from: '/admin/knihy', to: '/admin/books' }
+	{ from: '/admin/odbory', to: '/admin/departments' },
+	{ from: '/admin/autori', to: '/admin/authors' },
+	{ from: '/admin/knihy', to: '/admin/books' },
+	{ from: '/admin/vazby', to: '/admin/book-authors' },
+	{ from: '/admin/vytlacky', to: '/admin/holdings' },
+	{ from: '/admin/vypozicky', to: '/admin/loans' },
+	{ from: '/admin/rezervacie', to: '/admin/reservations' },
+	{ from: '/admin/citately', to: '/admin/readers' },
+	{ from: '/admin/vykazy', to: '/admin/reports' }
 ];
 
 export const GATES = [
 	{ name: 'Pult', path: '/admin', to: '/login' },
+	{ name: 'Čítačka', path: '/admin/scan', to: '/login' },
+	{ name: 'Výkazy', path: '/admin/reports', to: '/login' },
 	{ name: 'Profil', path: '/profile', to: '/login' },
 	{ name: 'Moje knihy', path: '/loans', to: '/login' },
-	{ name: 'Nové heslo', path: '/login/password', to: '/login/recovery' }
+	{ name: 'Nové heslo', path: '/login/password', to: '/login/recovery' },
+	{ name: 'Odhlásenie', path: '/logout', to: '/' }
 ];
 
 export function headers() {
@@ -69,8 +112,8 @@ export function get(path, name, extra = {}) {
 	});
 }
 
-export function getStay(path, name) {
-	return get(path, name, { redirects: 0 });
+export function getStay(path, name, extra = {}) {
+	return get(path, name, { redirects: 0, ...extra });
 }
 
 export function probeFond() {
@@ -86,8 +129,8 @@ export function probeFond() {
 		: `HTTP ${res.status}${res.body ? `, ${String(res.body).slice(0, 160)}` : ''}`;
 	throw new Error(
 		`k6 sa nespája s fondom na ${BASE} (${why}). ` +
-			`Na Macu musí bežať npm run dev (5173) alebo npm run preview (4173) a počúvať na 0.0.0.0. ` +
-			`Preview: BASE_URL=http://host.docker.internal:4173 npm run k6:smoke`
+			`Na Macu musí bežať bun run dev (5173) alebo bun run preview (4173) a počúvať na 0.0.0.0. ` +
+			`Preview: BASE_URL=http://host.docker.internal:4173 bun run k6:smoke`
 	);
 }
 
@@ -119,6 +162,12 @@ export function textOk(res, name, needle) {
 	});
 }
 
+export function statusOk(res, name, status) {
+	return check(res, {
+		[`${name} · ${status}`]: (r) => r.status === status
+	});
+}
+
 function header(res, key) {
 	const headers = res.headers || {};
 	return headers[key] || headers[key.toLowerCase()] || headers[key.toUpperCase()] || '';
@@ -127,7 +176,14 @@ function header(res, key) {
 export function redirectOk(res, name, status, location) {
 	return check(res, {
 		[`${name} · ${status}`]: (r) => r.status === status,
-		[`${name} · kam`]: (r) => String(header(r, 'Location')).includes(location)
+		[`${name} · kam`]: (r) => {
+			const loc = String(header(r, 'Location'));
+			if (location === '/') {
+				const path = loc.replace(/^https?:\/\/[^/]+/, '') || '/';
+				return path === '/' || path === '';
+			}
+			return loc.includes(location);
+		}
 	});
 }
 
@@ -150,8 +206,18 @@ export function checkPublicMap() {
 	pageOk(get(`/authors/${pick(AUTHORS)}`, 'Autor'), 'Autor');
 	pageOk(get(`/departments/${pick(DEPARTMENTS)}`, 'Odbor'), 'Odbor');
 	pageOk(get('/docs/pult', 'Kapitola'), 'Kapitola');
+	pageOk(get('/docs/email', 'Listy'), 'Listy');
+	pageOk(get('/docs/vypozicky', 'Výpožičky'), 'Výpožičky');
+	pageOk(get('/auth/error', 'Chyba účtu'), 'Chyba účtu');
 	textOk(get('/robots.txt', 'Robots'), 'Robots', 'Disallow: /admin');
-	textOk(get('/sitemap.xml', 'Sitemap'), 'Sitemap', '/books/');
+	textOk(get('/sitemap.xml', 'Sitemap'), 'Sitemap', '/docs/email');
+	statusOk(
+		getStay('/api/desk/tick', 'Tik', {
+			responseCallback: http.expectedStatuses(403)
+		}),
+		'Tik',
+		403
+	);
 }
 
 export function browseOnce() {
@@ -171,6 +237,10 @@ export function browseOnce() {
 
 	if (Math.random() < 0.2) {
 		pageOk(get(`/authors/${pick(AUTHORS)}`, 'Autor'), 'Autor');
+	}
+
+	if (Math.random() < 0.15) {
+		pageOk(get(pick(DOCS), 'Kapitola'), 'Kapitola');
 	}
 
 	if (Math.random() < 0.15) {

@@ -48,7 +48,9 @@ Po teste v Grafane vyber **beh**. Grafy idú živo, kým k6 beží.
 
 ## Čo k6 bije
 
-Sieň, Objavovať, katalóg, **register** (najťažší list), odbory, autorov, prihlásenie, príručku, `/api/search` a karty kníh. Smoke raz overí aj **308 aliasy** (`/knihy`, `/pult`, `/profil`…) a **302 gaty** (`/admin`, `/profile`, `/loans`). Účet, lístok a POST `/auth` nenechávame v záťaži.
+Sieň, Objavovať, katalóg, **register** (najťažší list), odbory, autorov, prihlásenie, príručku (vrátane [e-mailu](/docs/email) a [výpožičiek](/docs/vypozicky)), `/api/search`, sitemap a karty kníh. Smoke raz overí aj **308 aliasy** (`/knihy`, `/pult`, `/vypozicky`, `/admin/rezervacie`…), **302 gaty** (`/admin`, `/admin/scan`, `/profile`, `/loans`) a že **tik** `/api/desk/tick` bez tajomstva ostane 403. Účet, lístok a POST `/auth` nenechávame v záťaži.
+
+Obraz je `grafana/k6:2.2.0`.
 
 ## Vypnúť
 

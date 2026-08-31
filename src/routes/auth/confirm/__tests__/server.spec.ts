@@ -47,6 +47,34 @@ describe('auth confirm', () => {
 		expect(verifyOtp).toHaveBeenCalledWith({ type: 'email', token_hash: 'abc' });
 	});
 
+	it('opens loans after an invite hash', async () => {
+		const verifyOtp = vi.fn().mockResolvedValue({ error: null });
+
+		try {
+			await GET(event('?token_hash=abc&type=invite', { auth: { verifyOtp } }));
+			throw new Error('expected redirect');
+		} catch (error) {
+			expect(isRedirect(error)).toBe(true);
+			if (isRedirect(error)) expect(error.location).toBe('/loans');
+		}
+
+		expect(verifyOtp).toHaveBeenCalledWith({ type: 'invite', token_hash: 'abc' });
+	});
+
+	it('sends a reauthentication confirm to the pass', async () => {
+		const verifyOtp = vi.fn().mockResolvedValue({ error: null });
+
+		try {
+			await GET(
+				event('?token_hash=abc&type=reauthentication', { auth: { verifyOtp } })
+			);
+			throw new Error('expected redirect');
+		} catch (error) {
+			expect(isRedirect(error)).toBe(true);
+			if (isRedirect(error)) expect(error.location).toBe('/profile');
+		}
+	});
+
 	it('sends a recovery confirm to the new-password stamp', async () => {
 		const verifyOtp = vi.fn().mockResolvedValue({ error: null });
 

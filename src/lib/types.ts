@@ -5,6 +5,7 @@ export type SignedReader = {
 	name: string;
 	email: string;
 	role: Role;
+	className?: string;
 };
 
 export type Reader = SignedReader | null;

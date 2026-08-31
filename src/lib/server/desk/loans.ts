@@ -120,6 +120,7 @@ export async function getDeskLoan(id: string) {
 			borrowerClass: loan.borrowerClass,
 			loanDays: loan.loanDays,
 			bookTitle: book.title,
+			callNumber: book.callNumber,
 			readerName: user.name,
 			readerEmail: user.email
 		})
@@ -182,6 +183,7 @@ export async function saveLoan(input: {
 				if (!current) throw new Error('Výpožička sa nenašla.');
 				const borrowedAt = input.borrowedAt ?? current.borrowedAt;
 				const dueAt = input.dueAt ?? new Date(borrowedAt.getTime() + days * 24 * 60 * 60 * 1000);
+				const dueShifted = Math.abs(dueAt.getTime() - current.dueAt.getTime()) > 60_000;
 				await tx
 					.update(loan)
 					.set({
@@ -192,7 +194,9 @@ export async function saveLoan(input: {
 						borrowedAt,
 						dueAt,
 						returnedAt: input.returnedAt ?? current.returnedAt,
-						renewalCount: input.renewalCount ?? current.renewalCount
+						renewalCount: input.renewalCount ?? current.renewalCount,
+						dueSoonMailedAt: dueShifted ? null : current.dueSoonMailedAt,
+						overdueMailedAt: dueShifted ? null : current.overdueMailedAt
 					})
 					.where(eq(loan.id, input.id));
 			} else {

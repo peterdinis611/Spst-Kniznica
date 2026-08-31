@@ -36,6 +36,14 @@ describe('loanMailCopy', () => {
 		expect(copy.html).toContain('Predĺžené.');
 	});
 
+	it('stamps a desk due-date repair, not a self-renewal', () => {
+		const copy = loanMailCopy({ kind: 'dueChanged', ...slip });
+		expect(copy.subject).toBe('Nový termín · Algoritmy v dielni · SPŠT knižnica');
+		expect(copy.text).toContain('pult opravil termín');
+		expect(copy.html).toContain('Nový termín.');
+		expect(copy.html).not.toContain('Predĺžené.');
+	});
+
 	it('warns the day before the due date', () => {
 		const copy = loanMailCopy({ kind: 'dueSoon', ...slip });
 		expect(copy.subject).toBe('Zajtra splatné · Algoritmy v dielni · SPŠT knižnica');

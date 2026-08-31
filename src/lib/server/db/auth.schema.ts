@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { boolean, index, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -12,7 +12,10 @@ export const user = pgTable('user', {
 		.defaultNow()
 		.$onUpdate(() => new Date())
 		.notNull(),
-	role: text('role').default('reader').notNull()
+	role: text('role').default('reader').notNull(),
+	className: text('class_name').default('').notNull(),
+	classDigestMailedAt: timestamp('class_digest_mailed_at', { withTimezone: true, mode: 'date' }),
+	classDigestOverdue: integer('class_digest_overdue').default(0).notNull()
 });
 
 export const session = pgTable(

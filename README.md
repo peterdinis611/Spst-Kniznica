@@ -105,7 +105,7 @@ bun run storybook    # Storybook, port 6006
 
 ## Záťaž (k6)
 
-Meria čítanie katalógu, nie prihlásenie ani výpožičky. Fond musí bežať skôr (dev 5173 alebo preview 4173).
+Meria čítanie katalógu, nie prihlásenie ani výpožičky. Fond musí bežať skôr (dev 5173 alebo preview 4173). Obraz `grafana/k6:2.2.0`.
 
 ```sh
 bun run k6:up
