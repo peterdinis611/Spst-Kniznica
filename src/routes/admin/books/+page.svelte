@@ -10,10 +10,57 @@
 	import Seo from '$lib/components/Seo.svelte';
 	import { bookSchema } from '$lib/desk-fields';
 	import { pultHref, type PultColumn } from '$lib/pult-ledger';
+	import { toast } from 'svelte-sonner';
 	import type { ActionData, PageProps } from './$types';
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const current = $derived(data.current);
+	let isbnBusy = $state(false);
+
+	async function fillIsbn(slip: {
+		getFieldValue: (name: string) => unknown;
+		setFieldValue: (name: string, value: unknown) => void;
+	}) {
+		const isbn = String(slip.getFieldValue('isbn') ?? '').trim();
+		if (!isbn) {
+			toast.error('Doplň ISBN.');
+			return;
+		}
+		isbnBusy = true;
+		try {
+			const response = await fetch(`/admin/books/isbn?isbn=${encodeURIComponent(isbn)}`);
+			const payload = (await response.json()) as {
+				ok?: boolean;
+				message?: string;
+				card?: {
+					title?: string;
+					subtitle?: string;
+					year?: number | null;
+					pages?: number | null;
+					publisher?: string;
+					description?: string;
+					isbn?: string;
+				};
+			};
+			if (!response.ok || !payload.ok || !payload.card) {
+				toast.error(payload.message ?? 'Karta sa nenašla.');
+				return;
+			}
+			const card = payload.card;
+			if (card.title) slip.setFieldValue('title', card.title);
+			if (card.subtitle) slip.setFieldValue('subtitle', card.subtitle);
+			if (card.year) slip.setFieldValue('year', card.year);
+			if (card.pages) slip.setFieldValue('pages', card.pages);
+			if (card.publisher) slip.setFieldValue('publisher', card.publisher);
+			if (card.description) slip.setFieldValue('description', card.description);
+			if (card.isbn) slip.setFieldValue('isbn', card.isbn);
+			toast.success('Karta doplnená.');
+		} catch {
+			toast.error('Open Library teraz neodpovedá.');
+		} finally {
+			isbnBusy = false;
+		}
+	}
 	const columns: PultColumn<(typeof data.rows)[number]>[] = [
 		{
 			id: 'title',
@@ -84,7 +131,12 @@
 					<PultField form={slip} name="subtitle" label="Podtitul" wide />
 					<PultField form={slip} name="year" label="Rok" type="number" numeric />
 					<PultField form={slip} name="pages" label="Strany" type="number" numeric />
-					<PultField form={slip} name="isbn" label="ISBN" />
+					<div class="pult-isbn">
+						<PultField form={slip} name="isbn" label="ISBN" />
+						<button type="button" class="pult-isbn-act" disabled={isbnBusy} onclick={() => fillIsbn(slip)}>
+							{isbnBusy ? 'Hľadám…' : 'Doplň z ISBN'}
+						</button>
+					</div>
 					<PultField form={slip} name="callNumber" label="Signatúra" />
 					<PultField form={slip} name="categoryId" label="Odbor" as="select">
 						{#snippet options()}

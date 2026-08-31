@@ -11,7 +11,7 @@ vi.mock('$env/dynamic/private', () => ({
 	env: { ADMIN_EMAILS: 'anna@spst.sk' }
 }));
 
-import { canOpenDesk, deskGate, isAdminEmail, requireAdmin } from '../admin-access';
+import { canOpenDesk, canOperateDesk, deskGate, isAdminEmail, isDeskInspectPath, requireAdmin } from '../admin-access';
 
 const librarian = {
 	id: 'user-1',
@@ -55,6 +55,7 @@ describe('requireAdmin', () => {
 
 describe('canOpenDesk', () => {
 	const reader = { ...librarian, role: 'reader' as const };
+	const teacher = { ...librarian, role: 'teacher' as const };
 
 	it('keeps a reader off the desk in production', () => {
 		expect(canOpenDesk(reader, false)).toBe(false);
@@ -63,10 +64,18 @@ describe('canOpenDesk', () => {
 
 	it('lets a librarian manage the desk', () => {
 		expect(canOpenDesk(librarian, false)).toBe(true);
+		expect(canOperateDesk(librarian, false)).toBe(true);
+	});
+
+	it('lets a teacher inspect the desk without the copper drawers', () => {
+		expect(canOpenDesk(teacher, false)).toBe(true);
+		expect(canOperateDesk(teacher, false)).toBe(false);
+		expect(canOperateDesk(teacher, true)).toBe(false);
 	});
 
 	it('lets a signed-in reader through in local dev', () => {
 		expect(canOpenDesk(reader, true)).toBe(true);
+		expect(canOperateDesk(reader, true)).toBe(true);
 	});
 });
 
@@ -83,10 +92,23 @@ describe('isAdminEmail', () => {
 });
 
 describe('deskGate', () => {
+	const teacher = { ...librarian, role: 'teacher' as const };
+
 	it('lets the hall through and guards the copper drawers', () => {
 		expect(deskGate('/books', undefined)).toBe('ok');
 		expect(deskGate('/admin', undefined)).toBe('login');
 		expect(deskGate('/admin/books', { ...librarian, role: 'reader' })).toBe('forbidden');
 		expect(deskGate('/admin/books', librarian)).toBe('ok');
+		expect(isDeskInspectPath('/admin')).toBe(true);
+		expect(isDeskInspectPath('/admin/loans')).toBe(true);
+		expect(isDeskInspectPath('/admin/scan')).toBe(false);
+	});
+
+	it('lets a teacher onto the class ledger, not the catalog drawers', () => {
+		expect(deskGate('/admin', teacher)).toBe('ok');
+		expect(deskGate('/admin/loans', teacher)).toBe('ok');
+		expect(deskGate('/admin/books', teacher)).toBe('forbidden');
+		expect(deskGate('/admin/scan', teacher)).toBe('forbidden');
+		expect(deskGate('/admin/holdings/labels', teacher)).toBe('forbidden');
 	});
 });

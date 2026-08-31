@@ -64,7 +64,7 @@ export async function saveReader(input: {
 			.then((rows) => rows[0]);
 		if (!current) return fail('Čitateľ sa nenašiel.');
 		const role = input.role === undefined ? parseRole(current.role) : input.role;
-		if (parseRole(current.role) === 'librarian' && role === 'reader') {
+		if (parseRole(current.role) === 'librarian' && role !== 'librarian') {
 			const others =
 				(
 					await db

@@ -18,6 +18,7 @@
 
 	let { data, form }: PageProps & { form: ActionData } = $props();
 	const current = $derived(data.current);
+	const manage = $derived(data.manage);
 	const columns: PultColumn<(typeof data.rows)[number]>[] = [
 		{
 			id: 'reader',
@@ -78,7 +79,7 @@
 			</datalist>
 		</label>
 		<button type="submit">Čo je vonku</button>
-		{#if data.klass}
+		{#if data.klass && manage}
 			<a href={pultHref(page.url, { class: data.klass, open: null })}>aj vrátené</a>
 		{/if}
 		{#if data.klass || data.open}
@@ -101,22 +102,27 @@
 			? data.open
 				? `V triede ${data.klass} nie je nič vonku.`
 				: `V triede ${data.klass} nie je lístok.`
-			: data.open
-				? 'Nič nie je vonku.'
-				: 'Žiadny výpožičný lístok.'}
+			: !manage
+				? 'Zadaj triedu — II.A vonku.'
+				: data.open
+					? 'Nič nie je vonku.'
+					: 'Žiadny výpožičný lístok.'}
 	>
 		{#snippet actions({ row })}
-			<Button href={pultHref(page.url, { edit: row.id })} size="sm" variant="outline">Upraviť</Button>
-			{#if !row.returnedAt}
-				<form method="POST" action="?/return" use:enhance={applyToast()}>
-					<input type="hidden" name="id" value={row.id} />
-					<Button size="sm" type="submit">Vrátiť</Button>
-				</form>
+			{#if manage}
+				<Button href={pultHref(page.url, { edit: row.id })} size="sm" variant="outline">Upraviť</Button>
+				{#if !row.returnedAt}
+					<form method="POST" action="?/return" use:enhance={applyToast()}>
+						<input type="hidden" name="id" value={row.id} />
+						<Button size="sm" type="submit">Vrátiť</Button>
+					</form>
+				{/if}
+				<PultDelete fields={{ id: row.id }} ask="Zmazať výpožičku {row.bookTitle}?" />
 			{/if}
-			<PultDelete fields={{ id: row.id }} ask="Zmazať výpožičku {row.bookTitle}?" />
 		{/snippet}
 	</PultLedger>
 
+	{#if manage}
 	{#key current?.id ?? 'new'}
 		<PultSaveForm
 			schema={deskLoanSchema}
@@ -177,4 +183,5 @@
 			{/snippet}
 		</PultSaveForm>
 	{/key}
+	{/if}
 </div>

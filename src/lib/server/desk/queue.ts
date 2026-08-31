@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, isNull, lte } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, ilike, isNull, lte } from 'drizzle-orm';
 import { db } from '../db';
 import { book, loan, reservation, user } from '../db/schema';
 
@@ -27,9 +27,50 @@ function weekAgo(now = new Date()) {
 	return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 }
 
-export async function deskQueue(now = new Date()): Promise<DeskQueue> {
+export const emptyDeskQueue = (): DeskQueue => ({
+	overdue: [],
+	pickup: [],
+	waiting: [],
+	passes: []
+});
+
+export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue> {
 	const today = startOfToday(now);
 	const since = weekAgo(now);
+	const classClause = klass ? ilike(loan.borrowerClass, klass) : undefined;
+	const overdueWhere = classClause
+		? and(isNull(loan.returnedAt), lte(loan.dueAt, today), classClause)
+		: and(isNull(loan.returnedAt), lte(loan.dueAt, today));
+
+	if (klass) {
+		const overdueRows = await db
+			.select({
+				id: loan.id,
+				title: book.title,
+				name: user.name,
+				klass: loan.borrowerClass,
+				dueAt: loan.dueAt
+			})
+			.from(loan)
+			.innerJoin(book, eq(book.id, loan.bookId))
+			.innerJoin(user, eq(user.id, loan.userId))
+			.where(overdueWhere)
+			.orderBy(asc(loan.dueAt))
+			.limit(24);
+
+		return {
+			overdue: overdueRows.map((row) => ({
+				id: row.id,
+				href: `/admin/loans?class=${encodeURIComponent(klass)}&open=1`,
+				title: row.title,
+				detail: [row.name, row.klass].filter(Boolean).join(' · '),
+				stamp: 'po lehote'
+			})),
+			pickup: [],
+			waiting: [],
+			passes: []
+		};
+	}
 
 	const [overdueRows, pickupRows, waitingRows, passRows] = await Promise.all([
 		db
@@ -43,7 +84,7 @@ export async function deskQueue(now = new Date()): Promise<DeskQueue> {
 			.from(loan)
 			.innerJoin(book, eq(book.id, loan.bookId))
 			.innerJoin(user, eq(user.id, loan.userId))
-			.where(and(isNull(loan.returnedAt), lte(loan.dueAt, today)))
+			.where(overdueWhere)
 			.orderBy(asc(loan.dueAt))
 			.limit(12),
 		db

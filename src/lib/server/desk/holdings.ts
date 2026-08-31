@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, isNull, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, isNull, or } from 'drizzle-orm';
 import { LIST_LIMIT } from '$lib/admin';
 import { deskIssue, holdingSchema } from '$lib/desk-fields';
 import { refreshCatalog } from '../admin';
@@ -30,6 +30,34 @@ export async function listDeskHoldings(query = '') {
 				: undefined
 		)
 		.orderBy(desc(holding.acquiredAt))
+		.limit(LIST_LIMIT);
+}
+
+export async function listSpineLabels(query = '') {
+	const q = query.trim();
+	return await db
+		.select({
+			id: holding.id,
+			inventoryNo: holding.inventoryNo,
+			callNumber: book.callNumber,
+			title: book.title,
+			isbn: book.isbn,
+			categoryCode: category.code
+		})
+		.from(holding)
+		.innerJoin(book, eq(book.id, holding.bookId))
+		.innerJoin(category, eq(category.id, book.categoryId))
+		.where(
+			q
+				? or(
+						ilike(holding.inventoryNo, needle(q)),
+						ilike(book.title, needle(q)),
+						ilike(book.callNumber, needle(q)),
+						ilike(holding.status, needle(q))
+					)
+				: undefined
+		)
+		.orderBy(asc(category.code), asc(book.callNumber), asc(holding.inventoryNo))
 		.limit(LIST_LIMIT);
 }
 

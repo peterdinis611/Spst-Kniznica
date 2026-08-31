@@ -30,7 +30,7 @@ Raz, z [Moje knihy](/loans), kým nie si po lehote a na knihu nikto nečaká. Ď
 
 ## Ako zistím, čo má vonku II.A?
 
-Na pulte v zásuvke [Výpožičky](/admin/loans) zadaj triedu a stlač **Čo je vonku**. Učiteľ to uvidí, keď má pečiatku knihovník.
+Na pulte v zásuvke [Výpožičky](/admin/loans) zadaj triedu a stlač **Čo je vonku**. Učiteľ to uvidí s pečiatkou **učiteľ** — fond nemení.
 
 ## Dá sa vytlačiť inventúra?
 
@@ -66,7 +66,7 @@ Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mai
 
 ## Kde je správa fondu?
 
-V **preukaze vpravo** (kruh s iniciálami) je **Pult** — ale len pre knihovníka. Ľavé menu ho neschováva omylom — je to zásuvka správy, nie katalóg. Podrobnosti sú v kapitole [Správa](/docs/sprava).
+V **preukaze vpravo** (kruh s iniciálami) je **Pult** — pre knihovníka celý fond, pre učiteľa trieda vonku. Ľavé menu ho neschováva omylom — je to zásuvka správy, nie katalóg. Podrobnosti sú v kapitole [Správa](/docs/sprava).
 
 ## Kde vás nájdem?
 

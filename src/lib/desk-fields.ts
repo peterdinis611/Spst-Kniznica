@@ -139,6 +139,10 @@ export const deskClassFilterSchema = v.object({
 	)
 });
 
+export const deskScanSchema = v.object({
+	code: v.pipe(v.string(), v.trim(), v.minLength(2, 'Naskenuj inventár alebo ISBN.'))
+});
+
 export function deskIssue(schema: v.GenericSchema, data: unknown) {
 	return firstSchemaIssue(schema, data);
 }

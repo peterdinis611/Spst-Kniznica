@@ -1,28 +1,32 @@
 import { AbilityBuilder, createMongoAbility, type MongoAbility } from '@casl/ability';
 
-export const ROLES = ['reader', 'librarian'] as const;
+export const ROLES = ['reader', 'teacher', 'librarian'] as const;
 export type Role = (typeof ROLES)[number];
 
 export const DESK_ROLES = [
 	{ value: 'reader', label: 'čitateľ' },
+	{ value: 'teacher', label: 'učiteľ' },
 	{ value: 'librarian', label: 'knihovník' }
 ] as const;
 
 export const ROLE_LABELS: Record<Role, string> = {
 	reader: 'čitateľ',
+	teacher: 'učiteľ',
 	librarian: 'knihovník'
 };
 
-export type Actions = 'read' | 'borrow' | 'return' | 'manage';
+export type Actions = 'read' | 'borrow' | 'return' | 'inspect' | 'manage';
 export type Subjects = 'Catalog' | 'Loan' | 'Desk';
 export type AppAbility = MongoAbility<[Actions, Subjects]>;
 
 export function isRole(value: unknown): value is Role {
-	return value === 'reader' || value === 'librarian';
+	return value === 'reader' || value === 'teacher' || value === 'librarian';
 }
 
 export function parseRole(value: unknown): Role {
-	return value === 'librarian' ? 'librarian' : 'reader';
+	if (value === 'librarian') return 'librarian';
+	if (value === 'teacher') return 'teacher';
+	return 'reader';
 }
 
 export function defineAbilityFor(role: Role | null | undefined): AppAbility {
@@ -34,6 +38,10 @@ export function defineAbilityFor(role: Role | null | undefined): AppAbility {
 		can('manage', 'Catalog');
 		can('manage', 'Loan');
 		can('manage', 'Desk');
+		can('inspect', 'Desk');
+	} else if (role === 'teacher') {
+		can('inspect', 'Desk');
+		can('read', 'Loan');
 	} else if (role === 'reader') {
 		can('borrow', 'Loan');
 		can('return', 'Loan');
@@ -44,4 +52,8 @@ export function defineAbilityFor(role: Role | null | undefined): AppAbility {
 
 export function canManageDesk(role: Role | null | undefined) {
 	return defineAbilityFor(role).can('manage', 'Desk');
+}
+
+export function canInspectDesk(role: Role | null | undefined) {
+	return defineAbilityFor(role).can('inspect', 'Desk');
 }

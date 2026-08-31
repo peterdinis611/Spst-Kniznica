@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	PULT_TABLES,
 	holdingLabel,
+	pultTablesFor,
 	reservationLabel,
 	slugify,
 	toDatetimeLocal
@@ -38,6 +39,7 @@ describe('ledger labels', () => {
 
 	it('lists every drawer in the copper tabs', () => {
 		expect(PULT_TABLES.map((item) => item.href)).toEqual([
+			'/admin/scan',
 			'/admin',
 			'/admin/departments',
 			'/admin/authors',
@@ -49,6 +51,7 @@ describe('ledger labels', () => {
 			'/admin/readers',
 			'/admin/reports'
 		]);
+		expect(pultTablesFor(false).map((item) => item.href)).toEqual(['/admin', '/admin/loans']);
 	});
 });
 

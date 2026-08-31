@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, isNull, or } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, isNull, or } from 'drizzle-orm';
 import { LIST_LIMIT } from '$lib/admin';
 import { normalizeClass, parseLoanDays } from '$lib/borrow-fields';
 import { deskIssue, deskLoanSchema } from '$lib/desk-fields';
@@ -87,6 +87,20 @@ export async function listDeskClasses() {
 		classes.push(klass);
 	}
 	return classes;
+}
+
+export async function countOpenClassLoans(klass: string) {
+	const token = normalizeClass(klass);
+	if (!token) return 0;
+	return (
+		(
+			await db
+				.select({ c: count() })
+				.from(loan)
+				.where(and(isNull(loan.returnedAt), ilike(loan.borrowerClass, token)))
+				.then((rows) => rows[0])
+		)?.c ?? 0
+	);
 }
 
 export async function getDeskLoan(id: string) {

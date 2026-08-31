@@ -4,7 +4,8 @@ import { pageOf } from '$lib/page-of';
 import { load } from '../+layout.server';
 
 vi.mock('$lib/server/admin-access', () => ({
-	requireAdmin: vi.fn()
+	requireAdmin: vi.fn(),
+	canOperateDesk: vi.fn((user: { role: string }) => user.role === 'librarian')
 }));
 
 const librarian = {
@@ -29,6 +30,6 @@ describe('admin layout', () => {
 
 		const data = pageOf(await load({ locals: { user: librarian } } as Parameters<typeof load>[0]));
 
-		expect(data.desk).toEqual(librarian);
+		expect(data.desk).toEqual({ ...librarian, manage: true });
 	});
 });

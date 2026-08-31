@@ -67,7 +67,7 @@ Minimálne `DATABASE_URL`. Na prihlásenie:
 - `PUBLIC_SUPABASE_URL` a `PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - v Supabase Auth redirect `{ORIGIN}/auth/confirm`
 
-Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, ktoré sa pri prihlásení stanú knihovníkom. V `vite dev` môže pult otvoriť aj bežný čitateľ.
+Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, ktoré sa pri prihlásení stanú knihovníkom. Ďalších (aj učiteľov) pridelíš v zásuvke Čitatelia. V `vite dev` môže pult otvoriť aj bežný čitateľ.
 
 Ďalšie voliteľné:
 
@@ -86,7 +86,7 @@ Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, kt
 | `/departments`, `/authors` | odbory a autori |
 | `/login` | prihlásenie / registrácia (`?mod=novy`) |
 | `/loans`, `/profile` | lístok a preukaz (po prihlásení) |
-| `/admin` | pult — CRUD fondu, trieda vonku, výkazy CSV/XML (knihovník) |
+| `/admin` | pult — čítačka, CRUD, trieda vonku, štítky, výkazy CSV/XML (knihovník; učiteľ len triedu) |
 | `/docs` | príručka |
 
 Slovenské aliasy (`/knihy`, `/pult`, `/profil`…) sa 308 presmerujú na kanonické cesty.

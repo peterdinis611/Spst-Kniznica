@@ -40,7 +40,8 @@ function event(fields: Record<string, string>) {
 				for (const [key, value] of Object.entries(fields)) body.set(key, value);
 				return body;
 			}
-		}
+		},
+		locals: { user: { id: 'u1', name: 'Anna', email: 'anna@spst.sk', role: 'librarian' as const } }
 	} as unknown as Parameters<NonNullable<typeof actions.save>>[0];
 }
 
@@ -70,7 +71,8 @@ describe('admin vypozicky load', () => {
 		vi.mocked(readerOptions).mockResolvedValue([]);
 
 		const data = (await load({
-			url: new URL('http://localhost/admin/loans?edit=loan-1')
+			url: new URL('http://localhost/admin/loans?edit=loan-1'),
+			locals: { user: { id: 'u1', name: 'Anna', email: 'anna@spst.sk', role: 'librarian' } }
 		} as Parameters<typeof load>[0])) as { current: { id: string } | null };
 
 		expect(data.current?.id).toBe('loan-1');
@@ -83,12 +85,27 @@ describe('admin vypozicky load', () => {
 		vi.mocked(readerOptions).mockResolvedValue([]);
 
 		const data = (await load({
-			url: new URL('http://localhost/admin/loans?class=ii.a&open=1')
+			url: new URL('http://localhost/admin/loans?class=ii.a&open=1'),
+			locals: { user: { id: 'u1', name: 'Anna', email: 'anna@spst.sk', role: 'librarian' } }
 		} as Parameters<typeof load>[0])) as { klass: string; open: boolean };
 
 		expect(listDeskLoans).toHaveBeenCalledWith({ q: '', klass: 'II.A', open: true });
 		expect(data.klass).toBe('II.A');
 		expect(data.open).toBe(true);
+	});
+
+	it('asks a teacher for a class before listing slips', async () => {
+		vi.mocked(listDeskClasses).mockResolvedValue(['II.A']);
+		vi.mocked(listDeskLoans).mockClear();
+
+		const data = (await load({
+			url: new URL('http://localhost/admin/loans'),
+			locals: { user: { id: 't1', name: 'Eva', email: 'eva@spst.sk', role: 'teacher' } }
+		} as Parameters<typeof load>[0])) as { rows: unknown[]; manage: boolean };
+
+		expect(data.manage).toBe(false);
+		expect(data.rows).toEqual([]);
+		expect(listDeskLoans).not.toHaveBeenCalled();
 	});
 });
 
@@ -140,5 +157,14 @@ describe('admin vypozicky actions', () => {
 	it('stamps a deleted slip', async () => {
 		vi.mocked(deleteLoan).mockResolvedValue({ ok: true });
 		expect(await actions.delete?.(event({ id: 'loan-1' }))).toEqual({ stamp: 'Zmazané' });
+	});
+
+	it('keeps a teacher from returning a slip', async () => {
+		const result = await actions.return?.({
+			...event({ id: 'loan-1' }),
+			locals: { user: { id: 't1', name: 'Eva', email: 'eva@spst.sk', role: 'teacher' } }
+		} as Parameters<NonNullable<typeof actions.return>>[0]);
+		expect(isActionFailure(result)).toBe(true);
+		expect(returnDeskLoan).not.toHaveBeenCalled();
 	});
 });

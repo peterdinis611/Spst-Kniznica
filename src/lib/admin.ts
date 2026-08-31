@@ -1,15 +1,21 @@
 export const PULT_TABLES = [
-	{ href: '/admin', label: 'Prehľad', code: '01' },
+	{ href: '/admin/scan', label: 'Čítačka', code: '00' },
+	{ href: '/admin', label: 'Prehľad', code: '01', inspect: true },
 	{ href: '/admin/departments', label: 'Odbory', code: '02', table: 'category' },
 	{ href: '/admin/authors', label: 'Autori', code: '03', table: 'author' },
 	{ href: '/admin/books', label: 'Knihy', code: '04', table: 'book' },
 	{ href: '/admin/book-authors', label: 'Väzby', code: '05', table: 'book_author' },
 	{ href: '/admin/holdings', label: 'Výtlačky', code: '06', table: 'holding' },
-	{ href: '/admin/loans', label: 'Výpožičky', code: '07', table: 'loan' },
+	{ href: '/admin/loans', label: 'Výpožičky', code: '07', table: 'loan', inspect: true },
 	{ href: '/admin/reservations', label: 'Rezervácie', code: '08', table: 'reservation' },
 	{ href: '/admin/readers', label: 'Čitatelia', code: '09', table: 'user' },
 	{ href: '/admin/reports', label: 'Výkazy', code: '10' }
 ] as const;
+
+export function pultTablesFor(manage: boolean) {
+	if (manage) return PULT_TABLES;
+	return PULT_TABLES.filter((item) => 'inspect' in item && item.inspect);
+}
 
 export const HOLDING_STATUSES = [
 	{ value: 'available', label: 'voľný' },

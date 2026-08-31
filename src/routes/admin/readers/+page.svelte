@@ -34,7 +34,7 @@
 			header: 'Rola',
 			cell: (info) => {
 				const role = parseRole(info.row.original.role);
-				return { stamp: ROLE_LABELS[role], desk: role === 'librarian' };
+				return { stamp: ROLE_LABELS[role], desk: role !== 'reader' };
 			}
 		},
 		{ id: 'loanCount', accessorKey: 'loanCount', header: 'Lístky' }
@@ -55,7 +55,8 @@
 
 <p class="pult-lede" style="margin-bottom: 1rem">
 	Nový preukaz vzniká registráciou. Tu opravíš meno, e-mail a rolu — heslo ostáva v Supabase. Pult
-	otvorí len pečiatka <strong>knihovník</strong>.
+	otvorí pečiatka <strong>knihovník</strong> (celý fond) alebo <strong>učiteľ</strong> (trieda vonku,
+	bez mazania).
 </p>
 
 <div class="pult-grid is-split">

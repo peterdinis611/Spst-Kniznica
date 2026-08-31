@@ -32,7 +32,12 @@ describe('admin overview', () => {
 			passes: []
 		});
 
-		const data = pageOf(await load({} as Parameters<typeof load>[0]));
+		const data = pageOf(
+			await load({
+				url: new URL('http://localhost/admin'),
+				locals: { user: { id: 'user-1', name: 'Anna', email: 'anna@spst.sk', role: 'librarian' } }
+			} as Parameters<typeof load>[0])
+		);
 
 		expect(data.counts.openLoans).toBe(2);
 		expect(data.counts.books).toBe(20);

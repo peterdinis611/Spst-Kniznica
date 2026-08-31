@@ -1,7 +1,7 @@
 import { invalidateCatalogCache } from './catalog-cache';
 import { deleteBookFts, rebuildCatalogFts, upsertBookFts } from './db/catalog-fts';
 
-export { canOpenDesk, isAdminEmail, requireAdmin } from './admin-access';
+export { canOpenDesk, canOperateDesk, isAdminEmail, requireAdmin } from './admin-access';
 
 export async function refreshCatalog(
 	scope: 'all' | { bookId: string } | { deletedBookId: string } = 'all'

@@ -2,26 +2,49 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { formDate, formInt, formText } from '$lib/server/admin';
 import { pickCurrent } from '$lib/pult-ledger';
+import { canOperateDesk } from '$lib/server/admin-access';
 import { getBook } from '$lib/server/library';
 import { queueLoanNotice } from '$lib/server/loan-mail';
 import { deleteLoan, getDeskLoan, listDeskClasses, listDeskLoans, parseDeskLoanFilter, returnDeskLoan, saveLoan } from '$lib/server/desk/loans';
 import { bookOptions, readerOptions } from '$lib/server/desk/options';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, locals }) => {
+	const manage = canOperateDesk(locals.user);
 	const filter = parseDeskLoanFilter(url);
-	const edit = url.searchParams.get('edit') ?? '';
+	if (!manage) {
+		filter.open = true;
+		if (!filter.klass) {
+			return {
+				manage,
+				...filter,
+				rows: [],
+				current: null,
+				books: [],
+				readers: [],
+				classes: await listDeskClasses()
+			};
+		}
+	}
+	const edit = manage ? (url.searchParams.get('edit') ?? '') : '';
 	const [rows, classes, books, readers] = await Promise.all([
 		listDeskLoans(filter),
 		listDeskClasses(),
-		bookOptions(),
-		readerOptions()
+		manage ? bookOptions() : Promise.resolve([]),
+		manage ? readerOptions() : Promise.resolve([])
 	]);
-	const current = await pickCurrent(rows, edit, getDeskLoan);
-	return { ...filter, rows, current, books, readers, classes };
+	const current = manage ? await pickCurrent(rows, edit, getDeskLoan) : null;
+	return { manage, ...filter, rows, current, books, readers, classes };
 };
 
+async function refuseIfInspect(locals: App.Locals) {
+	if (!canOperateDesk(locals.user)) return fail(403, { message: 'Triedu vidíš. Lístok nemeníš.' });
+	return null;
+}
+
 export const actions: Actions = {
-	save: async ({ request }) => {
+	save: async ({ request, locals }) => {
+		const blocked = await refuseIfInspect(locals);
+		if (blocked) return blocked;
 		const data = await request.formData();
 		const userId = formText(data, 'userId');
 		const bookId = formText(data, 'bookId');
@@ -64,7 +87,9 @@ export const actions: Actions = {
 		}
 		return { stamp: 'Uložené' };
 	},
-	return: async ({ request }) => {
+	return: async ({ request, locals }) => {
+		const blocked = await refuseIfInspect(locals);
+		if (blocked) return blocked;
 		const data = await request.formData();
 		const id = formText(data, 'id');
 		const current = await getDeskLoan(id);
@@ -80,7 +105,9 @@ export const actions: Actions = {
 		}
 		return { stamp: 'Vrátené' };
 	},
-	delete: async ({ request }) => {
+	delete: async ({ request, locals }) => {
+		const blocked = await refuseIfInspect(locals);
+		if (blocked) return blocked;
 		const data = await request.formData();
 		const result = await deleteLoan(formText(data, 'id'));
 		if (!result.ok) return fail(400, { message: result.message });

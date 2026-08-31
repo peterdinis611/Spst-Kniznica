@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { PULT_TABLES } from '$lib/admin';
+	import { pultTablesFor } from '$lib/admin';
+
+	let { manage = true }: { manage?: boolean } = $props();
+	const tabs = $derived(pultTablesFor(manage));
 
 	function on(path: string) {
 		if (path === '/admin') return page.url.pathname === '/admin' || page.url.pathname === '/admin/';
@@ -9,7 +12,7 @@
 </script>
 
 <nav class="pult-tabs" aria-label="Kartotéka pultu">
-	{#each PULT_TABLES as item, i (item.href)}
+	{#each tabs as item, i (item.href)}
 		<a class="pult-tab" class:is-on={on(item.href)} href={item.href} style="animation-delay: {i * 40}ms">
 			<em>{item.code}</em>
 			{item.label}

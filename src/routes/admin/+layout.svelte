@@ -3,7 +3,7 @@
 	import PultNav from '$lib/components/PultNav.svelte';
 	import type { LayoutProps } from './$types';
 
-	let { children }: LayoutProps = $props();
+	let { data, children }: LayoutProps = $props();
 </script>
 
 <section class="pult">
@@ -11,11 +11,15 @@
 		<p class="pult-kicker">pavilón B · kartotéka</p>
 		<h1>Pult</h1>
 		<p class="pult-lede">
-			Správa fondu. Zásuvky sú vpredu na pulte — odbory, autori, zväzky, výtlačky a lístky.
+			{#if data.desk.manage}
+				Správa fondu. Zásuvky sú vpredu na pulte — odbory, autori, zväzky, výtlačky a lístky.
+			{:else}
+				Trieda vonku a oneskorené lístky. Fond nemeníš — to ostáva knihovníkovi.
+			{/if}
 		</p>
 	</header>
 	<div class="pult-cabinet">
-		<PultNav />
+		<PultNav manage={data.desk.manage} />
 		<div class="pult-sheet">
 			{@render children()}
 		</div>

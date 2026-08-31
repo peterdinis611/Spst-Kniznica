@@ -8,11 +8,11 @@ order: 8
 
 ## Kto ho vidí
 
-Pult otvorí **knihovník**. V `vite dev` je pult dočasne otvorený aj prihlásenému čitateľovi, kým sa role usadia. Na ostrej prevádzke ostáva len pečiatka knihovník.
+Pult otvorí **knihovník** (celý fond) a **učiteľ** (trieda vonku, bez mazania). V `vite dev` je pult dočasne otvorený aj prihlásenému čitateľovi, kým sa role usadia. Na ostrej prevádzke ostáva pečiatka knihovník alebo učiteľ.
 
-Rola žije na preukaze (`user.role`). Prvého knihovníka dáš cez `ADMIN_EMAILS` v `.env` (čiarka, e-maily). Pri prihlásení dostane pečiatku knihovník. Ďalších pridelíš v zásuvke **Čitatelia**. Hviezdička `*` v `ADMIN_EMAILS` je núdzový kľúč: každý prihlásený sa stane knihovníkom.
+Rola žije na preukaze (`user.role`). Prvého knihovníka dáš cez `ADMIN_EMAILS` v `.env` (čiarka, e-maily). Pri prihlásení dostane pečiatku knihovník. Ďalších — aj učiteľov — pridelíš v zásuvke **Čitatelia**. Hviezdička `*` v `ADMIN_EMAILS` je núdzový kľúč: každý prihlásený sa stane knihovníkom.
 
-Kto nemá rolu, dostane pečiatku, že pult je len pre správu fondu. Posledného knihovníka z pultu nedáš.
+Kto nemá rolu, dostane pečiatku, že pult je len pre správu fondu. Posledného knihovníka z pultu nedáš. Učiteľ vidí Prehľad a Výpožičky; čítačku, kartotéku aj výkazy nie.
 
 ## Zásuvky
 
@@ -20,27 +20,28 @@ Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie ide priebe
 
 | Zásuvka | Tabuľka | Čo robíš |
 | --- | --- | --- |
+| Čítačka | — | inventár alebo ISBN, výpožička a vrátenie bez hľadania v zásuvke |
 | Odbory | `category` | názov, slug, kód, farba, poradie |
 | Autori | `author` | meno, medailón, roky, rola |
-| Knihy | `book` | zväzok, ISBN, signatúra, autori, **obálka** (UploadThing), výtlačky pri založení |
+| Knihy | `book` | zväzok, ISBN (**Doplň z ISBN** z Open Library), signatúra, autori, **obálka** (UploadThing), výtlačky pri založení |
 | Väzby | `book_author` | kto je na ktorej knihe a v akom poradí |
-| Výtlačky | `holding` | inventár, stav (voľný / vonku / stratený / vyradený) |
+| Výtlačky | `holding` | inventár, stav (voľný / vonku / stratený / vyradený), **štítky na chrbát** |
 | Výpožičky | `loan` | lístky všetkých čitateľov, vrátenie z pultu, **trieda čo je vonku** |
 | Rezervácie | `reservation` | čakacie lístky |
-| Čitatelia | `user` | meno, e-mail a **rola** preukazu — heslo ostáva v Supabase |
+| Čitatelia | `user` | meno, e-mail a **rola** preukazu (čitateľ / učiteľ / knihovník) — heslo ostáva v Supabase |
 | Výkazy | — | inventúra a oneskorené lístky na **tlač / CSV / XML**, raz za polrok |
 
 Účty session / account / verification tu nie sú. To je Auth, nie fond.
 
-Na prehľade `/admin` je **dnešný rad**: po lehote, rezervácie na pulte, čakajúci a nové preukazy. Riadok otvorí lístok v zásuvke.
+Na prehľade `/admin` je **dnešný rad**: po lehote, rezervácie na pulte, čakajúci a nové preukazy. Riadok otvorí lístok v zásuvke. Knihovník tam má aj **čítačku** — naskenuje inventár (vrátenie) alebo ISBN (výpožička).
 
-V zásuvke **Výpožičky** zadáš triedu (napr. `II.A`) a **Čo je vonku** — učiteľ aj knihovník uvidia otvorené lístky triedy. **Výkazy** sú jeden list: inventúra výtlačkov a oneskorené lístky. Tlač ide do PDF. CSV a XML si otvoríš na pulte (riadky / kartotéka) alebo stiahneš. Nie je to ďalší prehľad, len polročný odpis.
+V zásuvke **Výpožičky** zadáš triedu (napr. `II.A`) a **Čo je vonku**. Učiteľ to uvidí s pečiatkou učiteľ, bez úpravy lístkov. **Štítky na chrbát** sú v zásuvke Výtlačky — signatúra a inventár na papier, ktorý ide na knihu. **Výkazy** sú jeden list: inventúra výtlačkov a oneskorené lístky. Tlač ide do PDF. CSV a XML si otvoríš na pulte (riadky / kartotéka) alebo stiahneš. Nie je to ďalší prehľad, len polročný odpis.
 
 ## Poznámky z pultu
 
 - Odbor s knihami nezmažeš, kým zväzky neodídu.
 - Knihu s aktívnou výpožičkou nezmažeš. Najprv vráť.
-- Nový zväzok môže hneď dostať výtlačky. Ďalšie kusy pridáš v zásuvke Výtlačky.
+- Nový zväzok môže hneď dostať výtlačky. Ďalšie kusy pridáš v zásuvke Výtlačky. ISBN na karte doplní **Doplň z ISBN** z Open Library — názov, strany, vydavateľ, anotáciu.
 - Obálku nahráš v zásuvke Knihy (JPEG, PNG alebo WebP, do 4 MB). Adresa snímky ide do `book.cover_url`. Bez `UPLOADTHING_TOKEN` v `.env` ostane hashed Unsplash plátno.
 - Vrátenie na pulte uvoľní výtlačok a pripočíta voľné kusy v katalógu.
 - Čitateľa s knihami vonku nezmažeš.

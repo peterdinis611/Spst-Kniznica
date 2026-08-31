@@ -39,6 +39,9 @@
 
 <div class="pult-toolbar">
 	<PultSearch query={data.q} placeholder="inventár, kniha, stav" />
+	<a class="pult-ghost" href={data.q ? `/admin/holdings/labels?q=${encodeURIComponent(data.q)}` : '/admin/holdings/labels'}
+		>Štítky na chrbát</a
+	>
 </div>
 
 {#if form?.message}
