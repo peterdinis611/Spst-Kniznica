@@ -26,6 +26,11 @@
 				<label for="sb-email">E-mail</label>
 				<input id="sb-email" value="maria.kovacova@spst.sk" readonly />
 			</div>
+			<div class="pass-field">
+				<label for="sb-heslo">Heslo</label>
+				<input id="sb-heslo" type="password" value="••••••••" readonly />
+			</div>
+			<p class="pass-help"><a href="/login/recovery">Zabudnuté heslo?</a></p>
 			<button class="pass-go" type="button">Prihlásiť sa</button>
 		</form>
 	</AuthPass>
