@@ -68,7 +68,9 @@ CREATE TABLE "loan" (
 	"borrower_last_name" text DEFAULT '' NOT NULL,
 	"borrower_class" text DEFAULT '' NOT NULL,
 	"loan_days" integer DEFAULT 21 NOT NULL,
-	"cleared_at" timestamp with time zone
+	"cleared_at" timestamp with time zone,
+	"due_soon_mailed_at" timestamp with time zone,
+	"overdue_mailed_at" timestamp with time zone
 );
 --> statement-breakpoint
 CREATE TABLE "reservation" (
@@ -77,7 +79,8 @@ CREATE TABLE "reservation" (
 	"user_id" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,
-	"status" text DEFAULT 'pending' NOT NULL
+	"status" text DEFAULT 'pending' NOT NULL,
+	"expire_soon_mailed_at" timestamp with time zone
 );
 --> statement-breakpoint
 CREATE TABLE "account" (
@@ -118,6 +121,9 @@ CREATE TABLE "user" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"role" text DEFAULT 'reader' NOT NULL,
+	"class_name" text DEFAULT '' NOT NULL,
+	"class_digest_mailed_at" timestamp with time zone,
+	"class_digest_overdue" integer DEFAULT 0 NOT NULL,
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
@@ -159,6 +165,7 @@ CREATE INDEX "loan_dueAt_idx" ON "loan" USING btree ("due_at");--> statement-bre
 CREATE UNIQUE INDEX "loan_one_active_uidx" ON "loan" USING btree ("user_id","book_id") WHERE "loan"."returned_at" is null;--> statement-breakpoint
 CREATE INDEX "reservation_book_status_idx" ON "reservation" USING btree ("book_id","status");--> statement-breakpoint
 CREATE INDEX "reservation_user_status_idx" ON "reservation" USING btree ("user_id","status");--> statement-breakpoint
+CREATE UNIQUE INDEX "reservation_one_open_uidx" ON "reservation" USING btree ("user_id","book_id") WHERE "reservation"."status" in ('pending', 'fulfilled');--> statement-breakpoint
 CREATE UNIQUE INDEX "account_issuer_accountId_uidx" ON "account" USING btree ("issuer","account_id");--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> statement-breakpoint

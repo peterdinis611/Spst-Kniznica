@@ -1,5 +1,5 @@
 {
-  "id": "147d83bb-cc88-4eea-9e58-92685b1c6472",
+  "id": "fdcda83f-845d-41bd-b97a-ae7debdbe540",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -626,6 +626,18 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
+        },
+        "due_soon_mailed_at": {
+          "name": "due_soon_mailed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "overdue_mailed_at": {
+          "name": "overdue_mailed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -842,6 +854,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'pending'"
+        },
+        "expire_soon_mailed_at": {
+          "name": "expire_soon_mailed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -883,6 +901,28 @@
             }
           ],
           "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reservation_one_open_uidx": {
+          "name": "reservation_one_open_uidx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "book_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"reservation\".\"status\" in ('pending', 'fulfilled')",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -1228,6 +1268,26 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'reader'"
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "class_digest_mailed_at": {
+          "name": "class_digest_mailed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "class_digest_overdue": {
+          "name": "class_digest_overdue",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         }
       },
       "indexes": {},
