@@ -6,7 +6,7 @@ export const load: PageServerLoad = async () => {
 	const books = slips.filter((book) => book.id !== 'book-modlitbicky');
 	const categories = catalog.map((category) => ({
 		...category,
-		books: books.filter((book) => book.category.slug === category.slug).slice(0, 4)
+		books: books.filter((book) => book.category.slug === category.slug).slice(0, 8)
 	}));
 
 	return { categories };

@@ -15,9 +15,9 @@
 		data.books.filter((book) => book.id !== 'book-modlitbicky' && book.id !== featured?.id)
 	);
 	const ready = $derived(catalog.filter((book) => book.copiesAvailable > 0));
-	const shelf = $derived(ready.slice(0, 9));
+	const shelf = $derived(ready.slice(0, 24));
 	const authors = $derived(
-		[...data.authors].sort((a, b) => b.bookCount - a.bookCount).slice(0, 8)
+		[...data.authors].sort((a, b) => b.bookCount - a.bookCount).slice(0, 16)
 	);
 
 	const display =

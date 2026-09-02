@@ -19,12 +19,14 @@
 	];
 
 	const layout = [
-		[0, 1, 2, 3, 4, 5, 6, 7],
-		[8, 9, 10, 11, 12, 13, 14],
-		[15, 16, 17, 18, 19, 20, 21]
+		[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14, 15, 16, 17, 18],
+		[19, 20, 21, 22, 23, 24, 25, 26]
 	];
+	const perBay = 27;
+	const bays = [0, 1, 2];
 
-	const tipIndexes = [1, 9, 14, 19, 24];
+	const tipIndexes = [2, 14, 27, 41, 58];
 
 	const widths = [0.78, 0.58, 0.7, 0.5, 0.82, 0.56, 0.66, 0.6, 0.74, 0.52, 0.8, 0.64, 0.7, 0.54, 0.76, 0.62, 0.72, 0.58, 0.84, 0.5, 0.68, 0.6];
 	const heights = [3.4, 4.1, 3.6, 4.6, 3.3, 4.2, 3.8, 4.4, 3.5, 4.5, 3.2, 4.0, 3.9, 4.3, 3.6, 4.15, 3.45, 4.55, 3.7, 4.25, 3.85, 4.05];
@@ -38,7 +40,7 @@
 </script>
 
 <div class="folio-shelf" role="group" aria-label="Police vo fonde" onmouseleave={() => (active = null)}>
-	{#each [0, 1] as bay (bay)}
+	{#each bays as bay (bay)}
 		<div class="folio-bay" style="--delay: {0.16 + bay * 0.08}s">
 			<div class="folio-rail"></div>
 			<div class="folio-well">
@@ -46,7 +48,7 @@
 					<div class="folio-row">
 						<div class="folio-books">
 							{#each row as slot (slot)}
-								{@const index = bay * 11 + slot}
+								{@const index = bay * perBay + slot}
 								{@const book = bookAt(index)}
 								{@const isTip = tipIndexes.includes(index)}
 								{#if book}
@@ -117,6 +119,7 @@
 	}
 
 	.folio-bay + .folio-bay,
+	.folio-bay:nth-child(3),
 	.folio-tip {
 		display: none;
 	}
@@ -296,12 +299,26 @@
 			min-height: 5.8rem;
 		}
 
-		.folio-bay + .folio-bay {
+		.folio-bay:nth-child(2) {
 			display: grid;
 		}
 
 		.folio-tip {
 			display: block;
+		}
+	}
+
+	@media (min-width: 1100px) {
+		.folio-shelf {
+			width: min(68rem, 100%);
+		}
+
+		.folio-bay {
+			width: min(18.5rem, 30vw);
+		}
+
+		.folio-bay:nth-child(3) {
+			display: grid;
 		}
 	}
 

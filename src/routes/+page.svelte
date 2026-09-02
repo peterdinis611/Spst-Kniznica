@@ -39,6 +39,17 @@
 		</p>
 		<a class="folio-cta no-underline" href={resolve('/discover')}>Vstúpiť do fondu</a>
 		<FolioShelf books={data.shelf} />
+		{#if data.categories.length}
+			<nav class="folio-odbory" aria-label="Odbory vo fonde">
+				{#each data.categories as cat (cat.id)}
+					<a class="no-underline" href={resolve('/departments/[slug]', { slug: cat.slug })}>
+						<em>{cat.code}</em>
+						{cat.name}
+						<span>{cat.bookCount}</span>
+					</a>
+				{/each}
+			</nav>
+		{/if}
 	</section>
 
 	<section class="folio-block" id="ako">
@@ -76,6 +87,30 @@
 		</p>
 		<CoverRail books={picks} />
 	</section>
+
+	{#if data.ledger.length}
+		<section class="folio-block">
+			<div class="folio-head">
+				<div>
+					<p class="folio-kicker">Register</p>
+					<h2>Ďalšie voľné zväzky z kartotéky.</h2>
+				</div>
+				<a class="folio-cta folio-cta-sm no-underline" href={resolve('/books')}>Celý katalóg</a>
+			</div>
+			<div class="folio-picks">
+				{#each data.ledger as book (book.id)}
+					<a class="folio-pick no-underline" href={resolve('/books/[id]', { id: book.id })}>
+						<em>{book.category.code} · {book.callNumber}</em>
+						<strong>{book.title}</strong>
+						<span>{book.authors.map((person) => person.name).join(' · ')}</span>
+						<b class:is-out={book.copiesAvailable === 0}>
+							{book.copiesAvailable > 0 ? 'Voľná' : 'Vonku'}
+						</b>
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 	<section class="folio-block">
 		<div class="folio-head">

@@ -37,7 +37,7 @@
 </p>
 
 <div class="mt-4">
-	<CoverRail books={data.books.slice(0, 8)} />
+	<CoverRail books={data.books.slice(0, 16)} />
 </div>
 
 <div class="mt-8">

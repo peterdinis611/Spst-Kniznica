@@ -36,7 +36,7 @@ const slip = (id: string, slug = 'strojarstvo') => ({
 });
 
 describe('departments load', () => {
-	it('pins four books on each department card', async () => {
+	it('pins eight books on each department card', async () => {
 		vi.mocked(listCategories).mockResolvedValue([category]);
 		vi.mocked(listBookSlips).mockResolvedValue([
 			slip('book-modlitbicky'),
@@ -45,12 +45,25 @@ describe('departments load', () => {
 			slip('c'),
 			slip('d'),
 			slip('e'),
+			slip('f'),
+			slip('g'),
+			slip('h'),
+			slip('i'),
 			slip('inf-1', 'informatika')
 		]);
 
 		const data = pageOf(await load({} as Parameters<typeof load>[0]));
 
 		expect(data.categories).toHaveLength(1);
-		expect(data.categories[0].books.map((book: { id: string }) => book.id)).toEqual(['a', 'b', 'c', 'd']);
+		expect(data.categories[0].books.map((book: { id: string }) => book.id)).toEqual([
+			'a',
+			'b',
+			'c',
+			'd',
+			'e',
+			'f',
+			'g',
+			'h'
+		]);
 	});
 });

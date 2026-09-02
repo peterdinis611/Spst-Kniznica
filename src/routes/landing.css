@@ -632,6 +632,16 @@
 	}
 }
 
+@media (min-width: 1100px) {
+	.landing {
+		max-width: 80rem;
+	}
+
+	.folio-authors {
+		grid-template-columns: 1fr 1fr 1fr;
+	}
+}
+
 .hall-foot {
 	display: grid;
 	justify-items: center;
@@ -670,12 +680,45 @@
 	margin: 0;
 }
 
-.folio-shelf-hint {
-	max-width: 36ch;
-	margin: 0 0 1.35rem;
+.folio-odbory {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.45rem 0.7rem;
+	width: min(42rem, 100%);
+	margin: 1.35rem auto 0;
+	padding: 0.15rem 0 0;
+	animation: hall-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both;
+}
+
+.folio-odbory a {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.4rem;
+	padding: 0.28rem 0.15rem;
+	color: inherit;
+	font-family: var(--ui);
+	font-size: 0.82rem;
+	font-weight: 600;
+}
+
+.folio-odbory em {
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 0.68rem;
+	font-style: normal;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	color: var(--copper-mark);
+}
+
+.folio-odbory span {
 	color: var(--muted);
-	font-size: 1.02rem;
-	line-height: 1.5;
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+}
+
+.folio-odbory a:hover {
+	opacity: 0.55;
 }
 
 .dark .folio-shelf-hint {
@@ -692,7 +735,8 @@
 .folio-cta:focus-visible,
 .folio-ghost:focus-visible,
 .folio-pick:focus-visible,
-.folio-author:focus-visible {
+.folio-author:focus-visible,
+.folio-odbory a:focus-visible {
 	outline: 2px solid var(--ink);
 	outline-offset: 3px;
 }
@@ -748,6 +792,7 @@
 	.folio-cta,
 	.folio-block,
 	.folio-close,
+	.folio-odbory,
 	.landing-body,
 	.hall-drawer {
 		animation: none !important;
