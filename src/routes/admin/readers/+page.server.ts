@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { formText } from '$lib/server/admin';
 import { pickCurrent } from '$lib/pult-ledger';
 import { deleteReader, getDeskReader, listDeskReaders, saveReader } from '$lib/server/desk/readers';
+import { rollSchoolYear } from '$lib/server/desk/classes';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const q = url.searchParams.get('q') ?? '';
@@ -30,5 +31,16 @@ export const actions: Actions = {
 		const result = await deleteReader(formText(data, 'id'));
 		if (!result.ok) return fail(400, { message: result.message });
 		return { stamp: 'Zmazané' };
+	},
+	rollYear: async () => {
+		const result = await rollSchoolYear();
+		if (result.promoted + result.graduated === 0) {
+			return fail(400, { message: 'Žiadny preukaz s ročníkom I–IV.' });
+		}
+		const bits = [
+			result.promoted ? `${result.promoted} posunutých` : '',
+			result.graduated ? `${result.graduated} absolventov` : ''
+		].filter(Boolean);
+		return { stamp: bits.join(' · ') };
 	}
 };

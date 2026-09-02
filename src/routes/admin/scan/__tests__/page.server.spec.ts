@@ -3,6 +3,7 @@ import { pageOf } from '$lib/page-of';
 import { findScanHit } from '$lib/server/desk/scan';
 import { getDeskLoan, returnDeskLoan, saveLoan } from '$lib/server/desk/loans';
 import { readerOptions } from '$lib/server/desk/options';
+import { getOpenInventoryRun, markHoldingFound } from '$lib/server/desk/inventory';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/desk/scan', () => ({
@@ -25,6 +26,14 @@ vi.mock('$lib/server/library', () => ({
 
 vi.mock('$lib/server/loan-mail', () => ({
 	queueLoanNotice: vi.fn()
+}));
+
+vi.mock('$lib/server/desk/inventory', () => ({
+	getOpenInventoryRun: vi.fn(),
+	openInventoryRun: vi.fn(),
+	closeInventoryRun: vi.fn(),
+	markHoldingFound: vi.fn(),
+	markHoldingLost: vi.fn()
 }));
 
 describe('admin scan load', () => {
@@ -61,6 +70,27 @@ describe('admin scan load', () => {
 		);
 		expect(data.hit).toBeNull();
 		expect(data.code).toBe('');
+		expect(data.mode).toBe('pult');
+		expect(data.walk).toBeNull();
+	});
+
+	it('opens the inventory pad', async () => {
+		vi.mocked(getOpenInventoryRun).mockResolvedValue({
+			id: 'run-1',
+			startedAt: new Date(2026, 8, 1),
+			closedAt: null,
+			found: 3
+		});
+
+		const data = pageOf(
+			await load({
+				url: new URL('http://localhost/admin/scan?mode=inventura')
+			} as Parameters<typeof load>[0])
+		);
+
+		expect(data.mode).toBe('inventura');
+		expect(data.walk?.found).toBe(3);
+		expect(data.hit).toBeNull();
 	});
 });
 
@@ -98,5 +128,24 @@ describe('admin scan return', () => {
 
 		expect(result).toEqual({ stamp: 'Vrátené' });
 		expect(saveLoan).not.toHaveBeenCalled();
+	});
+});
+
+describe('admin scan inventory', () => {
+	it('stamps a found copy', async () => {
+		vi.mocked(markHoldingFound).mockResolvedValue({ ok: true, runId: 'run-1' });
+
+		const result = await actions.found?.({
+			request: {
+				formData: async () => {
+					const body = new FormData();
+					body.set('holdingId', 'h-1');
+					return body;
+				}
+			}
+		} as Parameters<NonNullable<typeof actions.found>>[0]);
+
+		expect(markHoldingFound).toHaveBeenCalledWith('h-1');
+		expect(result).toEqual({ stamp: 'Nájdený' });
 	});
 });

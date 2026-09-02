@@ -24,7 +24,7 @@ Na stránke autorov lišta hľadá **priezvisko alebo meno**. Filter odboru tam 
 
 Klávesová skratka na vstupnej sieni: **⌘K** alebo **Ctrl+K**. V katalógu ostáva lišta v hlavičke.
 
-Ak sa nič nenašlo, zruš filter alebo skús kratšie slovo. Fond hľadá v názve, signatúre, ISBN aj v mene autora.
+Ak sa nič nenašlo, zruš filter alebo skús kratšie slovo. Fond hľadá v názve, signatúre, ISBN aj v mene autora. Lišta ide na uložený GIN index, nie cez celú tabuľku.
 
 ## Dva pohľady na ten istý fond
 

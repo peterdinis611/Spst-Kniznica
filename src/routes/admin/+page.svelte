@@ -11,7 +11,12 @@
 	const outWord = $derived(out === 1 ? 'kniha' : out >= 2 && out <= 4 ? 'knihy' : 'kníh');
 	const queue = $derived(data.queue);
 	const hasQueue = $derived(
-		queue.overdue.length + queue.pickup.length + queue.waiting.length + queue.passes.length > 0
+		queue.overdue.length +
+			queue.inbound.length +
+			queue.pickup.length +
+			queue.waiting.length +
+			queue.passes.length >
+			0
 	);
 
 	const cards = $derived(
@@ -37,9 +42,15 @@
 				href: data.klass ? `/admin/loans?class=${encodeURIComponent(data.klass)}&open=1` : '/admin/loans',
 				rows: queue.overdue
 			},
-			{ key: 'pickup', kicker: '02 na pulte', href: '/admin/reservations', rows: queue.pickup },
-			{ key: 'waiting', kicker: '03 čakajú', href: '/admin/reservations', rows: queue.waiting },
-			{ key: 'passes', kicker: '04 nové preukazy', href: '/admin/readers', rows: queue.passes }
+			{
+				key: 'inbound',
+				kicker: '02 cestou',
+				href: data.klass ? `/admin/loans?class=${encodeURIComponent(data.klass)}&open=1` : '/admin/loans',
+				rows: queue.inbound
+			},
+			{ key: 'pickup', kicker: '03 na pulte', href: '/admin/reservations', rows: queue.pickup },
+			{ key: 'waiting', kicker: '04 čakajú', href: '/admin/reservations', rows: queue.waiting },
+			{ key: 'passes', kicker: '05 nové preukazy', href: '/admin/readers', rows: queue.passes }
 		].filter((rail) => rail.rows.length > 0)
 	);
 

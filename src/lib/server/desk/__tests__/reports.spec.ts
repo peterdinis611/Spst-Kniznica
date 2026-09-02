@@ -15,11 +15,13 @@ describe('report csv', () => {
 				isbn: '97880',
 				year: 2020,
 				categoryName: 'Informatika',
-				categoryCode: 'INF'
+				categoryCode: 'INF',
+				sight: 'out',
+				lastSeenAt: null
 			}
 		]);
 
-		expect(body).toContain('inventár,stav,signatúra');
+		expect(body).toContain('inventár,stav,nález,signatúra');
 		expect(body).toContain('INF-001');
 		expect(body).toContain('vonku');
 		expect(body).toContain('Algoritmy v dielni');
@@ -58,7 +60,9 @@ describe('report xml', () => {
 					isbn: '97880',
 					year: 2020,
 					categoryName: 'Informatika',
-					categoryCode: 'INF'
+					categoryCode: 'INF',
+					sight: 'out',
+					lastSeenAt: null
 				}
 			],
 			'30. 08. 2026'
@@ -69,6 +73,7 @@ describe('report xml', () => {
 		expect(body).toContain('druh="inventura"');
 		expect(body).toContain('<inventar>INF-001</inventar>');
 		expect(body).toContain('<stav>vonku</stav>');
+		expect(body).toContain('<nalez>vonku</nalez>');
 		expect(body).toContain('<nazov>Algoritmy v dielni</nazov>');
 		expect(body).toContain('kod="INF"');
 		expect(body).toContain('\t<vytlacok>');

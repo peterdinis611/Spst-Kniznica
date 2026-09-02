@@ -3,7 +3,7 @@ import { sendMail } from '$lib/server/mail';
 import { escapeHtml, mailOrigin, slipHtml } from '$lib/server/mail-slip';
 
 export type LoanNotice = {
-	kind: 'borrow' | 'return' | 'renew' | 'dueChanged' | 'dueSoon' | 'overdue';
+	kind: 'borrow' | 'return' | 'inbound' | 'renew' | 'dueChanged' | 'dueSoon' | 'overdue';
 	to: string;
 	readerName: string;
 	bookTitle: string;
@@ -135,6 +135,28 @@ export function loanMailCopy(notice: LoanNotice) {
 			ctaHref: loansHref,
 			cta: 'Otvoriť Moje knihy',
 			foot: 'Oneskorenie rieši pult. Pečiatka nie je pokuta.'
+		});
+		return { subject, text, html };
+	}
+
+	if (notice.kind === 'inbound') {
+		const subject = `Cestou na pult · ${title} · SPŠT knižnica`;
+		const text = [
+			`${name}, nahlásil si vrátenie zväzku ${title}.`,
+			'Výtlačok je voľný až keď ho pult naskenuje v pavilóne B.',
+			notice.callNumber ? `Signatúra: ${notice.callNumber}` : '',
+			`Lístok: ${loansHref}`
+		]
+			.filter(Boolean)
+			.join('\n');
+		const html = slipHtml({
+			kicker: 'cestou na pult',
+			heading: 'Cestou na pult.',
+			body: `${escapeHtml(name)}, <strong>${escapeHtml(title)}</strong> ostáva na preukaze, kým ho pult naskenuje. Dones výtlačok do pavilónu B.`,
+			chips: [notice.callNumber || null, 'pavilón B', 'čítačka'],
+			ctaHref: loansHref,
+			cta: 'Otvoriť Moje knihy',
+			foot: 'Pečiatka Vrátené padne až na pulte. Fond sa ešte neotvoril.'
 		});
 		return { subject, text, html };
 	}

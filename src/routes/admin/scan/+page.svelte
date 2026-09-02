@@ -45,8 +45,17 @@
 	index={false}
 />
 
-<form class="pult-scan" method="GET" novalidate onsubmit={checkCode}>
+<form class="pult-scan" method="GET" action="/admin/scan" novalidate onsubmit={checkCode}>
 	<p class="pult-scan-kicker">pavilón B · čítačka</p>
+	<nav class="pult-scan-modes" aria-label="Režim čítačky">
+		<a class:is-on={data.mode === 'pult'} href="/admin/scan">Výpožička</a>
+		<a
+			class:is-on={data.mode === 'inventura'}
+			href="/admin/scan?mode=inventura"
+		>
+			Inventúra
+		</a>
+	</nav>
 	<label class="pult-scan-pad">
 		<span>Inventár alebo ISBN</span>
 		<input
@@ -60,8 +69,39 @@
 			aria-label="Inventár alebo ISBN"
 		/>
 	</label>
+	{#if data.mode === 'inventura'}
+		<input type="hidden" name="mode" value="inventura" />
+	{/if}
 	<button type="submit">Nájsť</button>
 </form>
+
+{#if data.mode === 'inventura'}
+	<div class="pult-walk">
+		{#if data.walk}
+			<p>
+				Chôdza od {shortDate(data.walk.startedAt)} · {data.walk.found.toLocaleString('sk-SK')} nájdených.
+				Voľné bez pečiatky skončia ako chýbajúce.
+			</p>
+			<form
+				method="POST"
+				action="?mode=inventura&/closeWalk"
+				use:enhance={applyToast()}
+				onsubmit={(event) => {
+					if (!confirm('Uzavrieť chôdzu? Voľné bez pečiatky budú na výkaze ako chýbajúce.')) {
+						event.preventDefault();
+					}
+				}}
+			>
+				<Button type="submit" variant="outline">Uzavrieť inventúru</Button>
+			</form>
+		{:else}
+			<p>Otvor chôdzu, potom s čítačkou prejdi policu. Vonku na lístku sa do chýbajúcich nepočítajú.</p>
+			<form method="POST" action="?mode=inventura&/openWalk" use:enhance={applyToast()}>
+				<Button type="submit">Otvoriť inventúru</Button>
+			</form>
+		{/if}
+	</div>
+{/if}
 
 {#if form?.message}
 	<p class="pult-note" role="alert">{form.message}</p>
@@ -80,16 +120,45 @@
 		<h2>{hit.copy.title}</h2>
 		<p class="pult-hit-meta">{hit.copy.callNumber} · {hit.copy.isbn}</p>
 
-		{#if hit.kind === 'return'}
+		{#if hit.kind === 'return' && data.mode === 'pult'}
 			<p class="pult-hit-who">
 				{hit.loan.borrowerFirstName}
 				{hit.loan.borrowerLastName}
 				· {hit.loan.borrowerClass} · termín {shortDate(hit.loan.dueAt)}
+				{#if hit.loan.returnOfferedAt}
+					· cestou na pult
+				{/if}
 			</p>
 			<form method="POST" action="?/return" use:enhance={applyToast()}>
 				<input type="hidden" name="id" value={hit.loan.id} />
 				<Button type="submit">Vrátiť</Button>
 			</form>
+		{:else if data.mode === 'inventura' && hit.kind !== 'miss'}
+			<p class="pult-hit-who">
+				{#if hit.kind === 'return'}
+					Vonku na lístku — pečiatka nájdený ho z police zoberie, vrátenie ostáva vo Výpožičke.
+				{:else}
+					Naskenovaný kus. Daj pečiatku nájdený, alebo stratu.
+				{/if}
+			</p>
+			<div class="pult-walk-acts">
+				<form
+					method="POST"
+					action="?mode=inventura&code={encodeURIComponent(data.code)}&/found"
+					use:enhance={applyToast()}
+				>
+					<input type="hidden" name="holdingId" value={hit.copy.id} />
+					<Button type="submit">Nájdený</Button>
+				</form>
+				<form
+					method="POST"
+					action="?mode=inventura&code={encodeURIComponent(data.code)}&/lost"
+					use:enhance={applyToast()}
+				>
+					<input type="hidden" name="holdingId" value={hit.copy.id} />
+					<Button type="submit" variant="outline">Stratený</Button>
+				</form>
+			</div>
 		{:else if hit.kind === 'isbn-out'}
 			<p class="pult-hit-who">
 				{hit.open === 1 ? 'Jeden výtlačok je vonku' : `${hit.open} výtlačkov je vonku`}. Na vrátenie

@@ -58,7 +58,7 @@ Ak odkaz padne na [chybu účtu](/auth/error), skontroluj Site URL a že v odkaz
 
 ## Výpožička, rezervácia a termín
 
-Pri **vypožičaní**, **vrátení** a **predĺžení** ide list cez poštu pultu (nie cez Supabase). Padne na e-mail z preukazu. Predmet je `Vypožičané · …`, `Vrátené · …` alebo `Predĺžené · …`. Keď pult v zásuvke opraví termín (nie predĺženie z Moje knihy), ide `Nový termín · …`. Deň pred lehotou príde `Zajtra splatné · …`, po lehote `Po lehote · …`.
+Pri **vypožičaní**, **nahlásení na pult** a **predĺžení** ide list cez poštu pultu (nie cez Supabase). Padne na e-mail z preukazu. Predmet je `Vypožičané · …`, `Cestou na pult · …` alebo `Predĺžené · …`. Až pult naskenuje chrbát, ide `Vrátené · …`. Keď pult v zásuvke opraví termín (nie predĺženie z Moje knihy), ide `Nový termín · …`. Deň pred lehotou príde `Zajtra splatné · …`, po lehote `Po lehote · …`.
 
 Čakací lístok má `Čakací lístok · …`, pripravený výtlačok `Na pulte · …`. Deň pred koncom držania `Zajtra vyprší lístok · …`. Keď sedem dní prejde a žiak si zväzok nevyzdvihol, dostane `Lístok vypršal · …` — ďalší v rade dostane `Na pulte · …` zvlášť. Keď pult v zásuvke Rezervácie dá stav na pulte, zruší rad, alebo lístok zmaže, ide `Na pulte · …`, `Rad zrušený · …` alebo `Čakací lístok · …` podľa zmeny.
 

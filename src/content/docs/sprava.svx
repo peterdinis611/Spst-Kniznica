@@ -33,9 +33,11 @@ Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie ide priebe
 
 Účty session / account / verification tu nie sú. To je Auth, nie fond.
 
-Na prehľade `/admin` je **dnešný rad**: po lehote, rezervácie na pulte, čakajúci a nové preukazy. Riadok otvorí lístok v zásuvke. Knihovník tam má aj **čítačku** — naskenuje inventár (vrátenie) alebo ISBN (výpožička).
+Na prehľade `/admin` je **dnešný rad**: po lehote, cestou na pult, rezervácie na pulte, čakajúci a nové preukazy. Riadok otvorí lístok v zásuvke. Knihovník tam má aj **čítačku** — naskenuje inventár (vrátenie) alebo ISBN (výpožička). Režim **Inventúra** je chôdza po polici: otvoríš ju, peciatkuješ **nájdený** / **stratený**, uzavrieš. Voľné bez pečiatky sú na [výkaze](/admin/reports) ako chýbajúce. Vonku na lístku sa do chýbajúcich nepočítajú.
 
-V zásuvke **Výpožičky** zadáš triedu (napr. `II.A`) a **Čo je vonku**. Učiteľ to uvidí s pečiatkou učiteľ, bez úpravy lístkov. **Štítky na chrbát** sú v zásuvke Výtlačky — signatúra a inventár na papier, ktorý ide na knihu. **Výkazy** sú jeden list: inventúra výtlačkov a oneskorené lístky. Tlač ide do PDF. CSV a XML si otvoríš na pulte (riadky / kartotéka) alebo stiahneš. Nie je to ďalší prehľad, len polročný odpis.
+V zásuvke **Čitatelia** je september: **Posunúť ročníky**. I.A ide na II.A, IV.A na absolvent. Otvorené lístky idú s preukazom. Učiteľov necháva.
+
+V zásuvke **Výpožičky** zadáš triedu (napr. `II.A`) a **Čo je vonku**. Učiteľ to uvidí s pečiatkou učiteľ, bez úpravy lístkov. **Štítky na chrbát** sú v zásuvke Výtlačky — signatúra a inventár na papier, ktorý ide na knihu. **Výkazy** sú jeden list: inventúra výtlačkov (aj nález z chôdze) a oneskorené lístky. Tlač ide do PDF. CSV a XML si otvoríš na pulte (riadky / kartotéka) alebo stiahneš. Nie je to ďalší prehľad, len polročný odpis.
 
 ## Poznámky z pultu
 
@@ -43,7 +45,7 @@ V zásuvke **Výpožičky** zadáš triedu (napr. `II.A`) a **Čo je vonku**. U�
 - Knihu s aktívnou výpožičkou nezmažeš. Najprv vráť.
 - Nový zväzok môže hneď dostať výtlačky. Ďalšie kusy pridáš v zásuvke Výtlačky. ISBN na karte doplní **Doplň z ISBN** z Open Library — názov, strany, vydavateľ, anotáciu.
 - Obálku nahráš v zásuvke Knihy (JPEG, PNG alebo WebP, do 4 MB). Adresa snímky ide do `book.cover_url`. Bez `UPLOADTHING_TOKEN` v `.env` ostane hashed Unsplash plátno.
-- Vrátenie na pulte uvoľní výtlačok a pripočíta voľné kusy v katalógu.
+- Vrátenie na pulte (čítačka) uvoľní výtlačok a pripočíta voľné kusy v katalógu. Nahlásenie z Moje knihy fond ešte neotvorí.
 - Čitateľa s knihami vonku nezmažeš.
 
 Po uložení sa katalóg a hľadanie obnovia. Čitateľ v Objavovať uvidí nový zväzok bez reštartu.

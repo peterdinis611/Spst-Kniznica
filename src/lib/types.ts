@@ -93,6 +93,7 @@ export type LoanRecord = {
 	borrowedAt: Date;
 	dueAt: Date;
 	returnedAt: Date | null;
+	returnOfferedAt: Date | null;
 	borrowerFirstName: string;
 	borrowerLastName: string;
 	borrowerClass: string;

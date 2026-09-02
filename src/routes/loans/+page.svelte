@@ -136,16 +136,20 @@
 									</p>
 								</div>
 								<div class="slip-acts">
-									{#if item.canRenew}
-										<form method="POST" action="?/renew" use:enhance={applyToast()}>
+									{#if item.returnOfferedAt}
+										<p class="slip-wait">Cestou na pult</p>
+									{:else}
+										{#if item.canRenew}
+											<form method="POST" action="?/renew" use:enhance={applyToast()}>
+												<input type="hidden" name="loanId" value={item.id} />
+												<button type="submit" class="is-renew">Predĺžiť</button>
+											</form>
+										{/if}
+										<form method="POST" action="?/return" use:enhance={applyToast()}>
 											<input type="hidden" name="loanId" value={item.id} />
-											<button type="submit" class="is-renew">Predĺžiť</button>
+											<button type="submit">Na pult</button>
 										</form>
 									{/if}
-									<form method="POST" action="?/return" use:enhance={applyToast()}>
-										<input type="hidden" name="loanId" value={item.id} />
-										<button type="submit">Vrátiť</button>
-									</form>
 								</div>
 							</li>
 						{/each}
@@ -158,7 +162,7 @@
 					<div class="folio-empty is-quiet">
 						<div class="folio-empty-copy">
 							<h3>Žiadny čakací lístok</h3>
-							<p>Keď je nula voľných, na karte knihy položíš lístok. Ozveme sa, keď sa výtlačok vráti.</p>
+							<p>Keď je nula voľných, na karte knihy položíš lístok. Ozveme sa, keď pult naskenuje vrátenie.</p>
 						</div>
 					</div>
 				{:else}
@@ -190,7 +194,7 @@
 					<div class="folio-empty is-quiet">
 						<div class="folio-empty-copy">
 							<h3>Ešte žiadna vrátená kniha</h3>
-							<p>Keď knihu vrátiš, ostane tu ako záznam. Tlačidlom ju neskôr stiahneš z lístka.</p>
+							<p>Keď knihu nahlásiš na pult a pult ju naskenuje, ostane tu ako záznam.</p>
 						</div>
 					</div>
 				{:else}
@@ -794,6 +798,21 @@
 		flex-direction: column;
 		align-items: stretch;
 		gap: 0.4rem;
+	}
+
+	.slip-wait {
+		margin: 0;
+		padding: 0.48rem 0.7rem;
+		border: 1.5px dashed color-mix(in srgb, var(--stamp) 55%, var(--ink));
+		border-radius: 999px;
+		color: var(--stamp);
+		font-family: var(--font-display, Fraunces, serif);
+		font-size: 0.72rem;
+		font-style: italic;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-align: center;
+		transform: rotate(3deg);
 	}
 
 	.slip form button.is-renew {

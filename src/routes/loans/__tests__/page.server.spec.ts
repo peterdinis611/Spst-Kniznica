@@ -1,7 +1,7 @@
 import { isActionFailure, isRedirect } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LoanRecord } from '$lib/types';
-import { countActiveLoans, listLoans, renewLoan, returnBook, clearReturnedLoans } from '$lib/server/library';
+import { countActiveLoans, listLoans, renewLoan, offerReturn, clearReturnedLoans } from '$lib/server/library';
 import { queueLoanNotice } from '$lib/server/loan-mail';
 import { cancelHold } from '$lib/server/waitlist';
 import { pageOf } from '$lib/page-of';
@@ -11,7 +11,7 @@ vi.mock('$lib/server/library', () => ({
 	MAX_ACTIVE_LOANS: null,
 	listLoans: vi.fn(),
 	countActiveLoans: vi.fn(),
-	returnBook: vi.fn(),
+	offerReturn: vi.fn(),
 	renewLoan: vi.fn(),
 	clearReturnedLoans: vi.fn()
 }));
@@ -63,6 +63,7 @@ function loan(partial: Partial<LoanRecord> & Pick<LoanRecord, 'id' | 'returnedAt
 		borrowerClass: 'II.A',
 		loanDays: 21,
 		renewalCount: 0,
+		returnOfferedAt: null,
 		book,
 		...partial
 	};
@@ -113,11 +114,26 @@ describe('loans load', () => {
 		expect(data.history.map((item: { book: { title: string } }) => item.book.title)).toEqual(['Vrátená']);
 		expect(data.waits).toEqual([]);
 	});
+
+	it('hides renewal once the slip is inbound', async () => {
+		vi.mocked(listLoans).mockResolvedValue([
+			loan({
+				id: 'open',
+				returnedAt: null,
+				returnOfferedAt: new Date(),
+				dueAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+			})
+		]);
+		vi.mocked(countActiveLoans).mockResolvedValue(1);
+
+		const data = pageOf(await load(localsOf(reader)));
+		expect(data.loans[0].canRenew).toBe(false);
+	});
 });
 
 describe('loans return action', () => {
 	beforeEach(() => {
-		vi.mocked(returnBook).mockReset();
+		vi.mocked(offerReturn).mockReset();
 		vi.mocked(queueLoanNotice).mockReset();
 		vi.mocked(listLoans).mockResolvedValue([loan({ id: 'open', returnedAt: null })]);
 	});
@@ -146,11 +162,11 @@ describe('loans return action', () => {
 	});
 
 	it('returns the library error as a form failure', async () => {
-		vi.mocked(returnBook).mockResolvedValue({ ok: false, message: 'Výpožička sa nenašla.' });
+		vi.mocked(offerReturn).mockResolvedValue({ ok: false, message: 'Výpožička sa nenašla.' });
 
 		const result = await actions.return?.(event(reader, 'missing'));
 
-		expect(returnBook).toHaveBeenCalledWith(reader.id, 'missing');
+		expect(offerReturn).toHaveBeenCalledWith(reader.id, 'missing');
 		expect(queueLoanNotice).not.toHaveBeenCalled();
 		expect(isActionFailure(result)).toBe(true);
 		if (isActionFailure(result)) {
@@ -159,22 +175,34 @@ describe('loans return action', () => {
 		}
 	});
 
-	it('stamps a successful return', async () => {
-		vi.mocked(returnBook).mockResolvedValue({ ok: true, offer: null });
+	it('stamps a successful inbound notice', async () => {
+		vi.mocked(offerReturn).mockResolvedValue({ ok: true, already: false });
 
 		const result = await actions.return?.(event(reader));
 
 		expect(result).toEqual({
-			stamp: 'Vrátené',
+			stamp: 'Na pult',
 			sub: expect.stringMatching(/\d{1,2}\.\s?\d{1,2}\.\s?2026/)
 		});
 		expect(queueLoanNotice).toHaveBeenCalledWith(
 			expect.objectContaining({
-				kind: 'return',
+				kind: 'inbound',
 				to: reader.email,
 				bookTitle: 'Stroje'
 			})
 		);
+	});
+
+	it('does not mail again when the slip is already inbound', async () => {
+		vi.mocked(offerReturn).mockResolvedValue({ ok: true, already: true });
+
+		const result = await actions.return?.(event(reader));
+
+		expect(result).toEqual({
+			stamp: 'Na pult',
+			sub: expect.stringMatching(/\d{1,2}\.\s?\d{1,2}\.\s?2026/)
+		});
+		expect(queueLoanNotice).not.toHaveBeenCalled();
 	});
 });
 

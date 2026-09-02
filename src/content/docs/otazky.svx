@@ -18,7 +18,7 @@ Koľko treba — na preukaze **nie je strop**. Jednu knihu si naraz požičiaš 
 
 ## Čo keď nestihnem vrátiť?
 
-Dones knihu na pult. V aplikácii poplatok nie je. Oneskorenie rieši pavilón B, 1. poschodie.
+Dones knihu na pult. V aplikácii poplatok nie je. Na [Moje knihy](/loans) ju nahlásiš — voľný kus spadne až po čítačke. Oneskorenie rieši pavilón B, 1. poschodie.
 
 ## Kniha píše nula voľných. Je preč?
 
@@ -30,11 +30,11 @@ Raz, z [Moje knihy](/loans), kým nie si po lehote a na knihu nikto nečaká. Ď
 
 ## Ako zistím, čo má vonku II.A?
 
-Na pulte v zásuvke [Výpožičky](/admin/loans) zadaj triedu a stlač **Čo je vonku**. Učiteľ to uvidí s pečiatkou **učiteľ** — fond nemení.
+Na pulte v zásuvke [Výpožičky](/admin/loans) zadaj triedu a stlač **Čo je vonku**. Učiteľ to uvidí s pečiatkou **učiteľ** — fond nemení. V septembri najprv v zásuvke [Čitatelia](/admin/readers) **Posunúť ročníky**, inak ostane minulý ročník.
 
 ## Dá sa vytlačiť inventúra?
 
-Áno. Na pulte v [Výkazoch](/admin/reports) je list inventúry a oneskorených lístkov. Tlač (PDF), CSV alebo XML. Raz za polrok stačí.
+Áno. Na pulte v [Výkazoch](/admin/reports) je list inventúry a oneskorených lístkov. Tlač (PDF), CSV alebo XML. Raz za polrok stačí. Nález (nájdený / chýba / vonku) padne z chôdze na [čítačke](/admin/scan?mode=inventura).
 
 ## Kde je príručka v menu?
 

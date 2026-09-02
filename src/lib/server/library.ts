@@ -394,6 +394,7 @@ export async function listLoans(userId: string): Promise<LoanRecord[]> {
 			borrowedAt: row.loan.borrowedAt,
 			dueAt: row.loan.dueAt,
 			returnedAt: row.loan.returnedAt,
+			returnOfferedAt: row.loan.returnOfferedAt,
 			borrowerFirstName: row.loan.borrowerFirstName,
 			borrowerLastName: row.loan.borrowerLastName,
 			borrowerClass: row.loan.borrowerClass,
@@ -532,6 +533,23 @@ export async function borrowBook(userId: string, bookId: string, draft: Borrower
 	return result;
 }
 
+export type OfferReturnResult = { ok: true; already: boolean } | { ok: false; message: string };
+
+export async function offerReturn(userId: string, loanId: string): Promise<OfferReturnResult> {
+	const current = await db
+		.select()
+		.from(loan)
+		.where(and(eq(loan.id, loanId), eq(loan.userId, userId)))
+		.then((rows) => rows[0]);
+
+	if (!current) return { ok: false, message: 'Výpožička sa nenašla.' };
+	if (current.returnedAt) return { ok: false, message: 'Táto kniha je už vrátená.' };
+	if (current.returnOfferedAt) return { ok: true, already: true };
+
+	await db.update(loan).set({ returnOfferedAt: new Date() }).where(eq(loan.id, loanId));
+	return { ok: true, already: false };
+}
+
 export type ReturnResult = { ok: true; offer: HoldOffer | null } | { ok: false; message: string };
 
 export async function returnBook(userId: string, loanId: string): Promise<ReturnResult> {
@@ -594,6 +612,9 @@ export async function renewLoan(userId: string, loanId: string): Promise<RenewRe
 		.then((rows) => rows[0]);
 	if (!current) return { ok: false, message: 'Výpožička sa nenašla.' };
 	if (current.returnedAt) return { ok: false, message: 'Táto kniha je už vrátená.' };
+	if (current.returnOfferedAt) {
+		return { ok: false, message: 'Kniha je nahlásená na pult. Predĺžiť sa nedá.' };
+	}
 	if (current.renewalCount >= MAX_RENEWALS) {
 		return { ok: false, message: 'Túto výpožičku už máš predĺženú.' };
 	}

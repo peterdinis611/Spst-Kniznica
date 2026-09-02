@@ -19,7 +19,9 @@ describe('admin reports load', () => {
 				isbn: '97880',
 				year: 2020,
 				categoryName: 'Informatika',
-				categoryCode: 'INF'
+				categoryCode: 'INF',
+				sight: 'found',
+				lastSeenAt: null
 			}
 		]);
 		vi.mocked(listOverdueRows).mockResolvedValue([]);

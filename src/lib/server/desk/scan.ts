@@ -1,4 +1,4 @@
-import { and, eq, ilike, isNull, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import { compactIsbn, looksLikeIsbn } from '$lib/isbn';
 import { db } from '../db';
 import { book, holding, loan, user } from '../db/schema';
@@ -20,6 +20,7 @@ export type ScanLoan = {
 	borrowerClass: string;
 	dueAt: Date;
 	readerName: string;
+	returnOfferedAt: Date | null;
 };
 
 export type ScanHit =
@@ -54,7 +55,7 @@ async function holdingByInventory(code: string) {
 		})
 		.from(holding)
 		.innerJoin(book, eq(book.id, holding.bookId))
-		.where(ilike(holding.inventoryNo, code))
+		.where(sql`lower(${holding.inventoryNo}) = ${code.trim().toLowerCase()}`)
 		.then((rows) => rows[0] ?? null);
 }
 
@@ -69,7 +70,7 @@ async function bookByIsbn(code: string) {
 			callNumber: book.callNumber
 		})
 		.from(book)
-		.where(sql`upper(regexp_replace(${book.isbn}, '[^0-9Xx]', '', 'g')) = ${compact}`)
+		.where(sql`isbn_compact = ${compact}`)
 		.then((rows) => rows[0] ?? null);
 }
 
@@ -81,7 +82,8 @@ async function openLoanForHolding(holdingId: string) {
 			borrowerLastName: loan.borrowerLastName,
 			borrowerClass: loan.borrowerClass,
 			dueAt: loan.dueAt,
-			readerName: user.name
+			readerName: user.name,
+			returnOfferedAt: loan.returnOfferedAt
 		})
 		.from(loan)
 		.innerJoin(user, eq(user.id, loan.userId))

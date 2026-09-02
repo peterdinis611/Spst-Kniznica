@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { DESK_ROLES, ROLE_LABELS, parseRole } from '$lib/ability';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PultDelete from '$lib/components/PultDelete.svelte';
 	import PultField from '$lib/components/PultField.svelte';
@@ -61,6 +60,23 @@
 	v Supabase. Pult otvorí pečiatka <strong>knihovník</strong> (celý fond) alebo
 	<strong>učiteľ</strong> (trieda vonku, bez mazania).
 </p>
+
+<form
+	class="pult-year"
+	method="POST"
+	action="?/rollYear"
+	onsubmit={(event) => {
+		if (!confirm('Posunúť ročníky? I.A → II.A, IV.A → absolvent. Učiteľov nechá.')) {
+			event.preventDefault();
+		}
+	}}
+>
+	<p>
+		September. Čitateľov s ročníkom <em>I–IV</em> posunieš o rok. Štvrtáci dostanú pečiatku
+		absolvent. Otvorené lístky idú s nimi. Triednych učiteľov necháva — opravíš triedu na preukaze.
+	</p>
+	<Button type="submit" variant="outline">Posunúť ročníky</Button>
+</form>
 
 <div class="pult-grid is-split">
 	<PultLedger rows={data.rows} {columns} empty="Žiadny preukaz.">

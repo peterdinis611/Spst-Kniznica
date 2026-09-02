@@ -1,4 +1,5 @@
 import { holdingLabel } from '$lib/admin';
+import { INVENTORY_SIGHT_LABEL, type InventorySight } from '$lib/inventory-sight';
 import { toCsv } from '$lib/csv';
 import { stampDate } from '$lib/format';
 import { toXml } from '$lib/xml';
@@ -12,6 +13,8 @@ export type InventoryRow = {
 	year: number;
 	categoryName: string;
 	categoryCode: string;
+	sight: string;
+	lastSeenAt: Date | string | null;
 };
 
 export type OverdueRow = {
@@ -27,12 +30,17 @@ export type OverdueRow = {
 
 const XMLNS = 'urn:spst:kniznica:vykaz';
 
+function sightLabel(value: string) {
+	return INVENTORY_SIGHT_LABEL[value as InventorySight] ?? value;
+}
+
 export function inventoryCsv(rows: InventoryRow[]) {
 	return toCsv(
-		['inventár', 'stav', 'signatúra', 'názov', 'odbor', 'kód', 'isbn', 'rok'],
+		['inventár', 'stav', 'nález', 'signatúra', 'názov', 'odbor', 'kód', 'isbn', 'rok'],
 		rows.map((row) => [
 			row.inventoryNo,
 			holdingLabel(row.status),
+			sightLabel(row.sight),
 			row.callNumber,
 			row.title,
 			row.categoryName,
@@ -72,6 +80,7 @@ export function inventoryXml(rows: InventoryRow[], peciatka: string) {
 			children: [
 				{ name: 'inventar', text: row.inventoryNo },
 				{ name: 'stav', text: holdingLabel(row.status) },
+				{ name: 'nalez', text: sightLabel(row.sight) },
 				{ name: 'signatura', text: row.callNumber },
 				{ name: 'nazov', text: row.title },
 				{ name: 'odbor', attrs: { kod: row.categoryCode }, text: row.categoryName },

@@ -8,15 +8,30 @@ import { queueLoanNotice } from '$lib/server/loan-mail';
 import { findScanHit } from '$lib/server/desk/scan';
 import { getDeskLoan, returnDeskLoan, saveLoan } from '$lib/server/desk/loans';
 import { readerOptions } from '$lib/server/desk/options';
+import {
+	closeInventoryRun,
+	getOpenInventoryRun,
+	markHoldingFound,
+	markHoldingLost,
+	openInventoryRun
+} from '$lib/server/desk/inventory';
+
+function scanMode(raw: string | null) {
+	return raw === 'inventura' ? 'inventura' : 'pult';
+}
 
 export const load: PageServerLoad = async ({ url }) => {
 	const code = url.searchParams.get('code')?.trim() ?? '';
+	const mode = scanMode(url.searchParams.get('mode'));
 	const issue = code ? deskIssue(deskScanSchema, { code }) : undefined;
 	const hit = !issue && code ? await findScanHit(code) : null;
+	const walk = mode === 'inventura' ? await getOpenInventoryRun() : null;
 	return {
 		code,
+		mode,
 		hit,
-		readers: hit?.kind === 'borrow' ? await readerOptions() : []
+		walk,
+		readers: hit?.kind === 'borrow' && mode === 'pult' ? await readerOptions() : []
 	};
 };
 
@@ -72,5 +87,26 @@ export const actions: Actions = {
 			});
 		}
 		return { stamp: 'Vypožičané' };
+	},
+	openWalk: async () => {
+		await openInventoryRun();
+		return { stamp: 'Inventúra otvorená' };
+	},
+	closeWalk: async () => {
+		const result = await closeInventoryRun();
+		if (!result.ok) return fail(400, { message: result.message });
+		return { stamp: result.missing ? `Uzavreté · ${result.missing} chýba` : 'Inventúra uzavretá' };
+	},
+	found: async ({ request }) => {
+		const id = formText(await request.formData(), 'holdingId');
+		const result = await markHoldingFound(id);
+		if (!result.ok) return fail(400, { message: result.message });
+		return { stamp: 'Nájdený' };
+	},
+	lost: async ({ request }) => {
+		const id = formText(await request.formData(), 'holdingId');
+		const result = await markHoldingLost(id);
+		if (!result.ok) return fail(400, { message: result.message });
+		return { stamp: 'Stratený' };
 	}
 };

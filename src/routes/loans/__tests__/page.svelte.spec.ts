@@ -49,7 +49,7 @@ const book = (title: string, id = title): BookSlip => ({
 
 function record(
 	title: string,
-	opts: { id?: string; returnedAt?: Date | null; dueAt?: Date } = {}
+	opts: { id?: string; returnedAt?: Date | null; dueAt?: Date; returnOfferedAt?: Date | null } = {}
 ): LoanRecord {
 	return {
 		id: opts.id ?? title,
@@ -61,6 +61,7 @@ function record(
 		borrowerClass: 'II.A',
 		loanDays: 21,
 		renewalCount: 0,
+		returnOfferedAt: opts.returnOfferedAt ?? null,
 		book: book(title)
 	};
 }
@@ -110,8 +111,22 @@ describe('Moje knihy folio', () => {
 			.element(page.getByRole('link', { name: 'Technické kreslenie', exact: true }))
 			.toBeVisible();
 		await expect.element(page.getByText('Ján Test')).toBeVisible();
-		await expect.element(page.getByRole('button', { name: 'Vrátiť' })).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Na pult' })).toBeVisible();
 		expect(document.querySelector<HTMLInputElement>('input[name="loanId"]')?.value).toBe('loan-1');
+	});
+
+	it('hides the gun when the slip is already inbound', async () => {
+		render(LoansPage, {
+			data: {
+				...empty,
+				activeCount: 1,
+				loans: [record('Technické kreslenie', { id: 'loan-1', returnOfferedAt: new Date() })]
+			},
+			form: null
+		} as never);
+
+		await expect.element(page.getByText('Cestou na pult')).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Na pult' })).not.toBeInTheDocument();
 	});
 
 	it('offers a renewal on an eligible slip', async () => {
@@ -191,10 +206,10 @@ describe('Moje knihy folio', () => {
 	it('shows a success stamp after a return', async () => {
 		render(LoansPage, {
 			data: empty,
-			form: { stamp: 'Vrátené', sub: '23. 08. 2026' }
+			form: { stamp: 'Na pult', sub: '23. 08. 2026' }
 		} as never);
 
-		expect(document.querySelector('.lock-seal')?.textContent).toMatch(/Vrátené/);
+		expect(document.querySelector('.lock-seal')?.textContent).toMatch(/Na pult/);
 		await expect.element(page.getByText('23. 08. 2026')).toBeVisible();
 	});
 });

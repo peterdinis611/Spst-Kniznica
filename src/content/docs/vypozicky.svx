@@ -28,7 +28,7 @@ Ak je nula voľných, prihlásený čitateľ položí **čakací lístok**. Hos�
 
 ## Ako vrátiť
 
-Odnes knihu do pavilónu B a na stránke [Moje knihy](/loans) ju označ ako vrátenú. Pečiatka **Vrátené** potvrdí pohyb. Stav výtlačku sa hneď vráti do fondu. Na e-mail príde lístok **Vrátené**.
+Odnes knihu do pavilónu B. Na [Moje knihy](/loans) ju **nahlásiš na pult** — pečiatka **Na pult**, zväzok ostáva na preukaze. Voľný kus a list **Vrátené** padnú až keď pult naskenuje inventár na chrbte.
 
 Oneskorené vrátenie rieši pult. V aplikácii poplatok nie je — termín slúži ako dohoda, nie ako pokuta.
 
@@ -41,7 +41,8 @@ Predĺžiť vieš **raz** z [Moje knihy](/loans), kým nie si po lehote a na zv�
 | Pečiatka | Kedy padne |
 | --- | --- |
 | Vypožičané | Práve si vzal zväzok na účet |
-| Vrátené | Práve si ho vrátil vo fonde |
+| Na pult | Nahlásil si vrátenie — výtlačok ešte nie je vo fonde |
+| Vrátené | Pult naskenoval chrbát |
 | Čakáš | Položil si čakací lístok |
 | Predĺžené | Predĺžil si lehotu z lístka |
 | Stiahnuté | Stiahol si čakací lístok |

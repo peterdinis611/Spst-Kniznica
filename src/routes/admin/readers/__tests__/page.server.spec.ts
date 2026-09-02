@@ -1,6 +1,7 @@
 import { isActionFailure } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { deleteReader, listDeskReaders, saveReader } from '$lib/server/desk/readers';
+import { rollSchoolYear } from '$lib/server/desk/classes';
 import { actions, load } from '../+page.server';
 
 vi.mock('$lib/server/desk/readers', () => ({
@@ -8,6 +9,10 @@ vi.mock('$lib/server/desk/readers', () => ({
 	getDeskReader: vi.fn(),
 	saveReader: vi.fn(),
 	deleteReader: vi.fn()
+}));
+
+vi.mock('$lib/server/desk/classes', () => ({
+	rollSchoolYear: vi.fn()
 }));
 
 const row = {
@@ -74,5 +79,11 @@ describe('admin citately actions', () => {
 		if (isActionFailure(result)) {
 			expect(result.data).toEqual({ message: 'Čitateľ má knihy vonku. Najprv ich vráť.' });
 		}
+	});
+
+	it('stamps a September year roll', async () => {
+		vi.mocked(rollSchoolYear).mockResolvedValue({ promoted: 12, graduated: 3 });
+		const result = await actions.rollYear?.(event({}));
+		expect(result).toEqual({ stamp: '12 posunutých · 3 absolventov' });
 	});
 });

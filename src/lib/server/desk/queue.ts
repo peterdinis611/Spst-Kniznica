@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, ilike, isNull, lte } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, isNotNull, isNull, lte } from 'drizzle-orm';
 import { db } from '../db';
 import { book, loan, reservation, user } from '../db/schema';
 
@@ -12,6 +12,7 @@ export type DeskQueueRow = {
 
 export type DeskQueue = {
 	overdue: DeskQueueRow[];
+	inbound: DeskQueueRow[];
 	pickup: DeskQueueRow[];
 	waiting: DeskQueueRow[];
 	passes: DeskQueueRow[];
@@ -29,6 +30,7 @@ function weekAgo(now = new Date()) {
 
 export const emptyDeskQueue = (): DeskQueue => ({
 	overdue: [],
+	inbound: [],
 	pickup: [],
 	waiting: [],
 	passes: []
@@ -37,26 +39,47 @@ export const emptyDeskQueue = (): DeskQueue => ({
 export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue> {
 	const today = startOfToday(now);
 	const since = weekAgo(now);
-	const classClause = klass ? ilike(loan.borrowerClass, klass) : undefined;
+	const classClause = klass ? eq(loan.borrowerClass, klass) : undefined;
 	const overdueWhere = classClause
 		? and(isNull(loan.returnedAt), lte(loan.dueAt, today), classClause)
 		: and(isNull(loan.returnedAt), lte(loan.dueAt, today));
 
+	const inboundWhere = classClause
+		? and(isNull(loan.returnedAt), isNotNull(loan.returnOfferedAt), classClause)
+		: and(isNull(loan.returnedAt), isNotNull(loan.returnOfferedAt));
+
+	const inboundQuery = db
+		.select({
+			id: loan.id,
+			title: book.title,
+			name: user.name,
+			klass: loan.borrowerClass
+		})
+		.from(loan)
+		.innerJoin(book, eq(book.id, loan.bookId))
+		.innerJoin(user, eq(user.id, loan.userId))
+		.where(inboundWhere)
+		.orderBy(asc(loan.returnOfferedAt))
+		.limit(klass ? 24 : 12);
+
 	if (klass) {
-		const overdueRows = await db
-			.select({
-				id: loan.id,
-				title: book.title,
-				name: user.name,
-				klass: loan.borrowerClass,
-				dueAt: loan.dueAt
-			})
-			.from(loan)
-			.innerJoin(book, eq(book.id, loan.bookId))
-			.innerJoin(user, eq(user.id, loan.userId))
-			.where(overdueWhere)
-			.orderBy(asc(loan.dueAt))
-			.limit(24);
+		const [overdueRows, inboundRows] = await Promise.all([
+			db
+				.select({
+					id: loan.id,
+					title: book.title,
+					name: user.name,
+					klass: loan.borrowerClass,
+					dueAt: loan.dueAt
+				})
+				.from(loan)
+				.innerJoin(book, eq(book.id, loan.bookId))
+				.innerJoin(user, eq(user.id, loan.userId))
+				.where(overdueWhere)
+				.orderBy(asc(loan.dueAt))
+				.limit(24),
+			inboundQuery
+		]);
 
 		return {
 			overdue: overdueRows.map((row) => ({
@@ -66,13 +89,20 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 				detail: [row.name, row.klass].filter(Boolean).join(' · '),
 				stamp: 'po lehote'
 			})),
+			inbound: inboundRows.map((row) => ({
+				id: row.id,
+				href: `/admin/loans?class=${encodeURIComponent(klass)}&open=1`,
+				title: row.title,
+				detail: [row.name, row.klass].filter(Boolean).join(' · '),
+				stamp: 'cestou'
+			})),
 			pickup: [],
 			waiting: [],
 			passes: []
 		};
 	}
 
-	const [overdueRows, pickupRows, waitingRows, passRows] = await Promise.all([
+	const [overdueRows, inboundRows, pickupRows, waitingRows, passRows] = await Promise.all([
 		db
 			.select({
 				id: loan.id,
@@ -87,6 +117,7 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 			.where(overdueWhere)
 			.orderBy(asc(loan.dueAt))
 			.limit(12),
+		inboundQuery,
 		db
 			.select({
 				id: reservation.id,
@@ -133,6 +164,13 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 			title: row.title,
 			detail: [row.name, row.klass].filter(Boolean).join(' · '),
 			stamp: 'po lehote'
+		})),
+		inbound: inboundRows.map((row) => ({
+			id: row.id,
+			href: `/admin/loans?edit=${row.id}`,
+			title: row.title,
+			detail: [row.name, row.klass].filter(Boolean).join(' · '),
+			stamp: 'cestou'
 		})),
 		pickup: pickupRows.map((row) => ({
 			id: row.id,

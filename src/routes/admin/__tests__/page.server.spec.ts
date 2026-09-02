@@ -27,6 +27,7 @@ describe('admin overview', () => {
 		});
 		vi.mocked(deskQueue).mockResolvedValue({
 			overdue: [],
+			inbound: [],
 			pickup: [],
 			waiting: [],
 			passes: []

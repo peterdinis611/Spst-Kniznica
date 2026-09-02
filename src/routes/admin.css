@@ -1311,9 +1311,34 @@ html.dark .pult-cabinet {
 	outline: none;
 }
 
-.pult-isbn-act:disabled {
-	opacity: 0.55;
-	cursor: wait;
+.pult-year {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem 1.4rem;
+	margin: 0 0 1.35rem;
+	padding: 1rem 1.1rem;
+	border: 1px solid color-mix(in srgb, var(--pult-walnut, #3c2a21) 18%, transparent);
+	border-radius: 1.05rem;
+	background: color-mix(in srgb, var(--pult-lamp, #c45a38) 7%, transparent);
+}
+
+.pult-year p {
+	margin: 0;
+	max-width: 46ch;
+	color: var(--muted-foreground);
+	font-family: 'Newsreader', serif;
+	font-size: 1.02rem;
+	line-height: 1.45;
+}
+
+.pult-year em {
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 0.82rem;
+	font-style: normal;
+	font-weight: 600;
+	letter-spacing: 0.04em;
 }
 
 .pult-scan-strip,
@@ -1333,14 +1358,50 @@ html.dark .pult-cabinet {
 	padding: 1.15rem 1.2rem 1.25rem;
 }
 
-.pult-scan-kicker {
-	margin: 0;
+.pult-scan-modes {
+	display: flex;
+	gap: 0.85rem;
+	margin: 0.15rem 0 0.35rem;
+}
+
+.pult-scan-modes a {
+	color: color-mix(in srgb, var(--pult-paper) 72%, transparent);
 	font-family: 'IBM Plex Mono', monospace;
-	font-size: 0.62rem;
+	font-size: 0.68rem;
 	font-weight: 600;
-	letter-spacing: 0.18em;
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
+	text-decoration: none;
+}
+
+.pult-scan-modes a.is-on,
+.pult-scan-modes a:hover {
 	color: var(--pult-lamp);
+}
+
+.pult-walk {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.85rem 1.2rem;
+	margin: -0.4rem 0 1.15rem;
+	padding: 0.85rem 0.2rem 0.2rem;
+	color: var(--muted-foreground);
+	font-family: 'Newsreader', serif;
+	font-size: 1.02rem;
+}
+
+.pult-walk p {
+	margin: 0;
+	max-width: 42ch;
+}
+
+.pult-walk-acts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.55rem;
+	margin-top: 0.85rem;
 }
 
 .pult-scan-strip {

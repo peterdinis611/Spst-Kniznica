@@ -43,7 +43,7 @@ export async function listDeskLoans(input: string | DeskLoanFilter = '') {
 					ilike(loan.borrowerClass, needle(q))
 				)
 			: undefined,
-		klass ? ilike(loan.borrowerClass, klass) : undefined,
+		klass ? eq(loan.borrowerClass, klass) : undefined,
 		filter.open ? isNull(loan.returnedAt) : undefined
 	].filter((clause) => clause != null);
 
@@ -97,7 +97,7 @@ export async function countOpenClassLoans(klass: string) {
 			await db
 				.select({ c: count() })
 				.from(loan)
-				.where(and(isNull(loan.returnedAt), ilike(loan.borrowerClass, token)))
+				.where(and(isNull(loan.returnedAt), eq(loan.borrowerClass, token)))
 				.then((rows) => rows[0])
 		)?.c ?? 0
 	);

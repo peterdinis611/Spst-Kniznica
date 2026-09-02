@@ -5,8 +5,8 @@ import {
 	countActiveLoans,
 	listLoans,
 	MAX_ACTIVE_LOANS,
-	renewLoan,
-	returnBook
+	offerReturn,
+	renewLoan
 } from '$lib/server/library';
 import { stampDate, daysUntil } from '$lib/format';
 import { MAX_RENEWALS } from '$lib/hold';
@@ -40,7 +40,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			canRenew:
 				item.renewalCount < MAX_RENEWALS &&
 				daysUntil(item.dueAt) >= 0 &&
-				!waiting.has(item.book.id)
+				!waiting.has(item.book.id) &&
+				!item.returnOfferedAt
 		})),
 		history,
 		waits,
@@ -58,15 +59,15 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const loanId = formData.get('loanId')?.toString() ?? '';
 		const open = (await listLoans(locals.user.id)).find((item) => item.id === loanId);
-		const result = await returnBook(locals.user.id, loanId);
+		const result = await offerReturn(locals.user.id, loanId);
 
 		if (!result.ok) {
 			return fail(400, { message: result.message });
 		}
 
-		if (open) {
+		if (open && !result.already) {
 			await queueLoanNotice({
-				kind: 'return',
+				kind: 'inbound',
 				to: locals.user.email,
 				readerName: locals.user.name,
 				bookTitle: open.book.title,
@@ -74,9 +75,7 @@ export const actions: Actions = {
 			});
 		}
 
-		if (result.offer) await notifyHoldReady(result.offer);
-
-		return { stamp: 'Vrátené', sub: stampDate(new Date()) };
+		return { stamp: 'Na pult', sub: stampDate(new Date()) };
 	},
 	renew: async ({ locals, request }) => {
 		if (!locals.user) {

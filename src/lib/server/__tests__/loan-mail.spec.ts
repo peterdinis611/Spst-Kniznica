@@ -22,6 +22,14 @@ describe('loanMailCopy', () => {
 		expect(copy.html).not.toContain('<script>');
 	});
 
+	it('stamps an inbound slip before the desk gun', () => {
+		const copy = loanMailCopy({ kind: 'inbound', ...slip });
+		expect(copy.subject).toBe('Cestou na pult · Algoritmy v dielni · SPŠT knižnica');
+		expect(copy.text).toContain('nahlásil si vrátenie');
+		expect(copy.html).toContain('Cestou na pult.');
+		expect(copy.html).not.toContain('Vrátené.');
+	});
+
 	it('stamps a return slip into the catalog', () => {
 		const copy = loanMailCopy({ kind: 'return', ...slip });
 		expect(copy.subject).toBe('Vrátené · Algoritmy v dielni · SPŠT knižnica');

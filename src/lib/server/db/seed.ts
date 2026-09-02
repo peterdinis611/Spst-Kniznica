@@ -5,6 +5,7 @@ import { author, book, bookAuthor, category, holding } from './schema';
 import { ensureCatalogFts, rebuildCatalogFts } from './catalog-fts';
 import { invalidateCatalogCache } from '../catalog-cache';
 import { authorVolume, bookVolume, seedTarget } from './volume';
+import { ensureDeskScene } from './desk-seed';
 
 const categories = [
 	{
@@ -687,6 +688,7 @@ export async function ensureSeeded() {
 
 	await ensureHoldings();
 	await ensureCategoryOrder();
+	await ensureDeskScene();
 	await ensureCatalogFts();
 	if (catalogChanged) await rebuildCatalogFts();
 	invalidateCatalogCache();

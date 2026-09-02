@@ -69,7 +69,7 @@
 			<li>
 				<span>03</span>
 				<h3>Vráť v pavilóne B</h3>
-				<p>Odnes zväzok na 1. poschodie. Po—Pia 7:30—15:30.</p>
+				<p>Odnes zväzok na 1. poschodie. Na lístku ho nahlásiš, voľný kus spadne po čítačke. Po—Pia 7:30—15:30.</p>
 			</li>
 		</ol>
 	</section>

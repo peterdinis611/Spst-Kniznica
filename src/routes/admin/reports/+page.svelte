@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { holdingLabel } from '$lib/admin';
+	import { INVENTORY_SIGHT_LABEL, type InventorySight } from '$lib/inventory-sight';
 	import SlipFileFolio from '$lib/components/SlipFileFolio.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { inventoryCsv, inventoryXml, overdueCsv, overdueXml } from '$lib/desk-export';
@@ -9,6 +10,7 @@
 	let { data }: PageProps = $props();
 
 	const out = $derived(data.inventory.filter((row) => row.status === 'loaned').length);
+	const missing = $derived(data.inventory.filter((row) => row.sight === 'missing').length);
 	const late = $derived(data.overdue.length);
 	const peciatka = $derived(stampDate(new Date()));
 	const inventorySheet = $derived(inventoryCsv(data.inventory));
@@ -47,6 +49,9 @@
 			<h3 id="folio-inv">Inventúra</h3>
 			<p>
 				{data.inventory.length.toLocaleString('sk-SK')} výtlačkov · {out.toLocaleString('sk-SK')} vonku
+				{#if missing}
+					· {missing.toLocaleString('sk-SK')} chýba na chôdzi
+				{/if}
 			</p>
 		</div>
 		{#if data.inventory.length === 0}
@@ -57,6 +62,7 @@
 					<tr>
 						<th>Inventár</th>
 						<th>Stav</th>
+						<th>Nález</th>
 						<th>Signatúra</th>
 						<th>Zväzok</th>
 						<th>Odbor</th>
@@ -67,6 +73,7 @@
 						<tr>
 							<td><strong>{row.inventoryNo}</strong></td>
 							<td>{holdingLabel(row.status)}</td>
+							<td>{INVENTORY_SIGHT_LABEL[row.sight as InventorySight] ?? row.sight}</td>
 							<td><em>{row.callNumber}</em></td>
 							<td>
 								<strong>{row.title}</strong>

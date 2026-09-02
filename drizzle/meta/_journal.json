@@ -8,6 +8,20 @@
       "when": 1788350748620,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788352800000,
+      "tag": "0001_pult_year",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788354000000,
+      "tag": "0002_query_speed",
+      "breakpoints": true
     }
   ]
 }

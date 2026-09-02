@@ -1,6 +1,7 @@
 import { relations, sql } from 'drizzle-orm';
 import {
 	boolean,
+	customType,
 	index,
 	integer,
 	pgTable,
@@ -10,6 +11,12 @@ import {
 	uniqueIndex
 } from 'drizzle-orm/pg-core';
 import { user } from './auth.schema';
+
+const tsvector = customType<{ data: string }>({
+	dataType() {
+		return 'tsvector';
+	}
+});
 
 export const holdingStatus = ['available', 'loaned', 'lost', 'withdrawn'] as const;
 export type HoldingStatus = (typeof holdingStatus)[number];
@@ -65,13 +72,17 @@ export const book = pgTable(
 		featured: boolean('featured').notNull().default(false),
 		coverUrl: text('cover_url'),
 		coverKey: text('cover_key'),
+		isbnCompact: text('isbn_compact').generatedAlwaysAs(
+			sql`upper(regexp_replace(isbn, '[^0-9Xx]', '', 'g'))`
+		),
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
 	},
 	(table) => [
 		index('book_categoryId_idx').on(table.categoryId),
 		index('book_callNumber_idx').on(table.callNumber),
 		index('book_featured_idx').on(table.featured),
-		index('book_title_idx').on(table.title)
+		index('book_title_idx').on(table.title),
+		index('book_isbn_compact_idx').on(table.isbnCompact)
 	]
 );
 
@@ -92,6 +103,26 @@ export const bookAuthor = pgTable(
 	]
 );
 
+export const bookFts = pgTable(
+	'book_fts',
+	{
+		bookId: text('book_id')
+			.primaryKey()
+			.references(() => book.id, { onDelete: 'cascade' }),
+		tsv: tsvector('tsv').notNull()
+	},
+	(table) => [index('book_fts_tsv_idx').using('gin', table.tsv)]
+);
+
+export const inventoryRun = pgTable('inventory_run', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	startedAt: timestamp('started_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	closedAt: timestamp('closed_at', { withTimezone: true, mode: 'date' }),
+	note: text('note').notNull().default('')
+});
+
 export const holding = pgTable(
 	'holding',
 	{
@@ -101,11 +132,14 @@ export const holding = pgTable(
 			.references(() => book.id, { onDelete: 'cascade' }),
 		inventoryNo: text('inventory_no').notNull(),
 		status: text('status', { enum: holdingStatus }).notNull().default('available'),
-		acquiredAt: timestamp('acquired_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+		acquiredAt: timestamp('acquired_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		lastSeenAt: timestamp('last_seen_at', { withTimezone: true, mode: 'date' }),
+		inventoryRunId: text('inventory_run_id').references(() => inventoryRun.id)
 	},
 	(table) => [
 		uniqueIndex('holding_inventory_uidx').on(table.inventoryNo),
-		index('holding_book_status_idx').on(table.bookId, table.status)
+		index('holding_book_status_idx').on(table.bookId, table.status),
+		index('holding_inventory_run_idx').on(table.inventoryRunId)
 	]
 );
 
@@ -132,7 +166,8 @@ export const loan = pgTable(
 		loanDays: integer('loan_days').notNull().default(21),
 		clearedAt: timestamp('cleared_at', { withTimezone: true, mode: 'date' }),
 		dueSoonMailedAt: timestamp('due_soon_mailed_at', { withTimezone: true, mode: 'date' }),
-		overdueMailedAt: timestamp('overdue_mailed_at', { withTimezone: true, mode: 'date' })
+		overdueMailedAt: timestamp('overdue_mailed_at', { withTimezone: true, mode: 'date' }),
+		returnOfferedAt: timestamp('return_offered_at', { withTimezone: true, mode: 'date' })
 	},
 	(table) => [
 		index('loan_userId_idx').on(table.userId),
@@ -141,6 +176,7 @@ export const loan = pgTable(
 		index('loan_user_open_idx').on(table.userId, table.returnedAt),
 		index('loan_book_open_idx').on(table.bookId, table.returnedAt),
 		index('loan_dueAt_idx').on(table.dueAt),
+		index('loan_return_offered_idx').on(table.returnOfferedAt),
 		uniqueIndex('loan_one_active_uidx')
 			.on(table.userId, table.bookId)
 			.where(sql`${table.returnedAt} is null`)
@@ -208,7 +244,15 @@ export const holdingRelations = relations(holding, ({ one, many }) => ({
 		fields: [holding.bookId],
 		references: [book.id]
 	}),
-	loans: many(loan)
+	loans: many(loan),
+	inventoryRun: one(inventoryRun, {
+		fields: [holding.inventoryRunId],
+		references: [inventoryRun.id]
+	})
+}));
+
+export const inventoryRunRelations = relations(inventoryRun, ({ many }) => ({
+	holdings: many(holding)
 }));
 
 export const loanRelations = relations(loan, ({ one }) => ({

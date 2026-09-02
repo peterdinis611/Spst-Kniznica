@@ -14,7 +14,7 @@ Táto príručka je interný zošit pultu. V hlavnom menu ju nehľadaj — otvor
 
 1. **Nájdi vo fonde** — podľa názvu, autora, signatúry alebo odboru. Voľné výtlačky uvidíš hneď.
 2. **Požičaj na účet** — prihlás sa a vezmi knihu z karty zväzku.
-3. **Vráť v pavilóne B** — odnes výtlačok na pult a v účte označ vrátenie.
+3. **Vráť v pavilóne B** — odnes výtlačok na pult. V účte ho nahlásiš, voľný kus spadne po čítačke.
 
 ## Mapa pultu
 

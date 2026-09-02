@@ -1,8 +1,10 @@
 import { and, asc, eq, isNull, lte } from 'drizzle-orm';
 import type { InventoryRow, OverdueRow } from '$lib/desk-export';
+import { inventorySight } from '$lib/inventory-sight';
 import { daysUntil } from '$lib/format';
 import { db } from '../db';
 import { book, category, holding, loan, user } from '../db/schema';
+import { getLatestInventoryRun } from './inventory';
 
 export type { InventoryRow, OverdueRow };
 export { inventoryCsv, inventoryXml, overdueCsv, overdueXml } from '$lib/desk-export';
@@ -14,7 +16,8 @@ function startOfToday(now = new Date()) {
 }
 
 export async function listInventoryRows(): Promise<InventoryRow[]> {
-	return db
+	const walk = await getLatestInventoryRun();
+	const rows = await db
 		.select({
 			inventoryNo: holding.inventoryNo,
 			status: holding.status,
@@ -23,12 +26,31 @@ export async function listInventoryRows(): Promise<InventoryRow[]> {
 			isbn: book.isbn,
 			year: book.year,
 			categoryName: category.name,
-			categoryCode: category.code
+			categoryCode: category.code,
+			lastSeenAt: holding.lastSeenAt,
+			inventoryRunId: holding.inventoryRunId
 		})
 		.from(holding)
 		.innerJoin(book, eq(book.id, holding.bookId))
 		.innerJoin(category, eq(category.id, book.categoryId))
 		.orderBy(asc(category.code), asc(book.callNumber), asc(holding.inventoryNo));
+
+	return rows.map((row) => ({
+		inventoryNo: row.inventoryNo,
+		status: row.status,
+		title: row.title,
+		callNumber: row.callNumber,
+		isbn: row.isbn,
+		year: row.year,
+		categoryName: row.categoryName,
+		categoryCode: row.categoryCode,
+		lastSeenAt: row.lastSeenAt,
+		sight: inventorySight({
+			status: row.status,
+			runId: walk?.id ?? null,
+			markedRunId: row.inventoryRunId
+		})
+	}));
 }
 
 export async function listOverdueRows(now = new Date()): Promise<OverdueRow[]> {
