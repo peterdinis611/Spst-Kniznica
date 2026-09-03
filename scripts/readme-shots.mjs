@@ -77,6 +77,14 @@ async function band(file, { top = 0, height = 780 } = {}) {
 }
 
 await ready(`${app}/`);
+await page.locator('.hall-nav').waitFor();
+await page.locator('.folio h1').waitFor();
+await page.locator('.folio-shelf').waitFor();
+await page.screenshot({
+	path: resolve(out, 'landing.png'),
+	animations: 'disabled'
+});
+console.log('wrote landing.png');
 await shot(page.locator('.folio-shelf'), 'sien.png', 36);
 
 const rail = page.locator('.complete-shelf, .cover-rail').first();
@@ -161,6 +169,36 @@ await storyShot('pult-pultledger--zásuvka', 'pult.png', (p) => p.locator('.pult
 await storyShot('fond-catalogsearch--náhľad', 'hladanie.png', (p) => p.locator('.search-panel'), 24);
 await storyShot('pult-pultnav--kartotéka', 'kartoteka.png', (p) => p.locator('.pult-tabs'), 28);
 await storyShot('fond-fundledger--register', 'register.png', (p) => p.locator('.folios'), 24);
+
+async function storyFrame(id, dark = false) {
+	const url = `${story}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story`;
+	await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+	if (dark) {
+		await page.emulateMedia({ colorScheme: 'dark' });
+		await page.evaluate(() => {
+			document.documentElement.classList.add('dark');
+			document.body.classList.add('dark');
+		});
+	}
+	await page.evaluate(() => document.fonts.ready);
+	await page.waitForTimeout(600);
+}
+
+await storyFrame('fond-faultfolio--jammed', true);
+await page.locator('.fault').waitFor();
+await page.screenshot({
+	path: resolve(out, 'porucha.png'),
+	animations: 'disabled'
+});
+console.log('wrote porucha.png');
+
+await storyFrame('fond-faultfolio--missing', false);
+await page.locator('.fault').waitFor();
+await page.screenshot({
+	path: resolve(out, 'chyba.png'),
+	animations: 'disabled'
+});
+console.log('wrote chyba.png');
 
 await browser.close();
 console.log('done');

@@ -240,15 +240,17 @@
 			display: grid;
 			align-content: end;
 			justify-items: end;
-			gap: 0.15rem;
+			gap: 0.45rem;
 			text-align: right;
 			padding-bottom: 0.2rem;
 		}
 
 		.mast-count strong {
+			display: block;
 			font-size: clamp(2.6rem, 8vw, 5.6rem);
-			line-height: 0.8;
+			line-height: 0.92;
 			letter-spacing: -0.06em;
+			padding-bottom: 0.12em;
 		}
 
 		.mast-count em {

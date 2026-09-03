@@ -8,19 +8,21 @@ Fond sídli v pavilóne B. Výpožička je bez poplatku — **7, 14 alebo 21 dn�
 
 Vstupná sieň je polica. Výpožička je lístok. Účet je preukaz.
 
-![Vstupná sieň — police fondu](docs/screenshots/sien.png)
+![Vstupná sieň — landing](docs/screenshots/landing.png)
 
-| Pracovné zväzky | Register kníh |
+| Police fondu | Pracovné zväzky |
 | :---: | :---: |
-| ![Otočná polica zväzkov](docs/screenshots/police.png) | ![Riadky katalógu s voľnými výtlačkami](docs/screenshots/katalog.png) |
+| ![Chrbtové menovky na polici](docs/screenshots/sien.png) | ![Otočná polica zväzkov](docs/screenshots/police.png) |
 
-| Dnes na pulte | Police odborov |
+| Register kníh | Dnes na pulte |
 | :---: | :---: |
-| ![Odporúčaná kniha na pulte](docs/screenshots/objavovat.png) | ![Odbory so zväzkami na polici](docs/screenshots/odbory.png) |
+| ![Riadky katalógu s voľnými výtlačkami](docs/screenshots/katalog.png) | ![Odporúčaná kniha na pulte](docs/screenshots/objavovat.png) |
 
-| Autori vo fonde | Karta knihy |
+| Police odborov | Autori vo fonde |
 | :---: | :---: |
-| ![Register autorov](docs/screenshots/autori.png) | ![Detail knihy s obálkou a signatúrou](docs/screenshots/kniha.png) |
+| ![Odbory so zväzkami na polici](docs/screenshots/odbory.png) | ![Register autorov](docs/screenshots/autori.png) |
+
+![Karta knihy s obálkou a signatúrou](docs/screenshots/kniha.png)
 
 | Čitateľský preukaz | Nový preukaz |
 | :---: | :---: |
@@ -37,6 +39,10 @@ Vstupná sieň je polica. Výpožička je lístok. Účet je preukaz.
 | Register podľa odborov | Príručka fondu |
 | :---: | :---: |
 | ![Folio registra výtlačkov](docs/screenshots/register.png) | ![Príručka fondu](docs/screenshots/prirucka.png) |
+
+| Porucha pultu | Karta mimo zásuvky |
+| :---: | :---: |
+| ![Zásuvka sa zasekla — 500](docs/screenshots/porucha.png) | ![Karta nie je v zásuvke — 404](docs/screenshots/chyba.png) |
 
 Snímky sa znova odfotia cez `bun run readme:shots` (beží `bun run dev` a `bun run storybook`).
 
