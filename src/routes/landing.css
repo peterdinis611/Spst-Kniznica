@@ -24,9 +24,9 @@
 	--line: #e6dccb;
 	--wash: #efe6d8;
 	--radius: 1.05rem;
-	--display: 'Fraunces', serif;
-	--ui: 'IBM Plex Sans', sans-serif;
-	--body: 'Newsreader', serif;
+	--display: 'Cormorant Garamond', serif;
+	--ui: 'Bricolage Grotesque', sans-serif;
+	--body: 'Literata', serif;
 	--primary: var(--ink);
 	--primary-foreground: #f6f0e6;
 	--accent: var(--ink);
@@ -703,7 +703,7 @@
 }
 
 .folio-odbory em {
-	font-family: 'IBM Plex Mono', monospace;
+	font-family: 'Azeret Mono', monospace;
 	font-size: 0.68rem;
 	font-style: normal;
 	font-weight: 700;

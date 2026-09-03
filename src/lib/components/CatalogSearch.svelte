@@ -238,7 +238,7 @@
 		background: var(--card, #f8f1e3);
 		box-shadow: 0 28px 70px rgb(28 23 18 / 0.32);
 		color: var(--ink, #1c1712);
-		font-family: var(--body, 'Newsreader', serif);
+		font-family: var(--body, 'Literata', serif);
 	}
 
 	.search-head {
@@ -251,7 +251,7 @@
 	.search-kicker {
 		margin: 0;
 		color: var(--copper, #d46a1e);
-		font-family: var(--display, 'Fraunces', serif);
+		font-family: var(--display, 'Cormorant Garamond', serif);
 		font-size: 0.82rem;
 		font-weight: 600;
 		font-style: italic;
@@ -286,7 +286,7 @@
 		border: 0;
 		background: transparent;
 		color: var(--ink, #1c1712);
-		font-family: var(--display, 'Fraunces', serif);
+		font-family: var(--display, 'Cormorant Garamond', serif);
 		font-size: 1.05rem;
 		font-weight: 700;
 		outline: none;
@@ -295,7 +295,7 @@
 	.search-hint {
 		margin: 0.7rem 1.05rem 0.35rem;
 		color: var(--muted, #6d6458);
-		font-family: var(--display, 'Fraunces', serif);
+		font-family: var(--display, 'Cormorant Garamond', serif);
 		font-size: 0.72rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
@@ -342,7 +342,7 @@
 
 	.search-hit-copy strong {
 		overflow: hidden;
-		font-family: var(--display, 'Fraunces', serif);
+		font-family: var(--display, 'Cormorant Garamond', serif);
 		font-size: 0.92rem;
 		font-weight: 800;
 		line-height: 1.2;
@@ -362,7 +362,7 @@
 
 	.search-hit-state {
 		color: var(--copper, #d46a1e);
-		font-family: var(--display, 'Fraunces', serif);
+		font-family: var(--display, 'Cormorant Garamond', serif);
 		font-size: 0.72rem;
 		font-weight: 800;
 	}

@@ -283,7 +283,7 @@
 		margin: 0;
 		min-width: 4.6rem;
 		color: var(--label);
-		font-family: 'IBM Plex Sans', sans-serif;
+		font-family: 'Bricolage Grotesque', sans-serif;
 		font-size: 0.78rem;
 		font-weight: 600;
 		letter-spacing: 0.12em;
@@ -396,7 +396,7 @@
 		bottom: 0.55rem;
 		left: 0.55rem;
 		color: #fffaf3;
-		font-family: 'Fraunces', serif;
+		font-family: 'Cormorant Garamond', serif;
 		font-size: 0.72rem;
 		font-weight: 650;
 		letter-spacing: -0.03em;
@@ -420,7 +420,7 @@
 
 	.volume-spine em {
 		color: #fffaf3;
-		font-family: 'IBM Plex Sans', sans-serif;
+		font-family: 'Bricolage Grotesque', sans-serif;
 		font-size: 0.42rem;
 		font-style: normal;
 		font-weight: 700;
@@ -479,7 +479,7 @@
 	.shelf-kicker,
 	.shelf-open,
 	.shelf-meta b {
-		font-family: 'IBM Plex Sans', sans-serif;
+		font-family: 'Bricolage Grotesque', sans-serif;
 	}
 
 	.shelf-kicker {
@@ -502,7 +502,7 @@
 		margin: 0.15rem 0 0;
 		overflow-wrap: anywhere;
 		color: var(--ink, var(--foreground, #3c2a21));
-		font-family: 'Fraunces', serif;
+		font-family: 'Cormorant Garamond', serif;
 		font-size: clamp(1.35rem, 4.6vw, 2.05rem);
 		font-weight: 650;
 		letter-spacing: -0.03em;
@@ -512,7 +512,7 @@
 	.shelf-by {
 		margin: 0.15rem 0 0;
 		color: var(--label);
-		font-family: 'Newsreader', serif;
+		font-family: 'Literata', serif;
 		font-size: 1rem;
 	}
 

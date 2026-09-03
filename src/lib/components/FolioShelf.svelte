@@ -197,7 +197,7 @@
 		border-radius: 999px;
 		background: #fffdf8;
 		color: #3c2a21;
-		font-family: 'IBM Plex Sans', sans-serif;
+		font-family: 'Bricolage Grotesque', sans-serif;
 		font-size: 0.74rem;
 		font-weight: 600;
 		white-space: nowrap;

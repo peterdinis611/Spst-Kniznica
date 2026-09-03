@@ -126,7 +126,7 @@
 		border: 2px solid color-mix(in srgb, var(--wait-stamp) 82%, var(--wait-ink));
 		border-radius: 999px;
 		color: var(--wait-stamp);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.92rem;
 		font-style: italic;
 		font-weight: 700;
@@ -146,7 +146,7 @@
 		z-index: 1;
 		margin: 0;
 		color: var(--wait-muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.68rem;
 		font-weight: 600;
 		letter-spacing: 0.2em;

@@ -323,7 +323,7 @@
 	.borrow-mark {
 		margin: 0;
 		color: var(--muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
@@ -338,7 +338,7 @@
 		border: 2px solid color-mix(in srgb, var(--stamp) 78%, var(--ink));
 		border-radius: 999px;
 		color: var(--stamp);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.72rem;
 		font-style: italic;
 		font-weight: 700;
@@ -350,7 +350,7 @@
 	.borrow-head h2 {
 		grid-column: 1;
 		margin: 0.35rem 0 0;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: clamp(1.65rem, 5vw, 2.15rem);
 		font-weight: 700;
 		line-height: 0.98;
@@ -363,7 +363,7 @@
 		margin: 0.4rem 0 0;
 		max-width: 22ch;
 		color: var(--muted);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 1.02rem;
 		line-height: 1.35;
 		text-wrap: balance;
@@ -375,7 +375,7 @@
 		border-left: 3px solid var(--stamp);
 		background: color-mix(in srgb, var(--stamp) 10%, var(--ticket));
 		color: #9a3b28;
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 0.95rem;
 	}
 
@@ -394,7 +394,7 @@
 	.borrow-field label,
 	.borrow-days legend {
 		color: var(--muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.64rem;
 		font-weight: 600;
 		letter-spacing: 0.14em;
@@ -404,7 +404,7 @@
 	.borrow-error {
 		margin: 0.15rem 0 0;
 		color: var(--stamp);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 0.88rem;
 	}
 
@@ -432,7 +432,7 @@
 		background: transparent;
 		color: var(--muted);
 		cursor: pointer;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.92rem;
 		font-style: italic;
 		font-weight: 700;
@@ -457,7 +457,7 @@
 	.borrow-custom label,
 	.borrow-custom span {
 		color: var(--muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.64rem;
 		font-weight: 600;
 		letter-spacing: 0.14em;
@@ -478,7 +478,7 @@
 		border-radius: 0;
 		background: transparent;
 		color: var(--ink);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 1.12rem;
 		box-shadow: none;
 		outline: none;
@@ -521,7 +521,7 @@
 	.borrow-go {
 		appearance: none;
 		cursor: pointer;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-weight: 700;
 	}
 

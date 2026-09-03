@@ -54,7 +54,7 @@
 	.slip-call {
 		display: grid;
 		min-width: 0;
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		line-height: 1.15;
 	}
 
@@ -94,7 +94,7 @@
 		overflow: hidden;
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 2;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.92rem;
 		font-weight: 650;
 		letter-spacing: -0.03em;
@@ -108,7 +108,7 @@
 
 	.slip-body span {
 		overflow: hidden;
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 0.82rem;
 		color: var(--muted-foreground);
 		text-overflow: ellipsis;
@@ -121,7 +121,7 @@
 		border-radius: 999px;
 		background: color-mix(in srgb, #1e6b3c 16%, var(--card));
 		color: #1e6b3c;
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
 		font-size: 0.62rem;
 		font-weight: 700;
 		letter-spacing: 0.03em;

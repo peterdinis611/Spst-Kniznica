@@ -135,7 +135,7 @@
 		z-index: 1;
 		margin: 0;
 		color: var(--fault-muted);
-		font-family: 'IBM Plex Sans', sans-serif;
+		font-family: 'Bricolage Grotesque', sans-serif;
 		font-size: 0.68rem;
 		font-weight: 600;
 		letter-spacing: 0.2em;
@@ -244,7 +244,7 @@
 
 	.fault-card span,
 	.fault-card em {
-		font-family: 'IBM Plex Sans', sans-serif;
+		font-family: 'Bricolage Grotesque', sans-serif;
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
@@ -253,7 +253,7 @@
 	}
 
 	.fault-card strong {
-		font-family: 'Fraunces', serif;
+		font-family: 'Cormorant Garamond', serif;
 		font-size: 1.25rem;
 		font-weight: 700;
 		letter-spacing: -0.03em;
@@ -266,7 +266,7 @@
 		bottom: 6%;
 		display: flex;
 		gap: 0.08em;
-		font-family: 'Big Shoulders Display', 'Fraunces', serif;
+		font-family: 'Oswald', 'Cormorant Garamond', serif;
 		font-size: clamp(4.2rem, 22vw, 11rem);
 		font-weight: 800;
 		line-height: 0.72;
@@ -299,7 +299,7 @@
 		border: 3px solid var(--fault-stamp);
 		border-radius: 0.35rem;
 		color: var(--fault-stamp);
-		font-family: 'Fraunces', serif;
+		font-family: 'Cormorant Garamond', serif;
 		font-size: clamp(1.4rem, 3vw, 2rem);
 		font-style: italic;
 		font-weight: 800;
@@ -316,7 +316,7 @@
 	.fault-copy h1 {
 		margin: 0;
 		max-width: 11ch;
-		font-family: 'Fraunces', serif;
+		font-family: 'Cormorant Garamond', serif;
 		font-size: clamp(2.6rem, 6vw, 4.4rem);
 		font-weight: 700;
 		letter-spacing: -0.04em;
@@ -328,7 +328,7 @@
 		margin: 1.1rem 0 0;
 		max-width: 34ch;
 		color: var(--fault-muted);
-		font-family: 'Newsreader', serif;
+		font-family: 'Literata', serif;
 		font-size: 1.2rem;
 		line-height: 1.45;
 		animation: fault-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
@@ -351,7 +351,7 @@
 		padding: 0 1.35rem;
 		border: 0;
 		border-radius: 999px;
-		font-family: 'IBM Plex Sans', sans-serif;
+		font-family: 'Bricolage Grotesque', sans-serif;
 		font-size: 0.92rem;
 		font-weight: 600;
 		cursor: pointer;

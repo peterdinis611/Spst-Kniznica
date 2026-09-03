@@ -144,7 +144,7 @@
 		margin: 0;
 		margin-right: auto;
 		color: var(--pult-muted, #6e5c4e);
-		font-family: 'IBM Plex Mono', monospace;
+		font-family: 'Azeret Mono', monospace;
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
@@ -171,7 +171,7 @@
 		background: transparent;
 		color: var(--pult-muted, #6e5c4e);
 		cursor: pointer;
-		font-family: 'Fraunces', serif;
+		font-family: 'Cormorant Garamond', serif;
 		font-size: 0.78rem;
 		font-style: italic;
 		font-weight: 700;
@@ -235,7 +235,7 @@
 		border-bottom: 1px solid color-mix(in srgb, var(--file-brass) 45%, transparent);
 		background: color-mix(in srgb, var(--file-paper) 88%, #fff);
 		color: var(--file-brass);
-		font-family: 'IBM Plex Mono', monospace;
+		font-family: 'Azeret Mono', monospace;
 		font-size: 0.58rem;
 		font-weight: 600;
 		letter-spacing: 0.12em;
@@ -244,13 +244,13 @@
 
 	.slip-csv td {
 		color: var(--file-ink);
-		font-family: 'Newsreader', serif;
+		font-family: 'Literata', serif;
 	}
 
 	.slip-n {
 		width: 2.4rem;
 		color: var(--pult-muted, #6e5c4e) !important;
-		font-family: 'IBM Plex Mono', monospace !important;
+		font-family: 'Azeret Mono', monospace !important;
 		font-size: 0.62rem !important;
 		font-weight: 600;
 		letter-spacing: 0.06em;
@@ -283,7 +283,7 @@
 	.slip-xml-n {
 		padding-right: 0.55rem;
 		color: #c9a15a;
-		font-family: 'IBM Plex Mono', monospace;
+		font-family: 'Azeret Mono', monospace;
 		font-size: 0.58rem;
 		font-weight: 600;
 		letter-spacing: 0.08em;
@@ -293,7 +293,7 @@
 	.slip-xml code {
 		overflow-wrap: anywhere;
 		white-space: pre-wrap;
-		font-family: 'IBM Plex Mono', ui-monospace, monospace;
+		font-family: 'Azeret Mono', ui-monospace, monospace;
 		font-size: 0.78rem;
 	}
 
@@ -325,7 +325,7 @@
 
 	.slip-xml [data-k='text'] {
 		color: var(--file-ink);
-		font-family: 'Fraunces', serif;
+		font-family: 'Cormorant Garamond', serif;
 		font-size: 0.92rem;
 		font-weight: 600;
 		letter-spacing: -0.02em;

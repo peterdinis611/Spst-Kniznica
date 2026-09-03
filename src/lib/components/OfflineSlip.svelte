@@ -103,7 +103,7 @@
 	.slip-kicker {
 		margin: 0;
 		color: var(--muted-foreground, #7a6a5c);
-		font-family: 'IBM Plex Sans', sans-serif;
+		font-family: 'Bricolage Grotesque', sans-serif;
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.18em;
@@ -112,7 +112,7 @@
 
 	.slip-title {
 		margin: 0.15rem 0 0;
-		font-family: 'Fraunces', serif;
+		font-family: 'Cormorant Garamond', serif;
 		font-size: 1.28rem;
 		font-weight: 700;
 		letter-spacing: -0.03em;
@@ -123,7 +123,7 @@
 		margin: 0.25rem 0 0;
 		max-width: 36ch;
 		color: var(--muted-foreground, #7a6a5c);
-		font-family: 'Newsreader', serif;
+		font-family: 'Literata', serif;
 		font-size: 0.98rem;
 		line-height: 1.4;
 	}
@@ -134,7 +134,7 @@
 		padding: 0.18rem 0.45rem;
 		border: 2px solid var(--chart-2, #c56a4a);
 		color: var(--chart-2, #c56a4a);
-		font-family: 'Fraunces', serif;
+		font-family: 'Cormorant Garamond', serif;
 		font-size: 0.72rem;
 		font-style: italic;
 		font-weight: 800;

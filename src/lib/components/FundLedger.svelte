@@ -166,7 +166,7 @@
 
 	.kicker {
 		margin: 0;
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
 		font-size: 0.7rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
@@ -177,7 +177,7 @@
 	.mast h1 {
 		margin: 0.35rem 0 0;
 		max-width: 9ch;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: clamp(2.15rem, 11vw, 4.6rem);
 		font-weight: 800;
 		line-height: 0.92;
@@ -188,20 +188,20 @@
 	.lede {
 		max-width: 38ch;
 		margin: 0.75rem 0 0;
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 0.98rem;
 		line-height: 1.45;
 		color: var(--muted-foreground);
 	}
 
 	.mast-count strong {
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-weight: 800;
 	}
 
 	.mast-count span,
 	.mast-count a {
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
 		font-size: 0.78rem;
 		font-weight: 600;
 		letter-spacing: 0.06em;
@@ -254,7 +254,7 @@
 
 		.mast-count em {
 			display: block;
-			font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+			font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
 			font-size: 0.68rem;
 			font-style: normal;
 			font-weight: 600;
@@ -318,7 +318,7 @@
 
 	.folio-code {
 		min-width: 0;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: clamp(2.4rem, 14vw, 5.4rem);
 		font-weight: 800;
 		line-height: 0.78;
@@ -339,7 +339,7 @@
 	.folio-meta em {
 		max-width: 16ch;
 		overflow: hidden;
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
 		font-size: 0.68rem;
 		font-style: normal;
 		font-weight: 600;
@@ -351,7 +351,7 @@
 	}
 
 	.folio-meta b {
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 1.15rem;
 		font-weight: 600;
 	}
@@ -417,7 +417,7 @@
 
 	.lane-head strong {
 		min-width: 0;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 1.35rem;
 		font-weight: 800;
 		line-height: 0.8;
@@ -428,7 +428,7 @@
 	.lane-head span {
 		overflow: hidden;
 		padding-bottom: 0.2rem;
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.08em;
@@ -440,7 +440,7 @@
 
 	.lane-head b {
 		padding-bottom: 0.15rem;
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 1rem;
 	}
 

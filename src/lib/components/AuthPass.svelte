@@ -93,7 +93,7 @@
 	.pass-kicker {
 		margin: 0;
 		color: var(--muted-foreground);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.68rem;
 		font-weight: 600;
 		letter-spacing: 0.22em;
@@ -104,7 +104,7 @@
 		margin: 0.85rem 0 0;
 		max-width: 11ch;
 		color: var(--foreground);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: clamp(2.6rem, 8vw, 4.6rem);
 		font-weight: 700;
 		line-height: 0.92;
@@ -117,7 +117,7 @@
 		margin: 1.15rem 0 0;
 		max-width: 22rem;
 		color: var(--muted-foreground);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 1.12rem;
 		line-height: 1.45;
 	}
@@ -136,7 +136,7 @@
 		border-radius: 999px;
 		padding: 0.28rem 0.7rem;
 		color: var(--foreground);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.68rem;
 		font-weight: 600;
 		letter-spacing: 0.08em;
@@ -216,7 +216,7 @@
 	.pass-mark {
 		margin: 0;
 		color: var(--pass-muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
@@ -232,7 +232,7 @@
 		border: 2px solid color-mix(in srgb, var(--pass-stamp) 78%, var(--pass-ink));
 		border-radius: 999px;
 		color: var(--pass-stamp);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.72rem;
 		font-style: italic;
 		font-weight: 700;
@@ -268,7 +268,7 @@
 		z-index: 1;
 		margin: 1.15rem 0 0;
 		color: var(--pass-muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
@@ -281,7 +281,7 @@
 		min-height: 2.15rem;
 		border-radius: 999px;
 		color: var(--pass-muted);
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
 		font-size: 0.78rem;
 		font-weight: 600;
 		letter-spacing: 0.02em;
@@ -308,7 +308,7 @@
 
 	:global(.pass-field label) {
 		color: var(--pass-muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.64rem;
 		font-weight: 600;
 		letter-spacing: 0.14em;
@@ -324,7 +324,7 @@
 		border-radius: 0;
 		background: transparent;
 		color: var(--pass-ink);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 1.12rem;
 		box-shadow: none;
 		outline: none;
@@ -354,7 +354,7 @@
 		border-bottom: 1px solid var(--pass-rule);
 		background: transparent;
 		color: var(--pass-muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
@@ -371,7 +371,7 @@
 	:global(.pass-error) {
 		margin: 0.2rem 0 0;
 		color: var(--pass-stamp);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 0.88rem;
 		line-height: 1.3;
 	}
@@ -382,7 +382,7 @@
 		gap: 0.55rem;
 		margin: 0.15rem 0 0;
 		color: var(--pass-muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.12em;
@@ -431,7 +431,7 @@
 	:global(.pass-help a),
 	:global(.pass-back) {
 		color: var(--pass-muted);
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
 		font-size: 0.78rem;
 		text-decoration: none;
 		text-underline-offset: 0.22em;
@@ -454,7 +454,7 @@
 		border-left: 3px solid var(--pass-stamp);
 		background: color-mix(in srgb, var(--pass-stamp) 10%, var(--pass-paper));
 		color: var(--pass-ink);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 0.92rem;
 		line-height: 1.4;
 	}
@@ -465,7 +465,7 @@
 	}
 
 	:global(.pass-note code) {
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.78em;
 	}
 
@@ -479,7 +479,7 @@
 		border-radius: 0.2rem;
 		background: var(--pass-ink);
 		color: var(--pass-paper);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 1.05rem;
 		font-weight: 650;
 		letter-spacing: -0.02em;
@@ -511,7 +511,7 @@
 		border: 1px solid color-mix(in srgb, var(--pass-ink) 18%, transparent);
 		border-radius: 0.2rem;
 		color: var(--pass-ink);
-		font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
 		font-size: 0.84rem;
 		font-weight: 600;
 		text-decoration: none;

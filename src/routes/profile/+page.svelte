@@ -179,7 +179,7 @@
 	.profile-ledger dt {
 		margin: 0;
 		color: var(--pass-muted, #7a6554);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
@@ -189,7 +189,7 @@
 	.profile-ledger dd {
 		margin: 0;
 		color: var(--pass-ink, #2c1d16);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 1.12rem;
 		font-weight: 600;
 		letter-spacing: -0.03em;
@@ -198,7 +198,7 @@
 	}
 
 	.profile-no {
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 1.35rem;
 		font-weight: 700;
 		letter-spacing: 0.28em;
@@ -213,7 +213,7 @@
 	.profile-pass-kicker {
 		margin: 0;
 		color: var(--pass-muted, #7a6554);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
@@ -236,7 +236,7 @@
 		border-radius: 999px;
 		background: var(--pass-ink, #2c1d16);
 		color: var(--pass-paper, #fff8ee);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.95rem;
 		font-weight: 700;
 		text-decoration: none;

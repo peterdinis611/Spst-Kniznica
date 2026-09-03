@@ -255,7 +255,7 @@
 	.folio-kicker {
 		margin: 0;
 		color: var(--muted-foreground);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.68rem;
 		font-weight: 600;
 		letter-spacing: 0.22em;
@@ -266,7 +266,7 @@
 		margin: 0.85rem 0 0;
 		max-width: 9ch;
 		color: var(--foreground);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: clamp(2.6rem, 8vw, 4.5rem);
 		font-weight: 700;
 		line-height: 0.9;
@@ -279,7 +279,7 @@
 		margin: 1.15rem 0 0;
 		max-width: 22rem;
 		color: var(--muted-foreground);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 1.12rem;
 		line-height: 1.45;
 	}
@@ -298,7 +298,7 @@
 		border-radius: 999px;
 		padding: 0.28rem 0.7rem;
 		color: var(--foreground);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.68rem;
 		font-weight: 600;
 		letter-spacing: 0.08em;
@@ -387,7 +387,7 @@
 		grid-column: 1;
 		margin: 0;
 		color: var(--muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
@@ -404,7 +404,7 @@
 		border: 2px solid color-mix(in srgb, var(--stamp) 78%, var(--ink));
 		border-radius: 999px;
 		color: var(--stamp);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.72rem;
 		font-style: italic;
 		font-weight: 700;
@@ -424,7 +424,7 @@
 
 	.folio-who h2 {
 		margin: 0.15rem 0 0;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: clamp(1.55rem, 4vw, 2.05rem);
 		font-weight: 650;
 		line-height: 1.05;
@@ -435,7 +435,7 @@
 	.folio-who p {
 		margin: 0.28rem 0 0;
 		color: var(--muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.12em;
@@ -481,7 +481,7 @@
 		position: absolute;
 		inset: auto 0 0.18rem;
 		color: var(--muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.48rem;
 		font-weight: 700;
 		letter-spacing: 0;
@@ -504,7 +504,7 @@
 	.folio-quota {
 		margin: 0 0 0.15rem;
 		color: var(--muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.78rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
@@ -516,7 +516,7 @@
 		border-left: 3px solid var(--stamp);
 		background: color-mix(in srgb, var(--stamp) 10%, var(--ticket));
 		color: #9a3b28;
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 0.95rem;
 	}
 
@@ -539,14 +539,14 @@
 		background: transparent;
 		color: var(--muted);
 		cursor: pointer;
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 0.92rem;
 		transition: background 0.2s ease, color 0.2s ease;
 	}
 
 	.folio-tabs button em {
 		margin-left: 0.15rem;
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.72rem;
 		font-style: normal;
 		font-weight: 700;
@@ -635,7 +635,7 @@
 	.folio-empty h3 {
 		margin: 0;
 		max-width: 14ch;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: clamp(1.45rem, 3.4vw, 1.85rem);
 		font-weight: 650;
 		line-height: 1.08;
@@ -646,7 +646,7 @@
 		margin: 0.45rem 0 0;
 		max-width: 28ch;
 		color: var(--muted);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 1.02rem;
 		line-height: 1.4;
 	}
@@ -663,7 +663,7 @@
 		border-radius: 999px;
 		background: color-mix(in srgb, var(--stamp) 8%, var(--ticket));
 		color: var(--stamp);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.78rem;
 		font-style: italic;
 		font-weight: 700;
@@ -721,7 +721,7 @@
 		border: 1.5px solid currentColor;
 		border-radius: 999px;
 		color: var(--stamp);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.68rem;
 		font-style: italic;
 		font-weight: 700;
@@ -747,7 +747,7 @@
 	.slip-copy a {
 		display: block;
 		color: inherit;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 1.08rem;
 		font-weight: 650;
 		line-height: 1.2;
@@ -764,12 +764,12 @@
 	.slip-when {
 		margin: 0.2rem 0 0;
 		color: var(--muted);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 0.92rem;
 	}
 
 	.slip-when {
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.06em;
@@ -784,7 +784,7 @@
 		background: transparent;
 		color: #9a3b28;
 		cursor: pointer;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.78rem;
 		font-style: italic;
 		font-weight: 700;
@@ -806,7 +806,7 @@
 		border: 1.5px dashed color-mix(in srgb, var(--stamp) 55%, var(--ink));
 		border-radius: 999px;
 		color: var(--stamp);
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.72rem;
 		font-style: italic;
 		font-weight: 700;
@@ -847,7 +847,7 @@
 		margin: 0;
 		max-width: 22ch;
 		color: var(--muted);
-		font-family: var(--font-body, Newsreader, serif);
+		font-family: var(--font-body, 'Literata', serif);
 		font-size: 0.95rem;
 		line-height: 1.35;
 	}
@@ -860,7 +860,7 @@
 		background: transparent;
 		color: var(--ink);
 		cursor: pointer;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 0.78rem;
 		font-style: italic;
 		font-weight: 700;
@@ -892,7 +892,7 @@
 
 	.folio-ledger a {
 		color: inherit;
-		font-family: var(--font-display, Fraunces, serif);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
 		font-size: 1.05rem;
 		font-weight: 600;
 		text-decoration: none;
@@ -909,7 +909,7 @@
 
 	.folio-ledger time {
 		color: var(--muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.08em;
@@ -920,7 +920,7 @@
 	.folio-serial {
 		margin: 1.15rem 0 0;
 		color: var(--muted);
-		font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
