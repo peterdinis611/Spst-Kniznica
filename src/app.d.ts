@@ -11,11 +11,6 @@ declare global {
 			user?: SignedReader;
 			ability: AppAbility;
 		}
-
-		// interface Error {}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
 	}
 }
 

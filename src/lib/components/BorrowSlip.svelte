@@ -355,7 +355,6 @@
 		font-weight: 700;
 		line-height: 0.98;
 		letter-spacing: -0.035em;
-		font-variation-settings: 'SOFT' 28, 'WONK' 1;
 	}
 
 	.borrow-book {

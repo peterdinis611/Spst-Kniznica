@@ -26,7 +26,7 @@
 						{cat.code}
 					</p>
 					<h2
-						class="font-display mt-1 text-[clamp(1.45rem,7vw,2.25rem)] leading-none font-semibold tracking-[-0.03em] [font-variation-settings:'SOFT'_28,'WONK'_0] group-hover:underline group-hover:underline-offset-[0.14em]"
+						class="font-display mt-1 text-[clamp(1.45rem,7vw,2.25rem)] leading-none font-semibold tracking-[-0.03em] group-hover:underline group-hover:underline-offset-[0.14em]"
 					>
 						{cat.name}
 					</h2>

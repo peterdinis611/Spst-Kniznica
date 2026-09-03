@@ -182,7 +182,6 @@
 		font-weight: 800;
 		line-height: 0.92;
 		letter-spacing: -0.045em;
-		font-variation-settings: 'SOFT' 18, 'WONK' 1;
 	}
 
 	.lede {

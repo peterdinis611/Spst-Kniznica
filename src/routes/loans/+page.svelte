@@ -272,7 +272,6 @@
 		line-height: 0.9;
 		letter-spacing: -0.045em;
 		text-wrap: balance;
-		font-variation-settings: 'SOFT' 28, 'WONK' 1;
 	}
 
 	.folio-lede {
@@ -429,7 +428,6 @@
 		font-weight: 650;
 		line-height: 1.05;
 		letter-spacing: -0.035em;
-		font-variation-settings: 'SOFT' 28, 'WONK' 1;
 	}
 
 	.folio-who p {

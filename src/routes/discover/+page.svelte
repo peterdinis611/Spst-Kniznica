@@ -21,7 +21,7 @@
 	);
 
 	const display =
-		'font-display m-0 font-semibold tracking-[-0.03em] leading-[1.06] [font-variation-settings:"SOFT"_28,"WONK"_0]';
+		'font-display m-0 font-semibold tracking-[-0.03em] leading-[1.06]';
 	const rise =
 		'animate-in fade-in slide-in-from-bottom-3 fill-mode-both duration-700 motion-reduce:animate-none';
 </script>

@@ -63,7 +63,7 @@
 		<div>
 			<p
 				class={cn(
-					'font-display leading-[1.12] font-semibold tracking-[-0.03em] [font-variation-settings:"SOFT"_28,"WONK"_0]',
+					'font-display leading-[1.12] font-semibold tracking-[-0.03em]',
 					size === 'feature' && 'text-[1.35rem]',
 					size === 'shelf' && 'text-[1.02rem]',
 					size === 'thumb' && 'line-clamp-3 text-[0.72rem]'

@@ -73,7 +73,7 @@
 				{@const item = lanes[row.index]}
 				{#if item?.kind === 'letter'}
 					<p
-						class="mb-0 font-display text-[1.55rem] leading-none font-semibold tracking-[-0.04em] [font-variation-settings:'SOFT'_28,'WONK'_0] sm:text-[2rem]"
+						class="mb-0 font-display text-[1.55rem] leading-none font-semibold tracking-[-0.04em] sm:text-[2rem]"
 					>
 						{item.letter}
 					</p>
@@ -109,7 +109,7 @@
 		{#each grouped as [letter, people] (letter)}
 			<section>
 				<p
-					class="mb-1 font-display text-[1.55rem] leading-none font-semibold tracking-[-0.04em] text-foreground [font-variation-settings:'SOFT'_28,'WONK'_0] sm:text-[2rem]"
+					class="mb-1 font-display text-[1.55rem] leading-none font-semibold tracking-[-0.04em] text-foreground sm:text-[2rem]"
 				>
 					{letter}
 				</p>

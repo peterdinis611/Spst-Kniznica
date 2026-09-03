@@ -106,7 +106,7 @@
 				</SheetContent>
 			</Sheet>
 			<h1
-				class="font-display min-w-0 truncate text-[1.15rem] leading-none font-semibold tracking-[-0.03em] [font-variation-settings:'SOFT'_28,'WONK'_0] sm:text-[1.7rem] md:text-[1.9rem]"
+				class="font-display min-w-0 truncate text-[1.15rem] leading-none font-semibold tracking-[-0.03em] sm:text-[1.7rem] md:text-[1.9rem]"
 			>
 				{title}
 			</h1>

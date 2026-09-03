@@ -110,7 +110,6 @@
 		line-height: 0.92;
 		letter-spacing: -0.045em;
 		text-wrap: balance;
-		font-variation-settings: 'SOFT' 28, 'WONK' 1;
 	}
 
 	.pass-lede {

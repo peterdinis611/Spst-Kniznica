@@ -14,11 +14,31 @@ Vstupná sieň je polica. Výpožička je lístok. Účet je preukaz.
 | :---: | :---: |
 | ![Otočná polica zväzkov](docs/screenshots/police.png) | ![Riadky katalógu s voľnými výtlačkami](docs/screenshots/katalog.png) |
 
-| Čitateľský preukaz | Výpožičný lístok |
+| Dnes na pulte | Police odborov |
 | :---: | :---: |
-| ![Prihlásenie ako preukaz](docs/screenshots/preukaz.png) | ![Lístok s menom, triedou a dobou](docs/screenshots/listok.png) |
+| ![Odporúčaná kniha na pulte](docs/screenshots/objavovat.png) | ![Odbory so zväzkami na polici](docs/screenshots/odbory.png) |
 
-![Kartotéka pultu](docs/screenshots/pult.png)
+| Autori vo fonde | Karta knihy |
+| :---: | :---: |
+| ![Register autorov](docs/screenshots/autori.png) | ![Detail knihy s obálkou a signatúrou](docs/screenshots/kniha.png) |
+
+| Čitateľský preukaz | Nový preukaz |
+| :---: | :---: |
+| ![Prihlásenie ako preukaz](docs/screenshots/preukaz.png) | ![Registrácia nového čitateľa](docs/screenshots/novy.png) |
+
+| Výpožičný lístok | Hľadanie vo fonde |
+| :---: | :---: |
+| ![Lístok s menom, triedou a dobou](docs/screenshots/listok.png) | ![Náhľad katalógu pri hľadaní](docs/screenshots/hladanie.png) |
+
+| Kartotéka pultu | Záložky zásuviek |
+| :---: | :---: |
+| ![Kartotéka pultu](docs/screenshots/pult.png) | ![Záložky pultu — knihy, čitatelia, výkazy](docs/screenshots/kartoteka.png) |
+
+| Register podľa odborov | Príručka fondu |
+| :---: | :---: |
+| ![Folio registra výtlačkov](docs/screenshots/register.png) | ![Príručka fondu](docs/screenshots/prirucka.png) |
+
+Snímky sa znova odfotia cez `bun run readme:shots` (beží `bun run dev` a `bun run storybook`).
 
 ## Stack
 
@@ -101,6 +121,7 @@ bun run check        # svelte-check
 bun run test         # Vitest (jednorazovo)
 bun run lint         # Prettier + ESLint
 bun run storybook    # Storybook, port 6006
+bun run readme:shots # snímky do docs/screenshots (dev 5173 + Storybook 6006)
 ```
 
 ## Záťaž (k6)
