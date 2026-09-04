@@ -1,15 +1,32 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useStateAction } from 'next-safe-action/hooks';
 import { AuthPass } from '@/components/AuthPass';
 import { PassSecret } from '@/components/PassSecret';
-import { signInAction, signUpAction, type LoginState } from './actions';
+import { bindFormAction } from '@/utils/form-kit';
+import { signInAction, signUpAction } from './actions';
+
+function fieldError(
+	errors: { fieldErrors?: Record<string, string[] | undefined> } | undefined,
+	field: string
+) {
+	return errors?.fieldErrors?.[field]?.[0];
+}
 
 export function LoginForm({ register, configured }: { register: boolean; configured: boolean }) {
-	const [state, action] = useActionState(register ? signUpAction : signInAction, {
-		mode: register ? 'novy' : 'vstup'
-	} satisfies LoginState);
-	const noteOk = Boolean(state.ok);
+	const signIn = useStateAction(signInAction, { throwOnNavigation: true });
+	const signUp = useStateAction(signUpAction, { throwOnNavigation: true });
+	const current = register ? signUp : signIn;
+	const data = current.result.data;
+	const errors = current.result.validationErrors;
+	const note = data?.message ?? current.result.serverError;
+	const noteOk = Boolean(data?.ok);
+	const nameError = fieldError(errors, 'name');
+	const emailError = fieldError(errors, 'email');
+	const passwordError = fieldError(errors, 'password');
+	const confirmError = fieldError(errors, 'confirm');
+	const emailValue = data?.values?.email ?? current.input?.email ?? '';
+	const nameValue = register ? (signUp.result.data?.values?.name ?? signUp.input?.name ?? '') : '';
 
 	return (
 		<AuthPass
@@ -32,32 +49,36 @@ export function LoginForm({ register, configured }: { register: boolean; configu
 				</>
 			}
 		>
-			<form action={action} className="pass-form" noValidate>
+			<form
+				action={register ? bindFormAction(signUp.execute) : bindFormAction(signIn.execute)}
+				className="pass-form"
+				noValidate
+			>
 				{register ? (
-					<div className={`pass-field${state.errors?.name ? ' is-bad' : ''}`}>
+					<div className={`pass-field${nameError ? 'is-bad' : ''}`}>
 						<label htmlFor="name">Meno</label>
 						<input
 							id="name"
 							name="name"
 							autoComplete="name"
-							defaultValue={state.values?.name ?? ''}
+							defaultValue={nameValue}
 							maxLength={80}
-							aria-invalid={state.errors?.name ? true : undefined}
+							aria-invalid={nameError ? true : undefined}
 						/>
-						{state.errors?.name ? <p className="pass-error">{state.errors.name}</p> : null}
+						{nameError ? <p className="pass-error">{nameError}</p> : null}
 					</div>
 				) : null}
-				<div className={`pass-field${state.errors?.email ? ' is-bad' : ''}`}>
+				<div className={`pass-field${emailError ? 'is-bad' : ''}`}>
 					<label htmlFor="email">E-mail</label>
 					<input
 						id="email"
 						type="email"
 						name="email"
 						autoComplete="email"
-						defaultValue={state.values?.email ?? ''}
+						defaultValue={emailValue}
 						maxLength={254}
 					/>
-					{state.errors?.email ? <p className="pass-error">{state.errors.email}</p> : null}
+					{emailError ? <p className="pass-error">{emailError}</p> : null}
 				</div>
 				{noteOk ? null : (
 					<>
@@ -65,7 +86,7 @@ export function LoginForm({ register, configured }: { register: boolean; configu
 							id="password"
 							label="Heslo"
 							autoComplete={register ? 'new-password' : 'current-password'}
-							error={state.errors?.password}
+							error={passwordError}
 							meter={register}
 						/>
 						{register ? (
@@ -74,7 +95,7 @@ export function LoginForm({ register, configured }: { register: boolean; configu
 								name="confirm"
 								label="Heslo znova"
 								autoComplete="new-password"
-								error={state.errors?.confirm}
+								error={confirmError}
 							/>
 						) : null}
 					</>
@@ -86,17 +107,18 @@ export function LoginForm({ register, configured }: { register: boolean; configu
 				)}
 				{!configured ? (
 					<p className="pass-note">
-						Pult ešte nemá kľúč od skrine. Doplň <code>PUBLIC_SUPABASE_URL</code> a kľúč do <code>.env</code>.
+						Pult ešte nemá kľúč od skrine. Doplň <code>PUBLIC_SUPABASE_URL</code> a kľúč do{' '}
+						<code>.env</code>.
 					</p>
-				) : state.message ? (
-					<p className={`pass-note${noteOk ? ' is-ok' : ''}`}>{state.message}</p>
+				) : note ? (
+					<p className={`pass-note${noteOk ? 'is-ok' : ''}`}>{note}</p>
 				) : null}
 				{noteOk ? (
 					<a className="pass-back" href="/login">
 						Späť na prihlásenie
 					</a>
 				) : (
-					<button className="pass-go" type="submit" disabled={!configured}>
+					<button className="pass-go" type="submit" disabled={!configured || current.isExecuting}>
 						{register ? 'Vytvoriť preukaz' : 'Prihlásiť sa'}
 					</button>
 				)}

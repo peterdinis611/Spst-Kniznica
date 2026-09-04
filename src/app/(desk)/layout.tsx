@@ -13,7 +13,7 @@ export default async function DeskLayout({ children }: { children: React.ReactNo
 	return (
 		<div className="desk">
 			<div className="hidden h-dvh lg:sticky lg:top-0 lg:block">
-				<AppSidebar user={chrome.user} />
+				<AppSidebar user={chrome.user} pathname={pathname} />
 			</div>
 			<div className="desk-shell">
 				<div className="desk-panel">

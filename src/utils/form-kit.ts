@@ -5,6 +5,12 @@ export type Gateable = {
 	validateSync: (cause: 'change' | 'blur' | 'submit' | 'mount') => { hasErrored: boolean };
 };
 
+export function bindFormAction<I>(execute: (input: I) => void) {
+	return (formData: FormData) => {
+		execute(Object.fromEntries(formData) as I);
+	};
+}
+
 export function fieldIssue(error: unknown): string {
 	if (!error) return '';
 	if (typeof error === 'string') return error;
@@ -13,7 +19,10 @@ export function fieldIssue(error: unknown): string {
 	return String(error);
 }
 
-export function flattenFields(schema: v.GenericSchema, data: unknown): Record<string, string | undefined> {
+export function flattenFields(
+	schema: v.GenericSchema,
+	data: unknown
+): Record<string, string | undefined> {
 	const result = v.safeParse(schema, data);
 	if (result.success) return {};
 	const nested = v.flatten(result.issues).nested ?? {};

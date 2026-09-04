@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { canOpenDesk, canOperateDesk } from '@/server/admin-access';
 import { getSessionReader } from '@/server/session';
@@ -11,6 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 		return <FaultFolio status={403} message="Pult je len pre správu fondu." />;
 	}
 	const manage = canOperateDesk(user);
+	const pathname = (await headers()).get('x-pathname') || '/admin';
 
 	return (
 		<section className="pult">
@@ -24,7 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 				</p>
 			</header>
 			<div className="pult-cabinet">
-				<PultNav manage={manage} />
+				<PultNav manage={manage} pathname={pathname} />
 				<div className="pult-sheet">{children}</div>
 			</div>
 		</section>

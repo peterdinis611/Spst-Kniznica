@@ -10,38 +10,38 @@ Vstupná sieň je polica. Výpožička je lístok. Účet je preukaz.
 
 ![Vstupná sieň — landing](docs/screenshots/landing.png)
 
-| Police fondu | Pracovné zväzky |
-| :---: | :---: |
+|                       Police fondu                       |                    Pracovné zväzky                    |
+| :------------------------------------------------------: | :---------------------------------------------------: |
 | ![Chrbtové menovky na polici](docs/screenshots/sien.png) | ![Otočná polica zväzkov](docs/screenshots/police.png) |
 
-| Register kníh | Dnes na pulte |
-| :---: | :---: |
+|                             Register kníh                             |                        Dnes na pulte                         |
+| :-------------------------------------------------------------------: | :----------------------------------------------------------: |
 | ![Riadky katalógu s voľnými výtlačkami](docs/screenshots/katalog.png) | ![Odporúčaná kniha na pulte](docs/screenshots/objavovat.png) |
 
-| Police odborov | Autori vo fonde |
-| :---: | :---: |
+|                        Police odborov                        |                 Autori vo fonde                  |
+| :----------------------------------------------------------: | :----------------------------------------------: |
 | ![Odbory so zväzkami na polici](docs/screenshots/odbory.png) | ![Register autorov](docs/screenshots/autori.png) |
 
 ![Karta knihy s obálkou a signatúrou](docs/screenshots/kniha.png)
 
-| Čitateľský preukaz | Nový preukaz |
-| :---: | :---: |
+|                    Čitateľský preukaz                    |                       Nový preukaz                        |
+| :------------------------------------------------------: | :-------------------------------------------------------: |
 | ![Prihlásenie ako preukaz](docs/screenshots/preukaz.png) | ![Registrácia nového čitateľa](docs/screenshots/novy.png) |
 
-| Výpožičný lístok | Hľadanie vo fonde |
-| :---: | :---: |
+|                        Výpožičný lístok                         |                       Hľadanie vo fonde                       |
+| :-------------------------------------------------------------: | :-----------------------------------------------------------: |
 | ![Lístok s menom, triedou a dobou](docs/screenshots/listok.png) | ![Náhľad katalógu pri hľadaní](docs/screenshots/hladanie.png) |
 
-| Kartotéka pultu | Záložky zásuviek |
-| :---: | :---: |
+|                Kartotéka pultu                |                              Záložky zásuviek                               |
+| :-------------------------------------------: | :-------------------------------------------------------------------------: |
 | ![Kartotéka pultu](docs/screenshots/pult.png) | ![Záložky pultu — knihy, čitatelia, výkazy](docs/screenshots/kartoteka.png) |
 
-| Register podľa odborov | Príručka fondu |
-| :---: | :---: |
+|                   Register podľa odborov                   |                  Príručka fondu                  |
+| :--------------------------------------------------------: | :----------------------------------------------: |
 | ![Folio registra výtlačkov](docs/screenshots/register.png) | ![Príručka fondu](docs/screenshots/prirucka.png) |
 
-| Porucha pultu | Karta mimo zásuvky |
-| :---: | :---: |
+|                       Porucha pultu                       |                     Karta mimo zásuvky                      |
+| :-------------------------------------------------------: | :---------------------------------------------------------: |
 | ![Zásuvka sa zasekla — 500](docs/screenshots/porucha.png) | ![Karta nie je v zásuvke — 404](docs/screenshots/chyba.png) |
 
 ## Stack
@@ -94,14 +94,14 @@ Bez bežiaceho Postgresu stránky spadnú na 500 (zásuvka sa zasekla). Docker D
 
 ### Databáza
 
-| Príkaz | Čo robí |
-| --- | --- |
-| `bun run db:up` | Postgres 16 v Dockeri |
-| `bun run db:migrate` | Drizzle migrácie z `drizzle/` |
-| `bun run db:generate` | nová migrácia zo schémy |
-| `bun run db:push` | schéma priamo do DB (bez súboru) |
-| `bun run db:studio` | Drizzle Studio |
-| `bun run db:down` | zastaví kontajner |
+| Príkaz                | Čo robí                          |
+| --------------------- | -------------------------------- |
+| `bun run db:up`       | Postgres 16 v Dockeri            |
+| `bun run db:migrate`  | Drizzle migrácie z `drizzle/`    |
+| `bun run db:generate` | nová migrácia zo schémy          |
+| `bun run db:push`     | schéma priamo do DB (bez súboru) |
+| `bun run db:studio`   | Drizzle Studio                   |
+| `bun run db:down`     | zastaví kontajner                |
 
 Veľkosť seedu riadi `SEED_VOLUME` (kanonický fond je 20 kníh; vyššie číslo je na stres registra). Po zmene reštartuj `bun run dev`.
 
@@ -123,16 +123,16 @@ Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, kt
 
 ## Mapa
 
-| Cesta | Čo tam je |
-| --- | --- |
-| `/` | vstupná sieň, rýchle hľadanie |
-| `/discover` | dnes na pulte, police odborov |
-| `/books`, `/holdings` | katalóg a register výtlačkov |
-| `/departments`, `/authors` | odbory a autori |
-| `/login` | prihlásenie / registrácia (`?mod=novy`) |
-| `/loans`, `/profile` | lístok a preukaz (po prihlásení) |
-| `/admin` | pult — čítačka, CRUD, trieda vonku, štítky, výkazy CSV/XML (knihovník; učiteľ len triedu) |
-| `/docs` | príručka |
+| Cesta                      | Čo tam je                                                                                 |
+| -------------------------- | ----------------------------------------------------------------------------------------- |
+| `/`                        | vstupná sieň, rýchle hľadanie                                                             |
+| `/discover`                | dnes na pulte, police odborov                                                             |
+| `/books`, `/holdings`      | katalóg a register výtlačkov                                                              |
+| `/departments`, `/authors` | odbory a autori                                                                           |
+| `/login`                   | prihlásenie / registrácia (`?mod=novy`)                                                   |
+| `/loans`, `/profile`       | lístok a preukaz (po prihlásení)                                                          |
+| `/admin`                   | pult — čítačka, CRUD, trieda vonku, štítky, výkazy CSV/XML (knihovník; učiteľ len triedu) |
+| `/docs`                    | príručka                                                                                  |
 
 Slovenské aliasy (`/knihy`, `/pult`, `/profil`…) sa 308 presmerujú na kanonické cesty.
 

@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { check } from 'k6';
 
-const BASE = (__ENV.BASE_URL || 'http://host.docker.internal:5173').replace(/\/$/, '');
+const BASE = (__ENV.BASE_URL || 'http://host.docker.internal:3000').replace(/\/$/, '');
 
 export const BASE_URL = BASE;
 
@@ -129,8 +129,8 @@ export function probeFond() {
 		: `HTTP ${res.status}${res.body ? `, ${String(res.body).slice(0, 160)}` : ''}`;
 	throw new Error(
 		`k6 sa nespája s fondom na ${BASE} (${why}). ` +
-			`Na Macu musí bežať bun run dev (5173) alebo bun run preview (4173) a počúvať na 0.0.0.0. ` +
-			`Preview: BASE_URL=http://host.docker.internal:4173 bun run k6:smoke`
+			`Na Macu musí bežať bun run dev (3000) alebo bun run start (3000) a počúvať na 0.0.0.0. ` +
+			`Produkčný start: BASE_URL=http://host.docker.internal:3000 bun run k6:smoke`
 	);
 }
 

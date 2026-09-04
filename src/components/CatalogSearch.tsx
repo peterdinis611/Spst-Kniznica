@@ -98,7 +98,7 @@ export function CatalogSearch({
 	}
 
 	return (
-		<div className="search-layer" role="presentation">
+		<div className="search-layer" role="presentation" data-catalog-search={open ? 'open' : undefined}>
 			<button
 				type="button"
 				className="search-backdrop"

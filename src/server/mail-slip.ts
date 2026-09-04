@@ -1,7 +1,7 @@
 import { env } from '@/config/env';
 
 export function mailOrigin() {
-	return (env.ORIGIN ?? '').replace(/\/$/, '') || 'http://localhost:5173';
+	return (env.ORIGIN ?? '').replace(/\/$/, '') || 'http://localhost:3000';
 }
 
 export function escapeHtml(value: string) {

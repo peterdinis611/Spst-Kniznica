@@ -4,7 +4,8 @@ const links = [
 	{ href: '/books', label: 'Katalóg' },
 	{ href: '/departments', label: 'Odbory' },
 	{ href: '/authors', label: 'Autori' },
-	{ href: '/docs', label: 'Príručka' }
+	{ href: '/docs', label: 'Príručka' },
+	{ href: '/#mapa', label: 'Mapa' }
 ] as const;
 
 export function Footer({ tone = 'desk' }: { tone?: 'desk' | 'hall' }) {
@@ -15,7 +16,8 @@ export function Footer({ tone = 'desk' }: { tone?: 'desk' | 'hall' }) {
 				<p className="hall-kicker">Pavilón B · 1. poschodie</p>
 				<p className="hall-foot-brand">SPŠT knižnica</p>
 				<p className="hall-foot-lead">
-					Školský fond učebníc, noriem a literatúry. 7–21 dní, bez stropu na počet kníh. Po—Pia 7:30—15:30.
+					Školský fond učebníc, noriem a literatúry. 7–21 dní, bez stropu na počet kníh. Po—Pia
+					7:30—15:30.
 				</p>
 				<nav aria-label="Pätička">
 					{links.map((link) => (
@@ -32,9 +34,16 @@ export function Footer({ tone = 'desk' }: { tone?: 'desk' | 'hall' }) {
 	return (
 		<footer className="mt-11 grid justify-items-center gap-2.5 border-t border-border pt-6 pb-1.5 text-center text-[0.82rem] text-muted-foreground">
 			<p>SPŠT knižnica · pavilón B · Po—Pia 7:30—15:30</p>
-			<nav className="flex flex-wrap justify-center gap-x-[1.15rem] gap-y-[0.45rem]" aria-label="Pätička">
+			<nav
+				className="flex flex-wrap justify-center gap-x-[1.15rem] gap-y-[0.45rem]"
+				aria-label="Pätička"
+			>
 				{links.map((link) => (
-					<a key={link.href} href={link.href} className="text-inherit no-underline hover:text-foreground">
+					<a
+						key={link.href}
+						href={link.href}
+						className="text-inherit no-underline hover:text-foreground"
+					>
 						{link.label}
 					</a>
 				))}

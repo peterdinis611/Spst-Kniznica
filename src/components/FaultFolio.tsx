@@ -9,7 +9,9 @@ export function FaultFolio({ status, message }: { status: number; message?: stri
 	const title = jammed ? 'Zásuvka sa zasekla.' : 'Karta nie je v zásuvke.';
 	const leaked = Boolean(
 		message &&
-			/ENOENT|EACCES|EPERM|\.next|node_modules|\/Users\/|\/home\/|Not Found|Internal Error/.test(message)
+		/ENOENT|EACCES|EPERM|\.next|node_modules|\/Users\/|\/home\/|Not Found|Internal Error/.test(
+			message
+		)
 	);
 	const lead =
 		jammed || leaked || !message
@@ -19,7 +21,12 @@ export function FaultFolio({ status, message }: { status: number; message?: stri
 			: message;
 
 	return (
-		<main id="obsah" className="fault" data-kind={jammed ? 'jammed' : 'missing'} aria-labelledby="fault-title">
+		<main
+			id="obsah"
+			className="fault"
+			data-kind={jammed ? 'jammed' : 'missing'}
+			aria-labelledby="fault-title"
+		>
 			<div className="fault-grain" aria-hidden="true" />
 			<div className="fault-wash" aria-hidden="true" />
 			<p className="fault-kicker">
@@ -44,7 +51,7 @@ export function FaultFolio({ status, message }: { status: number; message?: stri
 							</>
 						) : null}
 					</svg>
-					<div className={`fault-card${jammed ? ' is-torn' : ''}`}>
+					<div className={`fault-card${jammed ? 'is-torn' : ''}`}>
 						<span>SPŠT · lístok</span>
 						<strong>{jammed ? 'Zaseknutý výpis' : 'Prázdna signatúra'}</strong>
 						<em>{jammed ? 'pult neodpovedá' : 'zásuvka prázdna'}</em>

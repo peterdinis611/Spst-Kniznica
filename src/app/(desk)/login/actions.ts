@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { returnServerError } from 'next-safe-action';
-import { actionClient, authActionClient } from '@/http/safe-action';
+import { actionClient } from '@/http/safe-action';
 import { signInSchema, signUpSchema, resetEmailSchema } from '@/auth/auth-fields';
 import { slovakAuthMessage } from '@/server/auth-message';
 import { failIfRateLimited } from '@/server/rate-limit';
@@ -135,5 +135,3 @@ export const recoverAction = actionClient
 			values: { email: parsedInput.email }
 		};
 	});
-
-export const requireReader = authActionClient.action(async ({ ctx }) => ctx.user);

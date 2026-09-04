@@ -13,7 +13,7 @@ export function PultNav({ manage = true, pathname }: { manage?: boolean; pathnam
 			{tabs.map((item, i) => (
 				<a
 					key={item.href}
-					className={`pult-tab${on(item.href) ? ' is-on' : ''}`}
+					className={`pult-tab${on(item.href) ? 'is-on' : ''}`}
 					href={item.href}
 					style={{ animationDelay: `${i * 40}ms` }}
 				>

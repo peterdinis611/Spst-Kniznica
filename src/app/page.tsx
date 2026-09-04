@@ -1,4 +1,5 @@
 import { HallChrome } from '@/components/HallChrome';
+import { HallMap } from '@/components/HallMap';
 import { FolioShelf } from '@/components/FolioShelf';
 import { CoverRail } from '@/components/CoverRail';
 import { booksLabel, initials } from '@/utils/format';
@@ -37,12 +38,12 @@ export default async function HomePage() {
 
 	return (
 		<main id="obsah" className="landing-shell">
-			<HallChrome user={chrome.user} admin={chrome.admin} searchPreview={searchPreview}>
+			<HallChrome user={chrome.user} admin={chrome.admin} path="/" searchPreview={searchPreview}>
 				<section className="folio">
 					<h1>Učebnice a príbehy, ktoré SPŠT ešte nedočítalo.</h1>
 					<p className="folio-lead">
-						Na polici sú skutočné zväzky z fondu — {stats.available} voľných výtlačkov z {stats.books} kníh.
-						Klikni na chrbát alebo menovku.
+						Na polici sú skutočné zväzky z fondu — {stats.available} voľných výtlačkov z{' '}
+						{stats.books} kníh. Klikni na chrbát alebo menovku.
 					</p>
 					<a className="folio-cta no-underline" href="/discover">
 						Vstúpiť do fondu
@@ -74,18 +75,29 @@ export default async function HomePage() {
 							<span>02</span>
 							<h3>Požičaj na účet</h3>
 							<p>
-								Prihlás sa a vezmi toľko kníh, koľko potrebuješ. Lehotu 7, 14 alebo 21 dní vyberieš na lístku, bez
-								poplatku.
+								Prihlás sa a vezmi toľko kníh, koľko potrebuješ. Lehotu 7, 14 alebo 21 dní vyberieš
+								na lístku, bez poplatku.
 							</p>
 						</li>
 						<li>
 							<span>03</span>
 							<h3>Vráť v pavilóne B</h3>
 							<p>
-								Odnes zväzok na 1. poschodie. Na lístku ho nahlásiš, voľný kus spadne po čítačke. Po—Pia 7:30—15:30.
+								Odnes zväzok na 1. poschodie. Na lístku ho nahlásiš, voľný kus spadne po čítačke.
+								Po—Pia 7:30—15:30.
 							</p>
 						</li>
 					</ol>
+				</section>
+
+				<section className="folio-block" id="mapa">
+					<p className="folio-kicker">Areál · pavilón B</p>
+					<h2>Kde fond sídli.</h2>
+					<p className="folio-lead">
+						Hviezdoslavova 6, Spišská Nová Ves. Knižnica je v pavilóne B na 1. poschodí — sem
+						donesieš zväzok aj čitateľský preukaz.
+					</p>
+					<HallMap />
 				</section>
 
 				<section className="folio-block">

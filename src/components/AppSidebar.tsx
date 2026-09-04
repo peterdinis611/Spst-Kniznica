@@ -37,12 +37,21 @@ export function AppSidebar({
 	}
 
 	return (
-		<aside className={cn('bg-sidebar text-sidebar-foreground flex h-full flex-col px-6 py-7', compact && 'px-5')}>
+		<aside
+			className={cn(
+				'flex h-full flex-col bg-sidebar px-6 py-7 text-sidebar-foreground',
+				compact && 'px-5'
+			)}
+		>
 			<a href="/" className="font-display no-underline" data-tour={compact ? undefined : 'brand'}>
-				<span className="text-primary block text-[0.7rem] font-extrabold tracking-[0.22em] uppercase">SPŠT</span>
+				<span className="block text-[0.7rem] font-extrabold tracking-[0.22em] text-primary uppercase">
+					SPŠT
+				</span>
 				<span className="text-xl font-extrabold tracking-tight">knižnica</span>
 			</a>
-			<p className="text-muted-foreground mt-10 font-sans text-[0.62rem] tracking-[0.18em] uppercase">Fond</p>
+			<p className="mt-10 font-sans text-[0.62rem] tracking-[0.18em] text-muted-foreground uppercase">
+				Fond
+			</p>
 			<nav
 				className="mt-3 flex flex-col gap-1"
 				aria-label="Hlavná navigácia"
@@ -57,7 +66,9 @@ export function AppSidebar({
 							href={item.path}
 							className={cn(
 								'flex items-center gap-3 rounded-full px-3 py-2 text-sm no-underline',
-								on ? 'bg-primary text-primary-foreground font-semibold' : 'text-muted-foreground hover:bg-secondary'
+								on
+									? 'bg-primary font-semibold text-primary-foreground'
+									: 'text-muted-foreground hover:bg-secondary'
 							)}
 						>
 							<span className="grid size-8 place-items-center">
@@ -69,7 +80,7 @@ export function AppSidebar({
 				})}
 			</nav>
 			<div className="mt-auto">
-				<p className="text-muted-foreground font-sans text-[0.68rem] tracking-[0.08em] uppercase">
+				<p className="font-sans text-[0.68rem] tracking-[0.08em] text-muted-foreground uppercase">
 					Po—pia 7:30—15:30
 				</p>
 				<div className="mt-3">
@@ -79,7 +90,7 @@ export function AppSidebar({
 							<a
 								href="/profile"
 								className={cn(
-									'text-muted-foreground mb-1 flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal no-underline',
+									'mb-1 flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal text-muted-foreground no-underline',
 									pathname.startsWith('/profile') && 'bg-secondary text-foreground'
 								)}
 							>
@@ -91,7 +102,7 @@ export function AppSidebar({
 					) : (
 						<a
 							href="/login"
-							className="text-muted-foreground flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal no-underline"
+							className="flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal text-muted-foreground no-underline"
 						>
 							<LogIn className="size-4" />
 							Prihlásiť sa

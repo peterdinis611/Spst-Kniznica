@@ -2,25 +2,29 @@ import { ensureSeeded } from '@/server/db/seed';
 import { warmCatalog } from '@/server/library';
 import { runDeskTick } from '@/server/desk-tick';
 
-let booted = false;
-let lastTick = 0;
 const TICK_EVERY_MS = 30 * 60 * 1000;
 
+const hall = globalThis as typeof globalThis & {
+	__spstBooted?: boolean;
+	__spstTick?: number;
+};
+
 export async function ensureHall() {
-	if (!booted) {
+	if (!hall.__spstBooted) {
 		try {
 			await ensureSeeded();
 			await warmCatalog();
-			booted = true;
+			hall.__spstBooted = true;
 		} catch {
 			// Tables may not exist until `bun run db:migrate`.
 		}
 	}
 
+	const lastTick = hall.__spstTick ?? 0;
 	if (Date.now() - lastTick >= TICK_EVERY_MS) {
-		lastTick = Date.now();
+		hall.__spstTick = Date.now();
 		void runDeskTick().catch(() => {
-			lastTick = 0;
+			hall.__spstTick = 0;
 		});
 	}
 }

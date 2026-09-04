@@ -1,6 +1,8 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import * as v from 'valibot';
+import { authActionClient } from '@/http/safe-action';
 import { stampDate, daysUntil } from '@/utils/format';
 import { MAX_RENEWALS } from '@/catalog/hold';
 import { queueLoanNotice } from '@/server/loan-mail';
@@ -15,6 +17,14 @@ import {
 	renewLoan
 } from '@/server/library';
 import { getSessionReader } from '@/server/session';
+
+const loanIdSchema = v.object({
+	loanId: v.pipe(v.string(), v.minLength(1))
+});
+
+const reservationIdSchema = v.object({
+	reservationId: v.pipe(v.string(), v.minLength(1))
+});
 
 export async function loadLoans() {
 	const user = await getSessionReader();
@@ -44,60 +54,59 @@ export async function loadLoans() {
 	};
 }
 
-export async function returnLoan(formData: FormData) {
-	const user = await getSessionReader();
-	if (!user) redirect('/login');
-	const loanId = formData.get('loanId')?.toString() ?? '';
-	const open = (await listLoans(user.id)).find((item) => item.id === loanId);
-	const result = await offerReturn(user.id, loanId);
-	if (!result.ok) redirect('/loans');
-	if (open && !result.already) {
-		await queueLoanNotice({
-			kind: 'inbound',
-			to: user.email,
-			readerName: user.name,
-			bookTitle: open.book.title,
-			callNumber: open.book.callNumber
-		});
-	}
-	redirect('/loans');
-}
-
-export async function renewLoanAction(formData: FormData) {
-	const user = await getSessionReader();
-	if (!user) redirect('/login');
-	const loanId = formData.get('loanId')?.toString() ?? '';
-	const result = await renewLoan(user.id, loanId);
-	if (result.ok) {
+export const returnLoan = authActionClient
+	.inputSchema(loanIdSchema)
+	.action(async ({ parsedInput, ctx }) => {
+		const { user } = ctx;
+		const loanId = parsedInput.loanId;
 		const open = (await listLoans(user.id)).find((item) => item.id === loanId);
-		if (open) {
+		const result = await offerReturn(user.id, loanId);
+		if (!result.ok) redirect('/loans');
+		if (open && !result.already) {
 			await queueLoanNotice({
-				kind: 'renew',
+				kind: 'inbound',
 				to: user.email,
 				readerName: user.name,
 				bookTitle: open.book.title,
-				callNumber: open.book.callNumber,
-				dueAt: result.dueAt
+				callNumber: open.book.callNumber
 			});
 		}
-	}
-	redirect('/loans');
-}
+		redirect('/loans');
+	});
 
-export async function cancelWait(formData: FormData) {
-	const user = await getSessionReader();
-	if (!user) redirect('/login');
-	const reservationId = formData.get('reservationId')?.toString() ?? '';
-	const result = await cancelHold(user.id, reservationId);
-	if (result.ok && result.offer) await notifyHoldReady(result.offer);
-	redirect('/loans');
-}
+export const renewLoanAction = authActionClient
+	.inputSchema(loanIdSchema)
+	.action(async ({ parsedInput, ctx }) => {
+		const { user } = ctx;
+		const loanId = parsedInput.loanId;
+		const result = await renewLoan(user.id, loanId);
+		if (result.ok) {
+			const open = (await listLoans(user.id)).find((item) => item.id === loanId);
+			if (open) {
+				await queueLoanNotice({
+					kind: 'renew',
+					to: user.email,
+					readerName: user.name,
+					bookTitle: open.book.title,
+					callNumber: open.book.callNumber,
+					dueAt: result.dueAt
+				});
+			}
+		}
+		redirect('/loans');
+	});
 
-export async function clearHistory() {
-	const user = await getSessionReader();
-	if (!user) redirect('/login');
-	await clearReturnedLoans(user.id);
+export const cancelWait = authActionClient
+	.inputSchema(reservationIdSchema)
+	.action(async ({ parsedInput, ctx }) => {
+		const result = await cancelHold(ctx.user.id, parsedInput.reservationId);
+		if (result.ok && result.offer) await notifyHoldReady(result.offer);
+		redirect('/loans');
+	});
+
+export const clearHistory = authActionClient.inputSchema(v.object({})).action(async ({ ctx }) => {
+	await clearReturnedLoans(ctx.user.id);
 	redirect('/loans');
-}
+});
 
 export { stampDate };

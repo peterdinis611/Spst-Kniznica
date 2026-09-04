@@ -216,7 +216,7 @@ export function AppTopbar({
 						>
 							<X className="size-4" />
 						</button>
-						<AppSidebar user={user} compact />
+						<AppSidebar user={user} compact pathname={pathname} />
 					</div>
 				</div>
 			) : null}

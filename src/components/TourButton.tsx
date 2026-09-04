@@ -6,7 +6,7 @@ export function TourButton() {
 	return (
 		<button
 			type="button"
-			className="text-muted-foreground mb-1 flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal"
+			className="mb-1 flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal text-muted-foreground"
 			onClick={async () => {
 				const { startTour, markTourSeen } = await import('@/tour');
 				await startTour(markTourSeen);

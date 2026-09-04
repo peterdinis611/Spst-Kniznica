@@ -1,11 +1,11 @@
 import { pageMeta } from '@/utils/metadata';
 import { listBookSlips, listCategoryChips } from '@/server/library';
-import { CatalogSlip } from '@/components/CatalogSlip';
-import { VirtualWindow } from '@/components/VirtualWindow';
+import { BookRegister } from '@/components/BookRegister';
 
 export const metadata = pageMeta({
 	title: 'Katalóg',
-	description: 'Prehľadaj školský fond SPŠT podľa názvu, autora, signatúry alebo odboru. Voľné výtlačky uvidíš hneď.'
+	description:
+		'Prehľadaj školský fond SPŠT podľa názvu, autora, signatúry alebo odboru. Voľné výtlačky uvidíš hneď.'
 });
 
 export default async function BooksPage({
@@ -16,17 +16,22 @@ export default async function BooksPage({
 	const params = await searchParams;
 	const q = params.q ?? '';
 	const odbor = params.odbor ?? '';
-	const [slips, categories] = await Promise.all([listBookSlips(q || undefined), listCategoryChips()]);
+	const [slips, categories] = await Promise.all([
+		listBookSlips(q || undefined),
+		listCategoryChips()
+	]);
 	const books = odbor ? slips.filter((item) => item.category.slug === odbor) : slips;
 	const activeName = categories.find((cat) => cat.slug === odbor)?.name;
 
 	return (
 		<>
-			<p className="text-muted-foreground text-sm">
+			<p className="text-sm text-muted-foreground">
 				{books.length.toLocaleString('sk-SK')} kníh
 				{q ? ` pre „${q}“` : ''}
 				{activeName ? ` · ${activeName}` : ''}
-				{books.length > 48 ? <span className="hidden sm:inline"> · virtualizovaný register</span> : null}
+				{books.length > 48 ? (
+					<span className="hidden sm:inline"> · virtualizovaný register</span>
+				) : null}
 			</p>
 			<div className="mt-4 flex flex-wrap gap-2">
 				<a
@@ -47,22 +52,15 @@ export default async function BooksPage({
 				))}
 			</div>
 			{books.length === 0 ? (
-				<div className="mt-10 rounded-2xl ring-1 ring-border p-6">
+				<div className="mt-10 rounded-2xl p-6 ring-1 ring-border">
 					<p className="font-display text-xl">Nič sa nenašlo</p>
-					<p className="text-muted-foreground mt-2">Skús iné slovo, alebo zruš filter.</p>
+					<p className="mt-2 text-muted-foreground">Skús iné slovo, alebo zruš filter.</p>
 					<a href="/books" className="mt-4 inline-block text-sm underline">
 						Zrušiť filter
 					</a>
 				</div>
 			) : (
-				<div className="mt-8">
-					<VirtualWindow count={books.length} estimateSize={() => 88}>
-						{(index) => {
-							const book = books[index];
-							return book ? <CatalogSlip book={book} /> : null;
-						}}
-					</VirtualWindow>
-				</div>
+				<BookRegister books={books} />
 			)}
 		</>
 	);

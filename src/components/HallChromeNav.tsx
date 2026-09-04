@@ -62,7 +62,12 @@ export function HallChromeNav({
 					<a href="/authors">Autori</a>
 				</nav>
 				<div className="hall-tools">
-					<button type="button" className="hall-search-btn" onClick={openSearch} aria-label="Hľadať knihu">
+					<button
+						type="button"
+						className="hall-search-btn"
+						onClick={openSearch}
+						aria-label="Hľadať knihu"
+					>
 						<Search className="size-4" />
 						<span>Hľadať knihu</span>
 					</button>
@@ -77,7 +82,7 @@ export function HallChromeNav({
 					</a>
 					<button
 						type="button"
-						className={`hall-menu-btn${menuOpen ? ' is-open' : ''}`}
+						className={`hall-menu-btn${menuOpen ? 'is-open' : ''}`}
 						aria-controls="landing-menu"
 						aria-expanded={menuOpen}
 						aria-label={menuOpen ? 'Zavrieť menu' : 'Otvoriť menu'}
@@ -109,6 +114,9 @@ export function HallChromeNav({
 					</a>
 					<a href="/authors" onClick={closeMenu}>
 						Autori
+					</a>
+					<a href="/#mapa" onClick={closeMenu}>
+						Mapa
 					</a>
 					{user ? (
 						<>
