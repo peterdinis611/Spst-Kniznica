@@ -9,13 +9,13 @@ Fond sa meria **k6**. Grafy kreslí **Grafana** z Promethea. Nejde to proti prih
 ## Predtým
 
 1. Docker.
-2. Fond musí bežať **skôr**, ako spustíš k6. Na bežný deň stačí `npm run dev` (port **5173**). Vite počúva na všetkých adresách a púšťa Host `host.docker.internal` z Dockeru.
-3. Záťaž registra meraj na preview: `npm run build` a `npm run preview` (port **4173**), v `.env` `SEED_VOLUME=2500`, potom `BASE_URL=http://host.docker.internal:4173 npm run k6:stress`.
+2. Fond musí bežať **skôr**, ako spustíš k6. Na bežný deň stačí `bun run dev` (port **3000**). Next počúva aj pre Host `host.docker.internal` z Dockeru.
+3. Záťaž registra meraj na ostrej zostave: `bun run build` a `bun run start` (port **3000**), v `.env` `SEED_VOLUME=2500`, potom `bun run k6:stress`.
 
 ## Zapni pult metrík
 
 ```sh
-npm run k6:up
+bun run k6:up
 ```
 
 - Grafana: [http://localhost:3030](http://localhost:3030) (účet `pult` / `pavilonb`, alebo hosť ako Viewer)
@@ -27,21 +27,21 @@ Dashboard **SPŠT knižnica · k6** sa otvorí sám.
 
 | Príkaz | Čo robí |
 | --- | --- |
-| `npm run k6:smoke` | 1 čitateľ — mapa fondu, aliasy, gaty, potom pult dokola |
-| `npm run k6:load` | 16 čitateľov, bežné čítanie |
-| `npm run k6:stress` | rampa až na 80 čitateľov, častejší [register](/holdings) |
-| `npm run k6:spike` | náhly nával 60 čitateľov |
+| `bun run k6:smoke` | 1 čitateľ — mapa fondu, aliasy, gaty, potom pult dokola |
+| `bun run k6:load` | 16 čitateľov, bežné čítanie |
+| `bun run k6:stress` | rampa až na 80 čitateľov, častejší [register](/holdings) |
+| `bun run k6:spike` | náhly nával 60 čitateľov |
 
 Iná adresa fondu (preview):
 
 ```sh
-BASE_URL=http://host.docker.internal:4173 npm run k6:smoke
+BASE_URL=http://host.docker.internal:3000 bun run k6:smoke
 ```
 
 Označ beh, aby sa v Grafane dal odfiltrovať:
 
 ```sh
-TESTID=register-1 npm run k6:stress
+TESTID=register-1 bun run k6:stress
 ```
 
 Po teste v Grafane vyber **beh**. Grafy idú živo, kým k6 beží.
@@ -55,5 +55,5 @@ Obraz je `grafana/k6:2.2.0`.
 ## Vypnúť
 
 ```sh
-npm run k6:down
+bun run k6:down
 ```

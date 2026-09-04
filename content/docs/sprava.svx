@@ -8,7 +8,7 @@ order: 8
 
 ## Kto ho vidí
 
-Pult otvorí **knihovník** (celý fond) a **učiteľ** (trieda vonku, bez mazania). V `vite dev` je pult dočasne otvorený aj prihlásenému čitateľovi, kým sa role usadia. Na ostrej prevádzke ostáva pečiatka knihovník alebo učiteľ.
+Pult otvorí **knihovník** (celý fond) a **učiteľ** (trieda vonku, bez mazania). V `next dev` je pult dočasne otvorený aj prihlásenému čitateľovi, kým sa role usadia. Na ostrej prevádzke ostáva pečiatka knihovník alebo učiteľ.
 
 Rola žije na preukaze (`user.role`). Prvého knihovníka dáš cez `ADMIN_EMAILS` v `.env` (čiarka, e-maily). Pri prihlásení dostane pečiatku knihovník. Ďalších — aj učiteľov — pridelíš v zásuvke **Čitatelia**. Hviezdička `*` v `ADMIN_EMAILS` je núdzový kľúč: každý prihlásený sa stane knihovníkom.
 

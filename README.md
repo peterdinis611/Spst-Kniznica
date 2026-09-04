@@ -51,6 +51,7 @@ Vstupná sieň je polica. Výpožička je lístok. Účet je preukaz.
 - **Supabase Auth** — registrácia, prihlásenie, obnova hesla
 - **next-safe-action** + Valibot — server actions
 - **Bun** — inštalácia a skripty (`bun.lock`)
+- **Biome** — formátovanie (`biome.json`); ESLint ostáva na pravidlá
 
 Interná príručka je na [`/docs`](http://localhost:3000/docs).
 
@@ -143,9 +144,11 @@ bun run dev          # vývoj, port 3000
 bun run build        # produkčný build
 bun run start        # Next start, port 3000
 bun run test         # Vitest (jednorazovo)
-bun run lint         # Biome format check
-bun run format       # Biome format write
+bun run lint         # Biome — kontrola formátu
+bun run format       # Biome — zapísať formát
 ```
+
+Kód drží **Biome**, nie Prettier. Pravidlá sú v `biome.json` (taby, `'` , šírka 100). V Cursor / VS Code daj rozšírenie `biomejs.biome`.
 
 ## Záťaž (k6)
 

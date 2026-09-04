@@ -12,7 +12,7 @@ Aby odkaz z listu otvoril `/auth/confirm`, vlož šablóny z priečinka `supabas
 
 V [Authentication → URL configuration](https://supabase.com/dashboard/project/_/auth/url-configuration):
 
-- **Site URL** = adresa fondu (napr. `http://localhost:5173` alebo produkčná origin)
+- **Site URL** = adresa fondu (napr. `http://localhost:3000` alebo produkčná origin)
 - **Redirect URLs** musia obsahovať `{origin}/auth/confirm` a `{origin}/auth/confirm**`
 
 Bez toho odkaz z listu nesmeruje na pult.
@@ -66,9 +66,9 @@ Učiteľ s triedou na preukaze dostane raz za týždeň (alebo keď pribudne one
 
 Tik týchto pripomienok beží z pultu (každých 30 minút pri návšteve) a dá sa spustiť cronom na `GET /api/desk/tick` s `DESK_TICK_SECRET`.
 
-Lokálne (`vite dev`, alebo `MAIL_DRIVER=mailtrap`) ide **Mailtrap**. Token je `MAILTRAP_TOKEN`, odosielateľ `MAILTRAP_FROM` (demo adresa `hello@demomailtrap.co`, kým nemáte overenú vlastnú doménu). Demo doména doručí **len na e-mail majiteľa Mailtrap účtu** — doplň ho do `MAILTRAP_TO`. Lístok pre iný preukaz tam padne s poznámkou pôvodnej adresy.
+Lokálne (`bun run dev`, alebo `MAIL_DRIVER=mailtrap`) ide **Mailtrap**. Token je `MAILTRAP_TOKEN`, odosielateľ `MAILTRAP_FROM` (demo adresa `hello@demomailtrap.co`, kým nemáte overenú vlastnú doménu). Demo doména doručí **len na e-mail majiteľa Mailtrap účtu** — doplň ho do `MAILTRAP_TO`. Lístok pre iný preukaz tam padne s poznámkou pôvodnej adresy.
 
-Na ostrej prevádzke (`MAIL_DRIVER=mailgun`, mimo `vite dev` je to predvolené) ide **Mailgun**. Kľúč je `MAILGUN_API_KEY` + `MAILGUN_DOMAIN`. Bez kľúča aktívneho ovládača sa pohyb vo fonde uloží, list neide.
+Na ostrej prevádzke (`MAIL_DRIVER=mailgun`, mimo `next dev` je to predvolené) ide **Mailgun**. Kľúč je `MAILGUN_API_KEY` + `MAILGUN_DOMAIN`. Bez kľúča aktívneho ovládača sa pohyb vo fonde uloží, list neide.
 
 Sandbox z Mailgun doručí **len na autorizované adresy**. Ak adresa ešte nie je overená, pult ju do zoznamu pridá a Mailgun pošle **overovací odkaz**. Kým ho neklikneš, lístok výpožičky nedorazí. Vlastná doména toto obmedzenie nemá. Mailtrap demo doména doručí len na `MAILTRAP_TO`.
 
