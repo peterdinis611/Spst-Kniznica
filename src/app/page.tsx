@@ -90,12 +90,11 @@ export default async function HomePage() {
 					</ol>
 				</section>
 
-				<section className="folio-block" id="mapa">
+				<section className="folio-block folio-map" id="mapa">
 					<p className="folio-kicker">Areál · pavilón B</p>
 					<h2>Kde fond sídli.</h2>
 					<p className="folio-lead">
-						Hviezdoslavova 6, Spišská Nová Ves. Knižnica je v pavilóne B na 1. poschodí — sem
-						donesieš zväzok aj čitateľský preukaz.
+						Knižnica je v pavilóne B na 1. poschodí — sem donesieš zväzok aj čitateľský preukaz.
 					</p>
 					<HallMap />
 				</section>

@@ -3,6 +3,7 @@
 import { useStateAction } from 'next-safe-action/hooks';
 import { AuthPass } from '@/components/AuthPass';
 import { PassSecret } from '@/components/PassSecret';
+import { formToasts } from '@/notify/toast';
 import { bindFormAction } from '@/utils/form-kit';
 import { signInAction, signUpAction } from './actions';
 
@@ -14,8 +15,8 @@ function fieldError(
 }
 
 export function LoginForm({ register, configured }: { register: boolean; configured: boolean }) {
-	const signIn = useStateAction(signInAction, { throwOnNavigation: true });
-	const signUp = useStateAction(signUpAction, { throwOnNavigation: true });
+	const signIn = useStateAction(signInAction, { throwOnNavigation: true, ...formToasts });
+	const signUp = useStateAction(signUpAction, { throwOnNavigation: true, ...formToasts });
 	const current = register ? signUp : signIn;
 	const data = current.result.data;
 	const errors = current.result.validationErrors;

@@ -12,7 +12,8 @@ import {
 import { bookHoldUserId, getOpenHold, reserveBook } from '@/server/waitlist';
 import { queueHoldNotice } from '@/server/hold-mail';
 import { hasBorrowErrors, normalizeClass, parseLoanDays, splitReaderName, validateBorrow } from '@/desk/borrow-fields';
-import { copiesLabel, shortDate, stampDate } from '@/utils/format';
+import { copiesLabel, shortDate } from '@/utils/format';
+import { noticeHref } from '@/notify/notices';
 import { queueLoanNotice } from '@/server/loan-mail';
 import { getSessionReader } from '@/server/session';
 import { BookCover } from '@/components/BookCover';
@@ -38,17 +39,18 @@ async function borrowAction(formData: FormData) {
 		className: formData.get('className')?.toString() ?? '',
 		days: formData.get('days')?.toString() ?? ''
 	};
+	if (!id) redirect('/books');
 	const errors = validateBorrow(values);
-	if (hasBorrowErrors(errors)) return;
+	if (hasBorrowErrors(errors)) redirect(noticeHref(`/books/${id}`, 'borrow-fail'));
 	const days = parseLoanDays(values.days);
-	if (!days) return;
+	if (!days) redirect(noticeHref(`/books/${id}`, 'borrow-fail'));
 	const result = await borrowBook(user.id, id, {
 		firstName: values.firstName.trim(),
 		lastName: values.lastName.trim(),
 		className: normalizeClass(values.className),
 		days
 	});
-	if (!result.ok) return;
+	if (!result.ok) redirect(noticeHref(`/books/${id}`, 'borrow-fail'));
 	const held = await getBook(id);
 	await queueLoanNotice({
 		kind: 'borrow',
@@ -60,7 +62,7 @@ async function borrowAction(formData: FormData) {
 		className: normalizeClass(values.className),
 		days
 	});
-	redirect(`/books/${id}?ok=borrow`);
+	redirect(noticeHref(`/books/${id}`, 'borrow'));
 }
 
 async function reserveAction(formData: FormData) {
@@ -68,8 +70,9 @@ async function reserveAction(formData: FormData) {
 	const user = await getSessionReader();
 	if (!user) redirect('/login');
 	const id = String(formData.get('bookId') ?? '');
+	if (!id) redirect('/books');
 	const result = await reserveBook(user.id, id);
-	if (!result.ok) return;
+	if (!result.ok) redirect(noticeHref(`/books/${id}`, 'hold-fail'));
 	const held = await getBook(id);
 	await queueHoldNotice({
 		kind: 'queued',
@@ -79,18 +82,11 @@ async function reserveAction(formData: FormData) {
 		callNumber: held?.callNumber,
 		place: result.place
 	});
-	redirect(`/books/${id}?ok=hold`);
+	redirect(noticeHref(`/books/${id}`, 'hold'));
 }
 
-export default async function BookPage({
-	params,
-	searchParams
-}: {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<{ ok?: string }>;
-}) {
+export default async function BookPage({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params;
-	const { ok } = await searchParams;
 	const current = await getBook(id);
 	if (!current) notFound();
 	const user = await getSessionReader();
@@ -123,8 +119,6 @@ export default async function BookPage({
 					{current.category.name}
 				</a>
 			</p>
-			{ok === 'borrow' ? <p className="mt-4 font-display text-2xl">Vypožičané. {stampDate(new Date())}</p> : null}
-			{ok === 'hold' ? <p className="mt-4 font-display text-2xl">Si v rade.</p> : null}
 			<div className="mt-8 grid gap-10 lg:grid-cols-[auto_minmax(0,1fr)]">
 				<BookCover book={current} size="hero" linked={false} />
 				<div>

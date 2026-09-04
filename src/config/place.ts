@@ -3,20 +3,16 @@ export const LIBRARY_PLACE = {
 	pavilion: 'Pavilón B',
 	floor: '1. poschodie',
 	hours: 'Po—Pia 7:30—15:30',
-	street: 'Hviezdoslavova 6',
-	city: 'Spišská Nová Ves',
-	zip: '052 01',
-	lat: 48.94732,
-	lon: 20.56736
+	street: 'Komenského 5',
+	city: 'Bardejov',
+	zip: '085 42',
+	lat: 49.29056,
+	lon: 21.26969,
+	site: 'https://www.spsbj.sk'
 } as const;
 
-const bbox = {
-	west: LIBRARY_PLACE.lon - 0.0054,
-	south: LIBRARY_PLACE.lat - 0.0034,
-	east: LIBRARY_PLACE.lon + 0.0054,
-	north: LIBRARY_PLACE.lat + 0.0034
-};
+const addressQuery = encodeURIComponent(
+	`${LIBRARY_PLACE.street}, ${LIBRARY_PLACE.zip} ${LIBRARY_PLACE.city}`
+);
 
-export const LIBRARY_OSM_EMBED = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox.west}%2C${bbox.south}%2C${bbox.east}%2C${bbox.north}&layer=mapnik`;
-
-export const LIBRARY_OSM_LINK = `https://www.openstreetmap.org/?mlat=${LIBRARY_PLACE.lat}&mlon=${LIBRARY_PLACE.lon}#map=17/${LIBRARY_PLACE.lat}/${LIBRARY_PLACE.lon}`;
+export const LIBRARY_OSM_LINK = `https://www.openstreetmap.org/search?query=${addressQuery}#map=18/${LIBRARY_PLACE.lat}/${LIBRARY_PLACE.lon}`;

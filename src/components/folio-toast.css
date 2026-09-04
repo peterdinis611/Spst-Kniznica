@@ -1,0 +1,75 @@
+[data-sonner-toaster] {
+	--width: 22.5rem;
+	z-index: 96 !important;
+}
+
+[data-sonner-toast].folio-toast {
+	--normal-bg: var(--paper);
+	--normal-border: color-mix(in srgb, var(--foreground) 16%, transparent);
+	--normal-text: var(--foreground);
+	--success-bg: var(--ok);
+	--success-border: color-mix(in srgb, var(--ok-ink) 28%, transparent);
+	--success-text: var(--ok-ink);
+	--error-bg: var(--out);
+	--error-border: color-mix(in srgb, var(--out-ink) 34%, transparent);
+	--error-text: var(--out-ink);
+	position: relative;
+	overflow: hidden;
+	align-items: flex-start;
+	gap: 0.85rem;
+	padding: 0.95rem 1.05rem 0.9rem 1.15rem !important;
+	border-radius: 0.2rem 1.05rem 1.05rem 0.2rem !important;
+	box-shadow:
+		0 18px 40px rgb(44 29 22 / 0.16),
+		inset 0 1px 0 rgb(255 255 255 / 0.28) !important;
+	font-family: var(--font-body), 'Literata', serif !important;
+}
+
+[data-sonner-toast].folio-toast::before {
+	content: 'PEČIATKA';
+	position: absolute;
+	top: 0.55rem;
+	right: 2.35rem;
+	font-family: var(--font-mono), 'Azeret Mono', monospace;
+	font-size: 0.58rem;
+	font-weight: 600;
+	letter-spacing: 0.16em;
+	opacity: 0.55;
+}
+
+[data-sonner-toast].folio-toast.is-out::before {
+	content: 'ZÁSAH';
+}
+
+[data-sonner-toast].folio-toast::after {
+	content: '';
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: 0.38rem;
+	background: var(--stamp);
+}
+
+[data-sonner-toast].folio-toast [data-title] {
+	font-family: var(--font-display), 'Cormorant Garamond', serif;
+	font-size: 1.22rem;
+	font-weight: 600;
+	line-height: 1.05;
+	letter-spacing: -0.03em;
+}
+
+[data-sonner-toast].folio-toast [data-description] {
+	margin-top: 0.18rem;
+	font-size: 0.92rem;
+	line-height: 1.35;
+	opacity: 0.82;
+}
+
+[data-sonner-toast].folio-toast [data-icon] {
+	margin-top: 0.15rem;
+}
+
+[data-sonner-toast].folio-toast [data-close-button] {
+	background: color-mix(in srgb, var(--paper) 70%, transparent);
+	border-color: color-mix(in srgb, var(--foreground) 14%, transparent);
+	color: inherit;
+}

@@ -1,7 +1,20 @@
 import { redirect } from 'next/navigation';
 import type { EmailOtpType } from '@supabase/supabase-js';
+import { noticeHref, type NoticeKey } from '@/notify/notices';
 import { safeAuthNext } from '@/server/auth-message';
 import { createSupabaseServer } from '@/server/session';
+
+function confirmNotice(type: EmailOtpType | null, next: string): NoticeKey | null {
+	if (type === 'recovery') return null;
+	if (type === 'signup' || type === 'invite' || type === 'email') return 'confirmed';
+	if (next.startsWith('/auth/error')) return 'auth-fail';
+	return 'login';
+}
+
+function go(next: string, type: EmailOtpType | null) {
+	const key = confirmNotice(type, next);
+	redirect(key ? noticeHref(next, key) : next);
+}
 
 export async function GET(request: Request) {
 	const url = new URL(request.url);
@@ -16,14 +29,14 @@ export async function GET(request: Request) {
 	if (supabase) {
 		if (tokenHash && type) {
 			const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
-			if (!error) redirect(next);
+			if (!error) go(next, type);
 		}
 		const code = url.searchParams.get('code');
 		if (code) {
 			const { error } = await supabase.auth.exchangeCodeForSession(code);
-			if (!error) redirect(next);
+			if (!error) go(next, type);
 		}
 	}
 
-	redirect('/auth/error');
+	redirect(noticeHref('/auth/error', 'auth-fail'));
 }

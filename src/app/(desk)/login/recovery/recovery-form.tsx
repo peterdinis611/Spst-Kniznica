@@ -2,11 +2,12 @@
 
 import { useStateAction } from 'next-safe-action/hooks';
 import { AuthPass } from '@/components/AuthPass';
+import { formToasts } from '@/notify/toast';
 import { bindFormAction } from '@/utils/form-kit';
 import { recoverAction } from '../actions';
 
 export function RecoveryForm({ configured }: { configured: boolean }) {
-	const action = useStateAction(recoverAction);
+	const action = useStateAction(recoverAction, formToasts);
 	const note = action.result.data?.message ?? action.result.serverError;
 	const emailError = action.result.validationErrors?.fieldErrors?.email?.[0];
 	const emailValue = action.result.data?.values?.email ?? action.input?.email ?? '';

@@ -11,6 +11,7 @@ import { requestPasswordReset } from '@/server/password-reset';
 import { actionEvent, createSupabaseServer, getSessionReader } from '@/server/session';
 import { supabasePublic } from '@/config/supabase';
 import { isActionFailure } from '@/http/kit';
+import { noticeHref } from '@/notify/notices';
 import { headers } from 'next/headers';
 
 export type LoginData = {
@@ -55,7 +56,7 @@ export const signInAction = actionClient
 			role: data.user.user_metadata?.role
 		});
 
-		redirect('/loans');
+		redirect(noticeHref('/loans', 'login'));
 	});
 
 export const signUpAction = actionClient
@@ -107,7 +108,7 @@ export const signUpAction = actionClient
 			role: data.user.user_metadata?.role
 		});
 
-		redirect('/loans');
+		redirect(noticeHref('/loans', 'signup'));
 	});
 
 export const recoverAction = actionClient

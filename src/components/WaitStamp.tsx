@@ -9,6 +9,10 @@ export function WaitStamp() {
 	const search = useSearchParams();
 	const [visible, setVisible] = useState(false);
 	const first = useRef(true);
+	const flash = new URLSearchParams(search.toString());
+	flash.delete('notice');
+	flash.delete('ok');
+	const searchKey = flash.toString();
 
 	useEffect(() => {
 		if (first.current) {
@@ -18,7 +22,7 @@ export function WaitStamp() {
 		setVisible(true);
 		const id = setTimeout(() => setVisible(false), 420);
 		return () => clearTimeout(id);
-	}, [pathname, search]);
+	}, [pathname, searchKey]);
 
 	if (!visible) return null;
 

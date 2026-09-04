@@ -17,6 +17,7 @@ import {
 	renewLoan
 } from '@/server/library';
 import { getSessionReader } from '@/server/session';
+import { noticeHref } from '@/notify/notices';
 
 const loanIdSchema = v.object({
 	loanId: v.pipe(v.string(), v.minLength(1))
@@ -61,7 +62,7 @@ export const returnLoan = authActionClient
 		const loanId = parsedInput.loanId;
 		const open = (await listLoans(user.id)).find((item) => item.id === loanId);
 		const result = await offerReturn(user.id, loanId);
-		if (!result.ok) redirect('/loans');
+		if (!result.ok) redirect(noticeHref('/loans', 'return-fail'));
 		if (open && !result.already) {
 			await queueLoanNotice({
 				kind: 'inbound',
@@ -71,7 +72,7 @@ export const returnLoan = authActionClient
 				callNumber: open.book.callNumber
 			});
 		}
-		redirect('/loans');
+		redirect(noticeHref('/loans', 'return'));
 	});
 
 export const renewLoanAction = authActionClient
@@ -92,8 +93,9 @@ export const renewLoanAction = authActionClient
 					dueAt: result.dueAt
 				});
 			}
+			redirect(noticeHref('/loans', 'renew'));
 		}
-		redirect('/loans');
+		redirect(noticeHref('/loans', 'renew-fail'));
 	});
 
 export const cancelWait = authActionClient
@@ -101,12 +103,12 @@ export const cancelWait = authActionClient
 	.action(async ({ parsedInput, ctx }) => {
 		const result = await cancelHold(ctx.user.id, parsedInput.reservationId);
 		if (result.ok && result.offer) await notifyHoldReady(result.offer);
-		redirect('/loans');
+		redirect(noticeHref('/loans', 'wait-cancel'));
 	});
 
 export const clearHistory = authActionClient.inputSchema(v.object({})).action(async ({ ctx }) => {
 	await clearReturnedLoans(ctx.user.id);
-	redirect('/loans');
+	redirect(noticeHref('/loans', 'history-clear'));
 });
 
 export { stampDate };

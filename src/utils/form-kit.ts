@@ -47,12 +47,36 @@ export function firstSchemaIssue(schema: v.GenericSchema, data: unknown): string
 	return result.issues[0]?.message;
 }
 
-export function toastFromResult(_result: ActionResult) {
-	return;
+export function toastFromResult(result: ActionResult) {
+	if (typeof window === 'undefined') return;
+	void import('@/notify/toast').then(({ showStamp, toastServerError }) => {
+		if (result.type === 'success') {
+			const data = result.data ?? {};
+			const text =
+				typeof data.stamp === 'string'
+					? data.stamp
+					: typeof data.message === 'string'
+						? data.message
+						: 'Hotovo.';
+			const sub = typeof data.sub === 'string' ? data.sub : undefined;
+			showStamp('success', text, sub);
+			return;
+		}
+		if (result.type === 'failure') {
+			const data = result.data as { message?: string };
+			toastServerError(data.message);
+			return;
+		}
+		if (result.type === 'error') toastServerError();
+	});
 }
 
-export function applyToast() {
-	return;
+export function applyToast(opts?: { fill?: string; onResult?: (result: ActionResult) => void }) {
+	if (typeof window === 'undefined') return () => undefined;
+	return (input: { result: ActionResult }) => {
+		opts?.onResult?.(input.result);
+		toastFromResult(input.result);
+	};
 }
 
 export function gateSubmit(form: Gateable, event: SubmitEvent, _message = 'Doplň lístok.') {

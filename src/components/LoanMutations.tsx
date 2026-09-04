@@ -2,10 +2,11 @@
 
 import { useAction } from 'next-safe-action/hooks';
 import { cancelWait, clearHistory, renewLoanAction, returnLoan } from '@/app/(desk)/loans/actions';
+import { mutationToasts } from '@/notify/toast';
 
 export function LoanReturn({ loanId, canRenew }: { loanId: string; canRenew: boolean }) {
-	const ret = useAction(returnLoan, { throwOnNavigation: true });
-	const renew = useAction(renewLoanAction, { throwOnNavigation: true });
+	const ret = useAction(returnLoan, mutationToasts('Vrátenie sa nepodarilo.'));
+	const renew = useAction(renewLoanAction, mutationToasts('Predĺženie sa nepodarilo.'));
 
 	return (
 		<div className="relative z-[1] mt-3 flex flex-wrap gap-2">
@@ -32,7 +33,7 @@ export function LoanReturn({ loanId, canRenew }: { loanId: string; canRenew: boo
 }
 
 export function WaitCancel({ reservationId }: { reservationId: string }) {
-	const action = useAction(cancelWait, { throwOnNavigation: true });
+	const action = useAction(cancelWait, mutationToasts('Rezerváciu sa nepodarilo stiahnuť.'));
 	return (
 		<button
 			type="button"
@@ -46,7 +47,7 @@ export function WaitCancel({ reservationId }: { reservationId: string }) {
 }
 
 export function HistoryClear() {
-	const action = useAction(clearHistory, { throwOnNavigation: true });
+	const action = useAction(clearHistory, mutationToasts('Históriu sa nepodarilo vyčistiť.'));
 	return (
 		<button
 			type="button"
