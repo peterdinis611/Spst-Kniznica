@@ -7,7 +7,7 @@
 		"dev": "next dev -p 3000",
 		"build": "next build",
 		"start": "next start -p 3000",
-		"lint": "biome format --check .",
+		"lint": "biome format .",
 		"format": "biome format --write .",
 		"test:unit": "vitest --config vitest.config.ts",
 		"test": "vitest --config vitest.config.ts --run",
