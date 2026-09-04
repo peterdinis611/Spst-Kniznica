@@ -2,7 +2,6 @@
 	"files.associations": {
 		"*.css": "tailwindcss"
 	},
-	"prettier.enable": false,
 	"editor.defaultFormatter": "biomejs.biome",
 	"[javascript]": {
 		"editor.defaultFormatter": "biomejs.biome"

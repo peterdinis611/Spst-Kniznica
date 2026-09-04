@@ -148,7 +148,7 @@ bun run lint         # Biome — kontrola formátu
 bun run format       # Biome — zapísať formát
 ```
 
-Kód drží **Biome**, nie Prettier. Pravidlá sú v `biome.json` (taby, `'` , šírka 100). V Cursor / VS Code daj rozšírenie `biomejs.biome`.
+Kód drží **Biome**. Pravidlá sú v `biome.json` (taby, `'` , šírka 100). V Cursor / VS Code daj rozšírenie `biomejs.biome`.
 
 ## Záťaž (k6)
 
