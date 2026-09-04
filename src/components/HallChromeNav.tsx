@@ -69,7 +69,8 @@ export function HallChromeNav({
 						aria-label="Hľadať knihu"
 					>
 						<Search className="size-4" />
-						<span>Hľadať knihu</span>
+						<span>Hľadať</span>
+						<kbd>⌘K</kbd>
 					</button>
 					<ThemeToggle variant="hall" />
 					<a
@@ -82,7 +83,7 @@ export function HallChromeNav({
 					</a>
 					<button
 						type="button"
-						className={`hall-menu-btn${menuOpen ? 'is-open' : ''}`}
+						className={`hall-menu-btn${menuOpen ? ' is-open' : ''}`}
 						aria-controls="landing-menu"
 						aria-expanded={menuOpen}
 						aria-label={menuOpen ? 'Zavrieť menu' : 'Otvoriť menu'}

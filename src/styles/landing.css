@@ -238,6 +238,10 @@
 	font-weight: 600;
 }
 
+.hall-search-btn.is-mobile kbd {
+	display: none;
+}
+
 .hall-menu-btn {
 	display: grid;
 	gap: 5px;
@@ -771,6 +775,43 @@
 
 	.folio {
 		padding-top: 4.4rem;
+	}
+
+	.hall-search-btn {
+		display: inline-flex;
+		width: auto;
+		gap: 0.4rem;
+		padding: 0 0.38rem 0 0.72rem;
+	}
+
+	.hall-search-btn span,
+	.hall-search-btn kbd {
+		position: static;
+		width: auto;
+		height: auto;
+		overflow: visible;
+		clip: auto;
+	}
+
+	.hall-search-btn span {
+		color: var(--stamp-ink);
+		font-family: var(--ui);
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+
+	.hall-search-btn kbd {
+		display: inline-grid;
+		place-items: center;
+		min-width: 1.7rem;
+		height: 1.45rem;
+		padding: 0 0.32rem;
+		border-radius: 0.35rem;
+		background: color-mix(in srgb, var(--stamp-ink) 16%, transparent);
+		font-family: 'Azeret Mono', ui-monospace, monospace;
+		font-size: 0.62rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
 	}
 }
 
