@@ -7,8 +7,8 @@
 		"dev": "next dev -p 3000",
 		"build": "next build",
 		"start": "next start -p 3000",
-		"lint": "prettier --check .",
-		"format": "prettier --write .",
+		"lint": "biome format --check .",
+		"format": "biome format --write .",
 		"test:unit": "vitest --config vitest.config.ts",
 		"test": "vitest --config vitest.config.ts --run",
 		"k6:up": "docker compose -f k6/docker-compose.yml up -d prometheus grafana",
@@ -25,6 +25,7 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "^2.5.12",
 		"@eslint/js": "^10.0.1",
 		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/postcss": "^4.3.3",

@@ -143,8 +143,8 @@ bun run dev          # vývoj, port 3000
 bun run build        # produkčný build
 bun run start        # Next start, port 3000
 bun run test         # Vitest (jednorazovo)
-bun run lint         # Prettier
-bun run format       # Prettier write
+bun run lint         # Biome format check
+bun run format       # Biome format write
 ```
 
 ## Záťaž (k6)
