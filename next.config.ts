@@ -40,6 +40,8 @@ const securityHeaders = [
 		: [])
 ];
 
+const yearCache = [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }];
+
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	poweredByHeader: false,
@@ -61,15 +63,23 @@ const nextConfig: NextConfig = {
 		removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false
 	},
 	experimental: {
-		optimizePackageImports: ['lucide-react', 'valibot', 'next-safe-action'],
+		optimizePackageImports: [
+			'lucide-react',
+			'valibot',
+			'next-safe-action',
+			'sonner',
+			'next-themes'
+		],
+		staleTimes: {
+			dynamic: 30,
+			static: 180
+		},
 		serverActions: {
 			bodySizeLimit: '2mb',
 			allowedOrigins: originHost ? [originHost] : undefined
 		}
 	},
-	logging: {
-		fetches: { fullUrl: true }
-	},
+	...(process.env.NODE_ENV === 'development' ? { logging: { fetches: { fullUrl: true } } } : {}),
 	webpack: (config, { isServer }) => {
 		if (isServer && Array.isArray(config.externals)) {
 			config.externals.push('pg-boss', 'pg', 'pg-connection-string');
@@ -97,6 +107,13 @@ const nextConfig: NextConfig = {
 			{
 				source: '/api/:path*',
 				headers: [{ key: 'Cache-Control', value: 'no-store' }]
+			},
+			{ source: '/brand/:path*', headers: yearCache },
+			{ source: '/icon.png', headers: yearCache },
+			{ source: '/apple-touch-icon.png', headers: yearCache },
+			{
+				source: '/favicon.ico',
+				headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }]
 			}
 		];
 	}

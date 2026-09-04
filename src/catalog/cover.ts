@@ -146,7 +146,7 @@ export function imagePreset(name: ImagePreset) {
 	return PRESETS[name];
 }
 
-export function photoUrl(src: string, width: number, height?: number, quality = 72) {
+export function photoUrl(src: string, width: number, height?: number, quality = 68) {
 	try {
 		const url = new URL(src);
 		if (!url.hostname.includes('unsplash.com')) return src;

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { volumesLabel } from '@/utils/format';
 import type { BookSlip, CategoryChip } from '@/types';
 import { CatalogSlip } from './CatalogSlip';
@@ -74,7 +75,7 @@ export function FundLedger({
 					</strong>
 					<span>{volumesLabel(count)}</span>
 					{virtual ? <em>virtualizovaný register</em> : null}
-					<a href="/books">Do katalógu →</a>
+					<Link href="/books">Do katalógu →</Link>
 				</aside>
 			</header>
 			{virtual ? (
@@ -83,7 +84,7 @@ export function FundLedger({
 						const item = rows[index];
 						if (item?.kind === 'head') {
 							return (
-								<a
+								<Link
 									className="lane-head"
 									style={{ ['--accent' as string]: item.accent }}
 									href={`/departments/${item.slug}`}
@@ -91,21 +92,21 @@ export function FundLedger({
 									<strong>{item.code}</strong>
 									<span>{item.name}</span>
 									<b>{item.count}</b>
-								</a>
+								</Link>
 							);
 						}
 						if (item?.kind === 'fan') {
 							return (
 								<div className="lane-fan" style={{ ['--accent' as string]: item.accent }}>
 									{item.preview.map((book) => (
-										<a key={book.id} className="fan-item" href={`/books/${book.id}`}>
+										<Link key={book.id} className="fan-item" href={`/books/${book.id}`} prefetch>
 											<PrintJacket
 												book={book}
 												linked={false}
 												size="thumb"
 												className="hover:!transform-none"
 											/>
-										</a>
+										</Link>
 									))}
 								</div>
 							);
@@ -128,7 +129,7 @@ export function FundLedger({
 							}
 							aria-labelledby={`folio-${group.id}`}
 						>
-							<a className="folio-head" href={`/departments/${group.slug}`}>
+							<Link className="folio-head" href={`/departments/${group.slug}`}>
 								<span className="folio-code" id={`folio-${group.id}`}>
 									{group.code}
 								</span>
@@ -136,7 +137,7 @@ export function FundLedger({
 									<em>{group.name}</em>
 									<b>{group.books.length}</b>
 								</span>
-							</a>
+							</Link>
 							<div className="folio-fan" aria-hidden="true">
 								{group.books.map((book, i) => (
 									<div

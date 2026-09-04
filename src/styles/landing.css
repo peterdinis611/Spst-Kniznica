@@ -24,9 +24,9 @@
 	--line: #e0d4c4;
 	--wash: #efe6d8;
 	--radius: 1.05rem;
-	--display: "Cormorant Garamond", serif;
-	--ui: "Bricolage Grotesque", sans-serif;
-	--body: "Literata", serif;
+	--display: var(--font-cormorant), "Cormorant Garamond", serif;
+	--ui: var(--font-bricolage), "Bricolage Grotesque", sans-serif;
+	--body: var(--font-literata), "Literata", serif;
 	--primary: var(--ink);
 	--primary-foreground: #f6f0e6;
 	--accent: var(--ink);
@@ -719,7 +719,7 @@
 }
 
 .folio-odbory em {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	font-style: normal;
 	font-weight: 700;
@@ -809,7 +809,7 @@
 		padding: 0 0.32rem;
 		border-radius: 0.35rem;
 		background: color-mix(in srgb, var(--stamp-ink) 16%, transparent);
-		font-family: "Azeret Mono", ui-monospace, monospace;
+		font-family: var(--font-mono), ui-monospace, monospace;
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.02em;

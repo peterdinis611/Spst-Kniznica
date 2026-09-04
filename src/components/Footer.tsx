@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 const links = [
 	{ href: '/discover', label: 'Objavovať' },
 	{ href: '/holdings', label: 'Všetky knihy' },
@@ -21,9 +23,9 @@ export function Footer({ tone = 'desk' }: { tone?: 'desk' | 'hall' }) {
 				</p>
 				<nav aria-label="Pätička">
 					{links.map((link) => (
-						<a key={link.href} href={link.href}>
+						<Link key={link.href} href={link.href}>
 							{link.label}
-						</a>
+						</Link>
 					))}
 				</nav>
 				<p className="hall-foot-copy">© {year} SPŠT knižnica · interný školský fond</p>
@@ -39,13 +41,13 @@ export function Footer({ tone = 'desk' }: { tone?: 'desk' | 'hall' }) {
 				aria-label="Pätička"
 			>
 				{links.map((link) => (
-					<a
+					<Link
 						key={link.href}
 						href={link.href}
 						className="text-inherit no-underline hover:text-foreground"
 					>
 						{link.label}
-					</a>
+					</Link>
 				))}
 			</nav>
 		</footer>

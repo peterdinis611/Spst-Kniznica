@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { authorLine, copiesLabel, copiesShort, splitCallNumber } from '@/utils/format';
 import { clothFor } from '@/catalog/cover';
 import type { BookSlip } from '@/types';
@@ -9,7 +10,7 @@ export function CatalogSlip({ book }: { book: BookSlip }) {
 	const out = book.copiesAvailable === 0;
 
 	return (
-		<a className="slip" href={`/books/${book.id}`}>
+		<Link className="slip" href={`/books/${book.id}`} prefetch>
 			<span className="slip-tab" style={{ background: cloth.bg }} />
 			<span className="slip-call">
 				<i>{call.dept}</i>
@@ -26,6 +27,6 @@ export function CatalogSlip({ book }: { book: BookSlip }) {
 				</abbr>
 				<span className="slip-full">{copiesLabel(book.copiesAvailable, book.copiesTotal)}</span>
 			</span>
-		</a>
+		</Link>
 	);
 }

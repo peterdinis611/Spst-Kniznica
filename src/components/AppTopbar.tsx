@@ -2,6 +2,8 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
 	BookOpen,
 	ChevronDown,
@@ -16,8 +18,15 @@ import {
 import type { CategoryChip, Reader } from '@/types';
 import { deskTitle } from '@/desk/desk';
 import { readerNumber } from '@/utils/format';
-import { AppSidebar } from './AppSidebar';
 import { ThemeToggle } from './ThemeToggle';
+
+const AppSidebar = dynamic(
+	() => import('./AppSidebar').then((mod) => ({ default: mod.AppSidebar })),
+	{
+		ssr: false,
+		loading: () => <div className="h-full bg-sidebar" />
+	}
+);
 
 export function AppTopbar({
 	user,
@@ -159,28 +168,28 @@ export function AppTopbar({
 									</div>
 									{user ? (
 										<>
-											<a
+											<Link
 												href="/profile"
 												className="flex items-center gap-2 rounded-full px-3 py-2 no-underline"
 											>
 												<UserRound className="size-4" />
 												Môj profil
-											</a>
-											<a
+											</Link>
+											<Link
 												href="/loans"
 												className="flex items-center gap-2 rounded-full px-3 py-2 no-underline"
 											>
 												<BookOpen className="size-4" />
 												Moje knihy
-											</a>
+											</Link>
 											{admin ? (
-												<a
+												<Link
 													href="/admin"
 													className="flex items-center gap-2 rounded-full px-3 py-2 no-underline"
 												>
 													<Stamp className="size-4" />
 													Pult
-												</a>
+												</Link>
 											) : null}
 											<button
 												type="button"
@@ -192,13 +201,13 @@ export function AppTopbar({
 											</button>
 										</>
 									) : (
-										<a
+										<Link
 											href="/login"
 											className="flex items-center gap-2 rounded-full px-3 py-2 no-underline"
 										>
 											<LogIn className="size-4" />
 											Prihlásiť sa
-										</a>
+										</Link>
 									)}
 								</div>
 							</>
@@ -227,14 +236,14 @@ export function AppTopbar({
 									</button>
 									{odborOpen ? (
 										<div className="absolute top-12 z-20 min-w-56 rounded-2xl bg-card p-2 shadow-[0_18px_40px_rgb(60_42_33/0.14)] ring-1 ring-border">
-											<a
+											<Link
 												href={query ? `/books?q=${encodeURIComponent(query)}` : '/books'}
 												className="block rounded-full px-3 py-2 font-sans text-[0.82rem] no-underline"
 											>
 												Všetky odbory
-											</a>
+											</Link>
 											{categories.map((cat) => (
-												<a
+												<Link
 													key={cat.id}
 													href={`/books?odbor=${cat.slug}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
 													className="block rounded-full px-3 py-2 font-sans text-[0.82rem] no-underline"
@@ -243,7 +252,7 @@ export function AppTopbar({
 														{cat.code}
 													</span>
 													{cat.name}
-												</a>
+												</Link>
 											))}
 										</div>
 									) : null}

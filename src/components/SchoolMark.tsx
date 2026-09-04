@@ -1,11 +1,12 @@
 export function SchoolMark({ className = '' }: { className?: string }) {
 	return (
 		<img
-			src="/brand/spsbj-mark.png?v=4"
+			src="/brand/spsbj-mark.png"
 			alt=""
-			width={726}
-			height={1018}
+			width={188}
+			height={264}
 			decoding="async"
+			fetchPriority="high"
 			className={className}
 		/>
 	);

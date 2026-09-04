@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Search, X } from 'lucide-react';
 import { jacketFor } from '@/catalog/cover';
 import type { CatalogSearchItem } from '@/catalog/search';
@@ -258,11 +259,12 @@ export function CatalogSearch({
 							const selected = i === active;
 							return (
 								<li key={book.id} role="presentation">
-									<a
+									<Link
 										ref={selected ? activeEl : undefined}
 										id={`${listId}-hit-${book.id}`}
 										className={`search-hit${selected ? ' is-active' : ''}`}
 										href={`/books/${book.id}`}
+										prefetch
 										role="option"
 										aria-selected={selected}
 										onMouseEnter={() => setActive(i)}
@@ -284,7 +286,7 @@ export function CatalogSearch({
 										>
 											{book.copiesAvailable > 0 ? 'Voľná' : 'Vonku'}
 										</span>
-									</a>
+									</Link>
 								</li>
 							);
 						})

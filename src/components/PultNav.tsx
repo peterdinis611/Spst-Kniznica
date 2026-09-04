@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { pultTablesFor } from '@/desk/admin';
 
 export function PultNav({ manage = true, pathname }: { manage?: boolean; pathname: string }) {
@@ -11,15 +12,16 @@ export function PultNav({ manage = true, pathname }: { manage?: boolean; pathnam
 	return (
 		<nav className="pult-tabs" aria-label="Kartotéka pultu">
 			{tabs.map((item, i) => (
-				<a
+				<Link
 					key={item.href}
 					className={`pult-tab${on(item.href) ? ' is-on' : ''}`}
 					href={item.href}
+					prefetch
 					style={{ animationDelay: `${i * 40}ms` }}
 				>
 					<em>{item.code}</em>
 					{item.label}
-				</a>
+				</Link>
 			))}
 		</nav>
 	);

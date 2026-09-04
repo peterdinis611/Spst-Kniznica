@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import './folio-shelf.css';
 
 type ShelfBook = { id: string; title: string };
@@ -67,10 +68,11 @@ export function FolioShelf({ books }: { books: ShelfBook[] }) {
 										const isTip = tipIndexes.includes(index);
 										if (!book) return null;
 										return (
-											<a
+											<Link
 												key={`${bay}-${slot}`}
 												className={`folio-spine no-underline${isTip ? ' is-tip' : ''}${active === book.id ? ' is-on' : ''}`}
 												href={`/books/${book.id}`}
+												prefetch
 												style={
 													{
 														['--w' as string]: `${widths[index % widths.length]}rem`,
@@ -84,7 +86,7 @@ export function FolioShelf({ books }: { books: ShelfBook[] }) {
 											>
 												<span className="folio-band" />
 												<span className="sr-only">{book.title}</span>
-											</a>
+											</Link>
 										);
 									})}
 								</div>
@@ -100,15 +102,16 @@ export function FolioShelf({ books }: { books: ShelfBook[] }) {
 				const book = bookAt(index);
 				if (!book) return null;
 				return (
-					<a
+					<Link
 						key={index}
 						className={`folio-tip no-underline tip-${i}${active === book.id ? ' is-on' : ''}`}
 						href={`/books/${book.id}`}
+						prefetch
 						onMouseEnter={() => setActive(book.id)}
 						onFocus={() => setActive(book.id)}
 					>
 						{book.title}
-					</a>
+					</Link>
 				);
 			})}
 		</div>

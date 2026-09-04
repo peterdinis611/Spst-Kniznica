@@ -18,7 +18,7 @@
 .offline-slip-kicker {
 	margin: 0;
 	color: var(--muted-foreground, #7a6a5c);
-	font-family: "Bricolage Grotesque", sans-serif;
+	font-family: var(--font-sans), sans-serif;
 	font-size: 0.62rem;
 	font-weight: 600;
 	letter-spacing: 0.18em;
@@ -27,7 +27,7 @@
 
 .offline-slip-title {
 	margin: 0.15rem 0 0;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1.28rem;
 	font-weight: 700;
 	letter-spacing: -0.03em;
@@ -38,7 +38,7 @@
 	margin: 0.25rem 0 0;
 	max-width: 36ch;
 	color: var(--muted-foreground, #7a6a5c);
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 0.98rem;
 	line-height: 1.4;
 }
@@ -49,7 +49,7 @@
 	padding: 0.18rem 0.45rem;
 	border: 2px solid var(--chart-2, #c56a4a);
 	color: var(--chart-2, #c56a4a);
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 0.72rem;
 	font-style: italic;
 	font-weight: 800;

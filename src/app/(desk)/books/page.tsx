@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { pageMeta } from '@/utils/metadata';
 import { listBookSlips, listCategoryChips } from '@/server/library';
 import { BookRegister } from '@/components/BookRegister';
@@ -34,30 +35,30 @@ export default async function BooksPage({
 				) : null}
 			</p>
 			<div className="mt-4 flex flex-wrap gap-2">
-				<a
+				<Link
 					href="/books"
 					className={`inline-flex h-8 items-center rounded-full px-3 text-sm no-underline ${!odbor ? 'bg-primary text-primary-foreground' : 'ring-1 ring-border'}`}
 				>
 					Všetko
-				</a>
+				</Link>
 				{categories.map((cat) => (
-					<a
+					<Link
 						key={cat.id}
 						href={`/books?odbor=${cat.slug}${q ? `&q=${encodeURIComponent(q)}` : ''}`}
 						className={`inline-flex h-8 items-center rounded-full px-3 text-sm no-underline ${odbor === cat.slug ? 'bg-primary text-primary-foreground' : 'ring-1 ring-border'}`}
 					>
 						<span className="sm:hidden">{cat.code}</span>
 						<span className="hidden sm:inline">{cat.name}</span>
-					</a>
+					</Link>
 				))}
 			</div>
 			{books.length === 0 ? (
 				<div className="mt-10 rounded-2xl p-6 ring-1 ring-border">
 					<p className="font-display text-xl">Nič sa nenašlo</p>
 					<p className="mt-2 text-muted-foreground">Skús iné slovo, alebo zruš filter.</p>
-					<a href="/books" className="mt-4 inline-block text-sm underline">
+					<Link href="/books" className="mt-4 inline-block text-sm underline">
 						Zrušiť filter
-					</a>
+					</Link>
 				</div>
 			) : (
 				<BookRegister books={books} />

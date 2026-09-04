@@ -58,14 +58,14 @@
 	margin-right: auto;
 	overflow: hidden;
 	color: inherit;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1.12rem;
 	font-weight: 800;
 	letter-spacing: -0.03em;
 }
 
 .handbook-mark span {
-	font-family: "Bricolage Grotesque", sans-serif;
+	font-family: var(--font-sans), sans-serif;
 	font-size: 0.62rem;
 	font-weight: 700;
 	letter-spacing: 0.2em;
@@ -82,7 +82,7 @@
 	padding: 0 0.95rem;
 	border: 0;
 	border-radius: 999px;
-	font-family: "Bricolage Grotesque", sans-serif;
+	font-family: var(--font-sans), sans-serif;
 	font-size: 0.78rem;
 	font-weight: 600;
 	cursor: pointer;
@@ -166,7 +166,7 @@
 .handbook-kicker {
 	margin: 0 0 1rem;
 	color: var(--hb-muted);
-	font-family: "Bricolage Grotesque", sans-serif;
+	font-family: var(--font-sans), sans-serif;
 	font-size: 0.64rem;
 	font-weight: 600;
 	letter-spacing: 0.2em;
@@ -186,7 +186,7 @@
 	padding: 0.62rem 0.7rem;
 	border-radius: 0.85rem;
 	color: var(--hb-muted);
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1.02rem;
 	font-weight: 600;
 	letter-spacing: -0.02em;
@@ -195,7 +195,7 @@
 
 .handbook-item em {
 	color: var(--hb-stamp);
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	font-style: normal;
 	font-weight: 600;
@@ -229,7 +229,7 @@
 .docs-kicker {
 	margin: 0 0 0.7rem;
 	color: var(--hb-muted);
-	font-family: "Bricolage Grotesque", sans-serif;
+	font-family: var(--font-sans), sans-serif;
 	font-size: 0.66rem;
 	font-weight: 600;
 	letter-spacing: 0.2em;
@@ -244,7 +244,7 @@
 
 .docs-leaf h1 {
 	margin: 0;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: clamp(2rem, 10vw, 3.8rem);
 	font-weight: 700;
 	letter-spacing: -0.04em;
@@ -255,14 +255,14 @@
 	margin: 0.9rem 0 0;
 	max-width: 34ch;
 	color: var(--hb-muted);
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 1.18rem;
 	line-height: 1.45;
 }
 
 .docs-prose {
 	color: var(--hb-ink);
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 1.14rem;
 	line-height: 1.68;
 }
@@ -275,7 +275,7 @@
 .docs-prose :global(h3) {
 	margin: 2.1rem 0 0.7rem;
 	color: var(--hb-ink);
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-weight: 700;
 	letter-spacing: -0.03em;
 	line-height: 1.15;
@@ -312,7 +312,7 @@
 	max-width: 100%;
 	margin-top: 1.2rem;
 	overflow-x: auto;
-	font-family: "Bricolage Grotesque", sans-serif;
+	font-family: var(--font-sans), sans-serif;
 	font-size: 0.88rem;
 	border-collapse: collapse;
 }
@@ -334,7 +334,7 @@
 }
 
 .docs-prose :global(code) {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.84em;
 }
 
@@ -367,14 +367,14 @@
 
 .docs-pager span {
 	color: var(--hb-muted);
-	font-family: "Bricolage Grotesque", sans-serif;
+	font-family: var(--font-sans), sans-serif;
 	font-size: 0.64rem;
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
 }
 
 .docs-pager strong {
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1.12rem;
 	font-weight: 700;
 	letter-spacing: -0.02em;
@@ -417,7 +417,7 @@
 	}
 
 	.handbook-spine span {
-		font-family: "Bricolage Grotesque", sans-serif;
+		font-family: var(--font-sans), sans-serif;
 		font-size: 0.62rem;
 		font-weight: 700;
 		letter-spacing: 0.28em;

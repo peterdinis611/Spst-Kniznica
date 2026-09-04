@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BookSlip } from '@/types';
 import { authorLine, copiesLabel } from '@/utils/format';
@@ -126,7 +127,7 @@ export function CoverRail({ books }: { books: BookSlip[] }) {
 						const tone = jacketFor(book);
 						const on = i === cursor;
 						return (
-							<a
+							<Link
 								key={book.id}
 								className={`volume no-underline${on ? ' is-on' : ''}${book.copiesAvailable === 0 ? ' is-out' : ''}`}
 								style={
@@ -160,7 +161,7 @@ export function CoverRail({ books }: { books: BookSlip[] }) {
 									<OptimizedImage
 										src={tone.photo}
 										preset="rail"
-										eager={on}
+										eager={false}
 										className="volume-photo"
 										fallbackLabel={book.title}
 										fallbackBg={tone.bg}
@@ -170,7 +171,7 @@ export function CoverRail({ books }: { books: BookSlip[] }) {
 									{on ? <span className="volume-title">{book.title}</span> : null}
 								</span>
 								<span className="volume-pages" />
-							</a>
+							</Link>
 						);
 					})}
 				</div>
@@ -191,9 +192,9 @@ export function CoverRail({ books }: { books: BookSlip[] }) {
 								? copiesLabel(current.copiesAvailable, current.copiesTotal)
 								: 'Práve vypožičaná'}
 						</b>
-						<a className="shelf-open no-underline" href={`/books/${current.id}`}>
+						<Link className="shelf-open no-underline" href={`/books/${current.id}`}>
 							Otvoriť zväzok
-						</a>
+						</Link>
 					</div>
 				</div>
 			) : null}

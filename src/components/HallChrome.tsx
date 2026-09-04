@@ -3,6 +3,7 @@ import type { CatalogSearchItem } from '@/catalog/search';
 import type { Reader } from '@/types';
 import { Footer } from './Footer';
 import { HallChromeNav } from './HallChromeNav';
+import '@/styles/landing.css';
 
 export function HallChrome({
 	user,

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {
 	Bookmark,
 	BookOpen,
@@ -45,7 +46,7 @@ export function AppSidebar({
 				compact && 'px-5'
 			)}
 		>
-			<a
+			<Link
 				href="/"
 				className={cn('school-brand', compact && 'is-compact')}
 				aria-label="SPŠT knižnica"
@@ -57,7 +58,7 @@ export function AppSidebar({
 				<span className="school-brand-copy">
 					<b>Pavilón B · Bardejov</b>
 				</span>
-			</a>
+			</Link>
 			<p className="mt-8 font-sans text-[0.62rem] tracking-[0.18em] text-sidebar-foreground/65 uppercase">
 				Fond
 			</p>
@@ -70,9 +71,10 @@ export function AppSidebar({
 					const Icon = item.icon;
 					const on = active(item.path);
 					return (
-						<a
+						<Link
 							key={item.path}
 							href={item.path}
+							prefetch
 							className={cn(
 								'flex items-center gap-3 rounded-full px-3 py-2 text-sm no-underline',
 								on
@@ -84,7 +86,7 @@ export function AppSidebar({
 								<Icon className="size-4" />
 							</span>
 							{item.label}
-						</a>
+						</Link>
 					);
 				})}
 			</nav>
@@ -96,7 +98,7 @@ export function AppSidebar({
 					<TourButton />
 					{user ? (
 						<>
-							<a
+							<Link
 								href="/profile"
 								className={cn(
 									'mb-1 flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal text-sidebar-foreground/82 no-underline',
@@ -105,17 +107,17 @@ export function AppSidebar({
 							>
 								<UserRound className="size-4" />
 								Môj profil
-							</a>
+							</Link>
 							<LogoutButton />
 						</>
 					) : (
-						<a
+						<Link
 							href="/login"
 							className="flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal text-sidebar-foreground/82 no-underline"
 						>
 							<LogIn className="size-4" />
 							Prihlásiť sa
-						</a>
+						</Link>
 					)}
 				</div>
 			</div>

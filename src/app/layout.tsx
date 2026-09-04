@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import { Providers } from './providers';
 import { ensureHall } from '@/server/boot';
+import { fontVariables } from './fonts';
 import './globals.css';
-
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
 	title: 'SPŠT knižnica — školský fond učebníc a literatúry',
@@ -22,10 +21,12 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
 	await ensureHall();
 	return (
-		<html lang="sk" suppressHydrationWarning>
+		<html lang="sk" className={fontVariables} suppressHydrationWarning>
 			<head>
 				<meta name="apple-mobile-web-app-title" content="SPŠT knižnica" />
 				<meta name="format-detection" content="telephone=no" />
+				<link rel="preconnect" href="https://images.unsplash.com" />
+				<link rel="dns-prefetch" href="https://images.unsplash.com" />
 			</head>
 			<body>
 				<a className="skip-link" href="#obsah">

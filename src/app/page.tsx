@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { HallChrome } from '@/components/HallChrome';
 import { HallMap } from '@/components/HallMap';
 import { FolioShelf } from '@/components/FolioShelf';
@@ -45,18 +46,18 @@ export default async function HomePage() {
 						Na polici sú skutočné zväzky z fondu — {stats.available} voľných výtlačkov z{' '}
 						{stats.books} kníh. Klikni na chrbát alebo menovku.
 					</p>
-					<a className="folio-cta no-underline" href="/discover">
+					<Link className="folio-cta no-underline" href="/discover" prefetch>
 						Vstúpiť do fondu
-					</a>
+					</Link>
 					<FolioShelf books={shelf} />
 					{categories.length ? (
 						<nav className="folio-odbory" aria-label="Odbory vo fonde">
 							{categories.map((cat) => (
-								<a key={cat.id} className="no-underline" href={`/departments/${cat.slug}`}>
+								<Link key={cat.id} className="no-underline" href={`/departments/${cat.slug}`}>
 									<em>{cat.code}</em>
 									{cat.name}
 									<span>{cat.bookCount}</span>
-								</a>
+								</Link>
 							))}
 						</nav>
 					) : null}
@@ -105,9 +106,9 @@ export default async function HomePage() {
 							<p className="folio-kicker">Pracovné zväzky</p>
 							<h2>Otoč policu a vyber knihu, ktorú otvoríš hneď.</h2>
 						</div>
-						<a className="folio-cta folio-cta-sm no-underline" href="/books">
+						<Link className="folio-cta folio-cta-sm no-underline" href="/books" prefetch>
 							Celý katalóg
-						</a>
+						</Link>
 					</div>
 					<p className="folio-shelf-hint">Otoč zväzok šípami alebo ťahaním.</p>
 					<CoverRail books={books} />
@@ -120,13 +121,18 @@ export default async function HomePage() {
 								<p className="folio-kicker">Register</p>
 								<h2>Ďalšie voľné zväzky z kartotéky.</h2>
 							</div>
-							<a className="folio-cta folio-cta-sm no-underline" href="/books">
+							<Link className="folio-cta folio-cta-sm no-underline" href="/books" prefetch>
 								Celý katalóg
-							</a>
+							</Link>
 						</div>
 						<div className="folio-picks">
 							{ledger.map((book) => (
-								<a key={book.id} className="folio-pick no-underline" href={`/books/${book.id}`}>
+								<Link
+									key={book.id}
+									className="folio-pick no-underline"
+									href={`/books/${book.id}`}
+									prefetch
+								>
 									<em>
 										{book.category.code} · {book.callNumber}
 									</em>
@@ -135,7 +141,7 @@ export default async function HomePage() {
 									<b className={book.copiesAvailable === 0 ? 'is-out' : undefined}>
 										{book.copiesAvailable > 0 ? 'Voľná' : 'Vonku'}
 									</b>
-								</a>
+								</Link>
 							))}
 						</div>
 					</section>
@@ -147,14 +153,14 @@ export default async function HomePage() {
 							<p className="folio-kicker">Menný katalóg</p>
 							<h2>Autori, ktorých držíme na polici.</h2>
 						</div>
-						<a className="folio-cta folio-cta-sm no-underline" href="/authors">
+						<Link className="folio-cta folio-cta-sm no-underline" href="/authors" prefetch>
 							Všetci autori
-						</a>
+						</Link>
 					</div>
 					<ul className="folio-authors">
 						{authors.slice(0, 12).map((author) => (
 							<li key={author.id}>
-								<a className="folio-author no-underline" href={`/authors/${author.slug}`}>
+								<Link className="folio-author no-underline" href={`/authors/${author.slug}`}>
 									<span className="folio-avatar" style={{ background: authorSwatch(author.id) }}>
 										{initials(author.name)}
 									</span>
@@ -162,7 +168,7 @@ export default async function HomePage() {
 										<strong>{author.name}</strong>
 										<em>{booksLabel(author.bookCount)}</em>
 									</span>
-								</a>
+								</Link>
 							</li>
 						))}
 					</ul>
@@ -179,17 +185,17 @@ export default async function HomePage() {
 					</div>
 					<div className="folio-close-actions">
 						{chrome.user ? (
-							<a className="folio-cta no-underline" href="/loans">
+							<Link className="folio-cta no-underline" href="/loans">
 								Moje výpožičky
-							</a>
+							</Link>
 						) : (
-							<a className="folio-cta no-underline" href="/login">
+							<Link className="folio-cta no-underline" href="/login">
 								Prihlásiť sa
-							</a>
+							</Link>
 						)}
-						<a className="folio-ghost no-underline" href="/discover">
+						<Link className="folio-ghost no-underline" href="/discover" prefetch>
 							Prezrieť fond
-						</a>
+						</Link>
 					</div>
 				</section>
 			</HallChrome>

@@ -106,7 +106,7 @@
 	border-radius: 999px;
 	background: #fffdf8;
 	color: #3c2a21;
-	font-family: "Bricolage Grotesque", sans-serif;
+	font-family: var(--font-sans), sans-serif;
 	font-size: 0.74rem;
 	font-weight: 600;
 	white-space: nowrap;

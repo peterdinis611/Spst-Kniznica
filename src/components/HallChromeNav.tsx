@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { BookOpen, Search, User } from 'lucide-react';
 import type { CatalogSearchItem } from '@/catalog/search';
 import type { Reader } from '@/types';
@@ -45,21 +46,33 @@ export function HallChromeNav({
 	return (
 		<>
 			<header className="hall-nav">
-				<a href="/" className="hall-logo no-underline" aria-label="SPŠT knižnica">
+				<Link href="/" className="hall-logo no-underline" aria-label="SPŠT knižnica">
 					<BookOpen className="size-6" />
-				</a>
+				</Link>
 				<nav className="hall-desk-links" aria-label="Hlavná navigácia">
-					<a href="/" aria-current={path === '/' ? 'page' : undefined}>
+					<Link href="/" aria-current={path === '/' ? 'page' : undefined} prefetch>
 						Fond
-					</a>
-					<a href="/discover" aria-current={path.startsWith('/discover') ? 'page' : undefined}>
+					</Link>
+					<Link
+						href="/discover"
+						aria-current={path.startsWith('/discover') ? 'page' : undefined}
+						prefetch
+					>
 						Objavovať
-					</a>
-					<a href="/holdings" aria-current={path.startsWith('/holdings') ? 'page' : undefined}>
+					</Link>
+					<Link
+						href="/holdings"
+						aria-current={path.startsWith('/holdings') ? 'page' : undefined}
+						prefetch
+					>
 						Všetky knihy
-					</a>
-					<a href="/books">Katalóg</a>
-					<a href="/authors">Autori</a>
+					</Link>
+					<Link href="/books" prefetch>
+						Katalóg
+					</Link>
+					<Link href="/authors" prefetch>
+						Autori
+					</Link>
 				</nav>
 				<div className="hall-tools">
 					<button
@@ -73,14 +86,14 @@ export function HallChromeNav({
 						<kbd>⌘K</kbd>
 					</button>
 					<ThemeToggle variant="hall" />
-					<a
+					<Link
 						className="hall-login no-underline"
 						href={user ? '/loans' : '/login'}
 						aria-label={user ? 'Moje knihy' : 'Prihlásiť sa'}
 					>
 						<User className="size-4" />
 						<span>{user ? 'Moje knihy' : 'Prihlásiť sa'}</span>
-					</a>
+					</Link>
 					<button
 						type="button"
 						className={`hall-menu-btn${menuOpen ? ' is-open' : ''}`}
@@ -98,45 +111,45 @@ export function HallChromeNav({
 
 			{menuOpen ? (
 				<nav className="hall-drawer" id="landing-menu" aria-label="Mobilné menu">
-					<a href="/" onClick={closeMenu}>
+					<Link href="/" onClick={closeMenu}>
 						Fond
-					</a>
-					<a href="/discover" onClick={closeMenu}>
+					</Link>
+					<Link href="/discover" onClick={closeMenu}>
 						Objavovať
-					</a>
-					<a href="/holdings" onClick={closeMenu}>
+					</Link>
+					<Link href="/holdings" onClick={closeMenu}>
 						Všetky knihy
-					</a>
-					<a href="/books" onClick={closeMenu}>
+					</Link>
+					<Link href="/books" onClick={closeMenu}>
 						Katalóg
-					</a>
-					<a href="/departments" onClick={closeMenu}>
+					</Link>
+					<Link href="/departments" onClick={closeMenu}>
 						Odbory
-					</a>
-					<a href="/authors" onClick={closeMenu}>
+					</Link>
+					<Link href="/authors" onClick={closeMenu}>
 						Autori
-					</a>
-					<a href="/#mapa" onClick={closeMenu}>
+					</Link>
+					<Link href="/#mapa" onClick={closeMenu}>
 						Mapa
-					</a>
+					</Link>
 					{user ? (
 						<>
-							<a href="/profile" onClick={closeMenu}>
+							<Link href="/profile" onClick={closeMenu}>
 								Môj profil
-							</a>
-							<a href="/loans" onClick={closeMenu}>
+							</Link>
+							<Link href="/loans" onClick={closeMenu}>
 								Moje knihy
-							</a>
+							</Link>
 							{admin ? (
-								<a href="/admin" onClick={closeMenu}>
+								<Link href="/admin" onClick={closeMenu}>
 									Pult
-								</a>
+								</Link>
 							) : null}
 						</>
 					) : (
-						<a href="/login" onClick={closeMenu}>
+						<Link href="/login" onClick={closeMenu}>
 							Prihlásiť sa
-						</a>
+						</Link>
 					)}
 					<div className="hall-drawer-tools">
 						<ThemeToggle variant="hall" />

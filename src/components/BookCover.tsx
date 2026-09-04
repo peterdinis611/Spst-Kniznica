@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { authorLine } from '@/utils/format';
 import { authorLast, jacketFor } from '@/catalog/cover';
 import { cn } from '@/utils/cn';
@@ -59,14 +60,15 @@ export function BookCover({
 
 	if (linked) {
 		return (
-			<a
+			<Link
 				href={href}
+				prefetch
 				className={className}
 				style={style}
 				title={`${book.title} — ${authorLine(book.authors)}`}
 			>
 				{inner}
-			</a>
+			</Link>
 		);
 	}
 

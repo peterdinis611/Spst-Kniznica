@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { FaultReload } from './FaultReload';
 import './fault-folio.css';
 
@@ -72,13 +73,13 @@ export function FaultFolio({ status, message }: { status: number; message?: stri
 						{jammed ? (
 							<FaultReload />
 						) : (
-							<a className="fault-cta no-underline" href="/discover">
+							<Link className="fault-cta no-underline" href="/discover">
 								Do fondu
-							</a>
+							</Link>
 						)}
-						<a className="fault-ghost no-underline" href="/">
+						<Link className="fault-ghost no-underline" href="/">
 							Na sieň
-						</a>
+						</Link>
 					</nav>
 				</div>
 			</div>

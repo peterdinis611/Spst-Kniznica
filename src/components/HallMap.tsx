@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import { LIBRARY_OSM_LINK, LIBRARY_PLACE } from '@/config/place';
-import { HallMapCanvas } from './HallMapCanvas';
+import { HallMapLeaflet } from './HallMapLeaflet';
 
 function CampusPlan() {
 	return (
@@ -70,7 +70,7 @@ export function HallMap() {
 		<div className="hall-map">
 			<div className="hall-map-card">
 				<div className="hall-map-frame">
-					<HallMapCanvas />
+					<HallMapLeaflet />
 				</div>
 				<div className="hall-map-legend">
 					<div className="hall-map-copy">

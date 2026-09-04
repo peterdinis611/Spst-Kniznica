@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { authorLine } from '@/utils/format';
 import { authorLast, clothFor } from '@/catalog/cover';
 import { cn } from '@/utils/cn';
@@ -87,14 +88,15 @@ export function PrintJacket({
 
 	if (linked) {
 		return (
-			<a
+			<Link
 				href={href}
+				prefetch
 				className={classes}
 				style={style}
 				title={`${book.title} — ${authorLine(book.authors)}`}
 			>
 				{inner}
-			</a>
+			</Link>
 		);
 	}
 

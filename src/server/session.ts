@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { canOpenDesk } from '@/server/admin-access';
@@ -27,7 +28,7 @@ export async function createSupabaseServer() {
 	});
 }
 
-export async function getSessionReader(): Promise<SignedReader | null> {
+export const getSessionReader = cache(async (): Promise<SignedReader | null> => {
 	const supabase = await createSupabaseServer();
 	if (!supabase) return null;
 	try {
@@ -49,9 +50,9 @@ export async function getSessionReader(): Promise<SignedReader | null> {
 	} catch {
 		return null;
 	}
-}
+});
 
-export async function layoutChrome(pathname: string) {
+export const layoutChrome = cache(async (pathname: string) => {
 	const user = await getSessionReader();
 	const admin = canOpenDesk(user);
 	const skip =
@@ -81,7 +82,7 @@ export async function layoutChrome(pathname: string) {
 		admin,
 		categories
 	};
-}
+});
 
 export async function actionEvent(): Promise<RequestEvent> {
 	const h = await headers();

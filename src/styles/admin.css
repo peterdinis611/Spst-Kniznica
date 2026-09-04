@@ -34,7 +34,7 @@
 
 .pult-kicker {
 	margin: 0;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	font-weight: 600;
 	letter-spacing: 0.22em;
@@ -44,7 +44,7 @@
 
 .pult-mast h1 {
 	margin: 0;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: clamp(3rem, 8vw, 5.4rem);
 	font-weight: 800;
 	letter-spacing: -0.07em;
@@ -54,7 +54,7 @@
 .pult-lede {
 	margin: 0.55rem 0 0;
 	max-width: 28rem;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 1.12rem;
 	line-height: 1.4;
 	color: var(--muted-foreground);
@@ -127,7 +127,7 @@
 	border-radius: 0.75rem 0.75rem 0 0;
 	background: color-mix(in srgb, var(--pult-paper) 14%, transparent);
 	color: #f4eadc;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 0.98rem;
 	text-decoration: none;
 	white-space: nowrap;
@@ -147,7 +147,7 @@
 }
 
 .pult-tab em {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.58rem;
 	font-style: normal;
 	font-weight: 600;
@@ -233,7 +233,7 @@
 }
 
 .pult-class label span {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-weight: 600;
 	letter-spacing: 0.14em;
@@ -248,7 +248,7 @@
 	border: 0;
 	background: transparent;
 	color: var(--pult-ink);
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1.05rem;
 	font-weight: 650;
 	letter-spacing: -0.03em;
@@ -270,7 +270,7 @@
 	background: color-mix(in srgb, var(--pult-lamp) 18%, var(--pult-paper));
 	color: var(--pult-walnut);
 	cursor: pointer;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 0.82rem;
 	font-style: italic;
 	font-weight: 700;
@@ -286,7 +286,7 @@
 }
 
 .pult-class a {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-weight: 600;
 	letter-spacing: 0.1em;
@@ -339,7 +339,7 @@
 }
 
 .pult-count {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.72rem;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
@@ -355,7 +355,7 @@
 	padding: 0.55rem 0.75rem;
 	border-left: 3px solid var(--pult-brass);
 	background: color-mix(in srgb, var(--pult-brass) 12%, var(--pult-paper));
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 }
 
 .pult-grid {
@@ -379,7 +379,7 @@
 .pult-table th {
 	padding: 0.35rem 0.55rem 0.55rem 0;
 	border-bottom: 1px solid var(--pult-brass);
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-weight: 600;
 	letter-spacing: 0.14em;
@@ -400,7 +400,7 @@
 
 .pult-table strong {
 	display: block;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1rem;
 	font-weight: 650;
 }
@@ -408,7 +408,7 @@
 .pult-table em {
 	display: block;
 	margin-top: 0.12rem;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	font-style: normal;
 	color: var(--pult-muted);
@@ -420,7 +420,7 @@
 	border: 1px solid color-mix(in srgb, var(--pult-ink) 18%, transparent);
 	border-radius: 999px;
 	background: color-mix(in srgb, var(--pult-ink) 5%, transparent);
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.58rem;
 	font-weight: 600;
 	letter-spacing: 0.14em;
@@ -449,7 +449,7 @@
 
 .pult-form h2 {
 	margin: 0;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1.25rem;
 	letter-spacing: -0.03em;
 }
@@ -479,7 +479,7 @@
 }
 
 .pult-field span {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-weight: 600;
 	letter-spacing: 0.14em;
@@ -497,7 +497,7 @@
 	border-radius: 0.7rem;
 	background: color-mix(in srgb, #fff 55%, var(--pult-paper));
 	color: var(--pult-ink);
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 1rem;
 }
 
@@ -516,7 +516,7 @@
 .pult-error {
 	margin: 0;
 	color: #9a3b28;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 0.88rem;
 }
 
@@ -540,7 +540,7 @@
 	padding: 0.35rem 0.65rem;
 	border: 1px solid color-mix(in srgb, var(--pult-walnut) 16%, transparent);
 	border-radius: 999px;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 0.92rem;
 	cursor: pointer;
 }
@@ -593,7 +593,7 @@
 		var(--pult-paper-deep);
 	box-shadow: 0.12rem 0 0 var(--pult-brass) inset;
 	color: var(--pult-muted);
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 0.62rem;
 	font-style: italic;
 	letter-spacing: -0.02em;
@@ -617,13 +617,13 @@
 
 .pult-jacket-copy p {
 	margin: 0;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 0.95rem;
 	color: var(--pult-muted);
 }
 
 .pult-jacket-copy code {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.78em;
 }
 
@@ -660,7 +660,7 @@
 
 .pult-empty {
 	padding: 1.4rem 0.2rem;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	color: var(--pult-muted);
 }
 
@@ -703,7 +703,7 @@
 	border: 0;
 	background: transparent;
 	color: var(--pult-brass);
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-weight: 600;
 	letter-spacing: 0.14em;
@@ -760,7 +760,7 @@
 
 .pult-ledger-cell strong {
 	display: block;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1rem;
 	font-weight: 650;
 }
@@ -768,7 +768,7 @@
 .pult-ledger-cell em {
 	display: block;
 	margin-top: 0.12rem;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	font-style: normal;
 	color: var(--pult-muted);
@@ -805,7 +805,7 @@
 
 .pult-blot em {
 	grid-column: 1 / -1;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-style: normal;
 	font-weight: 600;
@@ -815,7 +815,7 @@
 }
 
 .pult-blot strong {
-	font-family: "Oswald", "Cormorant Garamond", serif;
+	font-family: var(--font-condensed), serif;
 	font-size: 2.6rem;
 	font-weight: 800;
 	letter-spacing: -0.04em;
@@ -823,7 +823,7 @@
 }
 
 .pult-blot span {
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 1.02rem;
 	line-height: 1.25;
 }
@@ -851,7 +851,7 @@
 .pult-queue-kicker,
 .pult-queue-empty {
 	margin: 0;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-weight: 600;
 	letter-spacing: 0.18em;
@@ -884,7 +884,7 @@
 .pult-rail-head {
 	display: block;
 	margin: 0 0 0.55rem;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-weight: 600;
 	letter-spacing: 0.16em;
@@ -928,7 +928,7 @@
 	padding: 0.2rem 0.42rem 0.14rem;
 	border: 1.5px solid color-mix(in srgb, var(--pult-lamp) 80%, var(--pult-walnut));
 	border-radius: 999px;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 0.62rem;
 	font-style: italic;
 	font-weight: 700;
@@ -942,7 +942,7 @@
 .pult-rail li a strong {
 	min-width: 0;
 	overflow: hidden;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1.02rem;
 	font-weight: 650;
 	letter-spacing: -0.03em;
@@ -954,7 +954,7 @@
 .pult-rail li a span {
 	min-width: 0;
 	overflow: hidden;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 0.88rem;
 	color: var(--pult-muted);
 	text-overflow: ellipsis;
@@ -1007,7 +1007,7 @@
 	position: absolute;
 	top: 0.7rem;
 	right: 0.85rem;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-style: normal;
 	font-weight: 600;
@@ -1025,7 +1025,7 @@
 
 .pult-stat b {
 	display: block;
-	font-family: "Oswald", "Cormorant Garamond", serif;
+	font-family: var(--font-condensed), serif;
 	font-size: clamp(2rem, 5vw, 3.1rem);
 	font-weight: 800;
 	letter-spacing: -0.04em;
@@ -1035,7 +1035,7 @@
 .pult-stat span {
 	display: block;
 	margin-top: 0.3rem;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.64rem;
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
@@ -1122,7 +1122,7 @@ html.dark .pult-cabinet {
 
 .pult-folio-kicker {
 	margin: 0;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-weight: 600;
 	letter-spacing: 0.18em;
@@ -1133,7 +1133,7 @@ html.dark .pult-cabinet {
 .pult-folio-mast h2 {
 	margin: 0.55rem 0 0;
 	max-width: 8ch;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: clamp(2.4rem, 7vw, 3.8rem);
 	font-weight: 800;
 	letter-spacing: -0.07em;
@@ -1143,7 +1143,7 @@ html.dark .pult-cabinet {
 .pult-folio-lede {
 	margin: 0.7rem 0 0;
 	max-width: 34ch;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 1.08rem;
 	line-height: 1.4;
 	color: var(--pult-muted);
@@ -1160,7 +1160,7 @@ html.dark .pult-cabinet {
 	border: 2px solid color-mix(in srgb, var(--pult-lamp) 80%, var(--pult-walnut));
 	border-radius: 999px;
 	color: var(--pult-brass);
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 0.78rem;
 	font-style: italic;
 	font-weight: 700;
@@ -1188,7 +1188,7 @@ html.dark .pult-cabinet {
 	background: transparent;
 	color: var(--pult-ink);
 	cursor: pointer;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 0.8rem;
 	font-style: italic;
 	font-weight: 700;
@@ -1226,7 +1226,7 @@ html.dark .pult-cabinet {
 	top: 0.85rem;
 	right: 0;
 	margin: 0;
-	font-family: "Oswald", "Cormorant Garamond", serif;
+	font-family: var(--font-condensed), serif;
 	font-size: 2.4rem;
 	font-weight: 800;
 	letter-spacing: -0.04em;
@@ -1236,7 +1236,7 @@ html.dark .pult-cabinet {
 
 .pult-folio-sheet h3 {
 	margin: 0;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1.55rem;
 	font-weight: 700;
 	letter-spacing: -0.04em;
@@ -1245,7 +1245,7 @@ html.dark .pult-cabinet {
 .pult-folio-sheet p {
 	margin: 0.25rem 0 0;
 	max-width: 36ch;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	color: var(--pult-muted);
 }
 
@@ -1259,7 +1259,7 @@ html.dark .pult-cabinet {
 }
 
 .pult-ghost {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	font-weight: 600;
 	letter-spacing: 0.12em;
@@ -1294,7 +1294,7 @@ html.dark .pult-cabinet {
 	border-radius: 0.2rem 0.75rem 0.2rem 0.75rem;
 	background: color-mix(in srgb, var(--pult-brass) 12%, var(--pult-paper));
 	color: var(--pult-walnut);
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.62rem;
 	font-weight: 600;
 	letter-spacing: 0.1em;
@@ -1326,13 +1326,13 @@ html.dark .pult-cabinet {
 	margin: 0;
 	max-width: 46ch;
 	color: var(--muted-foreground);
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 1.02rem;
 	line-height: 1.45;
 }
 
 .pult-year em {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.82rem;
 	font-style: normal;
 	font-weight: 600;
@@ -1364,7 +1364,7 @@ html.dark .pult-cabinet {
 
 .pult-scan-modes a {
 	color: color-mix(in srgb, var(--pult-paper) 72%, transparent);
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	font-weight: 600;
 	letter-spacing: 0.12em;
@@ -1386,7 +1386,7 @@ html.dark .pult-cabinet {
 	margin: -0.4rem 0 1.15rem;
 	padding: 0.85rem 0.2rem 0.2rem;
 	color: var(--muted-foreground);
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 1.02rem;
 }
 
@@ -1416,7 +1416,7 @@ html.dark .pult-cabinet {
 
 .pult-scan-strip label span,
 .pult-scan-pad span {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.58rem;
 	letter-spacing: 0.14em;
 	text-transform: uppercase;
@@ -1433,7 +1433,7 @@ html.dark .pult-cabinet {
 	border-radius: 0.15rem 0.55rem 0.15rem 0.55rem;
 	background: color-mix(in srgb, #fff 12%, transparent);
 	color: var(--pult-paper);
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 1.02rem;
 	letter-spacing: 0.04em;
 }
@@ -1464,7 +1464,7 @@ html.dark .pult-cabinet {
 	border-radius: 0.2rem 0.7rem 0.2rem 0.7rem;
 	background: var(--pult-brass);
 	color: var(--pult-paper);
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	font-weight: 600;
 	letter-spacing: 0.12em;
@@ -1503,7 +1503,7 @@ html.dark .pult-cabinet {
 	justify-content: space-between;
 	gap: 0.6rem;
 	margin: 0 0 0.35rem;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
@@ -1512,7 +1512,7 @@ html.dark .pult-cabinet {
 
 .pult-hit h2 {
 	margin: 0;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: 1.65rem;
 	font-weight: 650;
 	letter-spacing: -0.03em;
@@ -1523,12 +1523,12 @@ html.dark .pult-cabinet {
 .pult-hit-who,
 .pult-hit-copy {
 	margin: 0.35rem 0 0.7rem;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	color: var(--pult-muted);
 }
 
 .pult-hit-copy {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.72rem;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
@@ -1564,7 +1564,7 @@ html.dark .pult-cabinet {
 }
 
 .spine-ticket em {
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.58rem;
 	font-style: normal;
 	font-weight: 600;
@@ -1576,7 +1576,7 @@ html.dark .pult-cabinet {
 .spine-ticket strong {
 	display: grid;
 	gap: 0.05rem;
-	font-family: "Oswald", "Cormorant Garamond", serif;
+	font-family: var(--font-condensed), serif;
 	font-size: 1.35rem;
 	font-weight: 800;
 	letter-spacing: -0.03em;
@@ -1586,7 +1586,7 @@ html.dark .pult-cabinet {
 
 .spine-ticket b {
 	margin-top: auto;
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	font-weight: 600;
 	letter-spacing: 0.04em;
@@ -1594,7 +1594,7 @@ html.dark .pult-cabinet {
 }
 
 .spine-ticket small {
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 0.72rem;
 	font-style: italic;
 	color: var(--pult-muted);
@@ -1620,7 +1620,7 @@ html.dark .pult-cabinet {
 
 .pult-hopper-title {
 	margin: 0.15rem 0 0;
-	font-family: "Cormorant Garamond", serif;
+	font-family: var(--font-display), serif;
 	font-size: clamp(2.2rem, 5vw, 3.4rem);
 	font-weight: 800;
 	letter-spacing: -0.06em;
@@ -1677,7 +1677,7 @@ html.dark .pult-cabinet {
 	border-radius: 0.2rem 0.7rem 0.2rem 0.7rem;
 	background: var(--pult-brass);
 	color: var(--pult-paper);
-	font-family: "Azeret Mono", monospace;
+	font-family: var(--font-mono), monospace;
 	font-size: 0.68rem;
 	font-weight: 600;
 	letter-spacing: 0.12em;
@@ -1695,7 +1695,7 @@ html.dark .pult-cabinet {
 .pult-hopper-acts p {
 	margin: 0;
 	max-width: 28rem;
-	font-family: "Literata", serif;
+	font-family: var(--font-body), serif;
 	font-size: 0.95rem;
 	color: var(--pult-muted);
 }

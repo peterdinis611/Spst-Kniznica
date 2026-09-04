@@ -4,6 +4,7 @@ import { canOpenDesk, canOperateDesk } from '@/server/admin-access';
 import { getSessionReader } from '@/server/session';
 import { PultNav } from '@/components/PultNav';
 import { FaultFolio } from '@/components/FaultFolio';
+import '@/styles/admin.css';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
 	const user = await getSessionReader();
