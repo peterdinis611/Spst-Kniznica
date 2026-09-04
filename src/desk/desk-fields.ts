@@ -66,10 +66,7 @@ export const bookSchema = v.object({
 		v.integer('Počet strán musí byť kladný.'),
 		v.minValue(1, 'Počet strán musí byť kladný.')
 	),
-	copies: v.optional(
-		v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(40)),
-		1
-	),
+	copies: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(40)), 1),
 	featured: v.optional(v.boolean(), false)
 });
 
@@ -124,7 +121,11 @@ export const reservationSchema = v.object({
 export const linkSchema = v.object({
 	bookId: filled('Vyber knihu.'),
 	authorId: filled('Vyber autora.'),
-	position: v.pipe(v.number('Poradie musí byť číslo.'), v.integer(), v.minValue(0, 'Poradie nesmie byť záporné.'))
+	position: v.pipe(
+		v.number('Poradie musí byť číslo.'),
+		v.integer(),
+		v.minValue(0, 'Poradie nesmie byť záporné.')
+	)
 });
 
 export const deskLoanSchema = v.object({
@@ -132,11 +133,7 @@ export const deskLoanSchema = v.object({
 	userId: filled('Vyber čitateľa.'),
 	borrowerFirstName: titled('Meno a priezvisko na lístku.'),
 	borrowerLastName: titled('Meno a priezvisko na lístku.'),
-	borrowerClass: v.pipe(
-		v.string(),
-		v.transform(normalizeClass),
-		v.minLength(1, 'Doplň triedu.')
-	),
+	borrowerClass: v.pipe(v.string(), v.transform(normalizeClass), v.minLength(1, 'Doplň triedu.')),
 	loanDays: v.pipe(
 		v.number('Doba výpožičky nie je v rozsahu.'),
 		v.integer('Doba výpožičky nie je v rozsahu.'),

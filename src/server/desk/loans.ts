@@ -254,7 +254,10 @@ export async function returnDeskLoan(id: string): Promise<DeskResult> {
 	await db.transaction(async (tx) => {
 		await tx.update(loan).set({ returnedAt: new Date() }).where(eq(loan.id, id));
 		if (current.holdingId) {
-			await tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId));
+			await tx
+				.update(holding)
+				.set({ status: 'available' })
+				.where(eq(holding.id, current.holdingId));
 		}
 		await syncCopies(tx, current.bookId);
 		offer = await offerCopyToWaiter(tx, current.bookId);
@@ -274,7 +277,10 @@ export async function deleteLoan(id: string): Promise<DeskResult> {
 
 	await db.transaction(async (tx) => {
 		if (!current.returnedAt && current.holdingId) {
-			await tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId));
+			await tx
+				.update(holding)
+				.set({ status: 'available' })
+				.where(eq(holding.id, current.holdingId));
 		}
 		await tx.delete(loan).where(eq(loan.id, id));
 		if (!current.returnedAt) await syncCopies(tx, current.bookId);

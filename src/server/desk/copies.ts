@@ -15,7 +15,10 @@ export async function syncCopies(tx: DeskTx, bookId: string) {
 		.where(and(eq(holding.bookId, bookId), eq(holding.status, 'available')))
 		.then((rows) => rows[0]?.c ?? 0);
 
-	await tx.update(book).set({ copiesTotal: total, copiesAvailable: available }).where(eq(book.id, bookId));
+	await tx
+		.update(book)
+		.set({ copiesTotal: total, copiesAvailable: available })
+		.where(eq(book.id, bookId));
 }
 
 export async function nextInventory(bookId: string, code: string) {

@@ -7,7 +7,17 @@ export const BASE_URL = BASE;
 
 export const TESTID = __ENV.TESTID || `fond-${Date.now()}`;
 
-export const SEARCHES = ['algoritm', 'sql', 'siet', 'pascal', 'INF', 'stroj', 'sloh', 'belko', 'rezerv'];
+export const SEARCHES = [
+	'algoritm',
+	'sql',
+	'siet',
+	'pascal',
+	'INF',
+	'stroj',
+	'sloh',
+	'belko',
+	'rezerv'
+];
 
 export const BOOKS = [
 	'book-algoritmy',

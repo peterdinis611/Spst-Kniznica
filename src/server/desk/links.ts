@@ -35,7 +35,11 @@ export async function saveLink(input: {
 		position: input.position
 	});
 	if (issue) return fail(issue);
-	const held = await db.select({ id: book.id }).from(book).where(eq(book.id, input.bookId)).then((rows) => rows[0]);
+	const held = await db
+		.select({ id: book.id })
+		.from(book)
+		.where(eq(book.id, input.bookId))
+		.then((rows) => rows[0]);
 	const person = await db
 		.select({ id: author.id })
 		.from(author)

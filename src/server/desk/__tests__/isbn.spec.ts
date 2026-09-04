@@ -45,7 +45,14 @@ describe('lookupIsbnCard', () => {
 
 	it('maps the first search hit', async () => {
 		const result = await lookupIsbnCard('9788012345011', async () => ({
-			docs: [{ title: 'Stroje', publisher: ['Alfa'], first_publish_year: 2018, number_of_pages_median: 120 }]
+			docs: [
+				{
+					title: 'Stroje',
+					publisher: ['Alfa'],
+					first_publish_year: 2018,
+					number_of_pages_median: 120
+				}
+			]
 		}));
 		expect(result).toEqual({
 			ok: true,

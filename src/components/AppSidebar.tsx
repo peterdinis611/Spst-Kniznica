@@ -47,7 +47,9 @@ export function AppSidebar({
 				<span className="block text-[0.7rem] font-extrabold tracking-[0.22em] text-stamp uppercase">
 					SPŠT
 				</span>
-				<span className="text-xl font-extrabold tracking-tight text-sidebar-foreground">knižnica</span>
+				<span className="text-xl font-extrabold tracking-tight text-sidebar-foreground">
+					knižnica
+				</span>
 			</a>
 			<p className="mt-10 font-sans text-[0.62rem] tracking-[0.18em] text-sidebar-foreground/65 uppercase">
 				Fond

@@ -93,13 +93,21 @@ export async function saveHolding(input: {
 	});
 	if (issue) return fail(issue);
 	const status = input.status as (typeof holdingStatus)[number];
-	const held = await db.select().from(book).where(eq(book.id, input.bookId)).then((rows) => rows[0]);
+	const held = await db
+		.select()
+		.from(book)
+		.where(eq(book.id, input.bookId))
+		.then((rows) => rows[0]);
 	if (!held) return fail('Vyber knihu.');
 
 	try {
 		await db.transaction(async (tx) => {
 			if (input.id) {
-				const current = await tx.select().from(holding).where(eq(holding.id, input.id)).then((rows) => rows[0]);
+				const current = await tx
+					.select()
+					.from(holding)
+					.where(eq(holding.id, input.id))
+					.then((rows) => rows[0]);
 				if (!current) throw new Error('Výtlačok sa nenašiel.');
 				if (status === 'available' && current.status === 'loaned') {
 					const open = await tx
@@ -138,7 +146,8 @@ export async function saveHolding(input: {
 		});
 	} catch (cause) {
 		const text = cause instanceof Error ? cause.message : '';
-		if (text === 'Výtlačok sa nenašiel.' || text.startsWith('Výtlačok je na výpožičke')) return fail(text);
+		if (text === 'Výtlačok sa nenašiel.' || text.startsWith('Výtlačok je na výpožičke'))
+			return fail(text);
 		return caught(cause, 'Toto inventárne číslo už vo fonde je.');
 	}
 
@@ -147,7 +156,11 @@ export async function saveHolding(input: {
 }
 
 export async function deleteHolding(id: string): Promise<DeskResult> {
-	const current = await db.select().from(holding).where(eq(holding.id, id)).then((rows) => rows[0]);
+	const current = await db
+		.select()
+		.from(holding)
+		.where(eq(holding.id, id))
+		.then((rows) => rows[0]);
 	if (!current) return fail('Výtlačok sa nenašiel.');
 	const open =
 		(

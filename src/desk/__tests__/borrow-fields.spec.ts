@@ -50,8 +50,13 @@ describe('validateBorrow', () => {
 	});
 
 	it('accepts school class codes', () => {
-		expect(validateBorrow({ firstName: 'Ján', lastName: 'Kováč', className: '3.INF', days: '7' }).className).toBeUndefined();
-		expect(validateBorrow({ firstName: 'Ján', lastName: 'Kováč', className: '??', days: '7' }).className).toBeTruthy();
+		expect(
+			validateBorrow({ firstName: 'Ján', lastName: 'Kováč', className: '3.INF', days: '7' })
+				.className
+		).toBeUndefined();
+		expect(
+			validateBorrow({ firstName: 'Ján', lastName: 'Kováč', className: '??', days: '7' }).className
+		).toBeTruthy();
 	});
 
 	it('reads a valibot issue from a field error', () => {

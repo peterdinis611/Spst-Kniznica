@@ -73,7 +73,12 @@ export function BorrowDialog({
 				<div className="borrow-sheet">
 					<header className="borrow-head">
 						<p className="borrow-kicker">Výpožičný lístok</p>
-						<button type="button" className="borrow-close" onClick={() => setOpen(false)} aria-label="Zavrieť">
+						<button
+							type="button"
+							className="borrow-close"
+							onClick={() => setOpen(false)}
+							aria-label="Zavrieť"
+						>
 							<X className="size-4" />
 						</button>
 					</header>
@@ -85,15 +90,31 @@ export function BorrowDialog({
 						<input type="hidden" name="bookId" value={bookId} />
 						<label>
 							Meno
-							<input ref={firstField} name="firstName" required defaultValue={borrower.firstName} autoComplete="given-name" />
+							<input
+								ref={firstField}
+								name="firstName"
+								required
+								defaultValue={borrower.firstName}
+								autoComplete="given-name"
+							/>
 						</label>
 						<label>
 							Priezvisko
-							<input name="lastName" required defaultValue={borrower.lastName} autoComplete="family-name" />
+							<input
+								name="lastName"
+								required
+								defaultValue={borrower.lastName}
+								autoComplete="family-name"
+							/>
 						</label>
 						<label>
 							Trieda
-							<input name="className" defaultValue={borrower.className} placeholder="II.A" autoComplete="off" />
+							<input
+								name="className"
+								defaultValue={borrower.className}
+								placeholder="II.A"
+								autoComplete="off"
+							/>
 						</label>
 						<label>
 							Dni

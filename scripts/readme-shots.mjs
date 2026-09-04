@@ -166,7 +166,12 @@ async function storyShot(id, file, pick, pad = 36) {
 
 await storyShot('fond-borrowslip--otvorený', 'listok.png', (p) => p.locator('.borrow-slip'));
 await storyShot('pult-pultledger--zásuvka', 'pult.png', (p) => p.locator('.pult-drawer'));
-await storyShot('fond-catalogsearch--náhľad', 'hladanie.png', (p) => p.locator('.search-panel'), 24);
+await storyShot(
+	'fond-catalogsearch--náhľad',
+	'hladanie.png',
+	(p) => p.locator('.search-panel'),
+	24
+);
 await storyShot('pult-pultnav--kartotéka', 'kartoteka.png', (p) => p.locator('.pult-tabs'), 28);
 await storyShot('fond-fundledger--register', 'register.png', (p) => p.locator('.folios'), 24);
 

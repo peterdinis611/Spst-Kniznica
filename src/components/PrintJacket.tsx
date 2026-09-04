@@ -43,8 +43,16 @@ export function PrintJacket({
 						'linear-gradient(90deg, rgb(0 0 0 / 0.18), transparent 28%, rgb(255 255 255 / 0.16) 72%, rgb(0 0 0 / 0.08))'
 				}}
 			/>
-			<span className="absolute top-[30%] right-0 left-0 h-[3px]" style={{ background: cloth.band }} />
-			<div className={cn('relative flex h-full flex-col justify-between', size === 'thumb' ? 'p-2' : 'p-3.5')}>
+			<span
+				className="absolute top-[30%] right-0 left-0 h-[3px]"
+				style={{ background: cloth.band }}
+			/>
+			<div
+				className={cn(
+					'relative flex h-full flex-col justify-between',
+					size === 'thumb' ? 'p-2' : 'p-3.5'
+				)}
+			>
 				<span
 					className={cn(
 						'font-mono font-semibold tracking-[0.14em] uppercase opacity-70',
@@ -79,7 +87,12 @@ export function PrintJacket({
 
 	if (linked) {
 		return (
-			<a href={href} className={classes} style={style} title={`${book.title} — ${authorLine(book.authors)}`}>
+			<a
+				href={href}
+				className={classes}
+				style={style}
+				title={`${book.title} — ${authorLine(book.authors)}`}
+			>
 				{inner}
 			</a>
 		);

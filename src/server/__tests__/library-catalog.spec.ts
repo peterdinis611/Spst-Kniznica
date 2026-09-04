@@ -76,7 +76,11 @@ function seed(books: CatalogBook[]) {
 		byId: new Map(books.map((item) => [item.id, item])),
 		categories: [category],
 		authors: [author],
-		stats: { books: books.length, authors: 1, available: books.reduce((sum, item) => sum + item.copiesAvailable, 0) }
+		stats: {
+			books: books.length,
+			authors: 1,
+			available: books.reduce((sum, item) => sum + item.copiesAvailable, 0)
+		}
 	});
 }
 
@@ -120,15 +124,16 @@ describe('catalog listings', () => {
 	});
 
 	it('lists by odbor and author and related cards', async () => {
-		seed([
-			book('stroje-1'),
-			book('stroje-2'),
-			book('inf-1', { slug: 'informatika' })
-		]);
+		seed([book('stroje-1'), book('stroje-2'), book('inf-1', { slug: 'informatika' })]);
 
-		expect((await listBooksByCategory('strojarstvo')).map((item) => item.id)).toEqual(['stroje-1', 'stroje-2']);
+		expect((await listBooksByCategory('strojarstvo')).map((item) => item.id)).toEqual([
+			'stroje-1',
+			'stroje-2'
+		]);
 		expect(await listBooksByAuthor('jan-test')).toHaveLength(3);
-		expect((await relatedBooks('stroje-1', 'cat-str')).map((item) => item.id)).toEqual(['stroje-2']);
+		expect((await relatedBooks('stroje-1', 'cat-str')).map((item) => item.id)).toEqual([
+			'stroje-2'
+		]);
 		expect((await getCategory('strojarstvo'))?.name).toBe('Strojárstvo');
 		expect((await getAuthor('jan-test'))?.name).toBe('Ján Test');
 	});
@@ -142,7 +147,11 @@ describe('searchCatalog', () => {
 
 		expect(ftsBookIds).toHaveBeenCalledWith('stroje', 8);
 		expect(items.map((item) => item.id)).toEqual(['stroje-1']);
-		expect(items[0]).toMatchObject({ title: 'Stroje', authors: 'Ján Test', category: 'Strojárstvo' });
+		expect(items[0]).toMatchObject({
+			title: 'Stroje',
+			authors: 'Ján Test',
+			category: 'Strojárstvo'
+		});
 	});
 
 	it('keeps FTS rank when ids come back', async () => {

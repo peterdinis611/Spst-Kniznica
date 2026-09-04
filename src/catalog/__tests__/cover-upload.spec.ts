@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-	COVER_MAX_BYTES,
-	coverFileFault,
-	coverUploadFault
-} from '../cover-upload';
+import { COVER_MAX_BYTES, coverFileFault, coverUploadFault } from '../cover-upload';
 
 describe('coverFileFault', () => {
 	it('blocks a file over 4 MB before it leaves the desk', () => {

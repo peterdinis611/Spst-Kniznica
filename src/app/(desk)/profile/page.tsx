@@ -19,14 +19,19 @@ export default async function ProfilePage() {
 
 	return (
 		<section className="max-w-xl">
-			<p className="font-mono text-xs tracking-[0.16em] uppercase text-muted-foreground">čitateľský preukaz</p>
+			<p className="font-mono text-xs tracking-[0.16em] uppercase text-muted-foreground">
+				čitateľský preukaz
+			</p>
 			<h1 className="font-display mt-2 text-4xl">{user.name}</h1>
 			<p className="mt-2 text-muted-foreground">
 				{user.email} · {readerNumber(user.id)}
 			</p>
 			<p className="mt-6">Aktívne výpožičky: {activeCount}</p>
 			<div className="mt-8 flex flex-wrap gap-3">
-				<a href="/loans" className="rounded-full bg-primary px-4 py-2 text-primary-foreground no-underline">
+				<a
+					href="/loans"
+					className="rounded-full bg-primary px-4 py-2 text-primary-foreground no-underline"
+				>
 					Moje knihy
 				</a>
 				{admin ? (
@@ -34,7 +39,10 @@ export default async function ProfilePage() {
 						Pult
 					</a>
 				) : null}
-				<a href="/login/recovery" className="rounded-full px-4 py-2 ring-1 ring-border no-underline">
+				<a
+					href="/login/recovery"
+					className="rounded-full px-4 py-2 ring-1 ring-border no-underline"
+				>
 					Zmeniť heslo
 				</a>
 			</div>

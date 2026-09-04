@@ -26,7 +26,7 @@
 
 .driver-popover.folio-tour .driver-popover-description {
 	margin: 0.65rem 0 0;
-	font-family: var(--font-body, 'Literata', serif);
+	font-family: var(--font-body, "Literata", serif);
 	font-size: 1.02rem;
 	line-height: 1.5;
 	color: var(--muted-foreground);

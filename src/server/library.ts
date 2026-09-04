@@ -293,7 +293,9 @@ export async function listBookSlipsByCategory(slug: string) {
 }
 
 export async function listBooksByAuthor(slug: string) {
-	return (await catalog()).books.filter((item) => item.authors.some((person) => person.slug === slug));
+	return (await catalog()).books.filter((item) =>
+		item.authors.some((person) => person.slug === slug)
+	);
 }
 
 export async function listBookSlipsByAuthor(slug: string) {
@@ -301,8 +303,8 @@ export async function listBookSlipsByAuthor(slug: string) {
 }
 
 export async function relatedBooks(bookId: string, categoryId: string, limit = 4) {
-	return (await catalog())
-		.books.filter((item) => item.category.id === categoryId && item.id !== bookId)
+	return (await catalog()).books
+		.filter((item) => item.category.id === categoryId && item.id !== bookId)
 		.slice(0, limit);
 }
 
@@ -328,8 +330,11 @@ export async function getAuthor(slug: string) {
 
 export async function catalogStats() {
 	const { stats } = await catalog();
-	const openLoans =
-		await db.select({ c: count() }).from(loan).where(isNull(loan.returnedAt)).then((rows) => rows[0]?.c ?? 0);
+	const openLoans = await db
+		.select({ c: count() })
+		.from(loan)
+		.where(isNull(loan.returnedAt))
+		.then((rows) => rows[0]?.c ?? 0);
 
 	return { ...stats, openLoans };
 }
@@ -337,7 +342,7 @@ export async function catalogStats() {
 export async function getActiveLoan(
 	userId: string,
 	bookId: string
-): Promise<(typeof loan.$inferSelect) | null> {
+): Promise<typeof loan.$inferSelect | null> {
 	const row = await db
 		.select()
 		.from(loan)
@@ -347,13 +352,11 @@ export async function getActiveLoan(
 }
 
 export async function countActiveLoans(userId: string) {
-	return (
-		db
-			.select({ c: count() })
-			.from(loan)
-			.where(and(eq(loan.userId, userId), isNull(loan.returnedAt)))
-			.then((rows) => rows[0]?.c ?? 0)
-	);
+	return db
+		.select({ c: count() })
+		.from(loan)
+		.where(and(eq(loan.userId, userId), isNull(loan.returnedAt)))
+		.then((rows) => rows[0]?.c ?? 0);
 }
 
 export async function listLoans(userId: string): Promise<LoanRecord[]> {
@@ -371,8 +374,7 @@ export async function listLoans(userId: string): Promise<LoanRecord[]> {
 		.leftJoin(bookAuthor, eq(bookAuthor.bookId, book.id))
 		.leftJoin(author, eq(author.id, bookAuthor.authorId))
 		.where(and(eq(loan.userId, userId), isNull(loan.clearedAt)))
-		.orderBy(desc(loan.borrowedAt))
-		;
+		.orderBy(desc(loan.borrowedAt));
 
 	const booksById = assembleBooks(
 		rows.map((row) => ({
@@ -407,9 +409,7 @@ export async function listLoans(userId: string): Promise<LoanRecord[]> {
 	return [...loans.values()];
 }
 
-export type BorrowResult =
-	| { ok: true; dueAt: Date }
-	| { ok: false; message: string };
+export type BorrowResult = { ok: true; dueAt: Date } | { ok: false; message: string };
 
 export async function getLastBorrower(userId: string): Promise<BorrowerDraft | null> {
 	const row = await db
@@ -435,9 +435,17 @@ export async function getLastBorrower(userId: string): Promise<BorrowerDraft | n
 	};
 }
 
-export async function borrowBook(userId: string, bookId: string, draft: BorrowerDraft): Promise<BorrowResult> {
+export async function borrowBook(
+	userId: string,
+	bookId: string,
+	draft: BorrowerDraft
+): Promise<BorrowResult> {
 	const result = await db.transaction(async (tx): Promise<BorrowResult> => {
-		const current = await tx.select().from(book).where(eq(book.id, bookId)).then((rows) => rows[0]);
+		const current = await tx
+			.select()
+			.from(book)
+			.where(eq(book.id, bookId))
+			.then((rows) => rows[0]);
 		if (!current) return { ok: false, message: 'Kniha v katalógu nie je.' };
 		const copy = await tx
 			.select()
@@ -471,7 +479,10 @@ export async function borrowBook(userId: string, bookId: string, draft: Borrower
 				.orderBy(asc(reservation.createdAt), asc(reservation.id))
 				.then((rows) => rows[0]);
 			if (firstWait && firstWait.userId !== userId) {
-				return { ok: false, message: 'Tento výtlačok čaká na rezerváciu. Vyzdvihne ho iný čitateľ.' };
+				return {
+					ok: false,
+					message: 'Tento výtlačok čaká na rezerváciu. Vyzdvihne ho iný čitateľ.'
+				};
 			}
 		}
 
@@ -483,12 +494,11 @@ export async function borrowBook(userId: string, bookId: string, draft: Borrower
 		if (already) return { ok: false, message: 'Túto knihu už máte vypožičanú.' };
 
 		if (MAX_ACTIVE_LOANS != null) {
-			const active =
-				await tx
-					.select({ c: count() })
-					.from(loan)
-					.where(and(eq(loan.userId, userId), isNull(loan.returnedAt)))
-					.then((rows) => rows[0]?.c ?? 0);
+			const active = await tx
+				.select({ c: count() })
+				.from(loan)
+				.where(and(eq(loan.userId, userId), isNull(loan.returnedAt)))
+				.then((rows) => rows[0]?.c ?? 0);
 			if (isLoanLimitReached(active)) {
 				return { ok: false, message: `Limit ${MAX_ACTIVE_LOANS} výpožičiek je naplnený.` };
 			}
@@ -498,26 +508,24 @@ export async function borrowBook(userId: string, bookId: string, draft: Borrower
 		const days = draft.days;
 		const dueAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
-		await tx.insert(loan)
-			.values({
-				bookId,
-				holdingId: copy.id,
-				userId,
-				borrowedAt: now,
-				dueAt,
-				borrowerFirstName: draft.firstName,
-				borrowerLastName: draft.lastName,
-				borrowerClass: draft.className,
-				loanDays: days
-			})
-			;
+		await tx.insert(loan).values({
+			bookId,
+			holdingId: copy.id,
+			userId,
+			borrowedAt: now,
+			dueAt,
+			borrowerFirstName: draft.firstName,
+			borrowerLastName: draft.lastName,
+			borrowerClass: draft.className,
+			loanDays: days
+		});
 
 		await tx.update(holding).set({ status: 'loaned' }).where(eq(holding.id, copy.id));
 
-		await tx.update(book)
+		await tx
+			.update(book)
 			.set({ copiesAvailable: Math.max(0, current.copiesAvailable - 1) })
-			.where(eq(book.id, bookId))
-			;
+			.where(eq(book.id, bookId));
 
 		await closeHoldOnBorrow(tx, userId, bookId);
 
@@ -566,13 +574,20 @@ export async function returnBook(userId: string, loanId: string): Promise<Return
 		if (!current) return { ok: false, message: 'Výpožička sa nenašla.' };
 		if (current.returnedAt) return { ok: false, message: 'Táto kniha je už vrátená.' };
 
-		const held = await tx.select().from(book).where(eq(book.id, current.bookId)).then((rows) => rows[0]);
+		const held = await tx
+			.select()
+			.from(book)
+			.where(eq(book.id, current.bookId))
+			.then((rows) => rows[0]);
 		if (!held) return { ok: false, message: 'Kniha v katalógu nie je.' };
 
 		await tx.update(loan).set({ returnedAt: new Date() }).where(eq(loan.id, loanId));
 
 		if (current.holdingId) {
-			await tx.update(holding).set({ status: 'available' }).where(eq(holding.id, current.holdingId));
+			await tx
+				.update(holding)
+				.set({ status: 'available' })
+				.where(eq(holding.id, current.holdingId));
 		} else {
 			const loaned = await tx
 				.select()
@@ -585,10 +600,7 @@ export async function returnBook(userId: string, loanId: string): Promise<Return
 		}
 
 		const copies = Math.min(held.copiesTotal, held.copiesAvailable + 1);
-		await tx.update(book)
-			.set({ copiesAvailable: copies })
-			.where(eq(book.id, current.bookId))
-			;
+		await tx.update(book).set({ copiesAvailable: copies }).where(eq(book.id, current.bookId));
 
 		bookId = current.bookId;
 		copiesAvailable = copies;

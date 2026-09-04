@@ -3,7 +3,9 @@ import { safeAuthNext, slovakAuthMessage } from '../auth-message';
 
 describe('slovakAuthMessage', () => {
 	it('translates common Supabase faults', () => {
-		expect(slovakAuthMessage('Invalid login credentials', 'x')).toBe('Nesprávny e-mail alebo heslo.');
+		expect(slovakAuthMessage('Invalid login credentials', 'x')).toBe(
+			'Nesprávny e-mail alebo heslo.'
+		);
 		expect(slovakAuthMessage('Email not confirmed', 'x')).toMatch(/Potvrď účet/);
 		expect(slovakAuthMessage('User already registered', 'x')).toMatch(/už má účet/);
 		expect(slovakAuthMessage('Password should be at least 8 characters', 'x')).toMatch(/8 znakov/);
@@ -13,7 +15,9 @@ describe('slovakAuthMessage', () => {
 		expect(slovakAuthMessage('For security purposes you can only request this after', 'x')).toMatch(
 			/Počkaj/
 		);
-		expect(slovakAuthMessage('New password should be different', 'x')).toMatch(/iné ako doterajšie/);
+		expect(slovakAuthMessage('New password should be different', 'x')).toMatch(
+			/iné ako doterajšie/
+		);
 		expect(slovakAuthMessage('same password', 'x')).toMatch(/iné ako doterajšie/);
 	});
 });

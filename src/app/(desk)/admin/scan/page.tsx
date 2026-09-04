@@ -1,15 +1,13 @@
 import { pageMeta } from '@/utils/metadata';
 
-export const metadata = pageMeta({ title: 'Čítačka', description: 'Pultová čítačka.', index: false });
+export const metadata = pageMeta({
+	title: 'Čítačka',
+	description: 'Pultová čítačka.',
+	index: false
+});
 
-export default function AdminScanPage({
-	searchParams
-}: {
-	searchParams: Promise<{ q?: string }>;
-}) {
-	return (
-		<ScanInner searchParams={searchParams} />
-	);
+export default function AdminScanPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+	return <ScanInner searchParams={searchParams} />;
 }
 
 async function ScanInner({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
@@ -23,7 +21,11 @@ async function ScanInner({ searchParams }: { searchParams: Promise<{ q?: string 
 			<button type="submit" className="rounded-full bg-primary px-4 py-2 text-primary-foreground">
 				Hľadať
 			</button>
-			{q ? <p className="text-muted-foreground text-sm">Zásah pre „{q}“ sa sem napojí v ďalšom kroku pultu.</p> : null}
+			{q ? (
+				<p className="text-muted-foreground text-sm">
+					Zásah pre „{q}“ sa sem napojí v ďalšom kroku pultu.
+				</p>
+			) : null}
 		</form>
 	);
 }

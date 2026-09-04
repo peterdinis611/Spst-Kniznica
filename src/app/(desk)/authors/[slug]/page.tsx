@@ -7,7 +7,8 @@ import { CatalogSlip } from '@/components/CatalogSlip';
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
 	const { slug } = await params;
 	const person = await getAuthor(slug);
-	if (!person) return pageMeta({ title: 'Autor chýba', description: 'Meno v registri nie je.', index: false });
+	if (!person)
+		return pageMeta({ title: 'Autor chýba', description: 'Meno v registri nie je.', index: false });
 	return pageMeta({
 		title: person.name,
 		description: person.bio || `Zväzky autora ${person.name} vo fonde SPŠT.`
@@ -22,7 +23,9 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
 
 	return (
 		<article>
-			<p className="text-muted-foreground font-mono text-xs tracking-[0.16em] uppercase">{person.role}</p>
+			<p className="text-muted-foreground font-mono text-xs tracking-[0.16em] uppercase">
+				{person.role}
+			</p>
 			<h1 className="font-display mt-2 text-[clamp(2rem,7vw,3.4rem)] leading-none font-semibold tracking-[-0.04em]">
 				{person.name}
 			</h1>

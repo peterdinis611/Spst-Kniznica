@@ -51,7 +51,11 @@ export function FolioShelf({ books }: { books: ShelfBook[] }) {
 			onMouseLeave={() => setActive(null)}
 		>
 			{bays.map((bay) => (
-				<div key={bay} className="folio-bay" style={{ ['--delay' as string]: `${0.16 + bay * 0.08}s` }}>
+				<div
+					key={bay}
+					className="folio-bay"
+					style={{ ['--delay' as string]: `${0.16 + bay * 0.08}s` }}
+				>
 					<div className="folio-rail" />
 					<div className="folio-well">
 						{layout.map((row, rowIndex) => (

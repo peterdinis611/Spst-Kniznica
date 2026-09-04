@@ -4,7 +4,10 @@ import { mailgunReady, sendMailgun } from '@/server/mailgun';
 import { mailtrapReady, sendMailtrap } from '@/server/mailtrap';
 
 function envText(value: string | undefined) {
-	return (value ?? '').trim().replace(/^['"]+|['"]+$/g, '').toLowerCase();
+	return (value ?? '')
+		.trim()
+		.replace(/^['"]+|['"]+$/g, '')
+		.toLowerCase();
 }
 
 export type MailDriver = 'mailtrap' | 'mailgun';

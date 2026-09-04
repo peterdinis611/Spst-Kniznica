@@ -27,9 +27,7 @@ export function slipHtml(input: {
 	code?: string | null;
 }) {
 	const chips = input.chips.filter((item): item is string => Boolean(item?.trim()));
-	const chipRow = chips
-		.map((item, i) => `${i ? '<td width="8"></td>' : ''}${chip(item)}`)
-		.join('');
+	const chipRow = chips.map((item, i) => `${i ? '<td width="8"></td>' : ''}${chip(item)}`).join('');
 	const codeBlock = input.code?.trim()
 		? `<p style="margin:26px 0 0;padding-top:18px;border-top:1px dashed #d7c4ae;font-family:Courier,monospace;font-size:12px;letter-spacing:0.08em;color:#7a6554;">
 									Kód, ak odkaz nefunguje<br />

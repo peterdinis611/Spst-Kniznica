@@ -107,7 +107,11 @@ async function copiesOf(bookId: string) {
 		.where(eq(holding.bookId, bookId));
 }
 
-function fromCopy(row: Awaited<ReturnType<typeof copiesOf>>[number], kind: ScanHit['kind'], extra?: Partial<ScanHit>) {
+function fromCopy(
+	row: Awaited<ReturnType<typeof copiesOf>>[number],
+	kind: ScanHit['kind'],
+	extra?: Partial<ScanHit>
+) {
 	return { kind, copy: asCopy(row), ...extra } as ScanHit;
 }
 

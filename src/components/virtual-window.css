@@ -1,14 +1,14 @@
 .virtual-window {
-		position: relative;
-		width: 100%;
-		min-width: 0;
-	}
+	position: relative;
+	width: 100%;
+	min-width: 0;
+}
 
-	.virtual-row {
-		position: absolute;
-		top: 0;
-		right: 0;
-		left: 0;
-		width: 100%;
-		min-width: 0;
-	}
+.virtual-row {
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	width: 100%;
+	min-width: 0;
+}

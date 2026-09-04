@@ -31,7 +31,10 @@ export function coverUploadFault(error: { code?: string; message?: string } | st
 		return `Snímka je väčšia ako ${COVER_MAX_LABEL}.`;
 	}
 	if (/TOO_SMALL|empty/i.test(blob)) return 'Snímka je prázdna.';
-	if (/InvalidFileType|FileType|not allowed|BAD_REQUEST/i.test(blob) && /image|jpeg|png|webp|type/i.test(blob)) {
+	if (
+		/InvalidFileType|FileType|not allowed|BAD_REQUEST/i.test(blob) &&
+		/image|jpeg|png|webp|type/i.test(blob)
+	) {
 		return 'Obálka musí byť JPEG, PNG alebo WebP.';
 	}
 	return message.trim() || 'Obálka sa nenahrala.';

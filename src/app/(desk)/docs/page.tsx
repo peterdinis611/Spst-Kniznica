@@ -12,8 +12,8 @@ export default function DocsPage() {
 			<p className="folio-kicker">Príručka</p>
 			<h1 className="font-display mt-2 text-4xl">Ako fond berie.</h1>
 			<p className="mt-4 max-w-[46ch] leading-relaxed text-muted-foreground">
-				Katalóg, výpožička na 7–21 dní a pult v pavilóne B. Podrobná príručka sa sem vráti ako MDX
-				v ďalšom kroku.
+				Katalóg, výpožička na 7–21 dní a pult v pavilóne B. Podrobná príručka sa sem vráti ako MDX v
+				ďalšom kroku.
 			</p>
 			<p className="mt-8">
 				<a href="/" className="underline">

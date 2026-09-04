@@ -17,7 +17,11 @@ html.dark .loans-ticket {
 	min-width: 0;
 	border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
 	background:
-		radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, #c45a38 11%, transparent), transparent 46%),
+		radial-gradient(
+			120% 80% at 100% 0%,
+			color-mix(in srgb, #c45a38 11%, transparent),
+			transparent 46%
+		),
 		var(--ticket);
 	color: var(--ink);
 	box-shadow: var(--shadow);
@@ -28,7 +32,7 @@ html.dark .loans-ticket {
 }
 
 .loans-ticket::before {
-	content: '';
+	content: "";
 	position: absolute;
 	inset: 0;
 	pointer-events: none;

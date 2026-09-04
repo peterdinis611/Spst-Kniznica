@@ -16,7 +16,13 @@ const book = (id: string, copiesAvailable: number): CatalogBook => ({
 	publisher: 'SPŠT',
 	featured: false,
 	coverUrl: null,
-	category: { id: 'cat-inf', name: 'Informatika', slug: 'informatika', code: 'INF', accent: '#2c4a3e' },
+	category: {
+		id: 'cat-inf',
+		name: 'Informatika',
+		slug: 'informatika',
+		code: 'INF',
+		accent: '#2c4a3e'
+	},
 	authors: []
 });
 

@@ -48,13 +48,31 @@ describe('desk validation', () => {
 
 	it('rejects an incomplete author medallion', async () => {
 		expect(
-			await saveAuthor({ name: 'J', slug: '', bio: 'Lektor.', lifespan: '1950 —', role: 'informatik' })
+			await saveAuthor({
+				name: 'J',
+				slug: '',
+				bio: 'Lektor.',
+				lifespan: '1950 —',
+				role: 'informatik'
+			})
 		).toEqual({ ok: false, message: 'Meno autora je krátke.' });
 		expect(
-			await saveAuthor({ name: 'Ján Belko', slug: '', bio: 'Lektor.', lifespan: '1950 —', role: '' })
+			await saveAuthor({
+				name: 'Ján Belko',
+				slug: '',
+				bio: 'Lektor.',
+				lifespan: '1950 —',
+				role: ''
+			})
 		).toEqual({ ok: false, message: 'Doplň rolu autora.' });
 		expect(
-			await saveAuthor({ name: 'Ján Belko', slug: '', bio: '', lifespan: '1950 —', role: 'informatik' })
+			await saveAuthor({
+				name: 'Ján Belko',
+				slug: '',
+				bio: '',
+				lifespan: '1950 —',
+				role: 'informatik'
+			})
 		).toEqual({ ok: false, message: 'Doplň medailón.' });
 	});
 
@@ -127,9 +145,9 @@ describe('desk validation', () => {
 	});
 
 	it('rejects an unknown holding or reservation stamp', async () => {
-		expect(
-			await saveHolding({ bookId: 'book-1', inventoryNo: 'INF-1', status: 'broken' })
-		).toEqual({ ok: false, message: 'Stav výtlačka nie je v zozname.' });
+		expect(await saveHolding({ bookId: 'book-1', inventoryNo: 'INF-1', status: 'broken' })).toEqual(
+			{ ok: false, message: 'Stav výtlačka nie je v zozname.' }
+		);
 		expect(
 			await saveReservation({ bookId: 'book-1', userId: 'user-1', status: 'waiting' })
 		).toEqual({ ok: false, message: 'Stav rezervácie nie je v zozname.' });

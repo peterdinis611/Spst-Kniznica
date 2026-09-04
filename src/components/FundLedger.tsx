@@ -9,7 +9,13 @@ import './fund-ledger.css';
 
 const tilts = [-7, 4, -3, 6, -5, 3];
 
-export function FundLedger({ books, categories }: { books: BookSlip[]; categories: CategoryChip[] }) {
+export function FundLedger({
+	books,
+	categories
+}: {
+	books: BookSlip[];
+	categories: CategoryChip[];
+}) {
 	const ledger = categories
 		.map((cat) => ({
 			id: cat.id,
@@ -58,11 +64,14 @@ export function FundLedger({ books, categories }: { books: BookSlip[]; categorie
 					<p className="kicker">Register fondu</p>
 					<h1>Všetky knihy.</h1>
 					<p className="lede">
-						Kartotéka podľa odboru — signatúra vľavo, chrbát na lístku. Otvor zväzok a uvidíš, či je voľný.
+						Kartotéka podľa odboru — signatúra vľavo, chrbát na lístku. Otvor zväzok a uvidíš, či je
+						voľný.
 					</p>
 				</div>
 				<aside className="mast-count">
-					<strong>{count < 100 ? String(count).padStart(2, '0') : count.toLocaleString('sk-SK')}</strong>
+					<strong>
+						{count < 100 ? String(count).padStart(2, '0') : count.toLocaleString('sk-SK')}
+					</strong>
 					<span>{volumesLabel(count)}</span>
 					{virtual ? <em>virtualizovaný register</em> : null}
 					<a href="/books">Do katalógu →</a>
@@ -90,7 +99,12 @@ export function FundLedger({ books, categories }: { books: BookSlip[]; categorie
 								<div className="lane-fan" style={{ ['--accent' as string]: item.accent }}>
 									{item.preview.map((book) => (
 										<a key={book.id} className="fan-item" href={`/books/${book.id}`}>
-											<PrintJacket book={book} linked={false} size="thumb" className="hover:!transform-none" />
+											<PrintJacket
+												book={book}
+												linked={false}
+												size="thumb"
+												className="hover:!transform-none"
+											/>
 										</a>
 									))}
 								</div>
@@ -130,7 +144,12 @@ export function FundLedger({ books, categories }: { books: BookSlip[]; categorie
 										className="fan-item"
 										style={{ ['--tilt' as string]: `${tilts[i % tilts.length]}deg` }}
 									>
-										<PrintJacket book={book} linked={false} size="thumb" className="hover:!transform-none" />
+										<PrintJacket
+											book={book}
+											linked={false}
+											size="thumb"
+											className="hover:!transform-none"
+										/>
 									</div>
 								))}
 							</div>

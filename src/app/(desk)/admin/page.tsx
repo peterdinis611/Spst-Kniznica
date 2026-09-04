@@ -36,7 +36,12 @@ export default async function AdminHome({
 					{klass ? `${klass} · ${open} kníh vonku` : 'Doplň triedu, uvidíš lístky vonku.'}
 				</p>
 				<form className="mt-4 flex gap-2" method="GET">
-					<input name="class" defaultValue={klass} placeholder="II.A" className="rounded-full border px-3 py-2" />
+					<input
+						name="class"
+						defaultValue={klass}
+						placeholder="II.A"
+						className="rounded-full border px-3 py-2"
+					/>
 					<button type="submit" className="rounded-full bg-primary px-4 text-primary-foreground">
 						Otvoriť
 					</button>
@@ -77,7 +82,11 @@ export default async function AdminHome({
 			</form>
 			<div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				{cards.map((card) => (
-					<a key={card.href} href={card.href} className="rounded-2xl bg-card p-4 no-underline ring-1 ring-border">
+					<a
+						key={card.href}
+						href={card.href}
+						className="rounded-2xl bg-card p-4 no-underline ring-1 ring-border"
+					>
 						<em className="font-mono text-xs">{card.code}</em>
 						<strong className="font-display mt-2 block text-3xl">{card.n}</strong>
 						<span className="text-muted-foreground text-sm">{card.label}</span>
@@ -85,7 +94,8 @@ export default async function AdminHome({
 				))}
 			</div>
 			<p className="mt-8 text-sm text-muted-foreground">
-				Fronta: po lehote {queue.overdue.length} · cestou {queue.inbound.length} · na pulte {queue.pickup.length}
+				Fronta: po lehote {queue.overdue.length} · cestou {queue.inbound.length} · na pulte{' '}
+				{queue.pickup.length}
 			</p>
 		</div>
 	);

@@ -1,5 +1,13 @@
 import { relations } from 'drizzle-orm';
-import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import {
+	boolean,
+	index,
+	integer,
+	pgTable,
+	text,
+	timestamp,
+	uniqueIndex
+} from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -51,7 +59,10 @@ export const account = pgTable(
 		accessToken: text('access_token'),
 		refreshToken: text('refresh_token'),
 		idToken: text('id_token'),
-		accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true, mode: 'date' }),
+		accessTokenExpiresAt: timestamp('access_token_expires_at', {
+			withTimezone: true,
+			mode: 'date'
+		}),
 		refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
 			withTimezone: true,
 			mode: 'date'

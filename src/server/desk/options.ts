@@ -10,7 +10,10 @@ export async function categoryOptions() {
 }
 
 export async function authorOptions() {
-	return await db.select({ id: author.id, name: author.name }).from(author).orderBy(asc(author.name));
+	return await db
+		.select({ id: author.id, name: author.name })
+		.from(author)
+		.orderBy(asc(author.name));
 }
 
 export async function bookOptions() {

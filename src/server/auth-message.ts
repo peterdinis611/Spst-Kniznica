@@ -8,7 +8,10 @@ export function slovakAuthMessage(raw: string | undefined, fallback: string) {
 	if (text.includes('user already registered') || text.includes('already been registered')) {
 		return 'Tento e-mail už má účet. Prihlás sa, alebo obnov heslo.';
 	}
-	if (text.includes('password should be at least') || text.includes('password is known to be weak')) {
+	if (
+		text.includes('password should be at least') ||
+		text.includes('password is known to be weak')
+	) {
 		return 'Heslo musí mať aspoň 8 znakov a nesmie byť triviálne.';
 	}
 	if (text.includes('unable to validate email') || text.includes('invalid email')) {

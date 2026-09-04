@@ -53,10 +53,7 @@ const readers = [
 
 async function takeCopy(bookId: string) {
 	const openIds = (
-		await db
-			.select({ id: loan.holdingId })
-			.from(loan)
-			.where(isNull(loan.returnedAt))
+		await db.select({ id: loan.holdingId }).from(loan).where(isNull(loan.returnedAt))
 	).flatMap((row) => (row.id ? [row.id] : []));
 
 	const orphaned = await db
@@ -79,7 +76,11 @@ async function takeCopy(bookId: string) {
 		.then((rows) => rows[0] ?? null);
 	if (!free) return null;
 
-	const held = await db.select().from(book).where(eq(book.id, bookId)).then((rows) => rows[0]);
+	const held = await db
+		.select()
+		.from(book)
+		.where(eq(book.id, bookId))
+		.then((rows) => rows[0]);
 	await db.transaction(async (tx) => {
 		await tx.update(holding).set({ status: 'loaned' }).where(eq(holding.id, free.id));
 		if (held) {
@@ -104,7 +105,10 @@ function names(full: string) {
 export async function ensureDeskScene() {
 	if (!shouldSeedDesk()) return;
 	const existing =
-		(await db.select({ c: count() }).from(loan).then((rows) => rows[0]?.c ?? 0)) ?? 0;
+		(await db
+			.select({ c: count() })
+			.from(loan)
+			.then((rows) => rows[0]?.c ?? 0)) ?? 0;
 	if (existing > 0) return;
 
 	const now = new Date();

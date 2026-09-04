@@ -5,7 +5,8 @@ import { ShelfSlider } from '@/components/ShelfSlider';
 
 export const metadata = pageMeta({
 	title: 'Odbory',
-	description: 'Police školskej knižnice SPŠT podľa odborov. Nájdite učebnice a príručky pre svoj smer.'
+	description:
+		'Police školskej knižnice SPŠT podľa odborov. Nájdite učebnice a príručky pre svoj smer.'
 });
 
 export default async function DepartmentsPage() {
@@ -25,7 +26,10 @@ export default async function DepartmentsPage() {
 				{categories.map((cat) => (
 					<li key={cat.id} className="min-w-0 border-t border-border pt-6">
 						<div className="mb-4 flex min-w-0 flex-wrap items-end justify-between gap-3">
-							<a className="group min-w-0 text-inherit no-underline" href={`/departments/${cat.slug}`}>
+							<a
+								className="group min-w-0 text-inherit no-underline"
+								href={`/departments/${cat.slug}`}
+							>
 								<p className="m-0 font-mono text-[0.72rem] font-semibold tracking-[0.16em] text-muted-foreground">
 									{cat.code}
 								</p>
@@ -33,7 +37,9 @@ export default async function DepartmentsPage() {
 									{cat.name}
 								</h2>
 							</a>
-							<p className="m-0 font-body text-[0.95rem] text-muted-foreground italic">{booksLabel(cat.bookCount)}</p>
+							<p className="m-0 font-body text-[0.95rem] text-muted-foreground italic">
+								{booksLabel(cat.bookCount)}
+							</p>
 						</div>
 						<p className="mb-5 max-w-[46ch] font-body text-[1rem] leading-relaxed break-words text-muted-foreground">
 							{cat.description}

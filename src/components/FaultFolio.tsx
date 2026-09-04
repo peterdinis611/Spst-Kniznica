@@ -9,9 +9,9 @@ export function FaultFolio({ status, message }: { status: number; message?: stri
 	const title = jammed ? 'Zásuvka sa zasekla.' : 'Karta nie je v zásuvke.';
 	const leaked = Boolean(
 		message &&
-		/ENOENT|EACCES|EPERM|\.next|node_modules|\/Users\/|\/home\/|Not Found|Internal Error/.test(
-			message
-		)
+			/ENOENT|EACCES|EPERM|\.next|node_modules|\/Users\/|\/home\/|Not Found|Internal Error/.test(
+				message
+			)
 	);
 	const lead =
 		jammed || leaked || !message

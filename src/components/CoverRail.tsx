@@ -53,10 +53,20 @@ export function CoverRail({ books }: { books: BookSlip[] }) {
 	}
 
 	return (
-		<div className="complete-shelf" role="region" aria-roledescription="carousel" aria-label="Pracovné zväzky vo fonde">
+		<div
+			className="complete-shelf"
+			role="region"
+			aria-roledescription="carousel"
+			aria-label="Pracovné zväzky vo fonde"
+		>
 			<div className="shelf-tools">
 				{total > 1 ? (
-					<button type="button" className="shelf-nudge" onClick={() => go(-1)} aria-label="Predošlý zväzok">
+					<button
+						type="button"
+						className="shelf-nudge"
+						onClick={() => go(-1)}
+						aria-label="Predošlý zväzok"
+					>
 						<ChevronLeft />
 					</button>
 				) : null}
@@ -66,7 +76,12 @@ export function CoverRail({ books }: { books: BookSlip[] }) {
 					{String(total).padStart(2, '0')}
 				</p>
 				{total > 1 ? (
-					<button type="button" className="shelf-nudge" onClick={() => go(1)} aria-label="Ďalší zväzok">
+					<button
+						type="button"
+						className="shelf-nudge"
+						onClick={() => go(1)}
+						aria-label="Ďalší zväzok"
+					>
 						<ChevronRight />
 					</button>
 				) : null}

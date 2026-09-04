@@ -12,49 +12,57 @@ const jackets: JacketTone[] = [
 		bg: '#1c1915',
 		fg: '#f7f1e6',
 		ink: '#e07a5f',
-		photo: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=640&h=960&q=80'
+		photo:
+			'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=640&h=960&q=80'
 	},
 	{
 		bg: '#243044',
 		fg: '#f7f1e6',
 		ink: '#d6b35c',
-		photo: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=640&h=960&q=80'
+		photo:
+			'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=640&h=960&q=80'
 	},
 	{
 		bg: '#1b3b36',
 		fg: '#f4efe6',
 		ink: '#e8c36a',
-		photo: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=640&h=960&q=80'
+		photo:
+			'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=640&h=960&q=80'
 	},
 	{
 		bg: '#3f2a22',
 		fg: '#f7f1e6',
 		ink: '#e07a5f',
-		photo: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=640&h=960&q=80'
+		photo:
+			'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=640&h=960&q=80'
 	},
 	{
 		bg: '#6b2d3c',
 		fg: '#f7f1e6',
 		ink: '#e8c36a',
-		photo: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=640&h=960&q=80'
+		photo:
+			'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=640&h=960&q=80'
 	},
 	{
 		bg: '#2c4a3e',
 		fg: '#f4efe6',
 		ink: '#f4efe6',
-		photo: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=640&h=960&q=80'
+		photo:
+			'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=640&h=960&q=80'
 	},
 	{
 		bg: '#1a1a1a',
 		fg: '#f7f1e6',
 		ink: '#f06543',
-		photo: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=640&h=960&q=80'
+		photo:
+			'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=640&h=960&q=80'
 	},
 	{
 		bg: '#efe6d6',
 		fg: '#1c1915',
 		ink: '#1b3b36',
-		photo: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=640&h=960&q=80'
+		photo:
+			'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=640&h=960&q=80'
 	}
 ];
 
@@ -110,10 +118,25 @@ export function clothFor(id: string) {
 }
 
 const PRESETS = {
-	rail: { width: 360, height: 456, sizes: '(max-width: 720px) 74vw, 218px', widths: [240, 360, 540] },
-	tile: { width: 400, height: 600, sizes: '(max-width: 720px) 46vw, 280px', widths: [280, 400, 640] },
+	rail: {
+		width: 360,
+		height: 456,
+		sizes: '(max-width: 720px) 74vw, 218px',
+		widths: [240, 360, 540]
+	},
+	tile: {
+		width: 400,
+		height: 600,
+		sizes: '(max-width: 720px) 46vw, 280px',
+		widths: [280, 400, 640]
+	},
 	thumb: { width: 96, height: 128, sizes: '72px', widths: [48, 96, 144] },
-	hero: { width: 480, height: 720, sizes: '(max-width: 720px) 70vw, 240px', widths: [320, 480, 720] },
+	hero: {
+		width: 480,
+		height: 720,
+		sizes: '(max-width: 720px) 70vw, 240px',
+		widths: [320, 480, 720]
+	},
 	search: { width: 80, height: 108, sizes: '40px', widths: [40, 80, 120] }
 } as const;
 

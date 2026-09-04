@@ -42,8 +42,7 @@ export function formDate(data: FormData, name: string) {
 }
 
 export function uniqueConstraintMessage(cause: unknown, fallback: string) {
-	const code =
-		cause && typeof cause === 'object' && 'code' in cause ? String(cause.code) : '';
+	const code = cause && typeof cause === 'object' && 'code' in cause ? String(cause.code) : '';
 	const text = cause instanceof Error ? cause.message : String(cause);
 	if (code === '23505' || /UNIQUE|unique/i.test(text)) return fallback;
 	return null;

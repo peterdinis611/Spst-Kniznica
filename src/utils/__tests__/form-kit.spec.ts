@@ -16,7 +16,9 @@ import { newPasswordSchema, signInSchema, signUpSchema } from '@/auth/auth-field
 describe('flattenFields', () => {
 	it('maps valibot issues onto field keys', () => {
 		expect(flattenFields(signInSchema, { email: 'nie', password: '123' }).email).toMatch(/adresa/);
-		expect(flattenFields(signInSchema, { email: 'nie', password: '123' }).password).toMatch(/8 znakov/);
+		expect(flattenFields(signInSchema, { email: 'nie', password: '123' }).password).toMatch(
+			/8 znakov/
+		);
 	});
 
 	it('puts a password mismatch on confirm', () => {
@@ -44,9 +46,9 @@ describe('fieldIssue', () => {
 
 describe('deskIssue', () => {
 	it('keeps the pult copy for a thin author, book, and reader', () => {
-		expect(deskIssue(authorSchema, { name: 'J', role: 'informatik', bio: 'Lektor.', lifespan: '1950 —' })).toBe(
-			'Meno autora je krátke.'
-		);
+		expect(
+			deskIssue(authorSchema, { name: 'J', role: 'informatik', bio: 'Lektor.', lifespan: '1950 —' })
+		).toBe('Meno autora je krátke.');
 		expect(
 			deskIssue(bookSchema, {
 				title: 'A',
@@ -59,13 +61,15 @@ describe('deskIssue', () => {
 				pages: 120
 			})
 		).toBe('Názov knihy je krátky.');
-		expect(deskIssue(readerSchema, { name: 'A', email: 'a@spst.sk' })).toBe('Meno čitateľa je krátke.');
+		expect(deskIssue(readerSchema, { name: 'A', email: 'a@spst.sk' })).toBe(
+			'Meno čitateľa je krátke.'
+		);
 		expect(deskIssue(readerSchema, { name: 'Anna Pult', email: 'nie-adresa' })).toBe(
 			'E-mail nevyzerá ako adresa.'
 		);
-		expect(deskIssue(readerSchema, { name: 'Eva Učiteľ', email: 'eva@spst.sk', role: 'teacher' })).toBe(
-			'Doplň triedu učiteľa.'
-		);
+		expect(
+			deskIssue(readerSchema, { name: 'Eva Učiteľ', email: 'eva@spst.sk', role: 'teacher' })
+		).toBe('Doplň triedu učiteľa.');
 		expect(
 			deskIssue(readerSchema, {
 				name: 'Eva Učiteľ',
@@ -77,9 +81,9 @@ describe('deskIssue', () => {
 		expect(deskIssue(holdingSchema, { bookId: 'book-1', status: 'broken' })).toBe(
 			'Stav výtlačka nie je v zozname.'
 		);
-		expect(deskIssue(reservationSchema, { bookId: 'book-1', userId: 'user-1', status: 'waiting' })).toBe(
-			'Stav rezervácie nie je v zozname.'
-		);
+		expect(
+			deskIssue(reservationSchema, { bookId: 'book-1', userId: 'user-1', status: 'waiting' })
+		).toBe('Stav rezervácie nie je v zozname.');
 		expect(
 			deskIssue(deskLoanSchema, {
 				bookId: 'book-1',
@@ -90,9 +94,9 @@ describe('deskIssue', () => {
 				loanDays: 21
 			})
 		).toBe('Meno a priezvisko na lístku.');
-		expect(firstSchemaIssue(categorySchema, { name: 'I', code: 'INF', description: 'Algoritmy.' })).toBe(
-			'Názov odboru je krátky.'
-		);
+		expect(
+			firstSchemaIssue(categorySchema, { name: 'I', code: 'INF', description: 'Algoritmy.' })
+		).toBe('Názov odboru je krátky.');
 		expect(deskIssue(deskClassFilterSchema, { className: '??' })).toMatch(/Trieda/);
 		expect(deskIssue(deskClassFilterSchema, { className: 'II.A' })).toBeUndefined();
 	});

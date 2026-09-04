@@ -125,7 +125,11 @@ export function holdMailCopy(notice: HoldNotice) {
 		kicker: 'rezervácia na pulte',
 		heading: 'Pripravené.',
 		body: `${escapeHtml(name)}, <strong>${escapeHtml(title)}</strong> čaká v pavilóne B. Požičaj ho z karty, kým lístok platí.`,
-		chips: [notice.callNumber || null, dueStamp ? `do ${dueStamp}` : `${HOLD_DAYS} dní`, 'pavilón B'],
+		chips: [
+			notice.callNumber || null,
+			dueStamp ? `do ${dueStamp}` : `${HOLD_DAYS} dní`,
+			'pavilón B'
+		],
 		ctaHref: loansHref,
 		cta: 'Otvoriť Moje knihy',
 		foot: 'Ak lístok vyprší, zväzok prejde na ďalšieho v rade.'
@@ -155,12 +159,14 @@ export async function notifyHoldReady(offer: HoldOffer | null) {
 	});
 }
 
-export async function notifyHoldExpired(lapse: {
-	email: string;
-	name: string;
-	bookTitle: string;
-	callNumber: string;
-} | null) {
+export async function notifyHoldExpired(
+	lapse: {
+		email: string;
+		name: string;
+		bookTitle: string;
+		callNumber: string;
+	} | null
+) {
 	if (!lapse?.email) return;
 	await queueHoldNotice({
 		kind: 'expired',

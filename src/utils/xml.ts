@@ -60,10 +60,13 @@ export function xmlResponse(filename: string, body: string) {
 }
 
 export function tokenizeXml(xml: string): XmlLine[] {
-	return xml.replace(/\n$/, '').split('\n').map((line, index) => ({
-		n: index + 1,
-		tokens: tokenizeXmlLine(line)
-	}));
+	return xml
+		.replace(/\n$/, '')
+		.split('\n')
+		.map((line, index) => ({
+			n: index + 1,
+			tokens: tokenizeXmlLine(line)
+		}));
 }
 
 function tokenizeXmlLine(line: string): XmlToken[] {

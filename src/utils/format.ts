@@ -91,7 +91,11 @@ export function copiesShort(available: number, total: number) {
 }
 
 export function readerNumber(id: string) {
-	return id.replace(/[^a-zA-Z0-9]/g, '').slice(-4).toUpperCase().padStart(4, '0');
+	return id
+		.replace(/[^a-zA-Z0-9]/g, '')
+		.slice(-4)
+		.toUpperCase()
+		.padStart(4, '0');
 }
 
 export function firstName(name: string) {

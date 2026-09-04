@@ -7,8 +7,12 @@ describe('inventorySight', () => {
 	});
 
 	it('marks an unscanned free copy as missing once a walk is open', () => {
-		expect(inventorySight({ status: 'available', runId: 'run-1', markedRunId: null })).toBe('missing');
-		expect(inventorySight({ status: 'available', runId: 'run-1', markedRunId: 'run-1' })).toBe('found');
+		expect(inventorySight({ status: 'available', runId: 'run-1', markedRunId: null })).toBe(
+			'missing'
+		);
+		expect(inventorySight({ status: 'available', runId: 'run-1', markedRunId: 'run-1' })).toBe(
+			'found'
+		);
 	});
 
 	it('does not cry missing when no walk is open', () => {

@@ -39,8 +39,16 @@ export async function ensureLocalReader(input: {
 
 	const name = displayName(input.name, email);
 	const existing =
-		await db.select().from(user).where(eq(user.email, email)).then((rows) => rows[0]) ??
-		await db.select().from(user).where(eq(user.id, input.id)).then((rows) => rows[0]);
+		(await db
+			.select()
+			.from(user)
+			.where(eq(user.email, email))
+			.then((rows) => rows[0])) ??
+		(await db
+			.select()
+			.from(user)
+			.where(eq(user.id, input.id))
+			.then((rows) => rows[0]));
 
 	if (existing) {
 		const role = resolvedRole(email, existing.role, input.role);
@@ -50,25 +58,23 @@ export async function ensureLocalReader(input: {
 			!existing.emailVerified ||
 			parseRole(existing.role) !== role
 		) {
-			await db.update(user)
+			await db
+				.update(user)
 				.set({ name, email, emailVerified: true, role, updatedAt: new Date() })
-				.where(eq(user.id, existing.id))
-				;
+				.where(eq(user.id, existing.id));
 		}
 
 		return pass(existing.id, name, email, role, existing.className ?? '');
 	}
 
 	const role = resolvedRole(email, 'reader', input.role);
-	await db.insert(user)
-		.values({
-			id: input.id,
-			name,
-			email,
-			emailVerified: true,
-			role
-		})
-		;
+	await db.insert(user).values({
+		id: input.id,
+		name,
+		email,
+		emailVerified: true,
+		role
+	});
 
 	return pass(input.id, name, email, role, '');
 }

@@ -18,9 +18,7 @@ export const options = {
 		}
 	},
 	thresholds: {
-		http_req_failed: [
-			{ threshold: 'rate<0.05', abortOnFail: true, delayAbortEval: '25s' }
-		],
+		http_req_failed: [{ threshold: 'rate<0.05', abortOnFail: true, delayAbortEval: '25s' }],
 		http_req_duration: ['p(95)<3000'],
 		'http_req_duration{name:Register}': ['p(95)<5000'],
 		checks: ['rate>0.9']

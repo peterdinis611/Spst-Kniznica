@@ -68,10 +68,7 @@ export function parseOpenLibrary(isbn: string, payload: unknown): IsbnCard | nul
 	const title = asText(doc.title);
 	if (!title) return null;
 
-	const description =
-		asText(doc.description) ||
-		asText(doc.first_sentence) ||
-		asText(doc.notes);
+	const description = asText(doc.description) || asText(doc.first_sentence) || asText(doc.notes);
 
 	return {
 		isbn: asText(Array.isArray(doc.isbn) ? doc.isbn[0] : doc.isbn) || compact,

@@ -70,7 +70,13 @@ export async function layoutChrome(pathname: string) {
 
 	return {
 		user: user
-			? { id: user.id, name: user.name, email: user.email, role: user.role, className: user.className }
+			? {
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					role: user.role,
+					className: user.className
+				}
 			: null,
 		admin,
 		categories
@@ -80,7 +86,10 @@ export async function layoutChrome(pathname: string) {
 export async function actionEvent(): Promise<RequestEvent> {
 	const h = await headers();
 	const ip =
-		h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || h.get('cf-connecting-ip') || '0.0.0.0';
+		h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+		h.get('x-real-ip') ||
+		h.get('cf-connecting-ip') ||
+		'0.0.0.0';
 	return {
 		getClientAddress: () => ip,
 		request: new Request('http://localhost/action', {

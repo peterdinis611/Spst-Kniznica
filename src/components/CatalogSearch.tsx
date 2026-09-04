@@ -46,7 +46,8 @@ export function CatalogSearch({
 
 	useEffect(() => {
 		if (!open) return;
-		restoreEl.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+		restoreEl.current =
+			document.activeElement instanceof HTMLElement ? document.activeElement : null;
 		setQuery('');
 		setHits([]);
 		setActive(0);
@@ -154,7 +155,12 @@ export function CatalogSearch({
 
 	return (
 		<div className="search-layer" role="presentation" data-catalog-search="open">
-			<button type="button" className="search-backdrop" aria-label="Zavrieť hľadanie" onClick={close} />
+			<button
+				type="button"
+				className="search-backdrop"
+				aria-label="Zavrieť hľadanie"
+				onClick={close}
+			/>
 			<div
 				className="search-panel"
 				role="dialog"
@@ -273,7 +279,9 @@ export function CatalogSearch({
 											<em>{book.authors}</em>
 											<b className="search-hit-call">{book.callNumber}</b>
 										</span>
-										<span className={`search-hit-state${book.copiesAvailable === 0 ? ' is-out' : ''}`}>
+										<span
+											className={`search-hit-state${book.copiesAvailable === 0 ? ' is-out' : ''}`}
+										>
 											{book.copiesAvailable > 0 ? 'Voľná' : 'Vonku'}
 										</span>
 									</a>

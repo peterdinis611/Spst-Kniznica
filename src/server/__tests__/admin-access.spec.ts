@@ -11,7 +11,14 @@ vi.mock('@/config/env', () => ({
 	env: { ADMIN_EMAILS: 'anna@spst.sk' }
 }));
 
-import { canOpenDesk, canOperateDesk, deskGate, isAdminEmail, isDeskInspectPath, requireAdmin } from '../admin-access';
+import {
+	canOpenDesk,
+	canOperateDesk,
+	deskGate,
+	isAdminEmail,
+	isDeskInspectPath,
+	requireAdmin
+} from '../admin-access';
 
 const librarian = {
 	id: 'user-1',

@@ -42,13 +42,8 @@ export async function sendMailtrap(input: {
 	const to = input.to.trim();
 	if (!token || !to) return { ok: false, skipped: true };
 
-	const from = parseFrom(
-		env.MAILTRAP_FROM ?? '',
-		'hello@demomailtrap.co',
-		'SPŠT knižnica'
-	);
-	const endpoint =
-		envText(env.MAILTRAP_API_URL) || 'https://send.api.mailtrap.io/api/send';
+	const from = parseFrom(env.MAILTRAP_FROM ?? '', 'hello@demomailtrap.co', 'SPŠT knižnica');
+	const endpoint = envText(env.MAILTRAP_API_URL) || 'https://send.api.mailtrap.io/api/send';
 	const diverted = isDemoFrom(from.email) ? divertTo(to) : { email: to, original: null };
 	const toEntry = input.toName?.trim()
 		? { email: diverted.email, name: input.toName.trim() }

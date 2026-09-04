@@ -1,5 +1,11 @@
 import { pageMeta } from '@/utils/metadata';
-import { catalogStats, getFeaturedBook, listAuthorSlips, listBookSlips, toSlip } from '@/server/library';
+import {
+	catalogStats,
+	getFeaturedBook,
+	listAuthorSlips,
+	listBookSlips,
+	toSlip
+} from '@/server/library';
 import { authorLine, booksLabel, copiesLabel, initials, splitCallNumber } from '@/utils/format';
 import { authorSwatch } from '@/catalog/cover';
 import { cn } from '@/utils/cn';
@@ -18,14 +24,17 @@ export default async function DiscoverPage() {
 		listAuthorSlips(),
 		catalogStats()
 	]);
-	const catalog = slips.filter((book) => book.id !== 'book-modlitbicky' && book.id !== featured?.id);
+	const catalog = slips.filter(
+		(book) => book.id !== 'book-modlitbicky' && book.id !== featured?.id
+	);
 	const ready = catalog.filter((book) => book.copiesAvailable > 0);
 	const shelf = ready.slice(0, 24);
 	const authors = [...authorsRaw].sort((a, b) => b.bookCount - a.bookCount).slice(0, 16);
 	const featuredSlip = featured ? toSlip(featured) : null;
 	const featuredCall = featuredSlip ? splitCallNumber(featuredSlip.callNumber) : null;
 	const display = 'font-display m-0 font-semibold tracking-[-0.03em] leading-[1.06]';
-	const rise = 'animate-in fade-in slide-in-from-bottom-3 fill-mode-both duration-700 motion-reduce:animate-none';
+	const rise =
+		'animate-in fade-in slide-in-from-bottom-3 fill-mode-both duration-700 motion-reduce:animate-none';
 
 	return (
 		<div className="text-foreground pt-1 sm:pt-2">
@@ -64,14 +73,25 @@ export default async function DiscoverPage() {
 							<p className="m-0 font-sans text-[0.62rem] font-semibold tracking-[0.16em] uppercase opacity-80 sm:text-[0.72rem] sm:tracking-[0.18em]">
 								Dnes na pulte
 							</p>
-							<h2 className={cn(display, 'mt-1.5 max-w-[14ch] text-[clamp(1.35rem,6.4vw,3.5rem)] sm:mt-3')}>
-								<a className="text-inherit no-underline decoration-from-font hover:underline" href={`/books/${featuredSlip.id}`}>
+							<h2
+								className={cn(
+									display,
+									'mt-1.5 max-w-[14ch] text-[clamp(1.35rem,6.4vw,3.5rem)] sm:mt-3'
+								)}
+							>
+								<a
+									className="text-inherit no-underline decoration-from-font hover:underline"
+									href={`/books/${featuredSlip.id}`}
+								>
 									{featuredSlip.title}
 								</a>
 							</h2>
-							<p className="mt-2 max-w-[42ch] text-[0.95rem] opacity-80">{authorLine(featuredSlip.authors)}</p>
+							<p className="mt-2 max-w-[42ch] text-[0.95rem] opacity-80">
+								{authorLine(featuredSlip.authors)}
+							</p>
 							<p className="mt-4 font-mono text-[0.68rem] tracking-[0.12em] uppercase opacity-80">
-								{featuredCall.dept} {featuredCall.number} · {copiesLabel(featuredSlip.copiesAvailable, featuredSlip.copiesTotal)}
+								{featuredCall.dept} {featuredCall.number} ·{' '}
+								{copiesLabel(featuredSlip.copiesAvailable, featuredSlip.copiesTotal)}
 							</p>
 						</div>
 					</div>
@@ -104,7 +124,9 @@ export default async function DiscoverPage() {
 								</span>
 								<span>
 									<strong className="font-display text-lg">{author.name}</strong>
-									<em className="text-muted-foreground ml-2 not-italic">{booksLabel(author.bookCount)}</em>
+									<em className="text-muted-foreground ml-2 not-italic">
+										{booksLabel(author.bookCount)}
+									</em>
 								</span>
 							</a>
 						</li>

@@ -54,10 +54,12 @@ describe('pult cells', () => {
 			getValue: () => 'Stroje'
 		});
 		expect(isPultStack(stacked)).toBe(true);
-		expect(pultCellOf({
-			column: { columnDef: {} },
-			getContext: () => ({}),
-			getValue: () => 'holý lístok'
-		})).toBe('holý lístok');
+		expect(
+			pultCellOf({
+				column: { columnDef: {} },
+				getContext: () => ({}),
+				getValue: () => 'holý lístok'
+			})
+		).toBe('holý lístok');
 	});
 });

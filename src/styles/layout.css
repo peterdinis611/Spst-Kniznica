@@ -1,44 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@500;600&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;0,7..72,700;1,7..72,400&family=Oswald:wght@500;600;700&display=swap');
-@import 'tailwindcss';
-@import 'tw-animate-css';
-@plugin '@tailwindcss/forms';
-@plugin '@tailwindcss/typography';
-@source '../**/*.{ts,tsx}';
+@import url("https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@500;600&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;0,7..72,700;1,7..72,400&family=Oswald:wght@500;600;700&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+@source "../**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 @custom-variant data-open {
-	&:where([data-state='open']),
-	&:where([data-open]:not([data-open='false'])) {
+	&:where([data-state="open"]),
+	&:where([data-open]:not([data-open="false"])) {
 		@slot;
 	}
 }
 @custom-variant data-closed {
-	&:where([data-state='closed']),
-	&:where([data-closed]:not([data-closed='false'])) {
+	&:where([data-state="closed"]),
+	&:where([data-closed]:not([data-closed="false"])) {
 		@slot;
 	}
 }
 @custom-variant data-checked {
-	&:where([data-state='checked']),
-	&:where([data-checked]:not([data-checked='false'])) {
+	&:where([data-state="checked"]),
+	&:where([data-checked]:not([data-checked="false"])) {
 		@slot;
 	}
 }
 @custom-variant data-unchecked {
-	&:where([data-state='unchecked']),
-	&:where([data-unchecked]:not([data-unchecked='false'])) {
+	&:where([data-state="unchecked"]),
+	&:where([data-unchecked]:not([data-unchecked="false"])) {
 		@slot;
 	}
 }
 @custom-variant data-disabled {
-	&:where([data-disabled='true']),
-	&:where([data-disabled]:not([data-disabled='false'])) {
+	&:where([data-disabled="true"]),
+	&:where([data-disabled]:not([data-disabled="false"])) {
 		@slot;
 	}
 }
 @custom-variant data-active {
-	&:where([data-state='active']),
-	&:where([data-active]:not([data-active='false'])) {
+	&:where([data-state="active"]),
+	&:where([data-active]:not([data-active="false"])) {
 		@slot;
 	}
 }
@@ -159,12 +159,12 @@
 }
 
 @theme inline {
-	--font-sans: 'Bricolage Grotesque', sans-serif;
-	--font-serif: 'Cormorant Garamond', serif;
-	--font-display: 'Cormorant Garamond', serif;
-	--font-body: 'Literata', serif;
-	--font-mono: 'Azeret Mono', monospace;
-	--font-condensed: 'Oswald', sans-serif;
+	--font-sans: "Bricolage Grotesque", sans-serif;
+	--font-serif: "Cormorant Garamond", serif;
+	--font-display: "Cormorant Garamond", serif;
+	--font-body: "Literata", serif;
+	--font-mono: "Azeret Mono", monospace;
+	--font-condensed: "Oswald", sans-serif;
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);
@@ -245,11 +245,11 @@
 		@apply font-display font-bold tracking-tight;
 	}
 
-	input[type='search'] {
+	input[type="search"] {
 		min-width: 0;
 	}
 
-	input[type='search']:focus {
+	input[type="search"]:focus {
 		border-color: var(--ring);
 		--tw-ring-color: var(--ring);
 	}
@@ -303,8 +303,8 @@
 
 @media (min-width: 1024px) {
 	.desk-shell {
-		padding: 1.05rem max(1.05rem, env(safe-area-inset-right)) max(1.05rem, env(safe-area-inset-bottom))
-			0.15rem;
+		padding: 1.05rem max(1.05rem, env(safe-area-inset-right))
+			max(1.05rem, env(safe-area-inset-bottom)) 0.15rem;
 	}
 }
 
@@ -457,7 +457,7 @@
 
 .account-mark:hover,
 .account-mark:focus-visible,
-.account-mark[aria-expanded='true'] {
+.account-mark[aria-expanded="true"] {
 	box-shadow: 0 0 0 3px color-mix(in srgb, #c45a38 55%, transparent);
 }
 
@@ -471,7 +471,11 @@
 	border: 1px solid color-mix(in srgb, #2c1d16 14%, transparent);
 	border-radius: 1.05rem;
 	background:
-		radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, #c45a38 10%, transparent), transparent 46%),
+		radial-gradient(
+			120% 80% at 100% 0%,
+			color-mix(in srgb, #c45a38 10%, transparent),
+			transparent 46%
+		),
 		#fff8ee;
 	color: #2c1d16;
 	box-shadow: 0 1.4rem 2.6rem -1.2rem rgb(44 29 22 / 0.38);
@@ -480,7 +484,7 @@
 }
 
 .account-pass::before {
-	content: '';
+	content: "";
 	position: absolute;
 	inset: 0;
 	border-radius: inherit;
@@ -491,7 +495,7 @@
 }
 
 .account-pass::after {
-	content: '';
+	content: "";
 	position: absolute;
 	top: 0.7rem;
 	bottom: 0.7rem;
@@ -504,7 +508,11 @@
 
 html.dark .account-pass {
 	background:
-		radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, #c45a38 18%, transparent), transparent 46%),
+		radial-gradient(
+			120% 80% at 100% 0%,
+			color-mix(in srgb, #c45a38 18%, transparent),
+			transparent 46%
+		),
 		#1c1713 !important;
 	color: #f3eadf !important;
 	border-color: color-mix(in srgb, #c45a38 28%, transparent) !important;
@@ -529,12 +537,12 @@ html.dark .account-pass-head em {
 	color: #cbbba8;
 }
 
-html.dark .account-pass [data-slot='dropdown-menu-item'] {
+html.dark .account-pass [data-slot="dropdown-menu-item"] {
 	color: #f3eadf;
 }
 
-html.dark .account-pass [data-slot='dropdown-menu-item']:focus,
-html.dark .account-pass [data-slot='dropdown-menu-item']:hover {
+html.dark .account-pass [data-slot="dropdown-menu-item"]:focus,
+html.dark .account-pass [data-slot="dropdown-menu-item"]:hover {
 	background: color-mix(in srgb, #c45a38 16%, transparent);
 	color: #f3eadf;
 }
@@ -558,7 +566,7 @@ html.dark .account-pass [data-slot='dropdown-menu-item']:hover {
 	border-radius: 999px;
 	background: #2c1d16;
 	color: #fff8ee;
-	font-family: 'Bricolage Grotesque', sans-serif;
+	font-family: "Bricolage Grotesque", sans-serif;
 	font-size: 0.72rem;
 	font-weight: 700;
 	letter-spacing: 0.04em;
@@ -567,7 +575,7 @@ html.dark .account-pass [data-slot='dropdown-menu-item']:hover {
 .account-pass-head strong {
 	display: block;
 	overflow: hidden;
-	font-family: 'Cormorant Garamond', serif;
+	font-family: "Cormorant Garamond", serif;
 	font-size: 1.05rem;
 	font-weight: 650;
 	line-height: 1.15;
@@ -579,7 +587,7 @@ html.dark .account-pass [data-slot='dropdown-menu-item']:hover {
 .account-pass-head em {
 	display: block;
 	margin-top: 0.12rem;
-	font-family: 'Azeret Mono', monospace;
+	font-family: "Azeret Mono", monospace;
 	font-size: 0.62rem;
 	font-style: normal;
 	font-weight: 600;
@@ -596,7 +604,7 @@ html.dark .account-pass [data-slot='dropdown-menu-item']:hover {
 	border: 2px solid #c45a38;
 	border-radius: 999px;
 	color: #c45a38;
-	font-family: 'Cormorant Garamond', serif;
+	font-family: "Cormorant Garamond", serif;
 	font-size: 0.62rem;
 	font-style: italic;
 	font-weight: 700;
@@ -607,7 +615,7 @@ html.dark .account-pass [data-slot='dropdown-menu-item']:hover {
 	pointer-events: none;
 }
 
-.account-pass [data-slot='dropdown-menu-item'] {
+.account-pass [data-slot="dropdown-menu-item"] {
 	position: relative;
 	z-index: 1;
 	margin-top: 0.28rem;
@@ -615,22 +623,22 @@ html.dark .account-pass [data-slot='dropdown-menu-item']:hover {
 	border-radius: 0.45rem;
 	padding: 0.55rem 0.45rem;
 	color: #2c1d16;
-	font-family: 'Literata', serif;
+	font-family: "Literata", serif;
 	font-size: 0.98rem;
 }
 
-.account-pass [data-slot='dropdown-menu-item']:focus,
-.account-pass [data-slot='dropdown-menu-item']:hover {
+.account-pass [data-slot="dropdown-menu-item"]:focus,
+.account-pass [data-slot="dropdown-menu-item"]:hover {
 	background: color-mix(in srgb, #2c1d16 8%, transparent);
 	color: #2c1d16;
 }
 
-.account-pass [data-slot='dropdown-menu-item'][data-variant='destructive'] {
+.account-pass [data-slot="dropdown-menu-item"][data-variant="destructive"] {
 	color: #9a3b28;
 }
 
-.account-pass [data-slot='dropdown-menu-item'][data-variant='destructive']:focus,
-.account-pass [data-slot='dropdown-menu-item'][data-variant='destructive']:hover {
+.account-pass [data-slot="dropdown-menu-item"][data-variant="destructive"]:focus,
+.account-pass [data-slot="dropdown-menu-item"][data-variant="destructive"]:hover {
 	background: color-mix(in srgb, #c45a38 12%, transparent);
 	color: #9a3b28;
 }
@@ -651,4 +659,3 @@ html.dark .account-pass [data-slot='dropdown-menu-item']:hover {
 		animation: none;
 	}
 }
-

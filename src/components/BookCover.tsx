@@ -31,7 +31,9 @@ export function BookCover({
 		<>
 			<OptimizedImage
 				src={tone.photo}
-				preset={size === 'hero' ? 'hero' : size === 'thumb' ? 'thumb' : size === 'tile' ? 'tile' : 'rail'}
+				preset={
+					size === 'hero' ? 'hero' : size === 'thumb' ? 'thumb' : size === 'tile' ? 'tile' : 'rail'
+				}
 				eager={size === 'hero'}
 				className="absolute inset-0 size-full"
 				fallbackLabel={book.title}
@@ -41,7 +43,12 @@ export function BookCover({
 			<div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/5" />
 			{size !== 'thumb' && !plain ? (
 				<div className="absolute inset-x-0 bottom-0 p-3 text-white">
-					<p className={cn('leading-[1.15] font-extrabold', size === 'hero' ? 'text-2xl' : 'text-[0.95rem]')}>
+					<p
+						className={cn(
+							'leading-[1.15] font-extrabold',
+							size === 'hero' ? 'text-2xl' : 'text-[0.95rem]'
+						)}
+					>
 						{book.title}
 					</p>
 					<p className="mt-1 text-[0.65rem] tracking-wide uppercase opacity-80">{author}</p>
@@ -52,7 +59,12 @@ export function BookCover({
 
 	if (linked) {
 		return (
-			<a href={href} className={className} style={style} title={`${book.title} — ${authorLine(book.authors)}`}>
+			<a
+				href={href}
+				className={className}
+				style={style}
+				title={`${book.title} — ${authorLine(book.authors)}`}
+			>
 				{inner}
 			</a>
 		);

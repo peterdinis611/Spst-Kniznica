@@ -55,9 +55,9 @@ describe('form helpers', () => {
 				'už je'
 			)
 		).toBe('už je');
-		expect(
-			uniqueConstraintMessage({ code: '23505', message: 'duplicate key' }, 'už je')
-		).toBe('už je');
+		expect(uniqueConstraintMessage({ code: '23505', message: 'duplicate key' }, 'už je')).toBe(
+			'už je'
+		);
 		expect(uniqueConstraintMessage(new Error('SQLITE_BUSY'), 'už je')).toBeNull();
 	});
 });

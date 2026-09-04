@@ -10,7 +10,9 @@ import {
 
 describe('validateSignIn', () => {
 	it('accepts a complete login', () => {
-		expect(hasFieldErrors(validateSignIn({ email: 'anna@spst.sk', password: 'heslo123' }))).toBe(false);
+		expect(hasFieldErrors(validateSignIn({ email: 'anna@spst.sk', password: 'heslo123' }))).toBe(
+			false
+		);
 	});
 
 	it('rejects a missing address and a short password', () => {

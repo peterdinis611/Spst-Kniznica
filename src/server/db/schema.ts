@@ -132,7 +132,9 @@ export const holding = pgTable(
 			.references(() => book.id, { onDelete: 'cascade' }),
 		inventoryNo: text('inventory_no').notNull(),
 		status: text('status', { enum: holdingStatus }).notNull().default('available'),
-		acquiredAt: timestamp('acquired_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		acquiredAt: timestamp('acquired_at', { withTimezone: true, mode: 'date' })
+			.notNull()
+			.defaultNow(),
 		lastSeenAt: timestamp('last_seen_at', { withTimezone: true, mode: 'date' }),
 		inventoryRunId: text('inventory_run_id').references(() => inventoryRun.id)
 	},
@@ -156,7 +158,9 @@ export const loan = pgTable(
 		userId: text('user_id')
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
-		borrowedAt: timestamp('borrowed_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		borrowedAt: timestamp('borrowed_at', { withTimezone: true, mode: 'date' })
+			.notNull()
+			.defaultNow(),
 		dueAt: timestamp('due_at', { withTimezone: true, mode: 'date' }).notNull(),
 		returnedAt: timestamp('returned_at', { withTimezone: true, mode: 'date' }),
 		renewalCount: integer('renewal_count').notNull().default(0),

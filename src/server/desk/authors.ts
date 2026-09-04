@@ -22,7 +22,11 @@ export async function listDeskAuthors(query = '') {
 		.leftJoin(bookAuthor, eq(bookAuthor.authorId, author.id))
 		.where(
 			q
-				? or(ilike(author.name, needle(q)), ilike(author.slug, needle(q)), ilike(author.role, needle(q)))
+				? or(
+						ilike(author.name, needle(q)),
+						ilike(author.slug, needle(q)),
+						ilike(author.role, needle(q))
+					)
 				: undefined
 		)
 		.groupBy(author.id, author.name, author.slug, author.bio, author.lifespan, author.role)
@@ -73,7 +77,10 @@ export async function saveAuthor(input: {
 				.where(eq(author.id, input.id))
 				.then((rows) => rows[0]);
 			if (!current) return fail('Autor sa nenašiel.');
-			await db.update(author).set({ name, slug, bio, lifespan, role }).where(eq(author.id, input.id));
+			await db
+				.update(author)
+				.set({ name, slug, bio, lifespan, role })
+				.where(eq(author.id, input.id));
 		} else {
 			await db.insert(author).values({ id: newId('auth', slug), name, slug, bio, lifespan, role });
 		}

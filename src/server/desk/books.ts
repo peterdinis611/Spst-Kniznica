@@ -137,7 +137,11 @@ export async function saveBook(input: {
 	try {
 		await db.transaction(async (tx) => {
 			if (input.id) {
-				const current = await tx.select().from(book).where(eq(book.id, input.id)).then((rows) => rows[0]);
+				const current = await tx
+					.select()
+					.from(book)
+					.where(eq(book.id, input.id))
+					.then((rows) => rows[0]);
 				if (!current) throw new Error('Kniha sa nenašla.');
 				previousKey = current.coverKey;
 				await tx
@@ -186,7 +190,11 @@ export async function saveBook(input: {
 					await tx.insert(holding).values({
 						id: `${bookId}-h${String(n).padStart(2, '0')}`,
 						bookId,
-						inventoryNo: `${cat.code}-${bookId.replace(/^book-/, '').replace(/[^a-z0-9]+/gi, '').slice(0, 10).toUpperCase()}-${String(n).padStart(2, '0')}`,
+						inventoryNo: `${cat.code}-${bookId
+							.replace(/^book-/, '')
+							.replace(/[^a-z0-9]+/gi, '')
+							.slice(0, 10)
+							.toUpperCase()}-${String(n).padStart(2, '0')}`,
 						status: 'available'
 					});
 				}

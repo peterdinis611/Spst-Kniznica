@@ -43,7 +43,8 @@ const categories = [
 		code: 'MAT',
 		accent: '#4a3a28',
 		sortOrder: 4,
-		description: 'Od stredoškolskej analýzy po zväzky, ktoré sa požičiavajú pred maturitou ako prvé.'
+		description:
+			'Od stredoškolskej analýzy po zväzky, ktoré sa požičiavajú pred maturitou ako prvé.'
 	},
 	{
 		id: 'cat-fyz',
@@ -70,7 +71,8 @@ const categories = [
 		code: 'HIS',
 		accent: '#3f4a32',
 		sortOrder: 7,
-		description: 'Dejiny techniky a Slovenska — zväzky, ktoré sa berú na referáty v piatok popoludní.'
+		description:
+			'Dejiny techniky a Slovenska — zväzky, ktoré sa berú na referáty v piatok popoludní.'
 	},
 	{
 		id: 'cat-jaz',
@@ -581,28 +583,29 @@ function holdingRows(catalog: CatalogRow[]) {
 async function insertCatalog(tx: { insert: typeof db.insert }, catalog: CatalogRow[]) {
 	if (catalog.length === 0) return;
 	for (const batch of chunk(catalog, 60)) {
-		await tx.insert(book)
-			.values(
-				batch.map(({ authorIds, ...rest }) => {
-					void authorIds;
-					return rest;
-				})
-			)
-			;
-		await tx.insert(bookAuthor)
+		await tx.insert(book).values(
+			batch.map(({ authorIds, ...rest }) => {
+				void authorIds;
+				return rest;
+			})
+		);
+		await tx
+			.insert(bookAuthor)
 			.values(
 				batch.flatMap((item) =>
 					item.authorIds.map((authorId, position) => ({ bookId: item.id, authorId, position }))
 				)
-			)
-			;
+			);
 		const copies = holdingRows(batch);
 		if (copies.length) await tx.insert(holding).values(copies);
 	}
 }
 
 async function ensureHoldings() {
-	const existing = await db.select({ c: count() }).from(holding).then((rows) => rows[0]?.c ?? 0);
+	const existing = await db
+		.select({ c: count() })
+		.from(holding)
+		.then((rows) => rows[0]?.c ?? 0);
 	if (existing > 0) return;
 
 	const rows = await db
@@ -613,8 +616,7 @@ async function ensureHoldings() {
 			code: category.code
 		})
 		.from(book)
-		.innerJoin(category, eq(book.categoryId, category.id))
-		;
+		.innerJoin(category, eq(book.categoryId, category.id));
 
 	const copies = rows.flatMap((item) =>
 		Array.from({ length: item.copiesTotal }, (_, i) => {
@@ -643,7 +645,10 @@ export async function ensureSeeded() {
 	if (seeded) return;
 
 	let catalogChanged = false;
-	const categoryCount = await db.select({ c: count() }).from(category).then((rows) => rows[0]?.c ?? 0);
+	const categoryCount = await db
+		.select({ c: count() })
+		.from(category)
+		.then((rows) => rows[0]?.c ?? 0);
 	if (categoryCount === 0) {
 		await db.transaction(async (tx) => {
 			await tx.insert(category).values(categories);
@@ -654,7 +659,10 @@ export async function ensureSeeded() {
 	}
 
 	const target = seedTarget(env.SEED_VOLUME, books.length);
-	const current = await db.select({ c: count() }).from(book).then((rows) => rows[0]?.c ?? 0);
+	const current = await db
+		.select({ c: count() })
+		.from(book)
+		.then((rows) => rows[0]?.c ?? 0);
 	if (current < target) {
 		const extraBooks = Math.max(0, target - books.length);
 		const extraAuthors = authorVolume(Math.max(24, Math.ceil(extraBooks / 8)));

@@ -25,7 +25,9 @@ export function loanMailCopy(notice: LoanNotice) {
 		const subject = `Vypožičané · ${title} · SPŠT knižnica`;
 		const text = [
 			`${name}, zväzok ${title} je na tvojom preukaze.`,
-			due ? `Vráť ho do ${due} (pavilón B, 1. poschodie, po–pia 7:30–15:30).` : 'Vráť ho v pavilóne B.',
+			due
+				? `Vráť ho do ${due} (pavilón B, 1. poschodie, po–pia 7:30–15:30).`
+				: 'Vráť ho v pavilóne B.',
 			notice.callNumber ? `Signatúra: ${notice.callNumber}` : '',
 			notice.className ? `Trieda: ${notice.className}` : '',
 			notice.days ? `Doba: ${notice.days} dní` : '',

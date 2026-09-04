@@ -24,8 +24,12 @@ export type HoldLapse = {
 	callNumber: string;
 };
 
-export type ReserveResult = { ok: true; expiresAt: Date; place: number } | { ok: false; message: string };
-export type CancelHoldResult = { ok: true; offer: HoldOffer | null } | { ok: false; message: string };
+export type ReserveResult =
+	| { ok: true; expiresAt: Date; place: number }
+	| { ok: false; message: string };
+export type CancelHoldResult =
+	| { ok: true; offer: HoldOffer | null }
+	| { ok: false; message: string };
 
 function daysFromNow(days: number, now = new Date()) {
 	return new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
@@ -55,19 +59,17 @@ function toWaitBook(
 
 export async function getOpenHold(userId: string, bookId: string) {
 	if (!userId || !bookId) return null;
-	return (
-		db
-			.select()
-			.from(reservation)
-			.where(
-				and(
-					eq(reservation.userId, userId),
-					eq(reservation.bookId, bookId),
-					inArray(reservation.status, ['pending', 'fulfilled'])
-				)
+	return db
+		.select()
+		.from(reservation)
+		.where(
+			and(
+				eq(reservation.userId, userId),
+				eq(reservation.bookId, bookId),
+				inArray(reservation.status, ['pending', 'fulfilled'])
 			)
-			.then((rows) => rows[0] ?? null)
-	);
+		)
+		.then((rows) => rows[0] ?? null);
 }
 
 export async function bookHoldUserId(bookId: string): Promise<string | null> {
@@ -150,7 +152,11 @@ export async function listUserWaits(userId: string): Promise<WaitSlip[]> {
 
 export async function reserveBook(userId: string, bookId: string): Promise<ReserveResult> {
 	const result = await db.transaction(async (tx): Promise<ReserveResult> => {
-		const held = await tx.select().from(book).where(eq(book.id, bookId)).then((rows) => rows[0]);
+		const held = await tx
+			.select()
+			.from(book)
+			.where(eq(book.id, bookId))
+			.then((rows) => rows[0]);
 		if (!held) return { ok: false, message: 'Kniha v katalógu nie je.' };
 
 		const openLoan = await tx

@@ -24,9 +24,9 @@
 	--line: #e0d4c4;
 	--wash: #efe6d8;
 	--radius: 1.05rem;
-	--display: 'Cormorant Garamond', serif;
-	--ui: 'Bricolage Grotesque', sans-serif;
-	--body: 'Literata', serif;
+	--display: "Cormorant Garamond", serif;
+	--ui: "Bricolage Grotesque", sans-serif;
+	--body: "Literata", serif;
 	--primary: var(--ink);
 	--primary-foreground: #f6f0e6;
 	--accent: var(--ink);
@@ -52,10 +52,7 @@
 	min-height: 100dvh;
 	overflow-x: clip;
 	margin-inline: auto;
-	padding:
-		0
-		max(0.85rem, env(safe-area-inset-right))
-		max(2rem, env(safe-area-inset-bottom))
+	padding: 0 max(0.85rem, env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom))
 		max(0.85rem, env(safe-area-inset-left));
 	color: var(--ink);
 	background: var(--page);
@@ -100,7 +97,7 @@
 }
 
 .landing-body.is-blurred,
-.landing:has([data-catalog-search='open']) .landing-main {
+.landing:has([data-catalog-search="open"]) .landing-main {
 	filter: blur(16px) saturate(0.86);
 	transform: scale(0.985);
 	pointer-events: none;
@@ -159,7 +156,7 @@
 }
 
 .hall-desk-links a:hover,
-.hall-desk-links a[aria-current='page'] {
+.hall-desk-links a[aria-current="page"] {
 	opacity: 0.55;
 }
 
@@ -547,7 +544,11 @@
 	padding: 1.25rem 1.1rem;
 	border-radius: 1.2rem;
 	background:
-		radial-gradient(90% 80% at 100% 0%, color-mix(in srgb, var(--copper-mark) 18%, transparent), transparent 52%),
+		radial-gradient(
+			90% 80% at 100% 0%,
+			color-mix(in srgb, var(--copper-mark) 18%, transparent),
+			transparent 52%
+		),
 		var(--stamp);
 	color: var(--stamp-ink);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--copper-mark) 22%, transparent);
@@ -718,7 +719,7 @@
 }
 
 .folio-odbory em {
-	font-family: 'Azeret Mono', monospace;
+	font-family: "Azeret Mono", monospace;
 	font-size: 0.68rem;
 	font-style: normal;
 	font-weight: 700;
@@ -808,7 +809,7 @@
 		padding: 0 0.32rem;
 		border-radius: 0.35rem;
 		background: color-mix(in srgb, var(--stamp-ink) 16%, transparent);
-		font-family: 'Azeret Mono', ui-monospace, monospace;
+		font-family: "Azeret Mono", ui-monospace, monospace;
 		font-size: 0.62rem;
 		font-weight: 600;
 		letter-spacing: 0.02em;
@@ -832,7 +833,7 @@
 
 .hall-map {
 	display: grid;
-	grid-template-areas: 'plan' 'map';
+	grid-template-areas: "plan" "map";
 	gap: 1rem;
 	margin-top: 1.45rem;
 }
@@ -846,14 +847,18 @@
 	border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
 	border-radius: 1.05rem;
 	background:
-		radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--copper-mark) 14%, transparent), transparent 48%),
+		radial-gradient(
+			90% 70% at 100% 0%,
+			color-mix(in srgb, var(--copper-mark) 14%, transparent),
+			transparent 48%
+		),
 		var(--card);
 	box-shadow: 0 1.2rem 2rem -1.1rem color-mix(in srgb, var(--ink) 34%, transparent);
 	animation: hall-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
 }
 
 .hall-plan::before {
-	content: '';
+	content: "";
 	position: absolute;
 	inset: 0.55rem auto 0.55rem 0;
 	width: 0.32rem;
@@ -1173,7 +1178,7 @@
 @media (min-width: 860px) {
 	.hall-map {
 		position: relative;
-		grid-template-areas: 'map';
+		grid-template-areas: "map";
 		gap: 0;
 	}
 

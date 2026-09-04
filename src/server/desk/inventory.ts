@@ -48,15 +48,14 @@ export async function getOpenInventoryRun(): Promise<InventoryWalk | null> {
 export async function openInventoryRun(): Promise<InventoryWalk> {
 	const open = await getOpenInventoryRun();
 	if (open) return open;
-	const [row] = await db
-		.insert(inventoryRun)
-		.values({ note: 'chôdza pultu' })
-		.returning();
+	const [row] = await db.insert(inventoryRun).values({ note: 'chôdza pultu' }).returning();
 	if (!row) throw new Error('Inventúra sa neotvorila.');
 	return { id: row.id, startedAt: row.startedAt, closedAt: row.closedAt, found: 0 };
 }
 
-export async function closeInventoryRun(): Promise<{ ok: true; missing: number } | { ok: false; message: string }> {
+export async function closeInventoryRun(): Promise<
+	{ ok: true; missing: number } | { ok: false; message: string }
+> {
 	const open = await getOpenInventoryRun();
 	if (!open) return { ok: false, message: 'Žiadna otvorená inventúra.' };
 
@@ -72,10 +71,7 @@ export async function closeInventoryRun(): Promise<{ ok: true; missing: number }
 			)
 			.then((rows) => rows[0]?.c ?? 0)) ?? 0;
 
-	await db
-		.update(inventoryRun)
-		.set({ closedAt: new Date() })
-		.where(eq(inventoryRun.id, open.id));
+	await db.update(inventoryRun).set({ closedAt: new Date() }).where(eq(inventoryRun.id, open.id));
 
 	return { ok: true, missing };
 }
@@ -109,7 +105,11 @@ export async function markHoldingLost(holdingId: string) {
 	}
 	if (copy.status === 'lost') return { ok: true as const };
 
-	const held = await db.select().from(book).where(eq(book.id, copy.bookId)).then((rows) => rows[0]);
+	const held = await db
+		.select()
+		.from(book)
+		.where(eq(book.id, copy.bookId))
+		.then((rows) => rows[0]);
 	await db.transaction(async (tx) => {
 		await tx.update(holding).set({ status: 'lost' }).where(eq(holding.id, holdingId));
 		if (copy.status === 'available' && held) {

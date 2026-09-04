@@ -43,7 +43,9 @@ export function PassSecret({
 					maxLength={72}
 					spellCheck={false}
 					aria-invalid={error ? true : undefined}
-					aria-describedby={[error ? errorId : '', meter ? meterId : ''].filter(Boolean).join(' ') || undefined}
+					aria-describedby={
+						[error ? errorId : '', meter ? meterId : ''].filter(Boolean).join(' ') || undefined
+					}
 				/>
 				<button
 					className="pass-peek"

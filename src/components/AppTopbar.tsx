@@ -116,7 +116,10 @@ export function AppTopbar({
 						{title}
 					</h1>
 				</div>
-				<div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5 lg:col-start-3" data-tour="account">
+				<div
+					className="flex shrink-0 items-center gap-1.5 sm:gap-2.5 lg:col-start-3"
+					data-tour="account"
+				>
 					<ThemeToggle />
 					<div>
 						<button
@@ -156,16 +159,25 @@ export function AppTopbar({
 									</div>
 									{user ? (
 										<>
-											<a href="/profile" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
+											<a
+												href="/profile"
+												className="flex items-center gap-2 rounded-full px-3 py-2 no-underline"
+											>
 												<UserRound className="size-4" />
 												Môj profil
 											</a>
-											<a href="/loans" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
+											<a
+												href="/loans"
+												className="flex items-center gap-2 rounded-full px-3 py-2 no-underline"
+											>
 												<BookOpen className="size-4" />
 												Moje knihy
 											</a>
 											{admin ? (
-												<a href="/admin" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
+												<a
+													href="/admin"
+													className="flex items-center gap-2 rounded-full px-3 py-2 no-underline"
+												>
 													<Stamp className="size-4" />
 													Pult
 												</a>
@@ -180,7 +192,10 @@ export function AppTopbar({
 											</button>
 										</>
 									) : (
-										<a href="/login" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
+										<a
+											href="/login"
+											className="flex items-center gap-2 rounded-full px-3 py-2 no-underline"
+										>
 											<LogIn className="size-4" />
 											Prihlásiť sa
 										</a>

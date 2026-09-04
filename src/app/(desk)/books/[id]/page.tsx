@@ -11,7 +11,13 @@ import {
 } from '@/server/library';
 import { bookHoldUserId, getOpenHold, reserveBook } from '@/server/waitlist';
 import { queueHoldNotice } from '@/server/hold-mail';
-import { hasBorrowErrors, normalizeClass, parseLoanDays, splitReaderName, validateBorrow } from '@/desk/borrow-fields';
+import {
+	hasBorrowErrors,
+	normalizeClass,
+	parseLoanDays,
+	splitReaderName,
+	validateBorrow
+} from '@/desk/borrow-fields';
 import { copiesLabel, shortDate } from '@/utils/format';
 import { noticeHref } from '@/notify/notices';
 import { queueLoanNotice } from '@/server/loan-mail';
@@ -24,7 +30,12 @@ import { redirect } from 'next/navigation';
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params;
 	const book = await getBook(id);
-	if (!book) return pageMeta({ title: 'Karta chýba', description: 'Zväzok v katalógu nie je.', index: false });
+	if (!book)
+		return pageMeta({
+			title: 'Karta chýba',
+			description: 'Zväzok v katalógu nie je.',
+			index: false
+		});
 	return pageMeta({ title: book.title, description: book.description, type: 'book' });
 }
 
@@ -129,7 +140,9 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 						{current.title}
 					</h1>
 					<p className="mt-3 text-lg">{current.authors.map((person) => person.name).join(' · ')}</p>
-					<p className="text-muted-foreground mt-4 max-w-[52ch] leading-relaxed">{current.description}</p>
+					<p className="text-muted-foreground mt-4 max-w-[52ch] leading-relaxed">
+						{current.description}
+					</p>
 					<p className="mt-6 font-sans text-sm font-semibold uppercase tracking-wide">
 						{copiesLabel(current.copiesAvailable, current.copiesTotal)}
 					</p>
@@ -148,7 +161,10 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 					) : !available && user ? (
 						<form action={reserveAction} className="mt-8">
 							<input type="hidden" name="bookId" value={current.id} />
-							<button type="submit" className="rounded-full bg-primary px-5 py-2.5 text-primary-foreground">
+							<button
+								type="submit"
+								className="rounded-full bg-primary px-5 py-2.5 text-primary-foreground"
+							>
 								Zaradiť do radu
 							</button>
 						</form>

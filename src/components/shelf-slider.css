@@ -62,7 +62,7 @@
 	margin: 0;
 	min-width: 4.4rem;
 	color: var(--muted-foreground);
-	font-family: var(--font-mono, 'Azeret Mono', monospace);
+	font-family: var(--font-mono, "Azeret Mono", monospace);
 	font-size: 0.68rem;
 	font-weight: 600;
 	letter-spacing: 0.12em;
@@ -89,7 +89,7 @@
 	border-radius: 999px;
 	background: color-mix(in srgb, var(--foreground) 8%, transparent);
 	color: var(--foreground);
-	font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
+	font-family: var(--font-sans, "Bricolage Grotesque", sans-serif);
 	font-size: 0.78rem;
 	font-weight: 600;
 	letter-spacing: 0.04em;
@@ -128,7 +128,7 @@
 }
 
 .bay::after {
-	content: '';
+	content: "";
 	position: absolute;
 	top: 3.1rem;
 	right: 0;

@@ -102,7 +102,9 @@ export const catalogBooks: CatalogBook[] = [
 		id: 'book-obvody',
 		title: 'Číslicové obvody',
 		category: categories[2],
-		authors: [{ id: 'auth-horvath', name: 'Mgr. Peter Horváth', slug: 'peter-horvath', position: 0 }]
+		authors: [
+			{ id: 'auth-horvath', name: 'Mgr. Peter Horváth', slug: 'peter-horvath', position: 0 }
+		]
 	}),
 	book({
 		id: 'book-sloh',
