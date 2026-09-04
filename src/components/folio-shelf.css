@@ -1,0 +1,266 @@
+.folio-shelf {
+		--wood: #c8a36d;
+		--wood-deep: #9a7848;
+		--wood-ink: #6f5330;
+		position: relative;
+		display: flex;
+		justify-content: center;
+		gap: 0;
+		width: 100%;
+		margin: 1.1rem auto 0;
+		padding: 0.2rem 0 0.6rem;
+		filter: drop-shadow(-8px 10px 0 rgb(60 42 33 / 0.08));
+	}
+
+	.folio-bay {
+		display: grid;
+		grid-template-columns: 0.85rem 1fr 0.85rem;
+		width: 100%;
+		min-width: 0;
+		min-height: 13.4rem;
+		padding-bottom: 0.6rem;
+		background: var(--wood-deep);
+		animation: folio-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--delay) both;
+	}
+
+	.folio-bay + .folio-bay,
+	.folio-bay:nth-child(3),
+	.folio-tip {
+		display: none;
+	}
+
+	.folio-rail {
+		background:
+			linear-gradient(90deg, rgb(60 42 33 / 0.22), transparent 38%, rgb(255 244 220 / 0.2)),
+			var(--wood-deep);
+	}
+
+	.folio-well {
+		display: flex;
+		flex-direction: column;
+		padding: 0.5rem 0.4rem 0.25rem;
+		background:
+			linear-gradient(180deg, rgb(60 42 33 / 0.1), transparent 16%),
+			#d8b67a;
+	}
+
+	.folio-row {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		justify-content: flex-end;
+		min-height: 3.9rem;
+	}
+
+	.folio-books {
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		gap: 0.18rem;
+		padding: 0 0.1rem 0.06rem;
+	}
+
+	.folio-spine {
+		position: relative;
+		display: block;
+		overflow: hidden;
+		width: var(--w);
+		height: var(--h);
+		border-radius: 2px 2px 0 0;
+		background:
+			linear-gradient(90deg, rgb(0 0 0 / 0.2), transparent 28%, rgb(255 255 255 / 0.2) 72%, rgb(0 0 0 / 0.08)),
+			var(--c);
+		box-shadow: 2px 0 0 rgb(60 42 33 / 0.1);
+		transform-origin: bottom center;
+		transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.folio-band {
+		position: absolute;
+		top: 28%;
+		right: 0;
+		left: 0;
+		height: 3px;
+		background: rgb(255 248 230 / 0.38);
+	}
+
+	.folio-spine:hover,
+	.folio-spine.is-on {
+		transform: translateY(-7px);
+	}
+
+	.folio-plank {
+		height: 0.48rem;
+		background: linear-gradient(180deg, #ead09a, var(--wood) 50%, var(--wood-ink));
+		box-shadow: 0 5px 0 rgb(60 42 33 / 0.14);
+	}
+
+	.folio-tip {
+		position: absolute;
+		z-index: 2;
+		padding: 0.44rem 0.78rem;
+		border-radius: 999px;
+		background: #fffdf8;
+		color: #3c2a21;
+		font-family: 'Bricolage Grotesque', sans-serif;
+		font-size: 0.74rem;
+		font-weight: 600;
+		white-space: nowrap;
+		box-shadow: 0 10px 24px rgb(60 42 33 / 0.1);
+		animation: folio-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+	}
+
+	.folio-tip::after {
+		content: '';
+		position: absolute;
+		width: 0.55rem;
+		height: 0.55rem;
+		background: #fffdf8;
+		transform: rotate(45deg);
+	}
+
+	.folio-tip.is-on {
+		background: #3c2a21;
+		color: #f7f1e8;
+	}
+
+	.folio-tip.is-on::after {
+		background: #3c2a21;
+	}
+
+	.tip-0 {
+		top: 0.1rem;
+		left: 7%;
+	}
+	.tip-0::after {
+		bottom: -0.2rem;
+		left: 1.5rem;
+	}
+
+	.tip-1 {
+		top: 38%;
+		left: -0.4rem;
+	}
+	.tip-1::after {
+		top: 50%;
+		right: -0.18rem;
+		margin-top: -0.22rem;
+	}
+
+	.tip-2 {
+		top: 0.25rem;
+		right: 4%;
+	}
+	.tip-2::after {
+		bottom: -0.2rem;
+		right: 1.7rem;
+	}
+
+	.tip-3 {
+		top: 40%;
+		right: -0.6rem;
+	}
+	.tip-3::after {
+		top: 50%;
+		left: -0.18rem;
+		margin-top: -0.22rem;
+	}
+
+	.tip-4 {
+		bottom: 0.55rem;
+		right: 8%;
+	}
+	.tip-4::after {
+		top: -0.18rem;
+		right: 2rem;
+	}
+
+	@keyframes folio-up {
+		from {
+			opacity: 0;
+			transform: translateY(18px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@media (min-width: 721px) {
+		.folio-shelf {
+			gap: 1.4rem;
+			width: min(46rem, 100%);
+			margin-top: 2.8rem;
+			padding: 3rem 0 1.4rem;
+			filter: drop-shadow(-20px 24px 0 rgb(60 42 33 / 0.09));
+		}
+
+		.folio-bay {
+			width: min(18.5rem, 46vw);
+			min-height: 19.5rem;
+		}
+
+		.folio-row {
+			min-height: 5.8rem;
+		}
+
+		.folio-bay:nth-child(2) {
+			display: grid;
+		}
+
+		.folio-tip {
+			display: block;
+		}
+	}
+
+	@media (min-width: 1100px) {
+		.folio-shelf {
+			width: min(68rem, 100%);
+		}
+
+		.folio-bay {
+			width: min(18.5rem, 30vw);
+		}
+
+		.folio-bay:nth-child(3) {
+			display: grid;
+		}
+	}
+
+	html.dark .folio-shelf {
+		--wood: #6d5334;
+		--wood-deep: #4a3824;
+		--wood-ink: #2c2014;
+		filter: drop-shadow(-14px 18px 0 rgb(0 0 0 / 0.28));
+	}
+
+	html.dark .folio-well {
+		background: #7d6240;
+	}
+
+	html.dark .folio-tip {
+		background: #221c16;
+		color: #f3eadf;
+	}
+
+	html.dark .folio-tip::after {
+		background: #221c16;
+	}
+
+	html.dark .folio-tip.is-on {
+		background: #f3eadf;
+		color: #1a1612;
+	}
+
+	html.dark .folio-tip.is-on::after {
+		background: #f3eadf;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.folio-bay,
+		.folio-tip,
+		.folio-spine {
+			animation: none;
+			transition: none;
+		}
+	}

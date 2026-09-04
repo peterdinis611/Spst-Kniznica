@@ -1,0 +1,12 @@
+.virtual-window {
+		position: relative;
+		width: 100%;
+	}
+
+	.virtual-row {
+		position: absolute;
+		top: 0;
+		right: 0;
+		left: 0;
+		min-width: 0;
+	}

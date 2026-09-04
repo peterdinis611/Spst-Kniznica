@@ -1,0 +1,55 @@
+import { error, redirect } from '@/http/kit';
+import { dev } from '@/config/runtime';
+import { env } from '@/config/env';
+import { defineAbilityFor } from '@/auth/ability';
+import type { SignedReader } from '@/types';
+
+export function isAdminEmail(email: string | null | undefined, allowList = env.ADMIN_EMAILS) {
+	if (!email) return false;
+	const needle = email.trim().toLowerCase();
+	if (!needle) return false;
+
+	const list = (allowList ?? '')
+		.split(',')
+		.map((part) => part.trim().toLowerCase())
+		.filter(Boolean);
+
+	if (list.includes('*')) return true;
+	return list.includes(needle);
+}
+
+export function canOpenDesk(user: SignedReader | null | undefined, isDev = dev) {
+	if (!user) return false;
+	const ability = defineAbilityFor(user.role);
+	if (ability.can('manage', 'Desk') || ability.can('inspect', 'Desk')) return true;
+	return isDev;
+}
+
+export function canOperateDesk(user: SignedReader | null | undefined, isDev = dev) {
+	if (!user) return false;
+	const ability = defineAbilityFor(user.role);
+	if (ability.can('manage', 'Desk')) return true;
+	if (ability.can('inspect', 'Desk')) return false;
+	return isDev;
+}
+
+export function isDeskInspectPath(pathname: string) {
+	const path = pathname.replace(/\/+$/, '') || '/';
+	return path === '/admin' || path.startsWith('/admin/loans');
+}
+
+export function deskGate(pathname: string, user: SignedReader | undefined) {
+	if (!pathname.startsWith('/admin')) return 'ok' as const;
+	if (!user) return 'login' as const;
+	if (!canOpenDesk(user)) return 'forbidden' as const;
+	if (!isDeskInspectPath(pathname) && !canOperateDesk(user)) return 'forbidden' as const;
+	return 'ok' as const;
+}
+
+export function requireAdmin(user: SignedReader | undefined) {
+	if (!user) redirect(302, '/login');
+	if (!canOpenDesk(user)) {
+		error(403, { message: 'Pult je len pre správu fondu.' });
+	}
+	return user;
+}
