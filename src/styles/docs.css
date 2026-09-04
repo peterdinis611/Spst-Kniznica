@@ -1,11 +1,11 @@
 .handbook {
-	--hb-ink: #3c2a21;
+	--hb-ink: #2a1c16;
 	--hb-page: #f6f0e6;
 	--hb-leaf: #fffaf3;
 	--hb-wash: #efe6d8;
-	--hb-muted: #7a6a5c;
-	--hb-line: #e6dccb;
-	--hb-stamp: #c56a4a;
+	--hb-muted: #5c4a3c;
+	--hb-line: #e0d4c4;
+	--hb-stamp: #c45a38;
 	position: relative;
 	isolation: isolate;
 	min-height: 100dvh;
@@ -14,13 +14,13 @@
 }
 
 .dark .handbook {
-	--hb-ink: #f3eadf;
-	--hb-page: #16120e;
-	--hb-leaf: #221c16;
-	--hb-wash: #2a2620;
-	--hb-muted: #b7ab98;
-	--hb-line: #3a342c;
-	--hb-stamp: #e08a6a;
+	--hb-ink: #f6efe4;
+	--hb-page: #1c1814;
+	--hb-leaf: #2a231c;
+	--hb-wash: #2a231c;
+	--hb-muted: #c4b39a;
+	--hb-line: #3f362c;
+	--hb-stamp: #e07a52;
 }
 
 .handbook::before {

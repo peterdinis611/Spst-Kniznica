@@ -26,14 +26,14 @@
 	}
 
 	.desk .to-top {
-		background: var(--primary);
-		color: var(--primary-foreground);
-		box-shadow: 0 12px 28px rgb(0 0 0 / 0.22);
+		background: var(--stamp, var(--copper, #c45a38));
+		color: var(--stamp-ink, #fff6ee);
+		box-shadow: 0 12px 28px rgb(196 90 56 / 0.32);
 	}
 
 	.desk .to-top:hover {
-		background: var(--accent);
-		color: var(--accent-foreground);
+		background: var(--copper-deep, #a3482c);
+		color: var(--stamp-ink, #fff6ee);
 	}
 
 	@media (min-width: 720px) {

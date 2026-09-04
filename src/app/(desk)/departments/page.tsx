@@ -1,7 +1,7 @@
 import { pageMeta } from '@/utils/metadata';
 import { listBookSlips, listCategories } from '@/server/library';
 import { booksLabel } from '@/utils/format';
-import { PrintJacket } from '@/components/PrintJacket';
+import { ShelfSlider } from '@/components/ShelfSlider';
 
 export const metadata = pageMeta({
 	title: 'Odbory',
@@ -13,7 +13,7 @@ export default async function DepartmentsPage() {
 	const books = slips.filter((book) => book.id !== 'book-modlitbicky');
 	const categories = catalog.map((category) => ({
 		...category,
-		books: books.filter((book) => book.category.slug === category.slug).slice(0, 8)
+		books: books.filter((book) => book.category.slug === category.slug).slice(0, 16)
 	}));
 
 	return (
@@ -21,7 +21,7 @@ export default async function DepartmentsPage() {
 			<p className="max-w-[40ch] font-body text-[1.08rem] leading-relaxed text-muted-foreground">
 				Každý odbor má vlastnú policu. Otvor značku, alebo siahni rovno po chrbte.
 			</p>
-			<ol className="mt-10 m-0 grid min-w-0 list-none gap-10 p-0">
+			<ol className="mt-10 m-0 grid min-w-0 list-none gap-10 p-0 [grid-template-columns:minmax(0,1fr)]">
 				{categories.map((cat) => (
 					<li key={cat.id} className="min-w-0 border-t border-border pt-6">
 						<div className="mb-4 flex min-w-0 flex-wrap items-end justify-between gap-3">
@@ -39,24 +39,11 @@ export default async function DepartmentsPage() {
 							{cat.description}
 						</p>
 						{cat.books.length ? (
-							<div className="shelf-rail">
-								{cat.books.map((book) => (
-									<a key={book.id} className="no-underline" href={`/books/${book.id}`}>
-										<span className="sm:hidden">
-											<PrintJacket book={book} linked={false} size="thumb" />
-										</span>
-										<span className="hidden sm:block">
-											<PrintJacket book={book} linked={false} />
-										</span>
-									</a>
-								))}
-								<a
-									className="mb-1 inline-flex h-11 items-center rounded-full px-4 font-sans text-[0.82rem] font-semibold text-foreground no-underline hover:opacity-55"
-									href={`/departments/${cat.slug}`}
-								>
-									Celá polica
-								</a>
-							</div>
+							<ShelfSlider
+								books={cat.books}
+								label={cat.name}
+								moreHref={`/departments/${cat.slug}`}
+							/>
 						) : null}
 					</li>
 				))}

@@ -34,11 +34,21 @@ export function FundLedger({ books, categories }: { books: BookSlip[]; categorie
 			accent: group.accent,
 			count: group.books.length
 		},
+		{
+			kind: 'fan' as const,
+			id: `fan-${group.id}`,
+			slug: group.slug,
+			accent: group.accent,
+			preview: group.books.slice(0, 12)
+		},
 		...group.books.map((item) => ({ kind: 'book' as const, id: item.id, book: item }))
 	]);
 
 	function rowSize(index: number) {
-		return rows[index]?.kind === 'head' ? 72 : 88;
+		const row = rows[index];
+		if (row?.kind === 'head') return 88;
+		if (row?.kind === 'fan') return 168;
+		return 76;
 	}
 
 	return (
@@ -73,6 +83,17 @@ export function FundLedger({ books, categories }: { books: BookSlip[]; categorie
 									<span>{item.name}</span>
 									<b>{item.count}</b>
 								</a>
+							);
+						}
+						if (item?.kind === 'fan') {
+							return (
+								<div className="lane-fan" style={{ ['--accent' as string]: item.accent }}>
+									{item.preview.map((book) => (
+										<a key={book.id} className="fan-item" href={`/books/${book.id}`}>
+											<PrintJacket book={book} linked={false} size="thumb" className="hover:!transform-none" />
+										</a>
+									))}
+								</div>
 							);
 						}
 						if (item?.kind === 'book') return <CatalogSlip book={item.book} />;

@@ -44,12 +44,12 @@ export function AppSidebar({
 			)}
 		>
 			<a href="/" className="font-display no-underline" data-tour={compact ? undefined : 'brand'}>
-				<span className="block text-[0.7rem] font-extrabold tracking-[0.22em] text-primary uppercase">
+				<span className="block text-[0.7rem] font-extrabold tracking-[0.22em] text-stamp uppercase">
 					SPŠT
 				</span>
-				<span className="text-xl font-extrabold tracking-tight">knižnica</span>
+				<span className="text-xl font-extrabold tracking-tight text-sidebar-foreground">knižnica</span>
 			</a>
-			<p className="mt-10 font-sans text-[0.62rem] tracking-[0.18em] text-muted-foreground uppercase">
+			<p className="mt-10 font-sans text-[0.62rem] tracking-[0.18em] text-sidebar-foreground/65 uppercase">
 				Fond
 			</p>
 			<nav
@@ -67,8 +67,8 @@ export function AppSidebar({
 							className={cn(
 								'flex items-center gap-3 rounded-full px-3 py-2 text-sm no-underline',
 								on
-									? 'bg-primary font-semibold text-primary-foreground'
-									: 'text-muted-foreground hover:bg-secondary'
+									? 'bg-stamp font-semibold text-stamp-ink'
+									: 'text-sidebar-foreground/82 hover:bg-white/10'
 							)}
 						>
 							<span className="grid size-8 place-items-center">
@@ -80,7 +80,7 @@ export function AppSidebar({
 				})}
 			</nav>
 			<div className="mt-auto">
-				<p className="font-sans text-[0.68rem] tracking-[0.08em] text-muted-foreground uppercase">
+				<p className="font-sans text-[0.68rem] tracking-[0.08em] text-sidebar-foreground/65 uppercase">
 					Po—pia 7:30—15:30
 				</p>
 				<div className="mt-3">
@@ -90,8 +90,8 @@ export function AppSidebar({
 							<a
 								href="/profile"
 								className={cn(
-									'mb-1 flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal text-muted-foreground no-underline',
-									pathname.startsWith('/profile') && 'bg-secondary text-foreground'
+									'mb-1 flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal text-sidebar-foreground/82 no-underline',
+									pathname.startsWith('/profile') && 'bg-white/10 text-sidebar-foreground'
 								)}
 							>
 								<UserRound className="size-4" />
@@ -102,7 +102,7 @@ export function AppSidebar({
 					) : (
 						<a
 							href="/login"
-							className="flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal text-muted-foreground no-underline"
+							className="flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal text-sidebar-foreground/82 no-underline"
 						>
 							<LogIn className="size-4" />
 							Prihlásiť sa

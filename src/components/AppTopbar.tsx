@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	BookOpen,
 	ChevronDown,
@@ -51,6 +51,49 @@ export function AppTopbar({
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [accountOpen, setAccountOpen] = useState(false);
 	const [odborOpen, setOdborOpen] = useState(false);
+	const [passPos, setPassPos] = useState({ top: 0, right: 0 });
+	const markRef = useRef<HTMLButtonElement>(null);
+
+	useEffect(() => {
+		if (!accountOpen) return;
+
+		function place() {
+			placePass();
+		}
+
+		function onKey(event: KeyboardEvent) {
+			if (event.key === 'Escape') setAccountOpen(false);
+		}
+
+		place();
+		window.addEventListener('resize', place);
+		window.addEventListener('scroll', place, true);
+		window.addEventListener('keydown', onKey);
+		return () => {
+			window.removeEventListener('resize', place);
+			window.removeEventListener('scroll', place, true);
+			window.removeEventListener('keydown', onKey);
+		};
+	}, [accountOpen]);
+
+	function placePass() {
+		const box = markRef.current?.getBoundingClientRect();
+		if (!box) return;
+		setPassPos({
+			top: Math.round(box.bottom + 8),
+			right: Math.round(Math.max(12, window.innerWidth - box.right))
+		});
+	}
+
+	function toggleAccount() {
+		setOdborOpen(false);
+		if (accountOpen) {
+			setAccountOpen(false);
+			return;
+		}
+		placePass();
+		setAccountOpen(true);
+	}
 
 	function submitLogout() {
 		const form = document.getElementById('logout-form');
@@ -75,59 +118,75 @@ export function AppTopbar({
 				</div>
 				<div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5 lg:col-start-3" data-tour="account">
 					<ThemeToggle />
-					<div className="relative">
+					<div>
 						<button
+							ref={markRef}
 							type="button"
 							className="account-mark grid size-9 cursor-pointer place-items-center rounded-full bg-primary font-sans text-[0.68rem] font-bold text-primary-foreground sm:size-10 sm:text-[0.72rem]"
 							aria-label={displayName}
-							onClick={() => setAccountOpen((open) => !open)}
+							aria-expanded={accountOpen}
+							aria-haspopup="dialog"
+							onClick={toggleAccount}
 						>
 							{initials}
 						</button>
 						{accountOpen ? (
-							<div className="account-pass absolute right-0 z-30 mt-3 min-w-56 rounded-2xl bg-card p-2 shadow-[0_18px_40px_rgb(60_42_33/0.14)] ring-1 ring-border">
-								<div className="account-pass-head">
-									<span className="account-pass-initials">{initials}</span>
-									<div>
-										<strong>{displayName}</strong>
-										<em>{user ? `preukaz ${readerNumber(user.id)}` : 'hosť v sieni'}</em>
+							<>
+								<button
+									type="button"
+									className="fixed inset-0 z-40 cursor-default bg-transparent"
+									aria-label="Zavrieť preukaz"
+									onClick={() => setAccountOpen(false)}
+								/>
+								<div
+									className="account-pass"
+									role="dialog"
+									aria-label="Čitateľský preukaz"
+									style={{ top: passPos.top, right: passPos.right }}
+								>
+									<div className="account-pass-head">
+										<span className="account-pass-initials">{initials}</span>
+										<div>
+											<strong>{displayName}</strong>
+											<em>{user ? `preukaz ${readerNumber(user.id)}` : 'hosť v sieni'}</em>
+										</div>
+										<span className="account-pass-stamp" aria-hidden="true">
+											SPŠT
+										</span>
 									</div>
-									<span className="account-pass-stamp" aria-hidden="true">
-										SPŠT
-									</span>
-								</div>
-								{user ? (
-									<>
-										<a href="/profile" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
-											<UserRound className="size-4" />
-											Môj profil
-										</a>
-										<a href="/loans" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
-											<BookOpen className="size-4" />
-											Moje knihy
-										</a>
-										{admin ? (
-											<a href="/admin" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
-												<Stamp className="size-4" />
-												Pult
+									{user ? (
+										<>
+											<a href="/profile" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
+												<UserRound className="size-4" />
+												Môj profil
 											</a>
-										) : null}
-										<button
-											type="button"
-											className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-destructive"
-											onClick={submitLogout}
-										>
-											<LogOut className="size-4" />
-											Odhlásiť
-										</button>
-									</>
-								) : (
-									<a href="/login" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
-										<LogIn className="size-4" />
-										Prihlásiť sa
-									</a>
-								)}
-							</div>
+											<a href="/loans" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
+												<BookOpen className="size-4" />
+												Moje knihy
+											</a>
+											{admin ? (
+												<a href="/admin" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
+													<Stamp className="size-4" />
+													Pult
+												</a>
+											) : null}
+											<button
+												type="button"
+												className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-destructive"
+												onClick={submitLogout}
+											>
+												<LogOut className="size-4" />
+												Odhlásiť
+											</button>
+										</>
+									) : (
+										<a href="/login" className="flex items-center gap-2 rounded-full px-3 py-2 no-underline">
+											<LogIn className="size-4" />
+											Prihlásiť sa
+										</a>
+									)}
+								</div>
+							</>
 						) : null}
 					</div>
 				</div>
@@ -189,7 +248,7 @@ export function AppTopbar({
 							placeholder={authorSearch ? 'priezvisko' : 'názov alebo autor'}
 						/>
 						<button
-							className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground md:h-10 md:w-auto md:px-5 md:text-[0.78rem] md:font-semibold"
+							className="grid size-8 shrink-0 place-items-center rounded-full bg-stamp text-stamp-ink md:h-10 md:w-auto md:px-5 md:text-[0.78rem] md:font-semibold"
 							type="submit"
 							aria-label="Hľadať"
 						>
@@ -207,10 +266,10 @@ export function AppTopbar({
 						aria-label="Zavrieť menu"
 						onClick={() => setMenuOpen(false)}
 					/>
-					<div className="bg-sidebar relative h-full w-[min(18rem,88vw)]">
+					<div className="bg-sidebar relative h-full w-[min(18rem,88vw)] text-sidebar-foreground">
 						<button
 							type="button"
-							className="absolute top-3 right-3 grid size-8 place-items-center rounded-full"
+							className="absolute top-3 right-3 z-10 grid size-8 place-items-center rounded-full text-sidebar-foreground hover:bg-white/10"
 							aria-label="Zavrieť"
 							onClick={() => setMenuOpen(false)}
 						>

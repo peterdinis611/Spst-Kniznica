@@ -19,11 +19,11 @@
 	}
 
 	html.dark .wait {
-		--wait-paper: #16120e;
-		--wait-ink: #f4eadc;
-		--wait-muted: #b7a392;
-		--wait-stamp: #d36b4a;
-		--wait-hole: #241710;
+		--wait-paper: #1c1814;
+		--wait-ink: #f6efe4;
+		--wait-muted: #c4b39a;
+		--wait-stamp: #e07a52;
+		--wait-hole: #2a231c;
 		background:
 			radial-gradient(ellipse at 50% 42%, rgb(36 23 16 / 0.55), transparent 58%),
 			color-mix(in srgb, var(--wait-paper) 78%, transparent);

@@ -17,8 +17,8 @@ import { queueLoanNotice } from '@/server/loan-mail';
 import { getSessionReader } from '@/server/session';
 import { BookCover } from '@/components/BookCover';
 import { CatalogSlip } from '@/components/CatalogSlip';
+import { BorrowDialog } from '@/components/BorrowDialog';
 import { redirect } from 'next/navigation';
-import { LOAN_DAY_OPTIONS } from '@/desk/borrow-fields';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params;
@@ -144,34 +144,13 @@ export default async function BookPage({
 					) : wait ? (
 						<p className="mt-4">Čakáš v rade.</p>
 					) : available && user && !atLimit ? (
-						<form action={borrowAction} className="mt-8 grid max-w-sm gap-3">
-							<input type="hidden" name="bookId" value={current.id} />
-							<label className="grid gap-1 text-sm">
-								Meno
-								<input name="firstName" required defaultValue={borrower.firstName} className="rounded-full border px-3 py-2" />
-							</label>
-							<label className="grid gap-1 text-sm">
-								Priezvisko
-								<input name="lastName" required defaultValue={borrower.lastName} className="rounded-full border px-3 py-2" />
-							</label>
-							<label className="grid gap-1 text-sm">
-								Trieda
-								<input name="className" defaultValue={borrower.className} className="rounded-full border px-3 py-2" />
-							</label>
-							<label className="grid gap-1 text-sm">
-								Dni
-								<select name="days" defaultValue={String(borrower.days)} className="rounded-full border px-3 py-2">
-									{LOAN_DAY_OPTIONS.map((days) => (
-										<option key={days} value={days}>
-											{days} dní
-										</option>
-									))}
-								</select>
-							</label>
-							<button type="submit" className="rounded-full bg-primary px-5 py-2.5 text-primary-foreground">
-								Požičať
-							</button>
-						</form>
+						<BorrowDialog
+							bookId={current.id}
+							title={current.title}
+							callNumber={current.callNumber}
+							borrower={borrower}
+							action={borrowAction}
+						/>
 					) : !available && user ? (
 						<form action={reserveAction} className="mt-8">
 							<input type="hidden" name="bookId" value={current.id} />

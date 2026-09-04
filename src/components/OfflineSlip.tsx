@@ -40,11 +40,13 @@ export function OfflineSlip() {
 
 	if (!online) {
 		return (
-			<div className="slip is-off" role="alert" aria-live="assertive">
-				<p className="slip-kicker">Katalógová poznámka</p>
-				<p className="slip-title">Spojenie s pultom padlo.</p>
-				<p className="slip-lead">Fond ostáva na obrazovke. Výpožička a hľadanie počkajú, kým sieť naskočí.</p>
-				<span className="slip-stamp">Mimo sieť</span>
+			<div className="offline-slip is-off" role="alert" aria-live="assertive">
+				<p className="offline-slip-kicker">Katalógová poznámka</p>
+				<p className="offline-slip-title">Spojenie s pultom padlo.</p>
+				<p className="offline-slip-lead">
+					Fond ostáva na obrazovke. Výpožička a hľadanie počkajú, kým sieť naskočí.
+				</p>
+				<span className="offline-slip-stamp">Mimo sieť</span>
 			</div>
 		);
 	}
@@ -52,10 +54,10 @@ export function OfflineSlip() {
 	if (!restored) return null;
 
 	return (
-		<div className="slip is-on" role="status" aria-live="polite">
-			<p className="slip-kicker">Pult znova berie</p>
-			<p className="slip-title">Spojenie je späť.</p>
-			<p className="slip-lead">Karty a výpožičky znova prechádzajú sieťou.</p>
+		<div className="offline-slip is-on" role="status" aria-live="polite">
+			<p className="offline-slip-kicker">Pult znova berie</p>
+			<p className="offline-slip-title">Spojenie je späť.</p>
+			<p className="offline-slip-lead">Karty a výpožičky znova prechádzajú sieťou.</p>
 		</div>
 	);
 }

@@ -209,7 +209,7 @@
 	}
 
 	html.dark .folio-code {
-		color: color-mix(in srgb, var(--accent) 55%, #f3eadf);
+		color: color-mix(in srgb, var(--accent) 78%, #f6efe4);
 	}
 
 	.folio-meta {
@@ -258,13 +258,16 @@
 	}
 
 	.fan-item {
-		margin-left: -1.15rem;
 		transform: rotate(var(--tilt)) translateY(0);
 		transition: transform 0.28s ease;
 		text-decoration: none;
 	}
 
-	.fan-item:first-child {
+	.folio-fan .fan-item {
+		margin-left: -0.4rem;
+	}
+
+	.folio-fan .fan-item:first-child {
 		margin-left: 0;
 	}
 
@@ -326,8 +329,45 @@
 		font-size: 1rem;
 	}
 
+	.lane-fan {
+		display: flex;
+		align-items: flex-end;
+		gap: 0.85rem;
+		height: 100%;
+		min-width: 0;
+		max-width: 100%;
+		padding: 0.45rem 0.2rem 0.55rem;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x proximity;
+		scroll-padding-inline: 0.2rem;
+		scrollbar-width: none;
+	}
+
+	.lane-fan::-webkit-scrollbar {
+		display: none;
+	}
+
+	.lane-fan .fan-item {
+		flex: 0 0 auto;
+		margin: 0;
+		scroll-snap-align: start;
+		transform: none;
+	}
+
+	.lane-fan .fan-item:hover,
+	.lane-fan .fan-item:focus-visible {
+		transform: translateY(-0.4rem);
+	}
+
+	.virtual-row .slip {
+		width: 100%;
+		max-width: none;
+		position: relative;
+	}
+
 	html.dark .lane-head strong {
-		color: color-mix(in srgb, var(--accent) 55%, #f3eadf);
+		color: color-mix(in srgb, var(--accent) 78%, #f6efe4);
 	}
 
 	@media (min-width: 768px) {
@@ -360,6 +400,11 @@
 		.lane-head span {
 			font-size: 0.72rem;
 			letter-spacing: 0.14em;
+		}
+
+		.lane-fan {
+			gap: 1.1rem;
+			padding: 0.5rem 0.15rem 0.65rem;
 		}
 	}
 

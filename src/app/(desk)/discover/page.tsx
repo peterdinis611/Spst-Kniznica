@@ -33,9 +33,9 @@ export default async function DiscoverPage() {
 				<section
 					data-tour="featured"
 					className={cn(
-						'relative overflow-hidden rounded-[1.7rem] bg-[#3c2a21] text-[#f6f0e6]',
-						'dark:bg-[#1c1713] dark:text-[#f3eadf] dark:shadow-[inset_0_0_0_1px_rgb(196_90_56_/_0.35)]',
-						'bg-[radial-gradient(ellipse_at_18%_0%,rgb(196_90_56/0.22),transparent_42%),linear-gradient(180deg,transparent_70%,rgb(0_0_0/0.12))]',
+						'relative overflow-hidden rounded-[1.7rem] bg-[#2a1c16] text-[#f6efe4]',
+						'dark:bg-[#322820] dark:text-[#f6efe4] dark:shadow-[inset_0_0_0_1px_rgb(224_122_82_/_0.42)]',
+						'bg-[radial-gradient(ellipse_at_18%_0%,rgb(196_90_56/0.28),transparent_42%),linear-gradient(180deg,transparent_70%,rgb(0_0_0/0.12))]',
 						rise
 					)}
 				>
@@ -61,7 +61,7 @@ export default async function DiscoverPage() {
 							</span>
 						</a>
 						<div className="min-w-0 pb-0.5">
-							<p className="m-0 font-sans text-[0.62rem] font-semibold tracking-[0.16em] uppercase opacity-65 sm:text-[0.72rem] sm:tracking-[0.18em]">
+							<p className="m-0 font-sans text-[0.62rem] font-semibold tracking-[0.16em] uppercase opacity-80 sm:text-[0.72rem] sm:tracking-[0.18em]">
 								Dnes na pulte
 							</p>
 							<h2 className={cn(display, 'mt-1.5 max-w-[14ch] text-[clamp(1.35rem,6.4vw,3.5rem)] sm:mt-3')}>
@@ -70,7 +70,7 @@ export default async function DiscoverPage() {
 								</a>
 							</h2>
 							<p className="mt-2 max-w-[42ch] text-[0.95rem] opacity-80">{authorLine(featuredSlip.authors)}</p>
-							<p className="mt-4 font-mono text-[0.68rem] tracking-[0.12em] uppercase opacity-70">
+							<p className="mt-4 font-mono text-[0.68rem] tracking-[0.12em] uppercase opacity-80">
 								{featuredCall.dept} {featuredCall.number} · {copiesLabel(featuredSlip.copiesAvailable, featuredSlip.copiesTotal)}
 							</p>
 						</div>
@@ -97,7 +97,7 @@ export default async function DiscoverPage() {
 						<li key={author.id}>
 							<a className="flex items-center gap-3 no-underline" href={`/authors/${author.slug}`}>
 								<span
-									className="grid size-11 place-items-center rounded-full font-display text-sm font-semibold text-white"
+									className="grid size-11 place-items-center rounded-full font-display text-sm font-semibold text-white ring-1 ring-black/15 dark:ring-white/25"
 									style={{ background: authorSwatch(author.id) }}
 								>
 									{initials(author.name)}

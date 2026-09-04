@@ -1,4 +1,4 @@
-.slip {
+.offline-slip {
 		position: fixed;
 		top: max(0.7rem, env(safe-area-inset-top));
 		right: 0.7rem;
@@ -15,7 +15,7 @@
 		box-shadow: 0 18px 36px rgb(40 28 16 / 0.16);
 	}
 
-	.slip-kicker {
+	.offline-slip-kicker {
 		margin: 0;
 		color: var(--muted-foreground, #7a6a5c);
 		font-family: 'Bricolage Grotesque', sans-serif;
@@ -25,7 +25,7 @@
 		text-transform: uppercase;
 	}
 
-	.slip-title {
+	.offline-slip-title {
 		margin: 0.15rem 0 0;
 		font-family: 'Cormorant Garamond', serif;
 		font-size: 1.28rem;
@@ -34,7 +34,7 @@
 		line-height: 1.1;
 	}
 
-	.slip-lead {
+	.offline-slip-lead {
 		margin: 0.25rem 0 0;
 		max-width: 36ch;
 		color: var(--muted-foreground, #7a6a5c);
@@ -43,7 +43,7 @@
 		line-height: 1.4;
 	}
 
-	.slip-stamp {
+	.offline-slip-stamp {
 		justify-self: start;
 		margin-top: 0.45rem;
 		padding: 0.18rem 0.45rem;
@@ -57,12 +57,12 @@
 		text-transform: uppercase;
 	}
 
-	.slip.is-on {
+	.offline-slip.is-on {
 		border-color: var(--foreground, #3c2a21);
 	}
 
 	@media (min-width: 720px) {
-		.slip {
+		.offline-slip {
 			top: 1.15rem;
 			right: 1.2rem;
 			left: auto;
@@ -71,7 +71,7 @@
 			padding: 0.95rem 6.2rem 1rem 1.15rem;
 		}
 
-		.slip-stamp {
+		.offline-slip-stamp {
 			position: absolute;
 			top: 0.85rem;
 			right: 0.85rem;
@@ -82,7 +82,7 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.slip {
+		.offline-slip {
 			transition: none;
 		}
 	}

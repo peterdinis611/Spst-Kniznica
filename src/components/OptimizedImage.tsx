@@ -12,8 +12,8 @@ export function OptimizedImage({
 	eager = false,
 	className = '',
 	fallbackLabel = '',
-	fallbackBg = '#1b3d32',
-	fallbackFg = '#f8f1e3'
+	fallbackBg = '#2a1c16',
+	fallbackFg = '#f6efe4'
 }: {
 	src: string;
 	alt?: string;

@@ -13,7 +13,7 @@ function personRow(person: AuthorSlip) {
 	return (
 		<a className="flex items-center gap-3 py-2 no-underline" href={`/authors/${person.slug}`}>
 			<span
-				className="grid size-10 place-items-center rounded-full font-display text-sm font-semibold text-white"
+				className="grid size-10 place-items-center rounded-full font-display text-sm font-semibold text-white ring-1 ring-black/15 dark:ring-white/25"
 				style={{ background: authorSwatch(person.id) }}
 			>
 				{initials(person.name)}

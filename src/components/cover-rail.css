@@ -333,10 +333,10 @@
 	}
 
 	html.dark .complete-shelf {
-		--well: #0c0f14;
-		--well-lit: rgb(170 196 214 / 0.07);
-		--well-shade: rgb(0 0 0 / 0.5);
-		--stage-ring: rgb(214 200 168 / 0.22);
+		--well: #2a231c;
+		--well-lit: rgb(224 122 82 / 0.16);
+		--well-shade: rgb(0 0 0 / 0.38);
+		--stage-ring: rgb(224 122 82 / 0.28);
 		--plank-hi: #f0d08a;
 		--plank-mid: #c4923a;
 		--plank-lo: #6a4818;
@@ -345,13 +345,13 @@
 		--grain-opacity: 0.28;
 		--vol-shadow: 8px 24px 40px rgb(0 0 0 / 0.62);
 		--label: #eee4d6;
-		--ok-bg: #45624c;
-		--ok-fg: #f4f8ea;
-		--out-bg: #3a342c;
-		--out-fg: #efe6d8;
-		--nudge-bg: #1a1814;
-		--nudge-fg: #f3eadf;
-		--nudge-ring: inset 0 0 0 1px rgb(243 234 223 / 0.28);
+		--ok-bg: #2a382c;
+		--ok-fg: #c5d9b4;
+		--out-bg: #3d2620;
+		--out-fg: #f0b4a8;
+		--nudge-bg: #2a231c;
+		--nudge-fg: #f6efe4;
+		--nudge-ring: inset 0 0 0 1px rgb(224 122 82 / 0.4);
 	}
 
 	html.dark .shelf-plank {

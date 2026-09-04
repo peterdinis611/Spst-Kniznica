@@ -15,13 +15,13 @@
 	}
 
 	html.dark .fault {
-		--fault-ink: #f3eadf;
-		--fault-page: #16120e;
-		--fault-card: #221c16;
-		--fault-muted: #b7ab98;
-		--fault-line: #3a342c;
-		--fault-stamp: #e08a6a;
-		--fault-wood: #0e0b08;
+		--fault-ink: #f6efe4;
+		--fault-page: #1c1814;
+		--fault-card: #2a231c;
+		--fault-muted: #c4b39a;
+		--fault-line: #3f362c;
+		--fault-stamp: #e07a52;
+		--fault-wood: #120e0b;
 	}
 
 	.fault-grain,

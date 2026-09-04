@@ -76,7 +76,13 @@ export function authorLast(name: string) {
 	return name.trim().split(/\s+/).at(-1) ?? name;
 }
 
-const swatches = ['#1b3d32', '#d46a1e', '#3d2a1c', '#2f6b4f', '#8a3a16'];
+const swatches = [
+	'var(--swatch-1)',
+	'var(--swatch-2)',
+	'var(--swatch-3)',
+	'var(--swatch-4)',
+	'var(--swatch-5)'
+] as const;
 
 export function authorSwatch(id: string) {
 	return swatches[hash(id) % swatches.length];

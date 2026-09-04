@@ -18,7 +18,7 @@ export function ThemeToggle({ variant = 'desk' }: { variant?: 'desk' | 'hall' })
 			className={
 				variant === 'hall'
 					? 'hall-theme-btn'
-					: 'grid size-9 cursor-pointer place-items-center rounded-full bg-primary text-primary-foreground hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring sm:size-10'
+					: 'grid size-9 cursor-pointer place-items-center rounded-full bg-stamp text-stamp-ink hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring sm:size-10'
 			}
 			onClick={() => setTheme(isDark ? 'light' : 'dark')}
 			aria-label={label}

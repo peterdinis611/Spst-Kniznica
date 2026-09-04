@@ -1,0 +1,205 @@
+.borrow-open {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2.85rem;
+		margin-top: 1.35rem;
+		padding: 0 1.35rem;
+		border: 0;
+		border-radius: 999px;
+		background: var(--stamp, #c45a38);
+		color: var(--stamp-ink, #fff6ee);
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
+		font-size: 0.95rem;
+		font-weight: 650;
+		cursor: pointer;
+	}
+
+	.borrow-open:hover {
+		opacity: 0.88;
+	}
+
+	.borrow-open:focus-visible {
+		outline: 2px solid var(--stamp, #c45a38);
+		outline-offset: 3px;
+	}
+
+	.borrow-dialog {
+		width: min(28.5rem, calc(100vw - 1.4rem));
+		max-height: calc(100dvh - 2rem);
+		margin: auto;
+		padding: 0;
+		overflow: visible;
+		border: 0;
+		background: transparent;
+		color: inherit;
+	}
+
+	.borrow-dialog::backdrop {
+		background: rgb(18 14 11 / 0.62);
+		backdrop-filter: blur(18px) saturate(1.08);
+	}
+
+	.borrow-sheet {
+		position: relative;
+		overflow: hidden;
+		padding: 1.35rem 1.4rem 1.5rem 1.65rem;
+		border: 1px solid color-mix(in srgb, var(--stamp, #c45a38) 28%, transparent);
+		border-radius: 1.15rem;
+		background:
+			radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--stamp, #c45a38) 14%, transparent), transparent 46%),
+			var(--card, #fffaf3);
+		color: var(--foreground, #2a1c16);
+		box-shadow: 0 2rem 3.6rem -1.2rem rgb(18 14 11 / 0.55);
+	}
+
+	.borrow-sheet::before {
+		content: '';
+		position: absolute;
+		top: 0.85rem;
+		bottom: 0.85rem;
+		left: 0;
+		width: 0.32rem;
+		border-radius: 0 2px 2px 0;
+		background: linear-gradient(180deg, #c45a38, #3c2a21 62%, #c45a38);
+		pointer-events: none;
+	}
+
+	.borrow-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	.borrow-kicker {
+		margin: 0;
+		color: var(--stamp, #c45a38);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
+		font-size: 0.92rem;
+		font-style: italic;
+		font-weight: 650;
+		letter-spacing: 0.02em;
+	}
+
+	.borrow-close {
+		display: grid;
+		place-items: center;
+		width: 2.15rem;
+		height: 2.15rem;
+		border: 0;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--foreground) 8%, transparent);
+		color: inherit;
+		cursor: pointer;
+	}
+
+	.borrow-call {
+		margin: 0.85rem 0 0;
+		color: var(--muted-foreground);
+		font-family: var(--font-mono, 'Azeret Mono', monospace);
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.borrow-title {
+		max-width: 18ch;
+		margin: 0.35rem 0 0;
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
+		font-size: clamp(1.55rem, 4vw, 2.05rem);
+		font-weight: 650;
+		letter-spacing: -0.035em;
+		line-height: 1.08;
+	}
+
+	.borrow-form {
+		display: grid;
+		gap: 0.95rem;
+		margin-top: 1.35rem;
+	}
+
+	.borrow-form label {
+		display: grid;
+		gap: 0.4rem;
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
+		font-size: 0.68rem;
+		font-weight: 650;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--muted-foreground);
+	}
+
+	.borrow-form input,
+	.borrow-form select {
+		width: 100%;
+		min-width: 0;
+		height: 2.75rem;
+		padding: 0 1rem;
+		border: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent);
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--paper, var(--background)) 82%, transparent);
+		color: var(--foreground);
+		font-family: var(--font-body, 'Literata', serif);
+		font-size: 1.02rem;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	.borrow-form input:focus,
+	.borrow-form select:focus {
+		outline: 2px solid var(--stamp, #c45a38);
+		outline-offset: 2px;
+		border-color: var(--stamp, #c45a38);
+	}
+
+	.borrow-stamp {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-height: 2.95rem;
+		margin-top: 0.35rem;
+		border: 0;
+		border-radius: 999px;
+		background: var(--stamp, #c45a38);
+		color: var(--stamp-ink, #fff6ee);
+		font-family: var(--font-sans, 'Bricolage Grotesque', sans-serif);
+		font-size: 0.98rem;
+		font-weight: 650;
+		letter-spacing: 0.02em;
+		text-transform: none;
+		cursor: pointer;
+	}
+
+	.borrow-stamp:disabled {
+		opacity: 0.7;
+		cursor: wait;
+	}
+
+	.borrow-mark {
+		position: absolute;
+		top: 1.15rem;
+		right: 3.4rem;
+		padding: 0.28rem 0.4rem 0.2rem;
+		border: 2px solid var(--stamp, #c45a38);
+		border-radius: 999px;
+		color: var(--stamp, #c45a38);
+		font-family: var(--font-display, 'Cormorant Garamond', serif);
+		font-size: 0.62rem;
+		font-style: italic;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		line-height: 1;
+		text-transform: uppercase;
+		transform: rotate(11deg);
+		pointer-events: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.borrow-dialog,
+		.borrow-dialog::backdrop {
+			transition: none;
+		}
+	}

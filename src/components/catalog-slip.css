@@ -3,9 +3,13 @@
 		grid-template-columns: 0.28rem minmax(1.7rem, auto) minmax(0, 1fr) auto;
 		gap: 0.3rem 0.45rem;
 		align-items: center;
+		width: 100%;
+		max-width: none;
 		min-width: 0;
-		height: 100%;
-		padding: 0;
+		height: auto;
+		position: relative;
+		min-height: 3.35rem;
+		padding: 0.55rem 0;
 		border-top: 1px dashed color-mix(in srgb, var(--foreground) 16%, transparent);
 		text-decoration: none;
 		color: inherit;
@@ -117,6 +121,12 @@
 	html.dark .slip-mark.is-out {
 		background: color-mix(in srgb, #e25a48 26%, transparent);
 		color: #f3c2ba;
+	}
+
+	.virtual-row .slip {
+		height: 100%;
+		min-height: 0;
+		padding: 0;
 	}
 
 	@media (min-width: 640px) {
