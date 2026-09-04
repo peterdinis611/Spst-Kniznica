@@ -1,20 +1,17 @@
-'use client';
-
-import { usePathname } from 'next/navigation';
 import {
 	Bookmark,
 	BookOpen,
-	CircleHelp,
 	House,
 	LayoutGrid,
 	Library,
 	LogIn,
-	LogOut,
 	UserRound,
 	Users
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { Reader } from '@/types';
+import { LogoutButton } from './LogoutButton';
+import { TourButton } from './TourButton';
 
 const items = [
 	{ path: '/discover', label: 'Objavovať', icon: House },
@@ -25,17 +22,18 @@ const items = [
 	{ path: '/authors', label: 'Autori', icon: Users }
 ] as const;
 
-export function AppSidebar({ user, compact = false }: { user: Reader; compact?: boolean }) {
-	const pathname = usePathname();
-
+export function AppSidebar({
+	user,
+	compact = false,
+	pathname
+}: {
+	user: Reader;
+	compact?: boolean;
+	pathname: string;
+}) {
 	function active(path: string) {
 		if (path === '/discover') return pathname === '/discover';
 		return pathname.startsWith(path);
-	}
-
-	function submitLogout() {
-		const form = document.getElementById('logout-form');
-		if (form instanceof HTMLFormElement) form.requestSubmit();
 	}
 
 	return (
@@ -75,17 +73,7 @@ export function AppSidebar({ user, compact = false }: { user: Reader; compact?: 
 					Po—pia 7:30—15:30
 				</p>
 				<div className="mt-3">
-					<button
-						type="button"
-						className="text-muted-foreground mb-1 flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal"
-						onClick={async () => {
-							const { startTour, markTourSeen } = await import('@/tour');
-							await startTour(markTourSeen);
-						}}
-					>
-						<CircleHelp className="size-4" />
-						Prehliadka
-					</button>
+					<TourButton />
 					{user ? (
 						<>
 							<a
@@ -98,14 +86,7 @@ export function AppSidebar({ user, compact = false }: { user: Reader; compact?: 
 								<UserRound className="size-4" />
 								Môj profil
 							</a>
-							<button
-								type="button"
-								className="text-muted-foreground flex h-auto items-center gap-2 rounded-full px-3 py-1.5 font-normal"
-								onClick={submitLogout}
-							>
-								<LogOut className="size-4" />
-								Odhlásiť
-							</button>
+							<LogoutButton />
 						</>
 					) : (
 						<a

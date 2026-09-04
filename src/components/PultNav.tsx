@@ -1,10 +1,6 @@
-'use client';
-
-import { usePathname } from 'next/navigation';
 import { pultTablesFor } from '@/desk/admin';
 
-export function PultNav({ manage = true }: { manage?: boolean }) {
-	const pathname = usePathname();
+export function PultNav({ manage = true, pathname }: { manage?: boolean; pathname: string }) {
 	const tabs = pultTablesFor(manage);
 
 	function on(path: string) {

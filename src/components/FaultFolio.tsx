@@ -1,5 +1,4 @@
-'use client';
-
+import { FaultReload } from './FaultReload';
 import './fault-folio.css';
 
 export function FaultFolio({ status, message }: { status: number; message?: string }) {
@@ -10,9 +9,7 @@ export function FaultFolio({ status, message }: { status: number; message?: stri
 	const title = jammed ? 'Zásuvka sa zasekla.' : 'Karta nie je v zásuvke.';
 	const leaked = Boolean(
 		message &&
-			/ENOENT|EACCES|EPERM|\.next|node_modules|\/Users\/|\/home\/|Not Found|Internal Error/.test(
-				message
-			)
+			/ENOENT|EACCES|EPERM|\.next|node_modules|\/Users\/|\/home\/|Not Found|Internal Error/.test(message)
 	);
 	const lead =
 		jammed || leaked || !message
@@ -66,9 +63,7 @@ export function FaultFolio({ status, message }: { status: number; message?: stri
 					<p>{lead}</p>
 					<nav aria-label="Čo ďalej">
 						{jammed ? (
-							<button type="button" className="fault-cta" onClick={() => location.reload()}>
-								Skúsiť znova
-							</button>
+							<FaultReload />
 						) : (
 							<a className="fault-cta no-underline" href="/discover">
 								Do fondu

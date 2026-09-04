@@ -1,6 +1,6 @@
 # SPŠT knižnica
 
-Školský fond učebníc, noriem a literatúry pre SPŠT. SvelteKit aplikácia: katalóg, výpožičky, čitateľský účet a pult správy.
+Školský fond učebníc, noriem a literatúry pre SPŠT. Next.js aplikácia: katalóg, výpožičky, čitateľský účet a pult správy.
 
 Fond sídli v pavilóne B. Výpožička je bez poplatku — **7, 14 alebo 21 dní**, strop na počet kníh nie je.
 
@@ -44,20 +44,39 @@ Vstupná sieň je polica. Výpožička je lístok. Účet je preukaz.
 | :---: | :---: |
 | ![Zásuvka sa zasekla — 500](docs/screenshots/porucha.png) | ![Karta nie je v zásuvke — 404](docs/screenshots/chyba.png) |
 
-Snímky sa znova odfotia cez `bun run readme:shots` (beží `bun run dev` a `bun run storybook`).
-
 ## Stack
 
-- **SvelteKit 2** + Svelte 5, Vite, Tailwind CSS 4
+- **Next.js 15** (App Router) + React 19, Tailwind CSS 4
 - **PostgreSQL 16** (Docker) + **Drizzle ORM** (`postgres` klient)
 - **Supabase Auth** — registrácia, prihlásenie, obnova hesla
+- **next-safe-action** + Valibot — server actions
 - **Bun** — inštalácia a skripty (`bun.lock`)
 
-Interná príručka je na [`/docs`](http://localhost:5173/docs).
+Interná príručka je na [`/docs`](http://localhost:3000/docs).
+
+## Štruktúra
+
+```
+src/
+  app/           App Router (page.tsx, layout.tsx, route.ts)
+  components/    UI — server komponenty + malé client ostrovy
+  styles/        globálne CSS (téma, sieň, pult)
+  server/        databáza, session, katalóg, pult, mail
+  config/        env, runtime, supabase
+  types/
+  utils/
+  auth/          role a polia prihlásenia
+  desk/          polia pultu
+  catalog/       obálky, search, hold
+  middleware.ts
+content/docs/    príručka (.svx → neskôr MDX)
+```
+
+Stránky sú React Server Components. Klient ide len tam, kde treba stav (hľadanie, téma, menu, formuláre).
 
 ## Lokálne spustenie
 
-Potrebuješ **Bun**, **Docker** a kópiu `.env`.
+Potrebuješ **Bun**, **Docker Desktop** a kópiu `.env`.
 
 ```sh
 bun install
@@ -67,9 +86,9 @@ bun run db:migrate
 bun run dev
 ```
 
-Aplikácia beží na [http://localhost:5173](http://localhost:5173). Katalóg sa **naseeduje pri prvom requeste**.
+Aplikácia beží na [http://localhost:3000](http://localhost:3000). Katalóg sa **naseeduje pri prvom requeste**.
 
-Predvolené `DATABASE_URL` je `postgres://spst:spst@localhost:5432/spst` (užívateľ / heslo / databáza `spst`). Zvyšok kľúčov je v `.env.example`.
+Predvolené `DATABASE_URL` je `postgres://spst:spst@localhost:5432/spst`. Ak máš na 5432 systémový Postgres, v `.env` daj `POSTGRES_PORT=5433` a rovnaký port v `DATABASE_URL`. Zvyšok kľúčov je v `.env.example`.
 
 Bez bežiaceho Postgresu stránky spadnú na 500 (zásuvka sa zasekla). Docker Desktop musí byť zapnutý, kým ide `bun run db:up`.
 
@@ -93,7 +112,7 @@ Minimálne `DATABASE_URL`. Na prihlásenie:
 - `PUBLIC_SUPABASE_URL` a `PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - v Supabase Auth redirect `{ORIGIN}/auth/confirm`
 
-Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, ktoré sa pri prihlásení stanú knihovníkom. Ďalších (aj učiteľov) pridelíš v zásuvke Čitatelia. V `vite dev` môže pult otvoriť aj bežný čitateľ.
+Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, ktoré sa pri prihlásení stanú knihovníkom. Ďalších (aj učiteľov) pridelíš v zásuvke Čitatelia. V `next dev` môže pult otvoriť aj bežný čitateľ.
 
 Ďalšie voliteľné:
 
@@ -120,26 +139,24 @@ Slovenské aliasy (`/knihy`, `/pult`, `/profil`…) sa 308 presmerujú na kanoni
 ## Skripty
 
 ```sh
-bun run dev          # vývoj, port 5173
+bun run dev          # vývoj, port 3000
 bun run build        # produkčný build
-bun run preview      # náhľad buildu, port 4173
-bun run check        # svelte-check
+bun run start        # Next start, port 3000
 bun run test         # Vitest (jednorazovo)
-bun run lint         # Prettier + ESLint
-bun run storybook    # Storybook, port 6006
-bun run readme:shots # snímky do docs/screenshots (dev 5173 + Storybook 6006)
+bun run lint         # Prettier
+bun run format       # Prettier write
 ```
 
 ## Záťaž (k6)
 
-Meria čítanie katalógu, nie prihlásenie ani výpožičky. Fond musí bežať skôr (dev 5173 alebo preview 4173). Obraz `grafana/k6:2.2.0`.
+Meria čítanie katalógu, nie prihlásenie ani výpožičky. Fond musí bežať skôr (`bun run dev` na porte 3000). Obraz `grafana/k6:2.2.0`.
 
 ```sh
 bun run k6:up
 bun run k6:smoke     # 1 čitateľ
 bun run k6:load      # 16 čitateľov
-bun run k6:stress    # rampa; register meraj na preview + SEED_VOLUME=2500
+bun run k6:stress    # rampa; register meraj na `bun run start` + SEED_VOLUME=2500
 bun run k6:down
 ```
 
-Grafana: [http://localhost:3030](http://localhost:3030) (`pult` / `pavilonb`). Podrobnosti v [príručke záťaže](src/content/docs/zataz.svx).
+Predvolené `BASE_URL` je `http://host.docker.internal:3000`. Grafana: [http://localhost:3030](http://localhost:3030) (`pult` / `pavilonb`). Podrobnosti v [príručke záťaže](content/docs/zataz.svx).
