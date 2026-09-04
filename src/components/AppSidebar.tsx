@@ -11,7 +11,9 @@ import {
 import { cn } from '@/utils/cn';
 import type { Reader } from '@/types';
 import { LogoutButton } from './LogoutButton';
+import { SchoolMark } from './SchoolMark';
 import { TourButton } from './TourButton';
+import './school-brand.css';
 
 const items = [
 	{ path: '/discover', label: 'Objavovať', icon: House },
@@ -43,15 +45,20 @@ export function AppSidebar({
 				compact && 'px-5'
 			)}
 		>
-			<a href="/" className="font-display no-underline" data-tour={compact ? undefined : 'brand'}>
-				<span className="block text-[0.7rem] font-extrabold tracking-[0.22em] text-stamp uppercase">
-					SPŠT
+			<a
+				href="/"
+				className={cn('school-brand', compact && 'is-compact')}
+				aria-label="SPŠT knižnica"
+				data-tour={compact ? undefined : 'brand'}
+			>
+				<span className="school-stamp">
+					<SchoolMark />
 				</span>
-				<span className="text-xl font-extrabold tracking-tight text-sidebar-foreground">
-					knižnica
+				<span className="school-brand-copy">
+					<b>Pavilón B · Bardejov</b>
 				</span>
 			</a>
-			<p className="mt-10 font-sans text-[0.62rem] tracking-[0.18em] text-sidebar-foreground/65 uppercase">
+			<p className="mt-8 font-sans text-[0.62rem] tracking-[0.18em] text-sidebar-foreground/65 uppercase">
 				Fond
 			</p>
 			<nav

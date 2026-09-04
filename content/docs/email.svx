@@ -64,7 +64,7 @@ Pri **vypožičaní**, **nahlásení na pult** a **predĺžení** ide list cez p
 
 Učiteľ s triedou na preukaze dostane raz za týždeň (alebo keď pribudne oneskorenie) `II.A vonku · N lístkov, M po lehote · …`. Nie denne. Telo je ten istý krémový lístok s medeným chrbtom.
 
-Tik týchto pripomienok beží z pultu (každých 30 minút pri návšteve) a dá sa spustiť cronom na `GET /api/desk/tick` s `DESK_TICK_SECRET`.
+Tik týchto pripomienok beží zo **zásobníka** (pg-boss v Postgres, zásuvka [Fronta](/admin/queue)): listy výpožičky a rezervácie idú do radu, tik každých 30 minút. Cron na `GET /api/desk/tick` s `DESK_TICK_SECRET` ostáva ako núdzový kľúč.
 
 Lokálne (`bun run dev`, alebo `MAIL_DRIVER=mailtrap`) ide **Mailtrap**. Token je `MAILTRAP_TOKEN`, odosielateľ `MAILTRAP_FROM` (demo adresa `hello@demomailtrap.co`, kým nemáte overenú vlastnú doménu). Demo doména doručí **len na e-mail majiteľa Mailtrap účtu** — doplň ho do `MAILTRAP_TO`. Lístok pre iný preukaz tam padne s poznámkou pôvodnej adresy.
 

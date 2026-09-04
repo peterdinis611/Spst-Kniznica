@@ -1,0 +1,51 @@
+.school-brand {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.55rem;
+	color: inherit;
+	text-decoration: none;
+}
+
+.school-stamp {
+	display: block;
+	width: 5.85rem;
+	line-height: 0;
+}
+
+.school-stamp img {
+	display: block;
+	width: 100%;
+	height: auto;
+	object-fit: contain;
+}
+
+.school-brand-copy {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	padding-left: 0.06rem;
+}
+
+.school-brand-copy b {
+	color: var(--stamp, #c45a38);
+	font-family: var(--font-mono, "Azeret Mono", monospace);
+	font-size: 0.58rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.school-brand:hover .school-stamp {
+	opacity: 0.88;
+}
+
+.school-brand.is-compact .school-stamp {
+	width: 5.2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.school-brand:hover .school-stamp {
+		opacity: 1;
+	}
+}

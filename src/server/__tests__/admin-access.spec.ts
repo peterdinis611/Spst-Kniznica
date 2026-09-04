@@ -116,6 +116,7 @@ describe('deskGate', () => {
 		expect(deskGate('/admin/loans', teacher)).toBe('ok');
 		expect(deskGate('/admin/books', teacher)).toBe('forbidden');
 		expect(deskGate('/admin/scan', teacher)).toBe('forbidden');
+		expect(deskGate('/admin/queue', teacher)).toBe('forbidden');
 		expect(deskGate('/admin/holdings/labels', teacher)).toBe('forbidden');
 	});
 });

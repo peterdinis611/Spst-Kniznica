@@ -10,7 +10,13 @@ export const metadata: Metadata = {
 	description:
 		'Školská knižnica SPŠT — katalóg učebníc, noriem a literatúry. Výpožička na 7, 14 alebo 21 dní, bez stropu na počet kníh.',
 	applicationName: 'SPŠT knižnica',
-	icons: { icon: '/favicon.svg' }
+	icons: {
+		icon: [
+			{ url: '/favicon.ico', sizes: '48x48' },
+			{ url: '/icon.png', type: 'image/png', sizes: '192x192' }
+		],
+		apple: '/apple-touch-icon.png'
+	}
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

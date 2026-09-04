@@ -4,6 +4,7 @@ import { canOperateDesk } from '@/server/admin-access';
 import { deskCounts } from '@/server/desk/counts';
 import { countOpenClassLoans, listDeskClasses } from '@/server/desk/loans';
 import { deskQueue, emptyDeskQueue } from '@/server/desk/queue';
+import { hopperCounts } from '@/server/hopper';
 import { getSessionReader } from '@/server/session';
 import { redirect } from 'next/navigation';
 
@@ -58,7 +59,7 @@ export default async function AdminHome({
 		);
 	}
 
-	const [counts, queue] = await Promise.all([deskCounts(), deskQueue()]);
+	const [counts, queue, hopper] = await Promise.all([deskCounts(), deskQueue(), hopperCounts()]);
 	const cards = [
 		{ href: '/admin/books', n: counts.books, label: 'kníh', code: '04' },
 		{ href: '/admin/departments', n: counts.categories, label: 'odborov', code: '02' },
@@ -67,7 +68,13 @@ export default async function AdminHome({
 		{ href: '/admin/holdings', n: counts.holdings, label: 'výtlačkov', code: '06' },
 		{ href: '/admin/loans', n: counts.loans, label: 'lístkov', code: '07' },
 		{ href: '/admin/reservations', n: counts.reservations, label: 'rezervácií', code: '08' },
-		{ href: '/admin/readers', n: counts.readers, label: 'preukazov', code: '09' }
+		{ href: '/admin/readers', n: counts.readers, label: 'preukazov', code: '09' },
+		{
+			href: '/admin/queue',
+			n: hopper.ready ? hopper.queued + hopper.active : queue.waiting.length,
+			label: 'v zásobníku',
+			code: '11'
+		}
 	];
 
 	return (
@@ -95,7 +102,10 @@ export default async function AdminHome({
 			</div>
 			<p className="mt-8 text-sm text-muted-foreground">
 				Fronta: po lehote {queue.overdue.length} · cestou {queue.inbound.length} · na pulte{' '}
-				{queue.pickup.length}
+				{queue.pickup.length} ·{' '}
+				<a href="/admin/queue" className="pult-ghost">
+					zásobník
+				</a>
 			</p>
 		</div>
 	);

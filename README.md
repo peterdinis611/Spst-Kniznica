@@ -48,6 +48,7 @@ Vstupná sieň je polica. Výpožička je lístok. Účet je preukaz.
 
 - **Next.js 15** (App Router) + React 19, Tailwind CSS 4
 - **PostgreSQL 16** (Docker) + **Drizzle ORM** (`postgres` klient)
+- **pg-boss** — zásobník lístkov (fronta listov a tiku pultu)
 - **Supabase Auth** — registrácia, prihlásenie, obnova hesla
 - **next-safe-action** + Valibot — server actions
 - **Bun** — inštalácia a skripty (`bun.lock`)
@@ -119,7 +120,7 @@ Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, kt
 
 - **UploadThing** (`UPLOADTHING_TOKEN`) — obálky kníh z pultu
 - **Mail** — lokálne Mailtrap (`MAIL_DRIVER=mailtrap`), na ostrej Mailgun. Listy idú pri výpožičke, vrátení, predĺžení, čakacom lístku, termíne a zmene hesla. S `SUPABASE_SERVICE_ROLE_KEY` ide obnova hesla z pultu, nie z predvolenej pošty Supabase.
-- **Tik pultu** (`DESK_TICK_SECRET`) — cron `GET /api/desk/tick` (Bearer alebo `?secret=`). Bez secretu → 403. Pri návšteve fondu beží tik aj sám, raz za 30 minút.
+- **Tik pultu** (`DESK_TICK_SECRET`) — cron `GET /api/desk/tick` (Bearer alebo `?secret=`). Bez secretu → 403. Tik ide aj zo zásobníka **pg-boss** každých 30 minút; pri návšteve fondu sa do fronty vloží singleton, ak ešte nebeží. Stav fronty je v pulte **Fronta** (`/admin/queue`).
 - **Rate limit** — prihlásenie, registrácia a obnova hesla. `RATE_LIMIT=off` vypne.
 
 ## Mapa
@@ -132,7 +133,7 @@ Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, kt
 | `/departments`, `/authors` | odbory a autori                                                                           |
 | `/login`                   | prihlásenie / registrácia (`?mod=novy`)                                                   |
 | `/loans`, `/profile`       | lístok a preukaz (po prihlásení)                                                          |
-| `/admin`                   | pult — čítačka, CRUD, trieda vonku, štítky, výkazy CSV/XML (knihovník; učiteľ len triedu) |
+| `/admin`                   | pult — čítačka, CRUD, fronta lístkov, trieda vonku, štítky, výkazy CSV/XML (knihovník; učiteľ len triedu) |
 | `/docs`                    | príručka                                                                                  |
 
 Slovenské aliasy (`/knihy`, `/pult`, `/profil`…) sa 308 presmerujú na kanonické cesty.

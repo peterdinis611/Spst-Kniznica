@@ -84,7 +84,7 @@ export function classDigestCopy(digest: ClassDigest) {
 	return { subject, text, html };
 }
 
-export async function queueClassDigest(digest: ClassDigest) {
+export async function sendClassDigest(digest: ClassDigest) {
 	if (!digest.to.trim()) return { ok: false as const, skipped: true };
 	const copy = classDigestCopy(digest);
 	return sendMail({
@@ -92,4 +92,10 @@ export async function queueClassDigest(digest: ClassDigest) {
 		toName: digest.teacherName,
 		...copy
 	});
+}
+
+export async function queueClassDigest(digest: ClassDigest) {
+	if (!digest.to.trim()) return { ok: false as const, skipped: true };
+	const { enqueueFolioMail } = await import('@/server/boss');
+	return enqueueFolioMail({ kind: 'class', digest });
 }

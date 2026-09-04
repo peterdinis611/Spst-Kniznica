@@ -31,6 +31,7 @@ describe('aliasTarget', () => {
 		expect(aliasTarget('/admin/rezervacie')).toBe('/admin/reservations');
 		expect(aliasTarget('/admin/citately')).toBe('/admin/readers');
 		expect(aliasTarget('/admin/vykazy')).toBe('/admin/reports');
+		expect(aliasTarget('/admin/fronta')).toBe('/admin/queue');
 		expect(aliasTarget('/admin/autori')).toBe('/admin/authors');
 	});
 

@@ -183,8 +183,9 @@ export function loanMailCopy(notice: LoanNotice) {
 	return { subject, text, html };
 }
 
-export function queueLoanNotice(notice: LoanNotice) {
-	return sendLoanNotice(notice);
+export async function queueLoanNotice(notice: LoanNotice) {
+	const { enqueueFolioMail } = await import('@/server/boss');
+	return enqueueFolioMail({ kind: 'loan', notice });
 }
 
 export async function sendLoanNotice(notice: LoanNotice) {

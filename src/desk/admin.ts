@@ -9,7 +9,8 @@ export const PULT_TABLES = [
 	{ href: '/admin/loans', label: 'Výpožičky', code: '07', table: 'loan', inspect: true },
 	{ href: '/admin/reservations', label: 'Rezervácie', code: '08', table: 'reservation' },
 	{ href: '/admin/readers', label: 'Čitatelia', code: '09', table: 'user' },
-	{ href: '/admin/reports', label: 'Výkazy', code: '10' }
+	{ href: '/admin/reports', label: 'Výkazy', code: '10' },
+	{ href: '/admin/queue', label: 'Fronta', code: '11' }
 ] as const;
 
 export function pultTablesFor(manage: boolean) {

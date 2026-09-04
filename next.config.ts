@@ -48,7 +48,14 @@ const nextConfig: NextConfig = {
 	typedRoutes: false,
 	output: 'standalone',
 	productionBrowserSourceMaps: false,
-	serverExternalPackages: ['postgres', 'drizzle-orm', 'better-auth'],
+	serverExternalPackages: [
+		'postgres',
+		'drizzle-orm',
+		'better-auth',
+		'pg-boss',
+		'pg',
+		'pg-connection-string'
+	],
 	httpAgentOptions: { keepAlive: true },
 	compiler: {
 		removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false
@@ -62,6 +69,12 @@ const nextConfig: NextConfig = {
 	},
 	logging: {
 		fetches: { fullUrl: true }
+	},
+	webpack: (config, { isServer }) => {
+		if (isServer && Array.isArray(config.externals)) {
+			config.externals.push('pg-boss', 'pg', 'pg-connection-string');
+		}
+		return config;
 	},
 	images: {
 		formats: ['image/avif', 'image/webp'],

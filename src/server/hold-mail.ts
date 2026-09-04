@@ -137,7 +137,7 @@ export function holdMailCopy(notice: HoldNotice) {
 	return { subject, text, html };
 }
 
-export async function queueHoldNotice(notice: HoldNotice) {
+export async function sendHoldNotice(notice: HoldNotice) {
 	if (!notice.to.trim()) return { ok: false as const, skipped: true };
 	const copy = holdMailCopy(notice);
 	return sendMail({
@@ -145,6 +145,12 @@ export async function queueHoldNotice(notice: HoldNotice) {
 		toName: notice.readerName,
 		...copy
 	});
+}
+
+export async function queueHoldNotice(notice: HoldNotice) {
+	if (!notice.to.trim()) return { ok: false as const, skipped: true };
+	const { enqueueFolioMail } = await import('@/server/boss');
+	return enqueueFolioMail({ kind: 'hold', notice });
 }
 
 export async function notifyHoldReady(offer: HoldOffer | null) {

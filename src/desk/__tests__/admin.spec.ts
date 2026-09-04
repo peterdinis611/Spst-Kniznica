@@ -49,7 +49,8 @@ describe('ledger labels', () => {
 			'/admin/loans',
 			'/admin/reservations',
 			'/admin/readers',
-			'/admin/reports'
+			'/admin/reports',
+			'/admin/queue'
 		]);
 		expect(pultTablesFor(false).map((item) => item.href)).toEqual(['/admin', '/admin/loans']);
 	});

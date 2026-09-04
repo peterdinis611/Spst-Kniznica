@@ -17,6 +17,8 @@ export type DeskTickReport = {
 	classDigests: number;
 };
 
+export { deskTickAllowed } from './tick-gate';
+
 export async function runDeskTick(now = new Date()): Promise<DeskTickReport> {
 	const { offers, lapsed } = await expireHolds(now);
 	for (const lapse of lapsed) {

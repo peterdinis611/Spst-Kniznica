@@ -12,7 +12,7 @@ Pult otvorí **knihovník** (celý fond) a **učiteľ** (trieda vonku, bez mazan
 
 Rola žije na preukaze (`user.role`). Prvého knihovníka dáš cez `ADMIN_EMAILS` v `.env` (čiarka, e-maily). Pri prihlásení dostane pečiatku knihovník. Ďalších — aj učiteľov — pridelíš v zásuvke **Čitatelia**. Hviezdička `*` v `ADMIN_EMAILS` je núdzový kľúč: každý prihlásený sa stane knihovníkom.
 
-Kto nemá rolu, dostane pečiatku, že pult je len pre správu fondu. Posledného knihovníka z pultu nedáš. Učiteľ vidí Prehľad a Výpožičky; čítačku, kartotéku aj výkazy nie.
+Kto nemá rolu, dostane pečiatku, že pult je len pre správu fondu. Posledného knihovníka z pultu nedáš. Učiteľ vidí Prehľad a Výpožičky; čítačku, kartotéku, frontu aj výkazy nie.
 
 ## Zásuvky
 
@@ -28,12 +28,15 @@ Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie ide priebe
 | Výtlačky | `holding` | inventár, stav (voľný / vonku / stratený / vyradený), **štítky na chrbát** |
 | Výpožičky | `loan` | lístky všetkých čitateľov, vrátenie z pultu, **trieda čo je vonku** |
 | Rezervácie | `reservation` | čakacie lístky |
+| Fronta | `pgboss.job` | zásobník listov a tiku — stav, znova, stiahnuť |
 | Čitatelia | `user` | meno, e-mail a **rola** preukazu (čitateľ / učiteľ / knihovník) — heslo ostáva v Supabase |
 | Výkazy | — | inventúra a oneskorené lístky na **tlač / CSV / XML**, raz za polrok |
 
 Účty session / account / verification tu nie sú. To je Auth, nie fond.
 
 Na prehľade `/admin` je **dnešný rad**: po lehote, cestou na pult, rezervácie na pulte, čakajúci a nové preukazy. Riadok otvorí lístok v zásuvke. Knihovník tam má aj **čítačku** — naskenuje inventár (vrátenie) alebo ISBN (výpožička). Režim **Inventúra** je chôdza po polici: otvoríš ju, peciatkuješ **nájdený** / **stratený**, uzavrieš. Voľné bez pečiatky sú na [výkaze](/admin/reports) ako chýbajúce. Vonku na lístku sa do chýbajúcich nepočítajú.
+
+Zásuvka **Fronta** (`/admin/queue`, skratka `/admin/fronta`) je zásobník: listy výpožičky a rezervácie čakajú v `pgboss.job`, tik pultu ide každých 30 minút. Keď naraz príde viac objednávok, pult sa neupchá. Zlyhaný lístok dáš **Znova**, čakajúci **Stiahnuť**. **Tik teraz** peciatkuje lehoty hneď.
 
 V zásuvke **Čitatelia** je september: **Posunúť ročníky**. I.A ide na II.A, IV.A na absolvent. Otvorené lístky idú s preukazom. Učiteľov necháva.
 
