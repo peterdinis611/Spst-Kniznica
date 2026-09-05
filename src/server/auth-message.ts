@@ -32,7 +32,14 @@ export function slovakAuthMessage(raw: string | undefined, fallback: string) {
 }
 
 export function safeAuthNext(next: string | null, fallback = '/loans') {
-	if (!next || !next.startsWith('/') || next.startsWith('//') || next.includes('://')) {
+	if (
+		!next ||
+		!next.startsWith('/') ||
+		next.startsWith('//') ||
+		next.includes('://') ||
+		next.includes('\\') ||
+		next.includes('\0')
+	) {
 		return fallback;
 	}
 

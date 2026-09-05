@@ -30,6 +30,24 @@ const securityHeaders = [
 		key: 'Permissions-Policy',
 		value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()'
 	},
+	{ key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
+	{ key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
+	{
+		key: 'Content-Security-Policy',
+		value: [
+			"default-src 'self'",
+			"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+			"style-src 'self' 'unsafe-inline'",
+			"img-src 'self' data: blob: https://images.unsplash.com https://*.utfs.io https://*.ufs.sh https://*.uploadthing.com https://*.supabase.co https://*.tile.openstreetmap.org",
+			"connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.uploadthing.com https://*.ufs.sh https://*.utfs.io",
+			"font-src 'self' data:",
+			"frame-ancestors 'self'",
+			"base-uri 'self'",
+			"form-action 'self'",
+			"object-src 'none'",
+			"worker-src 'self' blob:"
+		].join('; ')
+	},
 	...(process.env.NODE_ENV === 'production'
 		? [
 				{

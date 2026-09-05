@@ -6,12 +6,17 @@ import { canOperateDesk } from '@/server/admin-access';
 import { cancelBossJob, retryBossJob } from '@/server/boss';
 import { runDeskTick } from '@/server/desk-tick';
 import { isFolioQueue } from '@/server/folio-jobs';
-import { getSessionReader } from '@/server/session';
+import { noticeHref } from '@/notify/notices';
+import { failIfRateLimited } from '@/server/rate-limit';
+import { actionEvent, getSessionReader } from '@/server/session';
+import { isActionFailure } from '@/http/kit';
 
 async function requireLibrarian() {
 	const user = await getSessionReader();
 	if (!user) redirect('/login');
 	if (!canOperateDesk(user)) redirect('/admin');
+	const blocked = await failIfRateLimited(await actionEvent(), 'desk', {}, user.id);
+	if (blocked && isActionFailure(blocked)) redirect(noticeHref('/admin/queue', 'pace'));
 	return user;
 }
 

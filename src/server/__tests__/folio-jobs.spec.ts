@@ -6,7 +6,7 @@ import {
 	describeFolioJob,
 	isFolioQueue
 } from '../folio-jobs';
-import { deskTickAllowed } from '../tick-gate';
+import { deskTickAllowed, tickSecretFrom } from '../tick-gate';
 
 describe('describeFolioJob', () => {
 	it('stamps a borrow slip from the hopper', () => {
@@ -105,7 +105,16 @@ describe('deskTickAllowed', () => {
 	it('opens only with a matching secret', () => {
 		expect(deskTickAllowed('tick-secret', 'tick-secret')).toBe(true);
 		expect(deskTickAllowed('tick-secret', 'nope')).toBe(false);
+		expect(deskTickAllowed('tick-secret', 'tick-secre')).toBe(false);
 		expect(deskTickAllowed('', 'tick-secret')).toBe(false);
 		expect(deskTickAllowed(undefined, undefined)).toBe(false);
+	});
+
+	it('reads the bearer stamp and ignores a query secret', () => {
+		const req = new Request('http://localhost/api/desk/tick?secret=leak', {
+			headers: { authorization: 'Bearer tick-secret' }
+		});
+		expect(tickSecretFrom(req)).toBe('tick-secret');
+		expect(tickSecretFrom(new Request('http://localhost/api/desk/tick?secret=leak'))).toBe('');
 	});
 });

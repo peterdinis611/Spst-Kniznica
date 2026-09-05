@@ -47,6 +47,24 @@ describe('rate limit', () => {
 		expect(await isRateLimited(event(ip), 'auth')).toBe(true);
 	});
 
+	it('holds a reader action after twenty tries from one preukaz', async () => {
+		const ip = freshIp();
+		const user = `act-${ip}`;
+		for (let n = 0; n < 20; n += 1) {
+			expect(await isRateLimited(event(ip), 'action', user)).toBe(false);
+		}
+		expect(await isRateLimited(event(ip), 'action', user)).toBe(true);
+	});
+
+	it('holds an order stamp after eight tries from one preukaz', async () => {
+		const ip = freshIp();
+		const user = `reader-${ip}`;
+		for (let n = 0; n < 8; n += 1) {
+			expect(await isRateLimited(event(ip), 'order', user)).toBe(false);
+		}
+		expect(await isRateLimited(event(ip), 'order', user)).toBe(true);
+	});
+
 	it('returns a 429 slip with the desk copy', async () => {
 		const ip = freshIp();
 		for (let n = 0; n < 8; n += 1) {

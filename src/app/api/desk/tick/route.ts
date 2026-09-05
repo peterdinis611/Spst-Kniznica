@@ -1,14 +1,12 @@
 import { env } from '@/config/env';
-import { deskTickAllowed } from '@/server/tick-gate';
+import { eventFromRequest, isRateLimited } from '@/server/rate-limit';
+import { deskTickAllowed, tickSecretFrom } from '@/server/tick-gate';
 import { runDeskTick } from '@/server/desk-tick';
 
-function tickSecretFrom(request: Request) {
-	const header = request.headers.get('authorization');
-	if (header && /^Bearer /i.test(header)) return header.slice(7).trim();
-	return new URL(request.url).searchParams.get('secret')?.trim() ?? '';
-}
-
 export async function GET(request: Request) {
+	if (await isRateLimited(eventFromRequest(request), 'tick')) {
+		return Response.json({ message: 'Príliš veľa pokusov. Počkaj chvíľu.' }, { status: 429 });
+	}
 	if (!deskTickAllowed(env.DESK_TICK_SECRET, tickSecretFrom(request))) {
 		return Response.json({ message: 'Tik pultu je zamknutý.' }, { status: 403 });
 	}

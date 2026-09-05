@@ -28,6 +28,7 @@ describe('safeAuthNext', () => {
 		expect(safeAuthNext('/loans')).toBe('/loans');
 		expect(safeAuthNext('https://evil.example/loans')).toBe('/loans');
 		expect(safeAuthNext('//evil.example')).toBe('/loans');
+		expect(safeAuthNext('/\\evil.example')).toBe('/loans');
 		expect(safeAuthNext(null, '/discover')).toBe('/discover');
 	});
 });

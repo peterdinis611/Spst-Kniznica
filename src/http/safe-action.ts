@@ -1,6 +1,8 @@
-import { createSafeActionClient } from 'next-safe-action';
+import { createSafeActionClient, returnServerError } from 'next-safe-action';
 import { redirect } from 'next/navigation';
-import { getSessionReader } from '@/server/session';
+import { isActionFailure } from '@/http/kit';
+import { failIfRateLimited } from '@/server/rate-limit';
+import { actionEvent, getSessionReader } from '@/server/session';
 
 export const actionClient = createSafeActionClient({
 	defaultValidationErrorsShape: 'flattened',
@@ -12,5 +14,7 @@ export const actionClient = createSafeActionClient({
 export const authActionClient = actionClient.use(async ({ next }) => {
 	const user = await getSessionReader();
 	if (!user) redirect('/login');
+	const blocked = await failIfRateLimited(await actionEvent(), 'action', {}, user.id);
+	if (blocked && isActionFailure(blocked)) returnServerError(blocked.data.message);
 	return next({ ctx: { user } });
 });

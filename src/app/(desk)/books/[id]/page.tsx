@@ -21,7 +21,9 @@ import {
 } from '@/desk/borrow-fields';
 import { copiesLabel, shortDate } from '@/utils/format';
 import { noticeHref } from '@/notify/notices';
-import { getSessionReader } from '@/server/session';
+import { failIfRateLimited } from '@/server/rate-limit';
+import { actionEvent, getSessionReader } from '@/server/session';
+import { isActionFailure } from '@/http/kit';
 import { BookCover } from '@/components/BookCover';
 import { CatalogSlip } from '@/components/CatalogSlip';
 import { BorrowDialog } from '@/components/BorrowDialog';
@@ -44,6 +46,8 @@ async function borrowAction(formData: FormData) {
 	'use server';
 	const user = await getSessionReader();
 	if (!user) redirect('/login');
+	const blocked = await failIfRateLimited(await actionEvent(), 'order', {}, user.id);
+	if (blocked && isActionFailure(blocked)) redirect(noticeHref('/books', 'order-limit'));
 	const id = String(formData.get('bookId') ?? '');
 	const values = {
 		firstName: formData.get('firstName')?.toString() ?? '',
@@ -79,6 +83,8 @@ async function reserveAction(formData: FormData) {
 	'use server';
 	const user = await getSessionReader();
 	if (!user) redirect('/login');
+	const blocked = await failIfRateLimited(await actionEvent(), 'order', {}, user.id);
+	if (blocked && isActionFailure(blocked)) redirect(noticeHref('/books', 'order-limit'));
 	const id = String(formData.get('bookId') ?? '');
 	if (!id) redirect('/books');
 	const result = await reserveBook(user.id, id);

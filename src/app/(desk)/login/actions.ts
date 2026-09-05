@@ -12,7 +12,7 @@ import { actionEvent, createSupabaseServer, getSessionReader } from '@/server/se
 import { supabasePublic } from '@/config/supabase';
 import { isActionFailure } from '@/http/kit';
 import { noticeHref } from '@/notify/notices';
-import { headers } from 'next/headers';
+import { mailOrigin } from '@/server/mail-slip';
 
 export type LoginData = {
 	ok?: boolean;
@@ -73,13 +73,12 @@ export const signUpAction = actionClient
 			returnServerError('Registrácia nie je nastavená. Chýba Supabase v .env.');
 		}
 
-		const origin = (await headers()).get('origin') || supabasePublic().url;
 		const { data, error } = await supabase.auth.signUp({
 			email: email.trim(),
 			password,
 			options: {
 				data: { name: name.trim() },
-				emailRedirectTo: `${origin}/auth/confirm?next=/loans`
+				emailRedirectTo: `${mailOrigin()}/auth/confirm?next=/loans`
 			}
 		});
 		if (error) {
@@ -122,12 +121,11 @@ export const recoverAction = actionClient
 		if (!supabase) {
 			returnServerError('Obnova hesla nie je nastavená. Chýba Supabase v .env.');
 		}
-		const origin = (await headers()).get('origin') || 'http://localhost:3000';
 		const user = await getSessionReader();
 		await requestPasswordReset({
 			email: parsedInput.email.trim(),
 			name: user?.name,
-			origin,
+			origin: mailOrigin(),
 			supabase
 		});
 		return {

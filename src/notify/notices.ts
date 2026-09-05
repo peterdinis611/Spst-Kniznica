@@ -60,6 +60,11 @@ export const notices = {
 		kind: 'info',
 		text: 'Túto objednávku už máš v zásobníku.'
 	},
+	'order-limit': {
+		kind: 'error',
+		text: 'Príliš veľa objednávok.',
+		sub: 'Počkaj chvíľu a skús to znova.'
+	},
 	hold: {
 		kind: 'success',
 		text: 'Si v rade.',
@@ -93,8 +98,12 @@ export const notices = {
 	'history-clear': {
 		kind: 'success',
 		text: 'História lístkov je prázdna.'
+	},
+	pace: {
+		kind: 'error',
+		text: 'Príliš veľa pokusov.',
+		sub: 'Počkaj chvíľu a skús to znova.'
 	}
-} as const satisfies Record<string, Notice>;
 
 export type NoticeKey = keyof typeof notices;
 

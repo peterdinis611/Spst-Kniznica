@@ -1,10 +1,14 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
+import { hasBorrowErrors, validateBorrow } from '@/desk/borrow-fields';
 import { uniqueConstraintMessage } from './admin';
 import { db } from './db';
 import { book, bookOrder, user } from './db/schema';
 import { borrowBook, getActiveLoan } from './library';
 import { queueLoanNotice } from './loan-mail';
 import type { BorrowerDraft } from '@/types';
+
+const ORDER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CATALOG_ID = /^[a-z0-9][a-z0-9._-]{0,79}$/i;
 
 const ALREADY_HELD = 'Túto knihu už máte vypožičanú.';
 
@@ -51,6 +55,15 @@ export async function placeBookOrder(
 	bookId: string,
 	draft: BorrowerDraft
 ): Promise<PlaceOrderResult> {
+	if (!CATALOG_ID.test(bookId)) return { ok: false, message: 'Kniha v katalógu nie je.' };
+	const slip = validateBorrow({
+		firstName: draft.firstName,
+		lastName: draft.lastName,
+		className: draft.className,
+		days: draft.days
+	});
+	if (hasBorrowErrors(slip)) return { ok: false, message: 'Lístok neprešiel.' };
+
 	const held = await db
 		.select({ id: book.id, title: book.title, callNumber: book.callNumber })
 		.from(book)
@@ -63,6 +76,7 @@ export async function placeBookOrder(
 		.from(user)
 		.where(eq(user.id, userId))
 		.then((rows) => rows[0]);
+	if (!reader) return { ok: false, message: 'Preukaz sa nenašiel.' };
 
 	let orderId: string;
 	try {
@@ -110,6 +124,7 @@ export async function placeBookOrder(
 }
 
 export async function fillBookOrder(orderId: string): Promise<FillOrderResult> {
+	if (!ORDER_ID.test(orderId)) return { ok: false, message: 'Objednávka sa nenašla.' };
 	const current = await db
 		.select()
 		.from(bookOrder)
