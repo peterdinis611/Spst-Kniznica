@@ -46,6 +46,20 @@ export const notices = {
 		text: 'Lístok neprešiel.',
 		sub: 'Skontroluj meno, triedu a dobu.'
 	},
+	order: {
+		kind: 'info',
+		text: 'Objednávka je v zásobníku.',
+		sub: 'Pečiatka padne o chvíľu. Jeden výtlačok ide len jednému.'
+	},
+	'order-fail': {
+		kind: 'error',
+		text: 'Zväzok už nie je voľný.',
+		sub: 'Zaradíme ťa do radu, alebo skús iný kus.'
+	},
+	'order-busy': {
+		kind: 'info',
+		text: 'Túto objednávku už máš v zásobníku.'
+	},
 	hold: {
 		kind: 'success',
 		text: 'Si v rade.',

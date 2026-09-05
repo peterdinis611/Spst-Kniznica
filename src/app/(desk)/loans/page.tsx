@@ -55,6 +55,7 @@ export default async function LoansPage() {
 					</h1>
 					<p className="mt-1 text-sm opacity-70">
 						{loanedLabel(data.activeCount)} · {data.waits.length} v rade
+						{data.orders.length ? ` · ${data.orders.length} v zásobníku` : ''}
 					</p>
 				</header>
 				{data.loans.length === 0 ? (
@@ -85,6 +86,20 @@ export default async function LoansPage() {
 						})}
 					</ul>
 				)}
+				{data.orders.length ? (
+					<section className="relative z-[1] mt-10">
+						<h2 className="font-display text-2xl">V zásobníku</h2>
+						<ul className="mt-4 grid gap-3">
+							{data.orders.map((order) => (
+								<li key={order.id}>
+									<Link href={`/books/${order.bookId}`} className="no-underline">
+										{order.title} · čaká na pečiatku
+									</Link>
+								</li>
+							))}
+						</ul>
+					</section>
+				) : null}
 				{data.waits.length ? (
 					<section className="relative z-[1] mt-10">
 						<h2 className="font-display text-2xl">V rade</h2>

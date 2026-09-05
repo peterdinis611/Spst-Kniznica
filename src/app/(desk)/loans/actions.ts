@@ -16,6 +16,7 @@ import {
 	offerReturn,
 	renewLoan
 } from '@/server/library';
+import { listOpenBookOrders } from '@/server/book-order';
 import { getSessionReader } from '@/server/session';
 import { noticeHref } from '@/notify/notices';
 
@@ -30,10 +31,11 @@ const reservationIdSchema = v.object({
 export async function loadLoans() {
 	const user = await getSessionReader();
 	if (!user) redirect('/login');
-	const [loans, activeCount, waits] = await Promise.all([
+	const [loans, activeCount, waits, orders] = await Promise.all([
 		listLoans(user.id),
 		countActiveLoans(user.id),
-		listUserWaits(user.id)
+		listUserWaits(user.id),
+		listOpenBookOrders(user.id)
 	]);
 	const active = loans.filter((item) => !item.returnedAt);
 	const history = loans.filter((item) => item.returnedAt);
@@ -50,6 +52,7 @@ export async function loadLoans() {
 		})),
 		history,
 		waits,
+		orders,
 		activeCount,
 		maxLoans: MAX_ACTIVE_LOANS
 	};

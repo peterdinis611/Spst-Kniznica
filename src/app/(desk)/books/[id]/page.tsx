@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { pageMeta } from '@/utils/metadata';
 import {
-	borrowBook,
 	getActiveLoan,
 	getBook,
 	getLastBorrower,
@@ -10,6 +9,7 @@ import {
 	MAX_ACTIVE_LOANS,
 	relatedBookSlips
 } from '@/server/library';
+import { getOpenBookOrder, placeBookOrder } from '@/server/book-order';
 import { bookHoldUserId, getOpenHold, reserveBook } from '@/server/waitlist';
 import { queueHoldNotice } from '@/server/hold-mail';
 import {
@@ -21,11 +21,11 @@ import {
 } from '@/desk/borrow-fields';
 import { copiesLabel, shortDate } from '@/utils/format';
 import { noticeHref } from '@/notify/notices';
-import { queueLoanNotice } from '@/server/loan-mail';
 import { getSessionReader } from '@/server/session';
 import { BookCover } from '@/components/BookCover';
 import { CatalogSlip } from '@/components/CatalogSlip';
 import { BorrowDialog } from '@/components/BorrowDialog';
+import { OrderWait } from '@/components/OrderWait';
 import { redirect } from 'next/navigation';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -56,25 +56,23 @@ async function borrowAction(formData: FormData) {
 	if (hasBorrowErrors(errors)) redirect(noticeHref(`/books/${id}`, 'borrow-fail'));
 	const days = parseLoanDays(values.days);
 	if (!days) redirect(noticeHref(`/books/${id}`, 'borrow-fail'));
-	const result = await borrowBook(user.id, id, {
+	const result = await placeBookOrder(user.id, id, {
 		firstName: values.firstName.trim(),
 		lastName: values.lastName.trim(),
 		className: normalizeClass(values.className),
 		days
 	});
-	if (!result.ok) redirect(noticeHref(`/books/${id}`, 'borrow-fail'));
-	const held = await getBook(id);
-	await queueLoanNotice({
-		kind: 'borrow',
-		to: user.email,
-		readerName: `${values.firstName.trim()} ${values.lastName.trim()}`.trim() || user.name,
-		bookTitle: held?.title ?? 'Zväzok',
-		callNumber: held?.callNumber,
-		dueAt: result.dueAt,
-		className: normalizeClass(values.className),
-		days
-	});
-	redirect(noticeHref(`/books/${id}`, 'borrow'));
+	if (!result.ok) {
+		redirect(
+			noticeHref(
+				`/books/${id}`,
+				result.message.includes('zásobníku') ? 'order-busy' : 'borrow-fail'
+			)
+		);
+	}
+	if (result.status === 'claimed') redirect(noticeHref(`/books/${id}`, 'borrow'));
+	if (result.status === 'rejected') redirect(noticeHref(`/books/${id}`, 'order-fail'));
+	redirect(noticeHref(`/books/${id}`, 'order'));
 }
 
 async function reserveAction(formData: FormData) {
@@ -102,14 +100,16 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 	const current = await getBook(id);
 	if (!current) notFound();
 	const user = await getSessionReader();
-	const [userLoan, activeCount, lastBorrower, related, wait, holdUserId] = await Promise.all([
-		user ? getActiveLoan(user.id, current.id) : null,
-		user ? countActiveLoans(user.id) : 0,
-		user ? getLastBorrower(user.id) : null,
-		relatedBookSlips(current.id, current.category.id),
-		user ? getOpenHold(user.id, current.id) : null,
-		bookHoldUserId(current.id)
-	]);
+	const [userLoan, activeCount, lastBorrower, related, wait, holdUserId, openOrder] =
+		await Promise.all([
+			user ? getActiveLoan(user.id, current.id) : null,
+			user ? countActiveLoans(user.id) : 0,
+			user ? getLastBorrower(user.id) : null,
+			relatedBookSlips(current.id, current.category.id),
+			user ? getOpenHold(user.id, current.id) : null,
+			bookHoldUserId(current.id),
+			user ? getOpenBookOrder(user.id, current.id) : null
+		]);
 	const fromName = user ? splitReaderName(user.name) : { firstName: '', lastName: '' };
 	const borrower = lastBorrower ?? {
 		firstName: fromName.firstName,
@@ -152,6 +152,8 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 					</p>
 					{userLoan ? (
 						<p className="mt-4">Máš tento zväzok do {shortDate(userLoan.dueAt)}.</p>
+					) : openOrder ? (
+						<OrderWait />
 					) : wait ? (
 						<p className="mt-4">Čakáš v rade.</p>
 					) : available && user && !atLimit ? (

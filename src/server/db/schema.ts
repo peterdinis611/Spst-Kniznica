@@ -24,6 +24,9 @@ export type HoldingStatus = (typeof holdingStatus)[number];
 export const reservationStatus = ['pending', 'fulfilled', 'cancelled', 'expired'] as const;
 export type ReservationStatus = (typeof reservationStatus)[number];
 
+export const bookOrderStatus = ['queued', 'filling', 'claimed', 'rejected', 'cancelled'] as const;
+export type BookOrderStatus = (typeof bookOrderStatus)[number];
+
 export const category = pgTable(
 	'category',
 	{
@@ -216,6 +219,37 @@ export const reservation = pgTable(
 	]
 );
 
+export const bookOrder = pgTable(
+	'book_order',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		bookId: text('book_id')
+			.notNull()
+			.references(() => book.id, { onDelete: 'cascade' }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		status: text('status', { enum: bookOrderStatus }).notNull().default('queued'),
+		borrowerFirstName: text('borrower_first_name').notNull().default(''),
+		borrowerLastName: text('borrower_last_name').notNull().default(''),
+		borrowerClass: text('borrower_class').notNull().default(''),
+		loanDays: integer('loan_days').notNull().default(21),
+		loanId: text('loan_id').references(() => loan.id),
+		message: text('message').notNull().default(''),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		filledAt: timestamp('filled_at', { withTimezone: true, mode: 'date' })
+	},
+	(table) => [
+		index('book_order_book_status_idx').on(table.bookId, table.status),
+		index('book_order_user_status_idx').on(table.userId, table.status),
+		uniqueIndex('book_order_one_open_uidx')
+			.on(table.userId, table.bookId)
+			.where(sql`${table.status} in ('queued', 'filling')`)
+	]
+);
+
 export const categoryRelations = relations(category, ({ many }) => ({
 	books: many(book)
 }));
@@ -232,7 +266,8 @@ export const bookRelations = relations(book, ({ one, many }) => ({
 	bookAuthors: many(bookAuthor),
 	holdings: many(holding),
 	loans: many(loan),
-	reservations: many(reservation)
+	reservations: many(reservation),
+	orders: many(bookOrder)
 }));
 
 export const bookAuthorRelations = relations(bookAuthor, ({ one }) => ({
@@ -285,6 +320,21 @@ export const reservationRelations = relations(reservation, ({ one }) => ({
 	user: one(user, {
 		fields: [reservation.userId],
 		references: [user.id]
+	})
+}));
+
+export const bookOrderRelations = relations(bookOrder, ({ one }) => ({
+	book: one(book, {
+		fields: [bookOrder.bookId],
+		references: [book.id]
+	}),
+	user: one(user, {
+		fields: [bookOrder.userId],
+		references: [user.id]
+	}),
+	loan: one(loan, {
+		fields: [bookOrder.loanId],
+		references: [loan.id]
 	})
 }));
 

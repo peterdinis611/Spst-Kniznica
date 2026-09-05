@@ -1,6 +1,12 @@
 import type { PgBoss } from 'pg-boss';
 import { env } from '@/config/env';
-import { FOLIO_QUEUES, handleMailJob, isFolioQueue, type FolioMailJob } from '@/server/folio-jobs';
+import {
+	FOLIO_QUEUES,
+	handleMailJob,
+	isFolioQueue,
+	type FolioMailJob,
+	type FolioOrderJob
+} from '@/server/folio-jobs';
 
 export { FOLIO_QUEUES, isFolioQueue };
 
@@ -62,6 +68,14 @@ async function bootBoss() {
 		expireInSeconds: 600,
 		deleteAfterSeconds: 7 * 24 * 60 * 60
 	});
+	await ensureQueue(boss, FOLIO_QUEUES.order, {
+		policy: 'standard',
+		retryLimit: 3,
+		retryDelay: 5,
+		retryBackoff: true,
+		expireInSeconds: 120,
+		deleteAfterSeconds: 14 * 24 * 60 * 60
+	});
 
 	await boss.work<FolioMailJob>(
 		FOLIO_QUEUES.mail,
@@ -78,6 +92,16 @@ async function bootBoss() {
 		async () => {
 			const { runDeskTick } = await import('@/server/desk-tick');
 			await runDeskTick();
+		}
+	);
+
+	await boss.work<FolioOrderJob>(
+		FOLIO_QUEUES.order,
+		{ localConcurrency: 2, pollingIntervalSeconds: 1 },
+		async ([job]) => {
+			if (!job) return;
+			const { fillBookOrder } = await import('@/server/book-order');
+			await fillBookOrder(job.data.orderId);
 		}
 	);
 
@@ -129,6 +153,27 @@ export async function enqueueFolioMail(job: FolioMailJob) {
 	} catch (err) {
 		console.error('[folio-mail] zásobník nedostupný, posielam hneď', err);
 		return handleMailJob(job);
+	}
+}
+
+export async function enqueueFolioOrder(job: FolioOrderJob) {
+	if (vitestRun()) {
+		const { fillBookOrder } = await import('@/server/book-order');
+		return fillBookOrder(job.orderId);
+	}
+
+	try {
+		const boss = await getBoss();
+		const id = await boss.send(FOLIO_QUEUES.order, job);
+		if (!id) {
+			const { fillBookOrder } = await import('@/server/book-order');
+			return fillBookOrder(job.orderId);
+		}
+		return { ok: true as const, queued: true, id };
+	} catch (err) {
+		console.error('[folio-order] zásobník nedostupný, pečiatim hneď', err);
+		const { fillBookOrder } = await import('@/server/book-order');
+		return fillBookOrder(job.orderId);
 	}
 }
 

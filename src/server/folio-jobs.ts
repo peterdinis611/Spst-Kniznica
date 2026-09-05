@@ -4,7 +4,8 @@ import type { ClassDigest } from '@/server/teacher-mail';
 
 export const FOLIO_QUEUES = {
 	mail: 'folio-mail',
-	tick: 'desk-tick'
+	tick: 'desk-tick',
+	order: 'folio-order'
 } as const;
 
 export type FolioQueueName = (typeof FOLIO_QUEUES)[keyof typeof FOLIO_QUEUES];
@@ -16,10 +17,18 @@ export type FolioMailJob =
 
 export type FolioTickJob = { kind: 'tick'; at?: string };
 
-export type FolioJob = FolioMailJob | FolioTickJob;
+export type FolioOrderJob = {
+	kind: 'order';
+	orderId: string;
+	bookTitle?: string;
+	readerName?: string;
+	callNumber?: string;
+};
+
+export type FolioJob = FolioMailJob | FolioTickJob | FolioOrderJob;
 
 export function isFolioQueue(name: string): name is FolioQueueName {
-	return name === FOLIO_QUEUES.mail || name === FOLIO_QUEUES.tick;
+	return name === FOLIO_QUEUES.mail || name === FOLIO_QUEUES.tick || name === FOLIO_QUEUES.order;
 }
 
 export function bossStateLabel(state: string) {
@@ -34,6 +43,15 @@ export function bossStateLabel(state: string) {
 export function describeFolioJob(name: string, data: unknown) {
 	if (name === FOLIO_QUEUES.tick) {
 		return { title: 'Tik pultu', detail: 'lehoty, holdy, triedy', stamp: 'tik' };
+	}
+
+	if (name === FOLIO_QUEUES.order) {
+		const order = asOrderJob(data);
+		return {
+			title: order?.bookTitle?.trim() || 'Objednávka',
+			detail: [order?.readerName, order?.callNumber].filter(Boolean).join(' · ') || 'zásobník',
+			stamp: 'objednávka'
+		};
 	}
 
 	const job = asMailJob(data);
@@ -91,6 +109,13 @@ export async function handleMailJob(job: FolioMailJob) {
 	}
 
 	return result;
+}
+
+export function asOrderJob(data: unknown): FolioOrderJob | null {
+	if (!data || typeof data !== 'object' || !('kind' in data) || !('orderId' in data)) return null;
+	const row = data as { kind?: unknown; orderId?: unknown };
+	if (row.kind !== 'order' || typeof row.orderId !== 'string' || !row.orderId) return null;
+	return data as FolioOrderJob;
 }
 
 function asMailJob(data: unknown): FolioMailJob | null {

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { FOLIO_QUEUES, bossStateLabel, describeFolioJob, isFolioQueue } from '../folio-jobs';
+import {
+	FOLIO_QUEUES,
+	asOrderJob,
+	bossStateLabel,
+	describeFolioJob,
+	isFolioQueue
+} from '../folio-jobs';
 import { deskTickAllowed } from '../tick-gate';
 
 describe('describeFolioJob', () => {
@@ -53,6 +59,28 @@ describe('describeFolioJob', () => {
 			stamp: 'tik'
 		});
 	});
+
+	it('rejects a slip without an order id', () => {
+		expect(asOrderJob({ kind: 'order' })).toBeNull();
+		expect(asOrderJob({ kind: 'loan', orderId: 'x' })).toBeNull();
+		expect(asOrderJob({ kind: 'order', orderId: 'ord-1' })?.orderId).toBe('ord-1');
+	});
+
+	it('stamps a book order in the hopper', () => {
+		expect(
+			describeFolioJob(FOLIO_QUEUES.order, {
+				kind: 'order',
+				orderId: 'ord-1',
+				bookTitle: 'Stroje',
+				readerName: 'Peter Dinis',
+				callNumber: 'STR 12'
+			})
+		).toEqual({
+			title: 'Stroje',
+			detail: 'Peter Dinis · STR 12',
+			stamp: 'objednávka'
+		});
+	});
 });
 
 describe('bossStateLabel', () => {
@@ -68,6 +96,7 @@ describe('bossStateLabel', () => {
 	it('keeps unknown folio queue names out of the hopper', () => {
 		expect(isFolioQueue('folio-mail')).toBe(true);
 		expect(isFolioQueue('desk-tick')).toBe(true);
+		expect(isFolioQueue('folio-order')).toBe(true);
 		expect(isFolioQueue('other')).toBe(false);
 	});
 });
