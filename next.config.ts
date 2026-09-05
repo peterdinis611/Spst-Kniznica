@@ -49,6 +49,7 @@ const nextConfig: NextConfig = {
 	trailingSlash: false,
 	typedRoutes: false,
 	output: 'standalone',
+	outputFileTracingRoot: import.meta.dirname,
 	productionBrowserSourceMaps: false,
 	serverExternalPackages: [
 		'postgres',
