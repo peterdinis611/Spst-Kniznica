@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { pageMeta } from '@/utils/metadata';
 import {
@@ -122,13 +123,16 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 	return (
 		<article>
 			<p className="text-muted-foreground text-sm">
-				<a href="/books" className="no-underline hover:underline">
+				<Link href="/books" className="no-underline hover:underline">
 					Katalóg
-				</a>
+				</Link>
 				{' · '}
-				<a href={`/departments/${current.category.slug}`} className="no-underline hover:underline">
+				<Link
+					href={`/departments/${current.category.slug}`}
+					className="no-underline hover:underline"
+				>
 					{current.category.name}
-				</a>
+				</Link>
 			</p>
 			<div className="mt-8 grid gap-10 lg:grid-cols-[auto_minmax(0,1fr)]">
 				<BookCover book={current} size="hero" linked={false} />
@@ -170,9 +174,9 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 						</form>
 					) : !user ? (
 						<p className="mt-6">
-							<a href="/login" className="underline">
+							<Link href="/login" className="underline">
 								Prihlás sa
-							</a>
+							</Link>
 							, potom si zväzok požičiaš.
 						</p>
 					) : null}

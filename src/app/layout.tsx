@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { Providers } from './providers';
 import { ensureHall } from '@/server/boot';
+import { HallSplash } from '@/components/HallSplash';
+import { FolioNavGate } from '@/components/FolioNavGate';
 import { fontVariables } from './fonts';
 import './globals.css';
 
@@ -18,8 +21,8 @@ export const metadata: Metadata = {
 	}
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-	await ensureHall();
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+	void ensureHall();
 	return (
 		<html lang="sk" className={fontVariables} suppressHydrationWarning>
 			<head>
@@ -33,7 +36,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 					Preskočiť na obsah
 				</a>
 				<form id="logout-form" method="POST" action="/logout" className="hidden" />
-				<Providers>{children}</Providers>
+				<Providers>
+					<Suspense fallback={<HallSplash copy="Listujem." />}>
+						<FolioNavGate>{children}</FolioNavGate>
+					</Suspense>
+				</Providers>
 			</body>
 		</html>
 	);

@@ -5,7 +5,6 @@ import { Toaster } from 'sonner';
 import { FlashToast } from '@/components/FlashToast';
 import { OfflineSlip } from '@/components/OfflineSlip';
 import { ScrollToTop } from '@/components/ScrollToTop';
-import { WaitStamp } from '@/components/WaitStamp';
 import { Suspense, type ReactNode } from 'react';
 import '@/components/folio-toast.css';
 
@@ -24,7 +23,6 @@ export function Providers({ children }: { children: ReactNode }) {
 			/>
 			<Suspense fallback={null}>
 				<FlashToast />
-				<WaitStamp />
 			</Suspense>
 			<OfflineSlip />
 			<ScrollToTop />

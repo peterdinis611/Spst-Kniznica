@@ -21,7 +21,7 @@ export const fontBody = Literata({
 	style: ['normal', 'italic'],
 	display: 'swap',
 	variable: '--font-literata',
-	preload: true,
+	preload: false,
 	adjustFontFallback: true
 });
 

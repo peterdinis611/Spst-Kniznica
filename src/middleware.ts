@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { aliasTarget } from '@/utils/route-aliases';
-import { supabasePublic } from '@/config/supabase';
+import { hasAuthCookies, supabasePublic } from '@/config/supabase';
 
 export async function middleware(request: NextRequest) {
 	const dest = aliasTarget(request.nextUrl.pathname, request.nextUrl.search);
@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
 	const requestHeaders = new Headers(request.headers);
 	requestHeaders.set('x-pathname', request.nextUrl.pathname);
 	const response = NextResponse.next({ request: { headers: requestHeaders } });
-	if (!configured) return response;
+	if (!configured || !hasAuthCookies(request.cookies.getAll())) return response;
 
 	const supabase = createServerClient(url, key, {
 		cookies: {
@@ -32,5 +32,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-	matcher: ['/((?!_next/static|_next/image|favicon.ico|favicon.svg|icon.png|apple-touch-icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)']
+	matcher: [
+		'/((?!_next/static|_next/image|favicon.ico|favicon.svg|icon.png|apple-touch-icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'
+	]
 };

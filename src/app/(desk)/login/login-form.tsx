@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useStateAction } from 'next-safe-action/hooks';
 import { AuthPass } from '@/components/AuthPass';
 import { PassSecret } from '@/components/PassSecret';
@@ -41,12 +42,12 @@ export function LoginForm({ register, configured }: { register: boolean; configu
 			serial={register ? 'NOVÝ · PREUKAZ · SPŠT' : 'PREUKAZ · PAV. B · 7–21 D'}
 			tabs={
 				<>
-					<a href="/login" className={!register ? 'is-on' : undefined}>
+					<Link href="/login" className={!register ? 'is-on' : undefined}>
 						Mám účet
-					</a>
-					<a href="/login?mod=novy" className={register ? 'is-on' : undefined}>
+					</Link>
+					<Link href="/login?mod=novy" className={register ? 'is-on' : undefined}>
 						Som nový
-					</a>
+					</Link>
 				</>
 			}
 		>
@@ -103,7 +104,7 @@ export function LoginForm({ register, configured }: { register: boolean; configu
 				)}
 				{register ? null : (
 					<p className="pass-help">
-						<a href="/login/recovery">Zabudnuté heslo?</a>
+						<Link href="/login/recovery">Zabudnuté heslo?</Link>
 					</p>
 				)}
 				{!configured ? (
@@ -115,9 +116,9 @@ export function LoginForm({ register, configured }: { register: boolean; configu
 					<p className={`pass-note${noteOk ? 'is-ok' : ''}`}>{note}</p>
 				) : null}
 				{noteOk ? (
-					<a className="pass-back" href="/login">
+					<Link className="pass-back" href="/login">
 						Späť na prihlásenie
-					</a>
+					</Link>
 				) : (
 					<button className="pass-go" type="submit" disabled={!configured || current.isExecuting}>
 						{register ? 'Vytvoriť preukaz' : 'Prihlásiť sa'}

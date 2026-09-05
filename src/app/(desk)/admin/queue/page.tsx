@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { pageMeta } from '@/utils/metadata';
 import { stampDate } from '@/utils/format';
 import { canOperateDesk } from '@/server/admin-access';
@@ -160,17 +161,17 @@ export default async function AdminQueuePage({
 					<p className="pult-queue-empty">Žiadna objednávka na pulte ani v čakacom rade.</p>
 				) : (
 					<div className="pult-rail">
-						<a className="pult-rail-head" href="/admin/reservations">
+						<Link className="pult-rail-head" href="/admin/reservations">
 							objednávky · {orders.length}
-						</a>
+						</Link>
 						<ul>
 							{orders.map((row) => (
 								<li key={row.id}>
-									<a href={row.href}>
+									<Link href={row.href}>
 										<em>{row.stamp}</em>
 										<strong>{row.title}</strong>
 										<span>{row.detail}</span>
-									</a>
+									</Link>
 								</li>
 							))}
 						</ul>

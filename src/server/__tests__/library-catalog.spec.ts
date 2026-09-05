@@ -17,6 +17,7 @@ import {
 	isLoanLimitReached,
 	listBookSlips,
 	listBooks,
+	listHallDesk,
 	listBooksByAuthor,
 	listBooksByCategory,
 	relatedBooks,
@@ -108,6 +109,18 @@ describe('catalog listings', () => {
 		expect((await listBooks('978000')).map((item) => item.id)).toEqual(['stroje-1']);
 		expect((await listBooks('ján')).map((item) => item.id)).toHaveLength(2);
 		expect(await listBookSlips()).toHaveLength(2);
+	});
+
+	it('packs the hall desk without every slip', async () => {
+		seed([
+			book('book-modlitbicky'),
+			book('stroje-1', { title: 'Stroje' }),
+			book('inf-1', { title: 'Siete', slug: 'informatika' })
+		]);
+		const hall = await listHallDesk();
+		expect(hall.shelf.map((item) => item.id)).toEqual(['stroje-1', 'inf-1']);
+		expect(hall.books).toHaveLength(2);
+		expect(hall.stats.books).toBe(3);
 	});
 
 	it('skips the prayer booklet when picking a featured card', async () => {

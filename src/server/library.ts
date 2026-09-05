@@ -1,4 +1,5 @@
 import { and, asc, count, desc, eq, gt, isNotNull, isNull } from 'drizzle-orm';
+import { ensureHall, hallIsWarming } from './boot';
 import { db } from './db';
 import { author, book, bookAuthor, category, holding, loan, reservation } from './db/schema';
 import { ftsBookIds } from './db/catalog-fts';
@@ -91,6 +92,9 @@ function assembleBooks(rows: BookRow[]): CatalogBook[] {
 async function catalog() {
 	const hit = getCatalogCache();
 	if (hit) return hit;
+	if (!hallIsWarming()) await ensureHall();
+	const warmed = getCatalogCache();
+	if (warmed) return warmed;
 
 	const books = assembleBooks(await bookQuery());
 	const authors = await loadAuthors();
@@ -183,6 +187,64 @@ export async function listAuthorSlips() {
 
 export async function listCategoryChips() {
 	return (await listCategories()).map(toCategoryChip);
+}
+
+export async function listHallDesk() {
+	const snap = await catalog();
+	const shelf: { id: string; title: string }[] = [];
+	const ready: ReturnType<typeof toSlip>[] = [];
+	for (const item of snap.books) {
+		if (item.id === 'book-modlitbicky') continue;
+		if (shelf.length < 81) shelf.push({ id: item.id, title: item.title });
+		if (item.copiesAvailable > 0) ready.push(toSlip(item));
+		if (shelf.length >= 81 && ready.length >= 28) break;
+	}
+	return {
+		stats: snap.stats,
+		categories: snap.categories.map(toCategoryChip),
+		authors: snap.authors
+			.map(toAuthorSlip)
+			.sort((a, b) => b.bookCount - a.bookCount)
+			.slice(0, 12),
+		books: ready.slice(0, 16),
+		ledger: ready.slice(16, 28),
+		shelf,
+		searchPreview: ready.slice(0, 10).map(toSearchItem)
+	};
+}
+
+export async function listDiscoverDesk() {
+	const snap = await catalog();
+	const featured =
+		snap.books.find((item) => item.featured && item.id !== 'book-modlitbicky') ??
+		snap.books.find((item) => item.id !== 'book-modlitbicky') ??
+		null;
+	const ready: ReturnType<typeof toSlip>[] = [];
+	for (const item of snap.books) {
+		if (item.id === 'book-modlitbicky' || item.id === featured?.id) continue;
+		if (item.copiesAvailable > 0) ready.push(toSlip(item));
+		if (ready.length >= 24) break;
+	}
+	return {
+		stats: snap.stats,
+		featured: featured ? toSlip(featured) : null,
+		shelf: ready,
+		authors: snap.authors
+			.map(toAuthorSlip)
+			.sort((a, b) => b.bookCount - a.bookCount)
+			.slice(0, 16)
+	};
+}
+
+export async function listDepartmentShelves() {
+	const snap = await catalog();
+	return snap.categories.map((category) => ({
+		...category,
+		books: snap.books
+			.filter((item) => item.category.id === category.id && item.id !== 'book-modlitbicky')
+			.slice(0, 16)
+			.map(toSlip)
+	}));
 }
 
 export async function searchCatalog(query: string, limit = 8) {

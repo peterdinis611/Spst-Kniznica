@@ -7,26 +7,39 @@ const TICK_EVERY_MS = 30 * 60 * 1000;
 const hall = globalThis as typeof globalThis & {
 	__spstBooted?: boolean;
 	__spstTick?: number;
+	__spstBoot?: Promise<void>;
+	__spstWarming?: boolean;
 };
 
-export async function ensureHall() {
-	if (!hall.__spstBooted) {
+export function hallIsWarming() {
+	return Boolean(hall.__spstWarming);
+}
+
+export function ensureHall() {
+	stampIfDue();
+	if (hall.__spstBooted) return Promise.resolve();
+	hall.__spstBoot ??= (async () => {
 		try {
 			await ensureSeeded();
+			hall.__spstWarming = true;
 			await warmCatalog();
 			hall.__spstBooted = true;
 		} catch {
-			// Tables may not exist until `bun run db:migrate`.
+			hall.__spstBoot = undefined;
+		} finally {
+			hall.__spstWarming = false;
 		}
-	}
+	})();
+	return hall.__spstBoot;
+}
 
+function stampIfDue() {
 	const lastTick = hall.__spstTick ?? 0;
-	if (Date.now() - lastTick >= TICK_EVERY_MS) {
-		hall.__spstTick = Date.now();
-		void stampDeskTick().catch(() => {
-			hall.__spstTick = 0;
-		});
-	}
+	if (Date.now() - lastTick < TICK_EVERY_MS) return;
+	hall.__spstTick = Date.now();
+	void stampDeskTick().catch(() => {
+		hall.__spstTick = 0;
+	});
 }
 
 async function stampDeskTick() {

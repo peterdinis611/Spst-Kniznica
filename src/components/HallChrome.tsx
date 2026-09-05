@@ -22,7 +22,7 @@ export function HallChrome({
 		<div className="landing">
 			<div className="landing-body">
 				<HallChromeNav user={user} admin={admin} path={path} searchPreview={searchPreview} />
-				<div className="landing-main">
+				<div className="landing-main folio-sheet">
 					{children}
 					<Footer tone="hall" />
 				</div>

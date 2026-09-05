@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BookSlip } from '@/types';
@@ -105,9 +106,9 @@ export function ShelfSlider({
 					</div>
 				) : null}
 				{moreHref ? (
-					<a className="bay-more" href={moreHref}>
+					<Link className="bay-more" href={moreHref}>
 						{moreLabel}
-					</a>
+					</Link>
 				) : null}
 			</div>
 			<div
@@ -129,14 +130,14 @@ export function ShelfSlider({
 				}}
 			>
 				{books.map((book) => (
-					<a key={book.id} className="bay-card" data-shelf-card href={`/books/${book.id}`}>
+					<Link key={book.id} className="bay-card" data-shelf-card href={`/books/${book.id}`}>
 						<span className="sm:hidden">
 							<PrintJacket book={book} linked={false} size="thumb" />
 						</span>
 						<span className="hidden sm:block">
 							<PrintJacket book={book} linked={false} />
 						</span>
-					</a>
+					</Link>
 				))}
 			</div>
 		</div>

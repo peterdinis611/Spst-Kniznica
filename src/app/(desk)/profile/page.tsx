@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { pageMeta } from '@/utils/metadata';
 import { redirect } from 'next/navigation';
 import { canOpenDesk } from '@/server/admin-access';
@@ -28,23 +29,23 @@ export default async function ProfilePage() {
 			</p>
 			<p className="mt-6">Aktívne výpožičky: {activeCount}</p>
 			<div className="mt-8 flex flex-wrap gap-3">
-				<a
+				<Link
 					href="/loans"
 					className="rounded-full bg-primary px-4 py-2 text-primary-foreground no-underline"
 				>
 					Moje knihy
-				</a>
+				</Link>
 				{admin ? (
-					<a href="/admin" className="rounded-full px-4 py-2 ring-1 ring-border no-underline">
+					<Link href="/admin" className="rounded-full px-4 py-2 ring-1 ring-border no-underline">
 						Pult
-					</a>
+					</Link>
 				) : null}
-				<a
+				<Link
 					href="/login/recovery"
 					className="rounded-full px-4 py-2 ring-1 ring-border no-underline"
 				>
 					Zmeniť heslo
-				</a>
+				</Link>
 			</div>
 		</section>
 	);

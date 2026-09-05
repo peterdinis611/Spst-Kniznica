@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { pageMeta } from '@/utils/metadata';
 import { normalizeClass } from '@/desk/borrow-fields';
 import { canOperateDesk } from '@/server/admin-access';
@@ -89,7 +90,7 @@ export default async function AdminHome({
 			</form>
 			<div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				{cards.map((card) => (
-					<a
+					<Link
 						key={card.href}
 						href={card.href}
 						className="rounded-2xl bg-card p-4 no-underline ring-1 ring-border"
@@ -97,15 +98,15 @@ export default async function AdminHome({
 						<em className="font-mono text-xs">{card.code}</em>
 						<strong className="font-display mt-2 block text-3xl">{card.n}</strong>
 						<span className="text-muted-foreground text-sm">{card.label}</span>
-					</a>
+					</Link>
 				))}
 			</div>
 			<p className="mt-8 text-sm text-muted-foreground">
 				Fronta: po lehote {queue.overdue.length} · cestou {queue.inbound.length} · na pulte{' '}
 				{queue.pickup.length} ·{' '}
-				<a href="/admin/queue" className="pult-ghost">
+				<Link href="/admin/queue" className="pult-ghost">
 					zásobník
-				</a>
+				</Link>
 			</p>
 		</div>
 	);

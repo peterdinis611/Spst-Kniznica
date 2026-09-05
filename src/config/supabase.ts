@@ -1,5 +1,13 @@
 import { env } from '@/config/env';
 
+export function isAuthCookieName(name: string) {
+	return name.startsWith('sb-') && name.includes('auth-token');
+}
+
+export function hasAuthCookies(cookies: { name: string }[]) {
+	return cookies.some((item) => isAuthCookieName(item.name));
+}
+
 export function supabasePublic() {
 	const url = (env.NEXT_PUBLIC_SUPABASE_URL || env.PUBLIC_SUPABASE_URL)?.trim() ?? '';
 	const key =

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { pageMeta } from '@/utils/metadata';
 
 export const metadata = pageMeta({
@@ -16,9 +17,9 @@ export default function DocsPage() {
 				ďalšom kroku.
 			</p>
 			<p className="mt-8">
-				<a href="/" className="underline">
+				<Link href="/" className="underline">
 					Späť na sieň
-				</a>
+				</Link>
 			</p>
 		</article>
 	);

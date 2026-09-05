@@ -1,11 +1,6 @@
+import Link from 'next/link';
 import { pageMeta } from '@/utils/metadata';
-import {
-	catalogStats,
-	getFeaturedBook,
-	listAuthorSlips,
-	listBookSlips,
-	toSlip
-} from '@/server/library';
+import { listDiscoverDesk } from '@/server/library';
 import { authorLine, booksLabel, copiesLabel, initials, splitCallNumber } from '@/utils/format';
 import { authorSwatch } from '@/catalog/cover';
 import { cn } from '@/utils/cn';
@@ -18,19 +13,7 @@ export const metadata = pageMeta({
 });
 
 export default async function DiscoverPage() {
-	const [featured, slips, authorsRaw, stats] = await Promise.all([
-		getFeaturedBook(),
-		listBookSlips(),
-		listAuthorSlips(),
-		catalogStats()
-	]);
-	const catalog = slips.filter(
-		(book) => book.id !== 'book-modlitbicky' && book.id !== featured?.id
-	);
-	const ready = catalog.filter((book) => book.copiesAvailable > 0);
-	const shelf = ready.slice(0, 24);
-	const authors = [...authorsRaw].sort((a, b) => b.bookCount - a.bookCount).slice(0, 16);
-	const featuredSlip = featured ? toSlip(featured) : null;
+	const { featured: featuredSlip, shelf, authors, stats } = await listDiscoverDesk();
 	const featuredCall = featuredSlip ? splitCallNumber(featuredSlip.callNumber) : null;
 	const display = 'font-display m-0 font-semibold tracking-[-0.03em] leading-[1.06]';
 	const rise =
@@ -49,7 +32,7 @@ export default async function DiscoverPage() {
 					)}
 				>
 					<div className="grid grid-cols-1 items-end gap-3.5 px-4 py-4 min-[420px]:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:gap-8 sm:px-6 sm:py-8 md:gap-12 md:px-10 md:py-10 lg:grid-cols-[auto_minmax(0,1fr)_11.5rem]">
-						<a className="group w-fit no-underline" href={`/books/${featuredSlip.id}`}>
+						<Link className="group w-fit no-underline" href={`/books/${featuredSlip.id}`}>
 							<span className="block origin-bottom transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:-rotate-2 motion-reduce:transform-none">
 								<span className="sm:hidden">
 									<PrintJacket
@@ -68,7 +51,7 @@ export default async function DiscoverPage() {
 									/>
 								</span>
 							</span>
-						</a>
+						</Link>
 						<div className="min-w-0 pb-0.5">
 							<p className="m-0 font-sans text-[0.62rem] font-semibold tracking-[0.16em] uppercase opacity-80 sm:text-[0.72rem] sm:tracking-[0.18em]">
 								Dnes na pulte
@@ -79,12 +62,12 @@ export default async function DiscoverPage() {
 									'mt-1.5 max-w-[14ch] text-[clamp(1.35rem,6.4vw,3.5rem)] sm:mt-3'
 								)}
 							>
-								<a
+								<Link
 									className="text-inherit no-underline decoration-from-font hover:underline"
 									href={`/books/${featuredSlip.id}`}
 								>
 									{featuredSlip.title}
-								</a>
+								</Link>
 							</h2>
 							<p className="mt-2 max-w-[42ch] text-[0.95rem] opacity-80">
 								{authorLine(featuredSlip.authors)}
@@ -115,7 +98,10 @@ export default async function DiscoverPage() {
 				<ul className="mt-6 grid gap-3 sm:grid-cols-2">
 					{authors.map((author) => (
 						<li key={author.id}>
-							<a className="flex items-center gap-3 no-underline" href={`/authors/${author.slug}`}>
+							<Link
+								className="flex items-center gap-3 no-underline"
+								href={`/authors/${author.slug}`}
+							>
 								<span
 									className="grid size-11 place-items-center rounded-full font-display text-sm font-semibold text-white ring-1 ring-black/15 dark:ring-white/25"
 									style={{ background: authorSwatch(author.id) }}
@@ -128,7 +114,7 @@ export default async function DiscoverPage() {
 										{booksLabel(author.bookCount)}
 									</em>
 								</span>
-							</a>
+							</Link>
 						</li>
 					))}
 				</ul>

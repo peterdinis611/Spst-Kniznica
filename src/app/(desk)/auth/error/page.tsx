@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { pageMeta } from '@/utils/metadata';
 import { AuthPass } from '@/components/AuthPass';
 
@@ -15,7 +16,7 @@ export default function AuthErrorPage() {
 			lede="Skús sa prihlásiť, alebo si nechaj poslať nový odkaz na obnovu hesla."
 		>
 			<p className="pass-help">
-				<a href="/login">Späť na prihlásenie</a>
+				<Link href="/login">Späť na prihlásenie</Link>
 			</p>
 		</AuthPass>
 	);

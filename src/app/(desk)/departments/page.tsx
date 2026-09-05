@@ -1,5 +1,6 @@
+import Link from 'next/link';
 import { pageMeta } from '@/utils/metadata';
-import { listBookSlips, listCategories } from '@/server/library';
+import { listDepartmentShelves } from '@/server/library';
 import { booksLabel } from '@/utils/format';
 import { ShelfSlider } from '@/components/ShelfSlider';
 
@@ -10,12 +11,7 @@ export const metadata = pageMeta({
 });
 
 export default async function DepartmentsPage() {
-	const [slips, catalog] = await Promise.all([listBookSlips(), listCategories()]);
-	const books = slips.filter((book) => book.id !== 'book-modlitbicky');
-	const categories = catalog.map((category) => ({
-		...category,
-		books: books.filter((book) => book.category.slug === category.slug).slice(0, 16)
-	}));
+	const categories = await listDepartmentShelves();
 
 	return (
 		<>
@@ -26,7 +22,7 @@ export default async function DepartmentsPage() {
 				{categories.map((cat) => (
 					<li key={cat.id} className="min-w-0 border-t border-border pt-6">
 						<div className="mb-4 flex min-w-0 flex-wrap items-end justify-between gap-3">
-							<a
+							<Link
 								className="group min-w-0 text-inherit no-underline"
 								href={`/departments/${cat.slug}`}
 							>
@@ -36,7 +32,7 @@ export default async function DepartmentsPage() {
 								<h2 className="font-display mt-1 text-[clamp(1.45rem,7vw,2.25rem)] leading-none font-semibold tracking-[-0.03em] group-hover:underline group-hover:underline-offset-[0.14em]">
 									{cat.name}
 								</h2>
-							</a>
+							</Link>
 							<p className="m-0 font-body text-[0.95rem] text-muted-foreground italic">
 								{booksLabel(cat.bookCount)}
 							</p>

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { pageMeta } from '@/utils/metadata';
 import { authorLine, dueStatus, firstName, loanedLabel, readerNumber } from '@/utils/format';
 import { BookCover } from '@/components/BookCover';
@@ -69,12 +70,12 @@ export default async function LoansPage() {
 										<p className="font-mono text-[0.62rem] tracking-[0.12em] uppercase opacity-60">
 											{item.book.callNumber}
 										</p>
-										<a
+										<Link
 											href={`/books/${item.book.id}`}
 											className="font-display text-xl no-underline"
 										>
 											{item.book.title}
-										</a>
+										</Link>
 										<p className="text-sm opacity-70">{authorLine(item.book.authors)}</p>
 										<p className="mt-2 text-sm">{due.label}</p>
 										<LoanReturn loanId={item.id} canRenew={item.canRenew} />
@@ -90,9 +91,9 @@ export default async function LoansPage() {
 						<ul className="mt-4 grid gap-3">
 							{data.waits.map((wait) => (
 								<li key={wait.id} className="flex items-center justify-between gap-3">
-									<a href={`/books/${wait.book.id}`} className="no-underline">
+									<Link href={`/books/${wait.book.id}`} className="no-underline">
 										{wait.book.title} · {wait.place}. miesto
-									</a>
+									</Link>
 									<WaitCancel reservationId={wait.id} />
 								</li>
 							))}
@@ -108,9 +109,9 @@ export default async function LoansPage() {
 						<ul className="mt-4 grid gap-2">
 							{data.history.map((item) => (
 								<li key={item.id}>
-									<a href={`/books/${item.book.id}`} className="no-underline">
+									<Link href={`/books/${item.book.id}`} className="no-underline">
 										{item.book.title}
-									</a>
+									</Link>
 								</li>
 							))}
 						</ul>

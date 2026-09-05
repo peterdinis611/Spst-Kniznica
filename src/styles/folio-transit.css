@@ -1,0 +1,62 @@
+.folio-sheet {
+	animation: folio-sheet-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes folio-sheet-in {
+	from {
+		opacity: 0;
+		transform: translateY(0.28rem);
+	}
+}
+
+.folio-loading {
+	display: grid;
+	gap: 0.85rem;
+	padding: 0.4rem 0 2rem;
+}
+
+.folio-loading-rule {
+	display: block;
+	width: 4.2rem;
+	height: 0.42rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--stamp, #c45a38) 55%, transparent);
+}
+
+.folio-loading-line {
+	display: block;
+	height: 0.82rem;
+	max-width: 38rem;
+	border-radius: 0.2rem;
+	background: color-mix(in srgb, var(--foreground) 8%, transparent);
+	animation: folio-load 1.05s ease-in-out infinite;
+}
+
+.folio-loading-line.is-title {
+	height: 2.1rem;
+	max-width: 16rem;
+	background: color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
+.folio-loading-line.is-mid {
+	max-width: 22rem;
+	animation-delay: 0.08s;
+}
+
+.folio-loading-line.is-short {
+	max-width: 12rem;
+	animation-delay: 0.14s;
+}
+
+@keyframes folio-load {
+	50% {
+		opacity: 0.45;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.folio-sheet,
+	.folio-loading-line {
+		animation: none;
+	}
+}

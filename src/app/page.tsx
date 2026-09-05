@@ -1,19 +1,15 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { HallChrome } from '@/components/HallChrome';
 import { HallMap } from '@/components/HallMap';
 import { FolioShelf } from '@/components/FolioShelf';
 import { CoverRail } from '@/components/CoverRail';
+import { HallSplash } from '@/components/HallSplash';
 import { booksLabel, initials } from '@/utils/format';
 import { authorSwatch } from '@/catalog/cover';
 import { pageMeta } from '@/utils/metadata';
 import { layoutChrome } from '@/server/session';
-import {
-	catalogStats,
-	listAuthorSlips,
-	listBookSlips,
-	listCategoryChips,
-	toSearchItem
-} from '@/server/library';
+import { listHallDesk } from '@/server/library';
 
 export const metadata = pageMeta({
 	title: 'SPŠT knižnica',
@@ -21,21 +17,17 @@ export const metadata = pageMeta({
 		'Školská knižnica SPŠT — katalóg učebníc, noriem a literatúry. Výpožička na 7, 14 alebo 21 dní, bez stropu na počet kníh. Pavilón B, Po—Pia 7:30—15:30.'
 });
 
-export default async function HomePage() {
-	const chrome = await layoutChrome('/');
-	const [slipsRaw, authorsRaw, stats, categories] = await Promise.all([
-		listBookSlips(),
-		listAuthorSlips(),
-		catalogStats(),
-		listCategoryChips()
-	]);
-	const slips = slipsRaw.filter((book) => book.id !== 'book-modlitbicky');
-	const ready = slips.filter((book) => book.copiesAvailable > 0);
-	const authors = [...authorsRaw].sort((a, b) => b.bookCount - a.bookCount);
-	const books = ready.slice(0, 16);
-	const ledger = ready.slice(16, 28);
-	const shelf = slips.slice(0, 81).map((book) => ({ id: book.id, title: book.title }));
-	const searchPreview = ready.slice(0, 10).map(toSearchItem);
+export default function HomePage() {
+	return (
+		<Suspense fallback={<HallSplash copy="Listujem." />}>
+			<HomeHall />
+		</Suspense>
+	);
+}
+
+async function HomeHall() {
+	const [chrome, hall] = await Promise.all([layoutChrome('/'), listHallDesk()]);
+	const { stats, categories, authors, books, ledger, shelf, searchPreview } = hall;
 
 	return (
 		<main id="obsah" className="landing-shell">

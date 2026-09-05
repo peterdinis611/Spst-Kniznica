@@ -4,7 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { canOpenDesk } from '@/server/admin-access';
 import { listCategoryChips } from '@/server/library';
 import { ensureLocalReader, readerFromClaims } from '@/server/readers';
-import { supabasePublic } from '@/config/supabase';
+import { hasAuthCookies, supabasePublic } from '@/config/supabase';
 import type { RequestEvent } from '@/http/kit';
 import type { SignedReader } from '@/types';
 
@@ -29,6 +29,10 @@ export async function createSupabaseServer() {
 }
 
 export const getSessionReader = cache(async (): Promise<SignedReader | null> => {
+	const { configured } = supabasePublic();
+	if (!configured) return null;
+	const jar = await cookies();
+	if (!hasAuthCookies(jar.getAll())) return null;
 	const supabase = await createSupabaseServer();
 	if (!supabase) return null;
 	try {
