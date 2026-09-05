@@ -22,6 +22,13 @@
       "when": 1788354000000,
       "tag": "0002_query_speed",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788430000000,
+      "tag": "0003_loan_one_holding",
+      "breakpoints": true
     }
   ]
 }

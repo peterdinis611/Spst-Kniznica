@@ -7,7 +7,7 @@ import { db } from '../db';
 import { book, holding, loan, user } from '../db/schema';
 import { notifyHoldReady } from '../hold-mail';
 import { offerCopyToWaiter } from '../waitlist';
-import { syncCopies } from './copies';
+import { borrowConflictMessage, claimAvailableCopy, lockBook, syncCopies } from './copies';
 import { caught, fail, needle, ok, type DeskResult } from './shared';
 
 export type DeskLoanFilter = {
@@ -174,6 +174,7 @@ export async function saveLoan(input: {
 
 	try {
 		await db.transaction(async (tx) => {
+			await lockBook(tx, input.bookId);
 			if (input.id) {
 				const current = await tx
 					.select()
@@ -200,18 +201,8 @@ export async function saveLoan(input: {
 					})
 					.where(eq(loan.id, input.id));
 			} else {
-				const copy = input.holdingId
-					? await tx
-							.select()
-							.from(holding)
-							.where(eq(holding.id, input.holdingId))
-							.then((rows) => rows[0])
-					: await tx
-							.select()
-							.from(holding)
-							.where(and(eq(holding.bookId, input.bookId), eq(holding.status, 'available')))
-							.then((rows) => rows[0]);
-				if (!copy || copy.status !== 'available') {
+				const copy = await claimAvailableCopy(tx, input.bookId, input.holdingId);
+				if (!copy) {
 					throw new Error('Žiadny voľný výtlačok.');
 				}
 				const now = input.borrowedAt ?? new Date();
@@ -227,13 +218,14 @@ export async function saveLoan(input: {
 					borrowerClass: klass,
 					loanDays: days
 				});
-				await tx.update(holding).set({ status: 'loaned' }).where(eq(holding.id, copy.id));
 				await syncCopies(tx, input.bookId);
 			}
 		});
 	} catch (cause) {
 		const text = cause instanceof Error ? cause.message : '';
 		if (text === 'Výpožička sa nenašla.' || text === 'Žiadny voľný výtlačok.') return fail(text);
+		const conflict = borrowConflictMessage(cause);
+		if (conflict) return fail(conflict);
 		return caught(cause, 'Výpožička sa neuložila.');
 	}
 
@@ -252,6 +244,7 @@ export async function returnDeskLoan(id: string): Promise<DeskResult> {
 
 	let offer = null as Awaited<ReturnType<typeof offerCopyToWaiter>>;
 	await db.transaction(async (tx) => {
+		await lockBook(tx, current.bookId);
 		await tx.update(loan).set({ returnedAt: new Date() }).where(eq(loan.id, id));
 		if (current.holdingId) {
 			await tx

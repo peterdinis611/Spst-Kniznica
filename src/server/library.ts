@@ -13,6 +13,7 @@ import {
 import { parseLoanDays } from '@/desk/borrow-fields';
 import { authorLine, daysUntil } from '@/utils/format';
 import { MAX_RENEWALS } from '@/catalog/hold';
+import { borrowConflictMessage, claimAvailableCopy, lockBook, syncCopies } from './desk/copies';
 import { closeHoldOnBorrow, offerCopyToWaiter, waitingBookIds, type HoldOffer } from './waitlist';
 import type { CatalogSearchItem } from '@/catalog/search';
 import type {
@@ -32,6 +33,8 @@ export const LOAN_DAYS = 21;
 export function isLoanLimitReached(activeCount: number) {
 	return MAX_ACTIVE_LOANS != null && activeCount >= MAX_ACTIVE_LOANS;
 }
+
+export { borrowConflictMessage } from './desk/copies';
 
 type BookRow = {
 	book: typeof book.$inferSelect;
@@ -502,97 +505,99 @@ export async function borrowBook(
 	bookId: string,
 	draft: BorrowerDraft
 ): Promise<BorrowResult> {
-	const result = await db.transaction(async (tx): Promise<BorrowResult> => {
-		const current = await tx
-			.select()
-			.from(book)
-			.where(eq(book.id, bookId))
-			.then((rows) => rows[0]);
-		if (!current) return { ok: false, message: 'Kniha v katalógu nie je.' };
-		const copy = await tx
-			.select()
-			.from(holding)
-			.where(and(eq(holding.bookId, bookId), eq(holding.status, 'available')))
-			.then((rows) => rows[0]);
-		if (!copy || current.copiesAvailable < 1) {
-			return { ok: false, message: 'Žiadny voľný výtlačok. Skúste neskôr.' };
-		}
+	let result: BorrowResult;
+	try {
+		result = await db.transaction(async (tx): Promise<BorrowResult> => {
+			await lockBook(tx, bookId);
+			const current = await tx
+				.select()
+				.from(book)
+				.where(eq(book.id, bookId))
+				.then((rows) => rows[0]);
+			if (!current) return { ok: false, message: 'Kniha v katalógu nie je.' };
 
-		const hold = await tx
-			.select({ userId: reservation.userId })
-			.from(reservation)
-			.where(
-				and(
-					eq(reservation.bookId, bookId),
-					eq(reservation.status, 'fulfilled'),
-					gt(reservation.expiresAt, new Date())
-				)
-			)
-			.orderBy(asc(reservation.createdAt))
-			.then((rows) => rows[0]);
-		if (hold && hold.userId !== userId) {
-			return { ok: false, message: 'Tento výtlačok čaká na rezerváciu. Vyzdvihne ho iný čitateľ.' };
-		}
-		if (!hold) {
-			const firstWait = await tx
+			const hold = await tx
 				.select({ userId: reservation.userId })
 				.from(reservation)
-				.where(and(eq(reservation.bookId, bookId), eq(reservation.status, 'pending')))
-				.orderBy(asc(reservation.createdAt), asc(reservation.id))
+				.where(
+					and(
+						eq(reservation.bookId, bookId),
+						eq(reservation.status, 'fulfilled'),
+						gt(reservation.expiresAt, new Date())
+					)
+				)
+				.orderBy(asc(reservation.createdAt))
 				.then((rows) => rows[0]);
-			if (firstWait && firstWait.userId !== userId) {
+			if (hold && hold.userId !== userId) {
 				return {
 					ok: false,
 					message: 'Tento výtlačok čaká na rezerváciu. Vyzdvihne ho iný čitateľ.'
 				};
 			}
-		}
-
-		const already = await tx
-			.select()
-			.from(loan)
-			.where(and(eq(loan.userId, userId), eq(loan.bookId, bookId), isNull(loan.returnedAt)))
-			.then((rows) => rows[0]);
-		if (already) return { ok: false, message: 'Túto knihu už máte vypožičanú.' };
-
-		if (MAX_ACTIVE_LOANS != null) {
-			const active = await tx
-				.select({ c: count() })
-				.from(loan)
-				.where(and(eq(loan.userId, userId), isNull(loan.returnedAt)))
-				.then((rows) => rows[0]?.c ?? 0);
-			if (isLoanLimitReached(active)) {
-				return { ok: false, message: `Limit ${MAX_ACTIVE_LOANS} výpožičiek je naplnený.` };
+			if (!hold) {
+				const firstWait = await tx
+					.select({ userId: reservation.userId })
+					.from(reservation)
+					.where(and(eq(reservation.bookId, bookId), eq(reservation.status, 'pending')))
+					.orderBy(asc(reservation.createdAt), asc(reservation.id))
+					.then((rows) => rows[0]);
+				if (firstWait && firstWait.userId !== userId) {
+					return {
+						ok: false,
+						message: 'Tento výtlačok čaká na rezerváciu. Vyzdvihne ho iný čitateľ.'
+					};
+				}
 			}
-		}
 
-		const now = new Date();
-		const days = draft.days;
-		const dueAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+			const already = await tx
+				.select()
+				.from(loan)
+				.where(and(eq(loan.userId, userId), eq(loan.bookId, bookId), isNull(loan.returnedAt)))
+				.then((rows) => rows[0]);
+			if (already) return { ok: false, message: 'Túto knihu už máte vypožičanú.' };
 
-		await tx.insert(loan).values({
-			bookId,
-			holdingId: copy.id,
-			userId,
-			borrowedAt: now,
-			dueAt,
-			borrowerFirstName: draft.firstName,
-			borrowerLastName: draft.lastName,
-			borrowerClass: draft.className,
-			loanDays: days
+			if (MAX_ACTIVE_LOANS != null) {
+				const active = await tx
+					.select({ c: count() })
+					.from(loan)
+					.where(and(eq(loan.userId, userId), isNull(loan.returnedAt)))
+					.then((rows) => rows[0]?.c ?? 0);
+				if (isLoanLimitReached(active)) {
+					return { ok: false, message: `Limit ${MAX_ACTIVE_LOANS} výpožičiek je naplnený.` };
+				}
+			}
+
+			const copy = await claimAvailableCopy(tx, bookId);
+			if (!copy) {
+				return { ok: false, message: 'Žiadny voľný výtlačok. Skúste neskôr.' };
+			}
+
+			const now = new Date();
+			const days = draft.days;
+			const dueAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+
+			await tx.insert(loan).values({
+				bookId,
+				holdingId: copy.id,
+				userId,
+				borrowedAt: now,
+				dueAt,
+				borrowerFirstName: draft.firstName,
+				borrowerLastName: draft.lastName,
+				borrowerClass: draft.className,
+				loanDays: days
+			});
+
+			await syncCopies(tx, bookId);
+			await closeHoldOnBorrow(tx, userId, bookId);
+
+			return { ok: true as const, dueAt };
 		});
-
-		await tx.update(holding).set({ status: 'loaned' }).where(eq(holding.id, copy.id));
-
-		await tx
-			.update(book)
-			.set({ copiesAvailable: Math.max(0, current.copiesAvailable - 1) })
-			.where(eq(book.id, bookId));
-
-		await closeHoldOnBorrow(tx, userId, bookId);
-
-		return { ok: true as const, dueAt };
-	});
+	} catch (cause) {
+		const message = borrowConflictMessage(cause);
+		if (message) return { ok: false, message };
+		throw cause;
+	}
 
 	if (result.ok) {
 		const cached = getCatalogCache()?.byId.get(bookId);
@@ -636,6 +641,7 @@ export async function returnBook(userId: string, loanId: string): Promise<Return
 		if (!current) return { ok: false, message: 'Výpožička sa nenašla.' };
 		if (current.returnedAt) return { ok: false, message: 'Táto kniha je už vrátená.' };
 
+		await lockBook(tx, current.bookId);
 		const held = await tx
 			.select()
 			.from(book)
@@ -661,8 +667,12 @@ export async function returnBook(userId: string, loanId: string): Promise<Return
 			}
 		}
 
-		const copies = Math.min(held.copiesTotal, held.copiesAvailable + 1);
-		await tx.update(book).set({ copiesAvailable: copies }).where(eq(book.id, current.bookId));
+		await syncCopies(tx, current.bookId);
+		const copies = await tx
+			.select({ copiesAvailable: book.copiesAvailable })
+			.from(book)
+			.where(eq(book.id, current.bookId))
+			.then((rows) => rows[0]?.copiesAvailable ?? 0);
 
 		bookId = current.bookId;
 		copiesAvailable = copies;

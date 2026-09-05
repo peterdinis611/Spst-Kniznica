@@ -183,7 +183,10 @@ export const loan = pgTable(
 		index('loan_return_offered_idx').on(table.returnOfferedAt),
 		uniqueIndex('loan_one_active_uidx')
 			.on(table.userId, table.bookId)
-			.where(sql`${table.returnedAt} is null`)
+			.where(sql`${table.returnedAt} is null`),
+		uniqueIndex('loan_one_holding_open_uidx')
+			.on(table.holdingId)
+			.where(sql`${table.returnedAt} is null and ${table.holdingId} is not null`)
 	]
 );
 

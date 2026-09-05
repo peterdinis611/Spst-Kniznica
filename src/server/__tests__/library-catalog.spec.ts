@@ -6,7 +6,10 @@ import { ftsBookIds } from '../db/catalog-fts';
 vi.mock('../db', () => ({ db: {} }));
 
 vi.mock('../db/catalog-fts', () => ({
-	ftsBookIds: vi.fn(() => Promise.resolve([]))
+	ftsBookIds: vi.fn(() => Promise.resolve([])),
+	rebuildCatalogFts: vi.fn(),
+	upsertBookFts: vi.fn(),
+	deleteBookFts: vi.fn()
 }));
 
 import {
@@ -14,6 +17,7 @@ import {
 	getBook,
 	getCategory,
 	getFeaturedBook,
+	borrowConflictMessage,
 	isLoanLimitReached,
 	listBookSlips,
 	listBooks,
@@ -94,6 +98,21 @@ describe('isLoanLimitReached', () => {
 	it('has no cap on open slips', () => {
 		expect(isLoanLimitReached(0)).toBe(false);
 		expect(isLoanLimitReached(99)).toBe(false);
+	});
+});
+
+describe('borrowConflictMessage', () => {
+	it('maps a double claim on one copy', () => {
+		expect(
+			borrowConflictMessage(
+				new Error('duplicate key value violates unique constraint "loan_one_holding_open_uidx"')
+			)
+		).toBe('Žiadny voľný výtlačok. Skúste neskôr.');
+		expect(
+			borrowConflictMessage(
+				new Error('duplicate key value violates unique constraint "loan_one_active_uidx"')
+			)
+		).toBe('Túto knihu už máte vypožičanú.');
 	});
 });
 

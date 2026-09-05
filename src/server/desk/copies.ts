@@ -1,7 +1,39 @@
-import { and, count, eq } from 'drizzle-orm';
+import { and, count, eq, sql } from 'drizzle-orm';
+import { uniqueConstraintMessage } from '../admin';
 import { db } from '../db';
 import { book, holding } from '../db/schema';
 import type { DeskTx } from './shared';
+
+export function borrowConflictMessage(cause: unknown) {
+	const text = cause instanceof Error ? cause.message : String(cause);
+	if (/loan_one_active_uidx/.test(text)) return 'Túto knihu už máte vypožičanú.';
+	if (/loan_one_holding_open_uidx/.test(text)) return 'Žiadny voľný výtlačok. Skúste neskôr.';
+	return uniqueConstraintMessage(cause, 'Žiadny voľný výtlačok. Skúste neskôr.');
+}
+
+export async function lockBook(tx: DeskTx, bookId: string) {
+	await tx.execute(sql`select 1 from book where id = ${bookId} for update`);
+}
+
+export async function claimAvailableCopy(tx: DeskTx, bookId: string, holdingId?: string | null) {
+	const filter = holdingId
+		? and(eq(holding.id, holdingId), eq(holding.bookId, bookId), eq(holding.status, 'available'))
+		: and(
+				eq(holding.bookId, bookId),
+				eq(holding.status, 'available'),
+				sql`${holding.id} = (
+					select id from holding
+					where book_id = ${bookId}
+						and status = 'available'
+					order by inventory_no
+					limit 1
+					for update skip locked
+				)`
+			);
+
+	const [copy] = await tx.update(holding).set({ status: 'loaned' }).where(filter).returning();
+	return copy ?? null;
+}
 
 export async function syncCopies(tx: DeskTx, bookId: string) {
 	const total = await tx
