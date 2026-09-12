@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { HallChrome } from '@/components/HallChrome';
 import { HallMap } from '@/components/HallMap';
 import { FolioShelf } from '@/components/FolioShelf';
@@ -38,7 +38,7 @@ async function HomeHall() {
 						Na polici sú skutočné zväzky z fondu — {stats.available} voľných výtlačkov z{' '}
 						{stats.books} kníh. Klikni na chrbát alebo menovku.
 					</p>
-					<Link className="folio-cta no-underline" href="/discover" prefetch>
+					<Link className="folio-cta no-underline" href="/discover">
 						Vstúpiť do fondu
 					</Link>
 					<FolioShelf books={shelf} />
@@ -98,7 +98,7 @@ async function HomeHall() {
 							<p className="folio-kicker">Pracovné zväzky</p>
 							<h2>Otoč policu a vyber knihu, ktorú otvoríš hneď.</h2>
 						</div>
-						<Link className="folio-cta folio-cta-sm no-underline" href="/books" prefetch>
+						<Link className="folio-cta folio-cta-sm no-underline" href="/books">
 							Celý katalóg
 						</Link>
 					</div>
@@ -113,18 +113,13 @@ async function HomeHall() {
 								<p className="folio-kicker">Register</p>
 								<h2>Ďalšie voľné zväzky z kartotéky.</h2>
 							</div>
-							<Link className="folio-cta folio-cta-sm no-underline" href="/books" prefetch>
+							<Link className="folio-cta folio-cta-sm no-underline" href="/books">
 								Celý katalóg
 							</Link>
 						</div>
 						<div className="folio-picks">
 							{ledger.map((book) => (
-								<Link
-									key={book.id}
-									className="folio-pick no-underline"
-									href={`/books/${book.id}`}
-									prefetch
-								>
+								<Link key={book.id} className="folio-pick no-underline" href={`/books/${book.id}`}>
 									<em>
 										{book.category.code} · {book.callNumber}
 									</em>
@@ -145,7 +140,7 @@ async function HomeHall() {
 							<p className="folio-kicker">Menný katalóg</p>
 							<h2>Autori, ktorých držíme na polici.</h2>
 						</div>
-						<Link className="folio-cta folio-cta-sm no-underline" href="/authors" prefetch>
+						<Link className="folio-cta folio-cta-sm no-underline" href="/authors">
 							Všetci autori
 						</Link>
 					</div>
@@ -185,7 +180,7 @@ async function HomeHall() {
 								Prihlásiť sa
 							</Link>
 						)}
-						<Link className="folio-ghost no-underline" href="/discover" prefetch>
+						<Link className="folio-ghost no-underline" href="/discover">
 							Prezrieť fond
 						</Link>
 					</div>

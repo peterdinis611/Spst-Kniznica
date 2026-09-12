@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { BookOpen, Search, User } from 'lucide-react';
 import type { CatalogSearchItem } from '@/catalog/search';
 import type { Reader } from '@/types';
@@ -50,29 +50,17 @@ export function HallChromeNav({
 					<BookOpen className="size-6" />
 				</Link>
 				<nav className="hall-desk-links" aria-label="Hlavná navigácia">
-					<Link href="/" aria-current={path === '/' ? 'page' : undefined} prefetch>
+					<Link href="/" aria-current={path === '/' ? 'page' : undefined}>
 						Fond
 					</Link>
-					<Link
-						href="/discover"
-						aria-current={path.startsWith('/discover') ? 'page' : undefined}
-						prefetch
-					>
+					<Link href="/discover" aria-current={path.startsWith('/discover') ? 'page' : undefined}>
 						Objavovať
 					</Link>
-					<Link
-						href="/holdings"
-						aria-current={path.startsWith('/holdings') ? 'page' : undefined}
-						prefetch
-					>
+					<Link href="/holdings" aria-current={path.startsWith('/holdings') ? 'page' : undefined}>
 						Všetky knihy
 					</Link>
-					<Link href="/books" prefetch>
-						Katalóg
-					</Link>
-					<Link href="/authors" prefetch>
-						Autori
-					</Link>
+					<Link href="/books">Katalóg</Link>
+					<Link href="/authors">Autori</Link>
 				</nav>
 				<div className="hall-tools">
 					<button

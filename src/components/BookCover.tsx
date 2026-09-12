@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { authorLine } from '@/utils/format';
 import { authorLast, jacketFor } from '@/catalog/cover';
 import { cn } from '@/utils/cn';
@@ -62,7 +62,6 @@ export function BookCover({
 		return (
 			<Link
 				href={href}
-				prefetch
 				className={className}
 				style={style}
 				title={`${book.title} — ${authorLine(book.authors)}`}

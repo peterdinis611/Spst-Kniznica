@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BookSlip } from '@/types';

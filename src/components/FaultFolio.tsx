@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { FaultReload } from './FaultReload';
 import './fault-folio.css';
 

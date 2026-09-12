@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { pageMeta } from '@/utils/metadata';
 import { stampDate } from '@/utils/format';
 import { canOperateDesk } from '@/server/admin-access';

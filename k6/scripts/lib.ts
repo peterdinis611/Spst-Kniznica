@@ -1,5 +1,16 @@
-import http from 'k6/http';
 import { check } from 'k6';
+import http from 'k6/http';
+import type { RefinedResponse, ResponseType } from 'k6/http';
+
+type FondResponse = RefinedResponse<ResponseType>;
+
+type GetExtra = {
+	headers?: Record<string, string>;
+	tags?: Record<string, string>;
+	timeout?: string;
+	redirects?: number;
+	responseCallback?: ReturnType<typeof http.expectedStatuses>;
+};
 
 const BASE = (__ENV.BASE_URL || 'http://host.docker.internal:3000').replace(/\/$/, '');
 
@@ -17,7 +28,7 @@ export const SEARCHES = [
 	'sloh',
 	'belko',
 	'rezerv'
-];
+] as const;
 
 export const BOOKS = [
 	'book-algoritmy',
@@ -30,7 +41,7 @@ export const BOOKS = [
 	'book-sloh',
 	'book-english',
 	'book-materialy'
-];
+] as const;
 
 export const AUTHORS = [
 	'jan-belko',
@@ -38,7 +49,7 @@ export const AUTHORS = [
 	'ludovit-stur',
 	'eva-tothova',
 	'milan-rufus'
-];
+] as const;
 
 export const DEPARTMENTS = [
 	'informatika',
@@ -47,7 +58,7 @@ export const DEPARTMENTS = [
 	'literatura',
 	'matematika',
 	'fyzika'
-];
+] as const;
 
 export const DOCS = [
 	'/docs',
@@ -56,7 +67,7 @@ export const DOCS = [
 	'/docs/vypozicky',
 	'/docs/email',
 	'/docs/zataz'
-];
+] as const;
 
 export const DESK = [
 	{ name: 'Sieň', path: '/' },
@@ -67,7 +78,7 @@ export const DESK = [
 	{ name: 'Autori', path: '/authors' },
 	{ name: 'Účet', path: '/login' },
 	{ name: 'Príručka', path: '/docs' }
-];
+] as const;
 
 export const ALIASES = [
 	{ from: '/vsetky-knihy', to: '/holdings' },
@@ -94,7 +105,7 @@ export const ALIASES = [
 	{ from: '/admin/rezervacie', to: '/admin/reservations' },
 	{ from: '/admin/citately', to: '/admin/readers' },
 	{ from: '/admin/vykazy', to: '/admin/reports' }
-];
+] as const;
 
 export const GATES = [
 	{ name: 'Pult', path: '/admin', to: '/login' },
@@ -104,7 +115,7 @@ export const GATES = [
 	{ name: 'Moje knihy', path: '/loans', to: '/login' },
 	{ name: 'Nové heslo', path: '/login/password', to: '/login/recovery' },
 	{ name: 'Odhlásenie', path: '/logout', to: '/' }
-];
+] as const;
 
 export function headers() {
 	return {
@@ -113,7 +124,7 @@ export function headers() {
 	};
 }
 
-export function get(path, name, extra = {}) {
+export function get(path: string, name: string, extra: GetExtra = {}) {
 	return http.get(`${BASE}${path}`, {
 		headers: headers(),
 		tags: { name, testid: TESTID },
@@ -122,7 +133,7 @@ export function get(path, name, extra = {}) {
 	});
 }
 
-export function getStay(path, name, extra = {}) {
+export function getStay(path: string, name: string, extra: GetExtra = {}) {
 	return get(path, name, { redirects: 0, ...extra });
 }
 
@@ -132,7 +143,7 @@ export function probeFond() {
 		timeout: '8s',
 		tags: { name: 'Probe', testid: TESTID }
 	});
-	if (res.status === 200 && res.body && res.body.length > 200) return;
+	if (res.status === 200 && res.body && String(res.body).length > 200) return;
 
 	const why = res.error
 		? res.error
@@ -144,19 +155,23 @@ export function probeFond() {
 	);
 }
 
-export function pageOk(res, name) {
+function bodyLength(res: FondResponse) {
+	return res.body ? String(res.body).length : 0;
+}
+
+export function pageOk(res: FondResponse, name: string) {
 	return check(res, {
 		[`${name} · 200`]: (r) => r.status === 200,
-		[`${name} · telo`]: (r) => r.body && r.body.length > 200
+		[`${name} · telo`]: (r) => bodyLength(r) > 200
 	});
 }
 
-export function jsonOk(res, name) {
+export function jsonOk(res: FondResponse, name: string) {
 	return check(res, {
 		[`${name} · 200`]: (r) => r.status === 200,
 		[`${name} · json`]: (r) => {
 			try {
-				const body = r.json();
+				const body = r.json() as { items?: unknown };
 				return Array.isArray(body.items);
 			} catch {
 				return false;
@@ -165,25 +180,25 @@ export function jsonOk(res, name) {
 	});
 }
 
-export function textOk(res, name, needle) {
+export function textOk(res: FondResponse, name: string, needle: string) {
 	return check(res, {
 		[`${name} · 200`]: (r) => r.status === 200,
 		[`${name} · telo`]: (r) => Boolean(r.body && String(r.body).includes(needle))
 	});
 }
 
-export function statusOk(res, name, status) {
+export function statusOk(res: FondResponse, name: string, status: number) {
 	return check(res, {
 		[`${name} · ${status}`]: (r) => r.status === status
 	});
 }
 
-function header(res, key) {
-	const headers = res.headers || {};
-	return headers[key] || headers[key.toLowerCase()] || headers[key.toUpperCase()] || '';
+function header(res: FondResponse, key: string) {
+	const bag = res.headers || {};
+	return bag[key] || bag[key.toLowerCase()] || bag[key.toUpperCase()] || '';
 }
 
-export function redirectOk(res, name, status, location) {
+export function redirectOk(res: FondResponse, name: string, status: number, location: string) {
 	return check(res, {
 		[`${name} · ${status}`]: (r) => r.status === status,
 		[`${name} · kam`]: (r) => {
@@ -197,8 +212,10 @@ export function redirectOk(res, name, status, location) {
 	});
 }
 
-export function pick(list) {
-	return list[Math.floor(Math.random() * list.length)];
+export function pick<T>(list: readonly T[]): T {
+	const item = list[Math.floor(Math.random() * list.length)];
+	if (item === undefined) throw new Error('prázdny zoznam');
+	return item;
 }
 
 export function checkPublicMap() {

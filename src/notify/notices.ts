@@ -104,6 +104,7 @@ export const notices = {
 		text: 'Príliš veľa pokusov.',
 		sub: 'Počkaj chvíľu a skús to znova.'
 	}
+} as const satisfies Record<string, Notice>;
 
 export type NoticeKey = keyof typeof notices;
 

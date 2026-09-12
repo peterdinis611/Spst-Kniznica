@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { volumesLabel } from '@/utils/format';
 import type { BookSlip, CategoryChip } from '@/types';
 import { CatalogSlip } from './CatalogSlip';
@@ -99,7 +99,7 @@ export function FundLedger({
 							return (
 								<div className="lane-fan" style={{ ['--accent' as string]: item.accent }}>
 									{item.preview.map((book) => (
-										<Link key={book.id} className="fan-item" href={`/books/${book.id}`} prefetch>
+										<Link key={book.id} className="fan-item" href={`/books/${book.id}`}>
 											<PrintJacket
 												book={book}
 												linked={false}

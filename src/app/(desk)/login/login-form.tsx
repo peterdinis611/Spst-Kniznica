@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { useStateAction } from 'next-safe-action/hooks';
 import { AuthPass } from '@/components/AuthPass';
 import { PassSecret } from '@/components/PassSecret';

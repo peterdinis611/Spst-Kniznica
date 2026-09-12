@@ -1,14 +1,14 @@
-import { chromium } from 'playwright';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { chromium, type Locator, type Page } from 'playwright';
 
 const out = resolve('docs/screenshots');
-const app = 'http://127.0.0.1:5173';
+const app = 'http://127.0.0.1:3000';
 const story = 'http://127.0.0.1:6006';
 
 await mkdir(out, { recursive: true });
 
-async function alive(url) {
+async function alive(url: string) {
 	try {
 		const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
 		return res.status < 500;
@@ -32,7 +32,13 @@ const context = await browser.newContext({
 });
 const page = await context.newPage();
 
-async function ready(url) {
+function viewport() {
+	const vp = page.viewportSize();
+	if (!vp) throw new Error('viewport missing');
+	return vp;
+}
+
+async function ready(url: string) {
 	const res = await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 });
 	const status = res?.status() ?? 0;
 	if (status >= 400) throw new Error(`${url} → ${status}`);
@@ -40,12 +46,12 @@ async function ready(url) {
 	await page.waitForTimeout(450);
 }
 
-async function shot(locator, file, pad = 28) {
+async function shot(locator: Locator, file: string, pad = 28) {
 	await locator.scrollIntoViewIfNeeded();
 	await page.waitForTimeout(200);
 	const box = await locator.boundingBox();
 	if (!box) throw new Error(`missing ${file}`);
-	const vp = page.viewportSize();
+	const vp = viewport();
 	const x = Math.max(0, box.x - pad);
 	const y = Math.max(0, box.y - pad);
 	await page.screenshot({
@@ -61,8 +67,8 @@ async function shot(locator, file, pad = 28) {
 	console.log('wrote', file);
 }
 
-async function band(file, { top = 0, height = 780 } = {}) {
-	const vp = page.viewportSize();
+async function band(file: string, { top = 0, height = 780 } = {}) {
+	const vp = viewport();
 	await page.screenshot({
 		path: resolve(out, file),
 		animations: 'disabled',
@@ -97,17 +103,20 @@ await page.locator('a.slip').first().waitFor();
 const first = await page.locator('a.slip').nth(0).boundingBox();
 const last = await page.locator('a.slip').nth(5).boundingBox();
 if (!first || !last) throw new Error('catalog slips missing');
-await page.screenshot({
-	path: resolve(out, 'katalog.png'),
-	animations: 'disabled',
-	clip: {
-		x: Math.max(0, first.x - 16),
-		y: Math.max(0, first.y - 16),
-		width: first.width + 32,
-		height: last.y + last.height - first.y + 32
-	}
-});
-console.log('wrote katalog.png');
+{
+	const vp = viewport();
+	await page.screenshot({
+		path: resolve(out, 'katalog.png'),
+		animations: 'disabled',
+		clip: {
+			x: Math.max(0, first.x - 16),
+			y: Math.max(0, first.y - 16),
+			width: first.width + 32,
+			height: Math.min(vp.height - 16, last.y + last.height - first.y + 32)
+		}
+	});
+	console.log('wrote katalog.png');
+}
 
 await ready(`${app}/discover`);
 await page.locator('[data-tour="featured"]').waitFor();
@@ -119,7 +128,7 @@ const deptFirst = await page.locator('ol li').nth(0).boundingBox();
 const deptLast = await page.locator('ol li').nth(1).boundingBox();
 if (!deptFirst || !deptLast) throw new Error('departments missing');
 {
-	const vp = page.viewportSize();
+	const vp = viewport();
 	await page.screenshot({
 		path: resolve(out, 'odbory.png'),
 		animations: 'disabled',
@@ -154,7 +163,7 @@ await page.locator('#name').fill('Mária Kováčová');
 await page.locator('#email').fill('maria.kovacova@spst.sk');
 await shot(page.locator('section.pass'), 'novy.png', 40);
 
-async function storyShot(id, file, pick, pad = 36) {
+async function storyShot(id: string, file: string, pick: (page: Page) => Locator, pad = 36) {
 	const url = `${story}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story`;
 	await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
 	await page.evaluate(() => document.fonts.ready);
@@ -175,7 +184,7 @@ await storyShot(
 await storyShot('pult-pultnav--kartotéka', 'kartoteka.png', (p) => p.locator('.pult-tabs'), 28);
 await storyShot('fond-fundledger--register', 'register.png', (p) => p.locator('.folios'), 24);
 
-async function storyFrame(id, dark = false) {
+async function storyFrame(id: string, dark = false) {
 	const url = `${story}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story`;
 	await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
 	if (dark) {

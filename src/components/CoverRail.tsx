@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BookSlip } from '@/types';
 import { authorLine, copiesLabel } from '@/utils/format';

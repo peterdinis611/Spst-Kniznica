@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { authorLine, copiesLabel, copiesShort, splitCallNumber } from '@/utils/format';
 import { clothFor } from '@/catalog/cover';
 import type { BookSlip } from '@/types';
@@ -10,7 +10,7 @@ export function CatalogSlip({ book }: { book: BookSlip }) {
 	const out = book.copiesAvailable === 0;
 
 	return (
-		<Link className="slip" href={`/books/${book.id}`} prefetch>
+		<Link className="slip" href={`/books/${book.id}`}>
 			<span className="slip-tab" style={{ background: cloth.bg }} />
 			<span className="slip-call">
 				<i>{call.dept}</i>

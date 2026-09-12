@@ -1,5 +1,5 @@
 import { sleep } from 'k6';
-import { browseOnce, probeFond, TESTID } from './lib.js';
+import { browseOnce, probeFond, TESTID } from './lib';
 
 export const options = {
 	tags: { testid: TESTID, suite: 'spike' },

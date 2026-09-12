@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import {
 	Bookmark,
 	BookOpen,
@@ -74,7 +74,6 @@ export function AppSidebar({
 						<Link
 							key={item.path}
 							href={item.path}
-							prefetch
 							className={cn(
 								'flex items-center gap-3 rounded-full px-3 py-2 text-sm no-underline',
 								on

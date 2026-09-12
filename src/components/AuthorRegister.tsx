@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import type { AuthorSlip } from '@/types';
 import { booksLabel, initials } from '@/utils/format';
 import { authorSwatch } from '@/catalog/cover';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import './folio-shelf.css';
 
 type ShelfBook = { id: string; title: string };
@@ -72,7 +72,6 @@ export function FolioShelf({ books }: { books: ShelfBook[] }) {
 												key={`${bay}-${slot}`}
 												className={`folio-spine no-underline${isTip ? ' is-tip' : ''}${active === book.id ? ' is-on' : ''}`}
 												href={`/books/${book.id}`}
-												prefetch
 												style={
 													{
 														['--w' as string]: `${widths[index % widths.length]}rem`,
@@ -106,7 +105,6 @@ export function FolioShelf({ books }: { books: ShelfBook[] }) {
 						key={index}
 						className={`folio-tip no-underline tip-${i}${active === book.id ? ' is-on' : ''}`}
 						href={`/books/${book.id}`}
-						prefetch
 						onMouseEnter={() => setActive(book.id)}
 						onFocus={() => setActive(book.id)}
 					>

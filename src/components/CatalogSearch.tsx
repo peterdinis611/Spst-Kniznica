@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
-import Link from 'next/link';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { Search, X } from 'lucide-react';
 import { jacketFor } from '@/catalog/cover';
 import type { CatalogSearchItem } from '@/catalog/search';
@@ -264,7 +264,6 @@ export function CatalogSearch({
 										id={`${listId}-hit-${book.id}`}
 										className={`search-hit${selected ? ' is-active' : ''}`}
 										href={`/books/${book.id}`}
-										prefetch
 										role="option"
 										aria-selected={selected}
 										onMouseEnter={() => setActive(i)}
