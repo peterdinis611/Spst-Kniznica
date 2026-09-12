@@ -36,7 +36,9 @@ Každá karta je tabuľka. Založíš, opravíš, zmažeš. Hľadanie ide priebe
 
 Na prehľade `/admin` je **dnešný rad**: po lehote, cestou na pult, rezervácie na pulte, čakajúci a nové preukazy. Riadok otvorí lístok v zásuvke. Knihovník tam má aj **čítačku** — naskenuje inventár (vrátenie) alebo ISBN (výpožička). Režim **Inventúra** je chôdza po polici: otvoríš ju, peciatkuješ **nájdený** / **stratený**, uzavrieš. Voľné bez pečiatky sú na [výkaze](/admin/reports) ako chýbajúce. Vonku na lístku sa do chýbajúcich nepočítajú.
 
-Zásuvka **Fronta** (`/admin/queue`, skratka `/admin/fronta`) je zásobník: listy výpožičky a rezervácie čakajú v `pgboss.job`, tik pultu ide každých 30 minút. Keď naraz príde viac objednávok, pult sa neupchá. Zlyhaný lístok dáš **Znova**, čakajúci **Stiahnuť**. **Tik teraz** peciatkuje lehoty hneď.
+Zásuvka **Fronta** (`/admin/queue`, skratka `/admin/fronta`) je zásobník: listy výpožičky, rezervácie a **objednávky kníh** (`folio-order`) čakajú v `pgboss.job`. Tik pultu ide každých 30 minút. Keď naraz príde viac lístkov, pult sa neupchá. Zlyhaný lístok dáš **Znova**, čakajúci **Stiahnuť**. **Tik teraz** peciatkuje lehoty hneď.
+
+Núdzový tik je `GET /api/desk/tick` **len** s `Authorization: Bearer` (`DESK_TICK_SECRET`). Query `?secret=` už neplatí. Bez kľúča je 403. Viac v kapitole [Prevádzka](/docs/prevadzka).
 
 V zásuvke **Čitatelia** je september: **Posunúť ročníky**. I.A ide na II.A, IV.A na absolvent. Otvorené lístky idú s preukazom. Učiteľov necháva.
 

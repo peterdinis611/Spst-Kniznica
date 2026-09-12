@@ -22,7 +22,7 @@ Po registrácii ťa fond vráti tam, odkiaľ si prišiel, alebo na [Moje knihy](
 
 Ak prídeš z karty knihy, po prihlásení sa na ňu vráť a výpožičku potvrď.
 
-Po niekoľkých rýchlych pokusoch z jedného prehliadača fond lístok na chvíľu zadrží. Počkaj minútu a skús znova.
+Po niekoľkých rýchlych pokusoch z jedného prehliadača fond lístok na chvíľu zadrží. Počkaj minútu a skús znova. Stropy sú v kapitole [Tempo](/docs/tempo).
 
 ## Zabudnuté heslo
 

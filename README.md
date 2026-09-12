@@ -48,13 +48,13 @@ Vstupná sieň je polica. Výpožička je lístok. Účet je preukaz.
 
 - **Next.js 15** (App Router) + React 19, Tailwind CSS 4
 - **PostgreSQL 16** (Docker) + **Drizzle ORM** (`postgres` klient)
-- **pg-boss** — zásobník lístkov (fronta listov a tiku pultu)
+- **pg-boss** — zásobník lístkov (fronta listov, tiku pultu a objednávok `folio-order`)
 - **Supabase Auth** — registrácia, prihlásenie, obnova hesla
 - **next-safe-action** + Valibot — server actions
 - **Bun** — inštalácia a skripty (`bun.lock`)
 - **Biome** — formátovanie (`biome.json`); ESLint ostáva na pravidlá
 
-Interná príručka je na [`/docs`](http://localhost:3000/docs).
+Interná príručka je na [`/docs`](http://localhost:3000/docs) — kapitoly žijú v `content/docs/*.svx`.
 
 ## Štruktúra
 
@@ -70,8 +70,9 @@ src/
   auth/          role a polia prihlásenia
   desk/          polia pultu
   catalog/       obálky, search, hold
+  docs/          príručka — source, poradie, markdown
   middleware.ts
-content/docs/    príručka (.svx → neskôr MDX)
+content/docs/    kapitoly (.svx → /docs)
 ```
 
 Stránky sú React Server Components. Klient ide len tam, kde treba stav (hľadanie, téma, menu, formuláre).
@@ -90,9 +91,11 @@ bun run dev
 
 Aplikácia beží na [http://localhost:3000](http://localhost:3000). Katalóg sa **naseeduje pri prvom requeste**.
 
+`bun run dev`, `bun run start` aj `bun run db:up` najprv spustia `scripts/ensure-docker.ts` — otvoria Docker Desktop (alebo Colimu) a zdvihnú Postgres.
+
 Predvolené `DATABASE_URL` je `postgres://spst:spst@localhost:5432/spst`. Ak máš na 5432 systémový Postgres, v `.env` daj `POSTGRES_PORT=5433` a rovnaký port v `DATABASE_URL`. Zvyšok kľúčov je v `.env.example`.
 
-Bez bežiaceho Postgresu stránky spadnú na 500 (zásuvka sa zasekla). Docker Desktop musí byť zapnutý, kým ide `bun run db:up`.
+Bez bežiaceho Postgresu stránky spadnú na 500 (zásuvka sa zasekla).
 
 ### Databáza
 
@@ -120,8 +123,10 @@ Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, kt
 
 - **UploadThing** (`UPLOADTHING_TOKEN`) — obálky kníh z pultu
 - **Mail** — lokálne Mailtrap (`MAIL_DRIVER=mailtrap`), na ostrej Mailgun. Listy idú pri výpožičke, vrátení, predĺžení, čakacom lístku, termíne a zmene hesla. S `SUPABASE_SERVICE_ROLE_KEY` ide obnova hesla z pultu, nie z predvolenej pošty Supabase.
-- **Tik pultu** (`DESK_TICK_SECRET`) — cron `GET /api/desk/tick` (Bearer alebo `?secret=`). Bez secretu → 403. Tik ide aj zo zásobníka **pg-boss** každých 30 minút; pri návšteve fondu sa do fronty vloží singleton, ak ešte nebeží. Stav fronty je v pulte **Fronta** (`/admin/queue`).
-- **Rate limit** — prihlásenie, registrácia a obnova hesla. `RATE_LIMIT=off` vypne.
+- **Tik pultu** (`DESK_TICK_SECRET`) — cron `GET /api/desk/tick` **len** s `Authorization: Bearer`. Query `?secret=` už neplatí. Bez secretu → 403. Tik ide aj zo zásobníka **pg-boss** každých 30 minút; pri návšteve fondu sa do fronty vloží singleton, ak ešte nebeží. Stav fronty je v pulte **Fronta** (`/admin/queue`).
+- **Objednávka** — výpožička z karty ide do `book_order` a fronty `folio-order`. Jeden výtlačok si dvaja naraz nevezmú (`SKIP LOCKED` + unikátny otvorený lístok).
+- **Rate limit** — vstup, objednávky, hľadanie, lístky, pult a tik. `RATE_LIMIT=off` vypne (k6).
+- **Prefetch** — vnútorné odkazy idú cez `FolioLink` (`prefetch={false}`), aby katalóg s 2500 lístkami nevyčerpal ISR / edge kvótu.
 
 ## Mapa
 
@@ -134,26 +139,29 @@ Pult (`/admin`, alias `/pult`): `ADMIN_EMAILS` — čiarkou oddelené adresy, kt
 | `/login`                   | prihlásenie / registrácia (`?mod=novy`)                                                   |
 | `/loans`, `/profile`       | lístok a preukaz (po prihlásení)                                                          |
 | `/admin`                   | pult — čítačka, CRUD, fronta lístkov, trieda vonku, štítky, výkazy CSV/XML (knihovník; učiteľ len triedu) |
-| `/docs`                    | príručka                                                                                  |
+| `/docs`                    | príručka — katalóg, výpožičky, objednávky, tempo, správa, záťaž, prevádzka               |
 
 Slovenské aliasy (`/knihy`, `/pult`, `/profil`…) sa 308 presmerujú na kanonické cesty.
 
 ## Skripty
 
 ```sh
-bun run dev          # vývoj, port 3000
+bun run dev          # Docker + Postgres, potom next dev :3000
 bun run build        # produkčný build
-bun run start        # Next start, port 3000
+bun run start        # Docker + Postgres, potom next start :3000
 bun run test         # Vitest (jednorazovo)
 bun run lint         # Biome — kontrola formátu
 bun run format       # Biome — zapísať formát
+bun run shots        # snímky do docs/screenshots (Playwright)
 ```
+
+Pomocné skripty sú TypeScript (`scripts/*.ts`, `k6/scripts/*.ts`). Pred prvým `shots`: `bunx playwright install chromium`.
 
 Kód drží **Biome**. Pravidlá sú v `biome.json` (taby, `'` , šírka 100). V Cursor / VS Code daj rozšírenie `biomejs.biome`.
 
 ## Záťaž (k6)
 
-Meria čítanie katalógu, nie prihlásenie ani výpožičky. Fond musí bežať skôr (`bun run dev` na porte 3000). Obraz `grafana/k6:2.2.0`.
+Meria čítanie katalógu, nie prihlásenie ani výpožičky. Fond musí bežať skôr (`bun run dev` na porte 3000). V `.env` daj `RATE_LIMIT=off`, inak `/api/search` dostane 429. Obraz `grafana/k6:2.2.0`. Skripty sú `k6/scripts/*.ts`.
 
 ```sh
 bun run k6:up

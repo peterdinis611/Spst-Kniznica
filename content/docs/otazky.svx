@@ -24,6 +24,14 @@ Dones knihu na pult. V aplikácii poplatok nie je. Na [Moje knihy](/loans) ju na
 
 Nie. Všetky výtlačky sú vonku. Prihlás sa a na karte polož **čakací lístok**. Keď sa zväzok vráti, príde list a sedem dní ho drží pult.
 
+## Prečo po lístku píše „objednávka v zásobníku“?
+
+Lebo výtlačok ide cez rad, nie priamo. Jeden kus si dvaja naraz nevezmú. Pečiatka **Vypožičané** padne o chvíľu. Podrobnosti sú v kapitole [Objednávky](/docs/objednavky).
+
+## Fond mi povedal, že je príliš veľa pokusov.
+
+Počkaj minútu. Pult si drží dych — vstup, objednávky aj hľadanie majú strop. Nie je to zákaz účtu. Čísla sú v kapitole [Tempo](/docs/tempo).
+
 ## Dá sa predĺžiť bez fronty v pavilóne B?
 
 Raz, z [Moje knihy](/loans), kým nie si po lehote a na knihu nikto nečaká. Ďalšie predĺženie rieši pult.
@@ -67,6 +75,10 @@ Na [prihlásení](/login) je odkaz **Zabudnuté heslo**. Pošleme odkaz na e-mai
 ## Kde je správa fondu?
 
 V **preukaze vpravo** (kruh s iniciálami) je **Pult** — pre knihovníka celý fond, pre učiteľa trieda vonku. Ľavé menu ho neschováva omylom — je to zásuvka správy, nie katalóg. Podrobnosti sú v kapitole [Správa](/docs/sprava).
+
+## Docker sa nespustil a sieň padá na 500.
+
+Zapni Docker Desktop. `bun run dev` aj `bun run db:up` ho skúsia otvoriť samy (`scripts/ensure-docker.ts`). Potom migrácie. Postup je v kapitole [Prevádzka](/docs/prevadzka).
 
 ## Kde vás nájdem?
 

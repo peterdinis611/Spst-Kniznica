@@ -1,0 +1,47 @@
+---
+title: Prevádzka
+description: Docker, tik, skripty a prečo katalóg neprefetchuje 2500 lístkov.
+order: 10.5
+---
+
+Táto kapitola je pre toho, kto fond **spúšťa**, nie pre čitateľa v sieni.
+
+## Docker pred prvým requestom
+
+`bun run dev`, `bun run start` aj `bun run db:up` najprv spustia `scripts/ensure-docker.ts`. Skript otvorí **Docker Desktop** (alebo Colimu), počká a zdvihne Postgres (`docker compose up -d --wait postgres`).
+
+Bez bežiaceho kontajnera stránky spadnú na 500 — zásuvka sa zasekla. Po `db:up` ešte `bun run db:migrate`.
+
+Predvolené `DATABASE_URL` je `postgres://spst:spst@localhost:5432/spst`. Keď 5432 drží iný Postgres, v `.env` daj `POSTGRES_PORT=5433` a **rovnaký port** v `DATABASE_URL`.
+
+Veľkosť seedu je `SEED_VOLUME`. Kanonický fond je 20 kníh. `2500` je na stres registra — po zmene reštartuj proces.
+
+## Tik pultu
+
+Pripomienky lehôt a vypršané holdy ide **pg-boss** každých 30 minút. Núdzový kľúč je `GET /api/desk/tick`.
+
+Tik berie **len** hlavičku `Authorization: Bearer …` (`DESK_TICK_SECRET`). Query `?secret=` už **neplatí**. Bez secretu je odpoveď 403. Porovnanie je timing-safe.
+
+Zásobník uvidíš v [Fronta](/admin/queue). **Tik teraz** peciatkuje hneď.
+
+## Listy bez prefetchu
+
+Vnútorné odkazy idú cez `FolioLink` — `prefetch={false}`. Katalóg s 2500 lístkami inak na Verceli vyčerpá ISR / edge kvótu. Čitateľ klikne, fond listuje; vopred sa karty nenaťahujú.
+
+Pri prechode sa na chvíľu položí lístok **Listujem.** Rýchly skok ho neukáže.
+
+## Skripty
+
+Pomocné súbory sú **TypeScript**. `bun` ich spúšťa priamo.
+
+| Príkaz | Súbor | Čo robí |
+| --- | --- | --- |
+| `bun run db:up` | `scripts/ensure-docker.ts` | Docker + Postgres |
+| `bun run shots` | `scripts/readme-shots.ts` | snímky do README (Playwright) |
+| `bun run k6:*` | `k6/scripts/*.ts` | dym, záťaž, stres, spike |
+
+Pred prvým `shots` raz: `bunx playwright install chromium`. V CI ostáva `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`.
+
+Hlavičky pultu (CSP, COOP, `nosniff`) sú v `next.config.ts`. Auth listy berú `ORIGIN`, nie `Origin` z prehliadača.
+
+Viac o meraní je v kapitole [Záťaž](/docs/zataz). Tempo zápisov je v kapitole [Tempo](/docs/tempo).

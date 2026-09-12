@@ -43,9 +43,9 @@ Každý zväzok má:
 - odbor a **signatúru** (kód police + číslo + rez)
 - ISBN, vydavateľa a počet strán
 - stav výtlačkov — koľko je voľných z celkového počtu
-- tlačidlo výpožičky, ak si prihlásený a kniha je voľná
+- tlačidlo výpožičky, ak si prihlásený a kniha je voľná — ide ako [objednávka](/docs/objednavky)
 
-Ak je nula voľných, kniha ostáva v katalógu, ale zobrať sa nedá. Skús neskôr, alebo sa opýtaj na pulte.
+Ak je nula voľných, kniha ostáva v katalógu. Prihlásený čitateľ položí **čakací lístok**. Hosť uvidí výzvu na prihlásenie.
 
 Súvisiace zväzky z toho istého odboru sú dole na karte.
 

@@ -65,8 +65,11 @@ export const DOCS = [
 	'/docs/pult',
 	'/docs/katalog',
 	'/docs/vypozicky',
+	'/docs/objednavky',
 	'/docs/email',
-	'/docs/zataz'
+	'/docs/tempo',
+	'/docs/zataz',
+	'/docs/prevadzka'
 ] as const;
 
 export const DESK = [

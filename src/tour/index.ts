@@ -88,7 +88,7 @@ export const docsSteps: DriveStep[] = [
 		popover: {
 			title: 'Kapitoly',
 			description:
-				'Osem listov: katalóg, register, odbory, výpožičky, účet, pult a otázky. Na telefóne ich otvoríš tlačidlom Kapitoly.',
+				'Zošit pultu: katalóg, výpožičky, objednávky, tempo, správa a prevádzka. Na telefóne kapitoly otvoríš tlačidlom Kapitoly.',
 			side: 'right',
 			align: 'start'
 		}

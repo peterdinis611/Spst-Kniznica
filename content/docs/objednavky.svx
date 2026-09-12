@@ -1,0 +1,40 @@
+---
+title: Objednávky
+description: Ako fond berie výtlačok, keď si ho dvaja chcú naraz.
+order: 5.5
+---
+
+Výpožička z karty knihy **nie je priamy zápis**. Najprv ide **objednávka** do zásobníka. Až potom padne pečiatka **Vypožičané**.
+
+Prečo: jeden výtlačok si dvaja naraz nevezmú. Fond najprv zaviaže kus (`FOR UPDATE` + `SKIP LOCKED`), až potom otvorí lístok.
+
+## Dva rady
+
+| Čo položíš | Kedy | Čo sa stane |
+| --- | --- | --- |
+| **Objednávka** | Výtlačok je voľný | Zásobník `folio-order` kus zaberie a otvorí výpožičku |
+| **Čakací lístok** | Nula voľných | Až sa zväzok vráti, drží ho pult sedem dní |
+
+Objednávka nie je rezervácia. Rezervácia čaká na vrátenie. Objednávka berie kus, ktorý už na polici je.
+
+## Ako to ide
+
+1. Na karte vyplníš meno, triedu a dobu — ten istý lístok ako predtým.
+2. Fond zaradí riadok do `book_order` (stav `queued`).
+3. **pg-boss** fronta `folio-order` kus zaberie. Keď zásobník nespí, pečiatka padne v requeste.
+4. Kým čakáš, na karte ostane lístok **Objednávka je v zásobníku**.
+5. Po zábere ide list **Vypožičané** a zväzok uvidíš na [Moje knihy](/loans).
+
+Naraz máš na jeden zväzok len **jednu otvorenú objednávku** (`queued` alebo `filling`). Druhý pokus dostane pečiatku **Túto objednávku už máš v zásobníku**.
+
+Keď kus medzitým zoberie iný, objednávka padne ako `rejected`. Polož [čakací lístok](/docs/vypozicky), alebo skús iný titul.
+
+## Tempo
+
+Z jedného preukazu ide najviac **8 objednávok za 10 minút**, z jednej adresy **20**. Nad tým príde **Príliš veľa objednávok**. Podrobnosti sú v kapitole [Tempo](/docs/tempo).
+
+## Pult
+
+Zásobník vidí knihovník v zásuvke [Fronta](/admin/queue). Lístok objednávky má pečiatku **objednávka**. Zlyhaný dáš **Znova**, čakajúci **Stiahnuť**.
+
+Jeden otvorený lístok na ten istý výtlačok drží aj index `loan_one_holding_open_uidx`. Druhý predaj toho istého kusu databáza neprepustí.

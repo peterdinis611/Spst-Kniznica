@@ -1,0 +1,39 @@
+---
+title: Tempo
+description: Koľko lístkov fond pustí za minútu — a kedy povie nie.
+order: 8.5
+---
+
+Fond nenechá jeden prehliadač ani jeden preukaz zaplaviť pult. Keď padne strop, uvidíš **Príliš veľa pokusov** (pečiatka `pace`). Pri objednávke je to **Príliš veľa objednávok**.
+
+Vypneš to len zámerne: v `.env` daj `RATE_LIMIT=off`. Tak meria [k6](/docs/zataz) — bije len čítanie, nie prihlásenie.
+
+## Okná
+
+| Druh | Strop | Okno | Kde to cítiš |
+| --- | --- | --- | --- |
+| Vstup | 8 z prehliadača / 200 z adresy | 1 min / 1 hod | prihlásenie, registrácia, obnova |
+| Objednávka | 8 z preukazu / 20 z adresy | 10 min | karta knihy, čakací lístok |
+| Lístok (action) | 20 z preukazu / 40 z adresy | 10 min | predĺženie, nahlásenie, účet |
+| Pult | 120 z preukazu / 200 z adresy | 10 min | zásuvky správy |
+| Hľadanie | 90 z adresy | 1 min | `/api/search`, lišta |
+| Pošta | 4 z prehliadača / 60 z adresy | 1 hod | listy hesla |
+| Tik | 30 z adresy | 1 hod | `GET /api/desk/tick` |
+
+Čísla sú na jeden proces. Po reštarte `bun run dev` sa vedierka vyprázdnia.
+
+## Čo ostáva otvorené
+
+Katalóg, register a karty kníh čítaš bez stropu. Tempo bije **zápis** a **hľadanie**, nie listovanie police.
+
+Hľadanie v lište berie najviac **80 znakov**. Dlhší reťazec fond oreže, nehľadá ho celý.
+
+## Pečiatky
+
+| Pečiatka | Kedy |
+| --- | --- |
+| `pace` | príliš veľa lístkov na pulte alebo v účte |
+| `order-limit` | príliš veľa objednávok z karty |
+| `order-busy` | ten istý zväzok už máš v zásobníku |
+
+Počkaj chvíľu. Nie je to zákaz — len dych pultu.

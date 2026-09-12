@@ -21,8 +21,10 @@ Keď je **nula voľných**, na karte položíš **čakací lístok**. Až sa vý
 
 1. Prihlás sa.
 2. Otvor kartu knihy v [katalógu](/books).
-3. Ak je výtlačok voľný, otvor lístok a vyplň **meno, priezvisko, triedu a dobu**. Na karte ostane pečiatka **Vypožičané**.
-4. Zväzok si vyzdvihni na pulte — v účte uvidíš termín vrátenia. Na preukazový e-mail príde lístok **Vypožičané**.
+3. Ak je výtlačok voľný, otvor lístok a vyplň **meno, priezvisko, triedu a dobu**. Fond najprv zaradí [objednávku](/docs/objednavky) — kým zásobník kus zaberie, na karte ostane **Objednávka je v zásobníku**.
+4. Po zábere padne pečiatka **Vypožičané**. Zväzok si vyzdvihni na pulte — termín uvidíš na [Moje knihy](/loans). Na preukazový e-mail príde lístok.
+
+Jeden výtlačok si dvaja naraz nevezmú. Fond kus zaviaže, až potom otvorí lístok.
 
 Ak je nula voľných, prihlásený čitateľ položí **čakací lístok**. Hosť uvidí výzvu na prihlásenie. Kniha nie je stratená, len vonku.
 

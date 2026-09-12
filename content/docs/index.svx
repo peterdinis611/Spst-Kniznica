@@ -36,11 +36,14 @@ Táto príručka je interný zošit pultu. V hlavnom menu ju nehľadaj — otvor
 - [Register](/docs/register) — všetky knihy, signatúra a voľné výtlačky
 - [Odbory](/docs/odbory) — police podľa študijných zameraní
 - [Výpožičky](/docs/vypozicky) — lehota, pečiatky a vrátenie
+- [Objednávky](/docs/objednavky) — zásobník, keď si kus chcú dvaja naraz
 - [Účet](/docs/ucet) — registrácia, prihlásenie a odhlásenie
 - [E-mail](/docs/email) — listy z pultu: preukaz, heslo, výpožička a vrátenie
 - [Pult](/docs/pult) — menu, téma, prehliadka pultu aj príručky
 - [Správa](/docs/sprava) — kartotéka tabuliek z preukazu vpravo
+- [Tempo](/docs/tempo) — koľko lístkov fond pustí za minútu
 - [Časté otázky](/docs/otazky) — krátke odpovede z pultu
 - [Záťaž](/docs/zataz) — k6 stresstesty a grafy v Grafane
+- [Prevádzka](/docs/prevadzka) — Docker, tik, skripty a prefetch
 
 Prehliadku **pultu** spustíš v bočnom paneli tlačidlom **Prehliadka**. Prehliadku **príručky** spustíš v hlavičke tohto zošita. Ani jedna sa nespustí sama.

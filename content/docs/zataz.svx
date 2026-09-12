@@ -6,6 +6,8 @@ order: 10
 
 Fond sa meria **k6**. Grafy kreslí **Grafana** z Promethea. Nejde to proti prihláseniu ani výpožičke — len čítanie katalógu, registra, hľadania a kariet kníh.
 
+Pri meraní daj v `.env` `RATE_LIMIT=off`. Inak hľadanie (`/api/search`) po 90 úderoch za minútu dostane 429. Skripty sú TypeScript: `k6/scripts/*.ts`.
+
 ## Predtým
 
 1. Docker.
