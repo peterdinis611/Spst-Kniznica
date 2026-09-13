@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CatalogBook } from '@/types';
 import { invalidateCatalogCache, setCatalogCache } from '../catalog-cache';
-import { ftsBookIds } from '../db/catalog-fts';
+import { ftsBookIds, searchBookIdsSql } from '../db/catalog-fts';
 
 vi.mock('../db', () => ({ db: {} }));
 
 vi.mock('../db/catalog-fts', () => ({
 	ftsBookIds: vi.fn(() => Promise.resolve([])),
+	searchBookIdsSql: vi.fn(() => Promise.resolve([])),
 	rebuildCatalogFts: vi.fn(),
 	upsertBookFts: vi.fn(),
 	deleteBookFts: vi.fn()
@@ -92,6 +93,7 @@ function seed(books: CatalogBook[]) {
 afterEach(() => {
 	invalidateCatalogCache();
 	vi.mocked(ftsBookIds).mockResolvedValue([]);
+	vi.mocked(searchBookIdsSql).mockResolvedValue([]);
 });
 
 describe('isLoanLimitReached', () => {
@@ -172,12 +174,14 @@ describe('catalog listings', () => {
 });
 
 describe('searchCatalog', () => {
-	it('falls back to substring search when FTS is empty', async () => {
+	it('falls back to a bounded SQL search when FTS is empty', async () => {
 		seed([book('stroje-1', { title: 'Stroje' }), book('siete-1', { title: 'Siete' })]);
+		vi.mocked(searchBookIdsSql).mockResolvedValue(['stroje-1']);
 
 		const items = await searchCatalog('stroje', 8);
 
 		expect(ftsBookIds).toHaveBeenCalledWith('stroje', 8);
+		expect(searchBookIdsSql).toHaveBeenCalledWith('stroje', 8);
 		expect(items.map((item) => item.id)).toEqual(['stroje-1']);
 		expect(items[0]).toMatchObject({
 			title: 'Stroje',

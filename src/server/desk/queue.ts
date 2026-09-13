@@ -8,6 +8,7 @@ export type DeskQueueRow = {
 	title: string;
 	detail: string;
 	stamp: string;
+	bookId?: string;
 };
 
 export type DeskQueue = {
@@ -51,6 +52,7 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 	const inboundQuery = db
 		.select({
 			id: loan.id,
+			bookId: book.id,
 			title: book.title,
 			name: user.name,
 			klass: loan.borrowerClass

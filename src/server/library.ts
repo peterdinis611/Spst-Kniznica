@@ -1,8 +1,9 @@
-import { and, asc, count, desc, eq, gt, isNotNull, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, inArray, isNotNull, isNull, ne } from 'drizzle-orm';
 import { ensureHall, hallIsWarming } from './boot';
 import { db } from './db';
 import { author, book, bookAuthor, category, holding, loan, reservation } from './db/schema';
-import { ftsBookIds } from './db/catalog-fts';
+import { ftsBookIds, searchBookIdsSql } from './db/catalog-fts';
+import { clampRegisterPage, REGISTER_PAGE_SIZE } from '@/catalog/register-page';
 import {
 	getCatalogCache,
 	invalidateCatalogCache,
@@ -189,7 +190,9 @@ export async function listAuthorSlips() {
 }
 
 export async function listCategoryChips() {
-	return (await listCategories()).map(toCategoryChip);
+	const hit = getCatalogCache();
+	if (hit) return hit.categories.map(toCategoryChip);
+	return (await loadCategories()).map(toCategoryChip);
 }
 
 export async function listHallDesk() {
@@ -255,29 +258,83 @@ export async function searchCatalog(query: string, limit = 8) {
 	if (!q) return [];
 
 	const ftsIds = await ftsBookIds(q, limit);
-	if (ftsIds.length > 0) {
-		const found = await listBooksByIds(ftsIds);
-		const rank = new Map(ftsIds.map((id, i) => [id, i]));
-		return found
-			.sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99))
-			.slice(0, limit)
-			.map(toSearchItem);
-	}
-
-	return (await listBooks(q)).slice(0, limit).map(toSearchItem);
+	const ids = ftsIds.length > 0 ? ftsIds : await searchBookIdsSql(q, limit);
+	const found = await listBooksByIds(ids);
+	const rank = new Map(ids.map((id, i) => [id, i]));
+	return found
+		.sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99))
+		.slice(0, limit)
+		.map(toSearchItem);
 }
 
 async function listBooksByIds(ids: string[]) {
 	if (ids.length === 0) return [];
-	const { byId } = await catalog();
-	return ids.flatMap((id) => {
-		const item = byId.get(id);
-		return item ? [item] : [];
-	});
+	const hit = getCatalogCache();
+	if (hit) {
+		return ids.flatMap((id) => {
+			const item = hit.byId.get(id);
+			return item ? [item] : [];
+		});
+	}
+	return assembleBooks(await bookQuery(ids));
 }
 
-async function bookQuery() {
-	return await db
+export async function pageBookSlips(input: {
+	q?: string;
+	categorySlug?: string;
+	page?: string;
+}) {
+	const q = input.q?.trim() ?? '';
+	const slug = input.categorySlug?.trim() ?? '';
+	let idFilter: string[] | null = null;
+	if (q) {
+		const fts = await ftsBookIds(q, 400);
+		idFilter = fts.length ? fts : await searchBookIdsSql(q, 400);
+		if (idFilter.length === 0) {
+			return { books: [], total: 0, page: 1, pages: 1, pageSize: REGISTER_PAGE_SIZE };
+		}
+	}
+
+	const where = and(
+		ne(book.id, 'book-modlitbicky'),
+		slug ? eq(category.slug, slug) : undefined,
+		idFilter ? inArray(book.id, idFilter) : undefined
+	);
+
+	const total =
+		(
+			await db
+				.select({ c: count() })
+				.from(book)
+				.innerJoin(category, eq(book.categoryId, category.id))
+				.where(where)
+		)[0]?.c ?? 0;
+
+	const leaf = clampRegisterPage(input.page, Number(total));
+	if (total === 0) {
+		return { books: [], total: 0, page: 1, pages: 1, pageSize: leaf.pageSize };
+	}
+
+	const pageIds = await db
+		.select({ id: book.id })
+		.from(book)
+		.innerJoin(category, eq(book.categoryId, category.id))
+		.where(where)
+		.orderBy(asc(category.sortOrder), asc(book.callNumber), asc(book.title))
+		.limit(leaf.pageSize)
+		.offset(leaf.offset);
+
+	const found = await listBooksByIds(pageIds.map((row) => row.id));
+	const rank = new Map(pageIds.map((row, i) => [row.id, i]));
+	const books = found
+		.sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99))
+		.map(toSlip);
+
+	return { books, total: Number(total), page: leaf.page, pages: leaf.pages, pageSize: leaf.pageSize };
+}
+
+async function bookQuery(ids?: string[]) {
+	const rows = db
 		.select({
 			book,
 			category,
@@ -288,6 +345,9 @@ async function bookQuery() {
 		.innerJoin(category, eq(book.categoryId, category.id))
 		.leftJoin(bookAuthor, eq(bookAuthor.bookId, book.id))
 		.leftJoin(author, eq(author.id, bookAuthor.authorId));
+	if (!ids) return rows;
+	if (ids.length === 0) return [];
+	return rows.where(inArray(book.id, ids));
 }
 
 async function loadCategories() {

@@ -12,10 +12,12 @@ const tilts = [-7, 4, -3, 6, -5, 3];
 
 export function FundLedger({
 	books,
-	categories
+	categories,
+	total
 }: {
 	books: BookSlip[];
 	categories: CategoryChip[];
+	total?: number;
 }) {
 	const ledger = categories
 		.map((cat) => ({
@@ -29,8 +31,8 @@ export function FundLedger({
 				.toSorted((a, b) => a.title.localeCompare(b.title, 'sk'))
 		}))
 		.filter((group) => group.books.length > 0);
-	const count = books.length;
-	const virtual = count > 48;
+	const count = total ?? books.length;
+	const virtual = books.length > 48;
 	const rows = ledger.flatMap((group) => [
 		{
 			kind: 'head' as const,

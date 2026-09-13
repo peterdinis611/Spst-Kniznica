@@ -73,6 +73,29 @@ export async function deleteBookFts(bookId: string) {
 	await db.execute(sql`DELETE FROM book_fts WHERE book_id = ${bookId}`);
 }
 
+export async function searchBookIdsSql(query: string, limit = 8): Promise<string[]> {
+	const raw = query.trim();
+	if (!raw) return [];
+	const needle = `%${raw.replace(/[%_\\]/g, '')}%`;
+
+	try {
+		const rows = await db.execute<{ id: string }>(sql`
+			SELECT DISTINCT b.id
+			FROM book b
+			LEFT JOIN book_author ba ON ba.book_id = b.id
+			LEFT JOIN author a ON a.id = ba.author_id
+			WHERE b.title ILIKE ${needle}
+				OR b.call_number ILIKE ${needle}
+				OR coalesce(b.isbn, '') ILIKE ${needle}
+				OR coalesce(a.name, '') ILIKE ${needle}
+			LIMIT ${limit}
+		`);
+		return [...rows].map((row) => row.id);
+	} catch {
+		return [];
+	}
+}
+
 export async function ftsBookIds(query: string, limit = 8): Promise<string[]> {
 	const match = catalogTsQuery(query);
 	if (!match) return [];
