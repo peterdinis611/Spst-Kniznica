@@ -48,7 +48,7 @@ Vstupná sieň je polica. Výpožička je lístok. Účet je preukaz.
 
 - **Next.js 15** (App Router) + React 19, Tailwind CSS 4
 - **PostgreSQL 16** (Docker) + **Drizzle ORM** (`postgres` klient)
-- **pg-boss** — zásobník lístkov (fronta listov, tiku pultu a objednávok `folio-order`)
+- **pg-boss** — zásobník lístkov (fronta listov, tiku pultu, objednávok `folio-order` a nočnej zálohy `folio-backup`)
 - **Supabase Auth** — registrácia, prihlásenie, obnova hesla
 - **next-safe-action** + Valibot — server actions
 - **Bun** — inštalácia a skripty (`bun.lock`)

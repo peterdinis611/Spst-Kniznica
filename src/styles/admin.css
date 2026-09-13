@@ -1735,8 +1735,119 @@ html.dark .pult-cabinet {
 	gap: 0.65rem;
 }
 
+.pult-hopper-blots {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem 1.4rem;
+}
+
 .pult-hopper-page .pult-blot {
 	margin: 0;
+}
+
+.pult-hopper-acts button.is-slip {
+	background: transparent;
+	color: var(--pult-walnut);
+	box-shadow: inset 0 0 0 1.5px var(--pult-brass);
+}
+
+.pult-hopper-acts button.is-slip:hover,
+.pult-hopper-acts button.is-slip:focus-visible {
+	background: var(--pult-lamp);
+	color: var(--pult-walnut);
+	box-shadow: none;
+}
+
+.pult-backup-shelf {
+	display: grid;
+	gap: 0.7rem;
+}
+
+.pult-backup-stack {
+	display: grid;
+	gap: 0.15rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pult-backup-stack a {
+	display: grid;
+	grid-template-columns: 8.6rem minmax(0, 1fr) auto;
+	gap: 0.2rem 1rem;
+	align-items: baseline;
+	padding: 0.72rem 1rem 0.68rem;
+	border: 1px solid color-mix(in srgb, var(--pult-walnut) 16%, transparent);
+	background:
+		repeating-linear-gradient(
+			180deg,
+			transparent,
+			transparent 1.32rem,
+			rgb(42 28 20 / 0.045) 1.32rem,
+			rgb(42 28 20 / 0.045) 1.33rem
+		),
+		color-mix(in srgb, #fff 58%, var(--pult-paper));
+	color: inherit;
+	text-decoration: none;
+	box-shadow: 0.22rem 0.22rem 0 color-mix(in srgb, var(--pult-walnut) 12%, transparent);
+}
+
+.pult-backup-stack li:nth-child(odd) a {
+	transform: rotate(-0.35deg);
+}
+
+.pult-backup-stack li:nth-child(even) a {
+	margin-left: 0.65rem;
+	transform: rotate(0.4deg);
+}
+
+.pult-backup-stack a:hover,
+.pult-backup-stack a:focus-visible {
+	transform: rotate(0deg);
+	outline: none;
+	border-color: var(--pult-brass);
+}
+
+.pult-backup-stack a em {
+	font-family: var(--font-mono), monospace;
+	font-size: 0.62rem;
+	font-style: normal;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pult-brass);
+}
+
+.pult-backup-stack a strong {
+	min-width: 0;
+	overflow: hidden;
+	font-family: var(--font-display), serif;
+	font-size: 1.05rem;
+	font-weight: 650;
+	letter-spacing: -0.03em;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pult-backup-stack a span {
+	font-family: var(--font-mono), monospace;
+	font-size: 0.68rem;
+	letter-spacing: 0.08em;
+	color: var(--pult-muted);
+}
+
+@media (max-width: 719px) {
+	.pult-backup-stack a {
+		grid-template-columns: 1fr auto;
+	}
+
+	.pult-backup-stack a em {
+		grid-column: 1 / -1;
+	}
+
+	.pult-backup-stack li:nth-child(even) a {
+		margin-left: 0;
+	}
 }
 
 .pult-hopper-well .pult-table td:last-child {

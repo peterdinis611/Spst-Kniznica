@@ -66,6 +66,14 @@ describe('describeFolioJob', () => {
 		expect(asOrderJob({ kind: 'order', orderId: 'ord-1' })?.orderId).toBe('ord-1');
 	});
 
+	it('stamps a nightly backup in the hopper', () => {
+		expect(describeFolioJob(FOLIO_QUEUES.backup, { kind: 'backup' })).toEqual({
+			title: 'Záloha fondu',
+			detail: 'pg_dump · nočný odpis',
+			stamp: 'záloha'
+		});
+	});
+
 	it('stamps a book order in the hopper', () => {
 		expect(
 			describeFolioJob(FOLIO_QUEUES.order, {
@@ -97,6 +105,7 @@ describe('bossStateLabel', () => {
 		expect(isFolioQueue('folio-mail')).toBe(true);
 		expect(isFolioQueue('desk-tick')).toBe(true);
 		expect(isFolioQueue('folio-order')).toBe(true);
+		expect(isFolioQueue('folio-backup')).toBe(true);
 		expect(isFolioQueue('other')).toBe(false);
 	});
 });

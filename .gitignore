@@ -21,3 +21,6 @@ Thumbs.db
 
 # SQLite leftovers (local.db from the previous driver)
 *.db
+
+# Nightly SQL dumps (pg-boss folio-backup)
+/data/backups/

@@ -1,6 +1,6 @@
 ---
 title: Prevádzka
-description: Docker, tik, skripty a prečo katalóg neprefetchuje 2500 lístkov.
+description: Docker, tik, nočná záloha, skripty a prečo katalóg neprefetchuje 2500 lístkov.
 order: 10.5
 ---
 
@@ -23,6 +23,12 @@ Pripomienky lehôt a vypršané holdy ide **pg-boss** každých 30 minút. Núdz
 Tik berie **len** hlavičku `Authorization: Bearer …` (`DESK_TICK_SECRET`). Query `?secret=` už **neplatí**. Bez secretu je odpoveď 403. Porovnanie je timing-safe.
 
 Zásobník uvidíš v [Fronta](/admin/queue). **Tik teraz** peciatkuje hneď.
+
+## Nočná záloha
+
+Každú noc o **3:00** (Europe/Bratislava) pg-boss vytiahne lístok `folio-backup`. Worker spraví `pg_dump` (alebo `docker compose exec postgres pg_dump`) do `data/backups/fond-….sql`. Ostáva posledných **14** súborov (`BACKUP_KEEP`).
+
+**Záloha teraz** na pulte zaradí ten istý lístok. Klik na odpis ho stiahne. Na Verceli dump neprejde — filesystem je prázdny a `pg_dump` tam nie je. Vypneš plán `BACKUP_OFF=1`. Cron zmeníš cez `BACKUP_CRON`.
 
 ## Listy bez prefetchu
 

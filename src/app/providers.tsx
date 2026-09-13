@@ -10,7 +10,13 @@ import '@/components/folio-toast.css';
 
 export function Providers({ children }: { children: ReactNode }) {
 	return (
-		<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+		<ThemeProvider
+			attribute="class"
+			defaultTheme="system"
+			enableSystem
+			enableColorScheme
+			disableTransitionOnChange
+		>
 			{children}
 			<Toaster
 				position="top-right"

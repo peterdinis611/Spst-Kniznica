@@ -76,6 +76,12 @@ async function bootBoss() {
 		expireInSeconds: 120,
 		deleteAfterSeconds: 14 * 24 * 60 * 60
 	});
+	await ensureQueue(boss, FOLIO_QUEUES.backup, {
+		policy: 'singleton',
+		retryLimit: 2,
+		expireInSeconds: 1800,
+		deleteAfterSeconds: 30 * 24 * 60 * 60
+	});
 
 	await boss.work<FolioMailJob>(
 		FOLIO_QUEUES.mail,
@@ -105,6 +111,15 @@ async function bootBoss() {
 		}
 	);
 
+	await boss.work(
+		FOLIO_QUEUES.backup,
+		{ localConcurrency: 1, pollingIntervalSeconds: 10 },
+		async () => {
+			const { runFolioBackup } = await import('@/server/folio-backup');
+			await runFolioBackup();
+		}
+	);
+
 	const scheduled = await boss.getSchedules(FOLIO_QUEUES.tick);
 	if (scheduled.length === 0) {
 		await boss.schedule(
@@ -118,6 +133,24 @@ async function bootBoss() {
 				singletonSeconds: 1700
 			}
 		);
+	}
+
+	const { folioBackupCron, folioBackupOff } = await import('@/server/folio-backup');
+	if (!folioBackupOff()) {
+		const backupSchedules = await boss.getSchedules(FOLIO_QUEUES.backup);
+		if (backupSchedules.length === 0) {
+			await boss.schedule(
+				FOLIO_QUEUES.backup,
+				folioBackupCron(),
+				{ kind: 'backup' },
+				{
+					tz: 'Europe/Bratislava',
+					key: 'folio-backup',
+					singletonKey: 'folio-backup',
+					singletonSeconds: 3500
+				}
+			);
+		}
 	}
 
 	return boss;
@@ -183,6 +216,17 @@ export async function enqueueDeskTick(force = false) {
 		FOLIO_QUEUES.tick,
 		{ kind: 'tick', at: new Date().toISOString() },
 		force ? { priority: 10 } : { singletonKey: 'desk-tick', singletonSeconds: 1700 }
+	);
+}
+
+export async function enqueueFolioBackup(force = false) {
+	const boss = await getBoss();
+	return boss.send(
+		FOLIO_QUEUES.backup,
+		{ kind: 'backup', at: new Date().toISOString() },
+		force
+			? { priority: 10, singletonKey: 'folio-backup', singletonSeconds: 90 }
+			: { singletonKey: 'folio-backup', singletonSeconds: 3500 }
 	);
 }
 

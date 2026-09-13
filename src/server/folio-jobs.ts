@@ -5,7 +5,8 @@ import type { ClassDigest } from '@/server/teacher-mail';
 export const FOLIO_QUEUES = {
 	mail: 'folio-mail',
 	tick: 'desk-tick',
-	order: 'folio-order'
+	order: 'folio-order',
+	backup: 'folio-backup'
 } as const;
 
 export type FolioQueueName = (typeof FOLIO_QUEUES)[keyof typeof FOLIO_QUEUES];
@@ -25,10 +26,12 @@ export type FolioOrderJob = {
 	callNumber?: string;
 };
 
-export type FolioJob = FolioMailJob | FolioTickJob | FolioOrderJob;
+export type FolioBackupJob = { kind: 'backup'; at?: string };
+
+export type FolioJob = FolioMailJob | FolioTickJob | FolioOrderJob | FolioBackupJob;
 
 export function isFolioQueue(name: string): name is FolioQueueName {
-	return name === FOLIO_QUEUES.mail || name === FOLIO_QUEUES.tick || name === FOLIO_QUEUES.order;
+	return (Object.values(FOLIO_QUEUES) as string[]).includes(name);
 }
 
 export function bossStateLabel(state: string) {
@@ -43,6 +46,10 @@ export function bossStateLabel(state: string) {
 export function describeFolioJob(name: string, data: unknown) {
 	if (name === FOLIO_QUEUES.tick) {
 		return { title: 'Tik pultu', detail: 'lehoty, holdy, triedy', stamp: 'tik' };
+	}
+
+	if (name === FOLIO_QUEUES.backup) {
+		return { title: 'Záloha fondu', detail: 'pg_dump · nočný odpis', stamp: 'záloha' };
 	}
 
 	if (name === FOLIO_QUEUES.order) {

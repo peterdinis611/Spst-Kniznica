@@ -1,7 +1,7 @@
 'use client';
 
+import { Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useState, type ReactNode } from 'react';
 import { HallSplash } from './HallSplash';
 
 function isDeskHop(href: string) {
@@ -21,15 +21,22 @@ function isDeskHop(href: string) {
 	}
 }
 
+function SearchHopWatch({ onHop }: { onHop: () => void }) {
+	const search = useSearchParams().toString();
+	useEffect(() => {
+		onHop();
+	}, [search, onHop]);
+	return null;
+}
+
 export function FolioNavGate({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
-	const search = useSearchParams();
 	const [pending, setPending] = useState(false);
-	const key = `${pathname}?${search}`;
+	const clearPending = useCallback(() => setPending(false), []);
 
 	useEffect(() => {
 		setPending(false);
-	}, [key]);
+	}, [pathname]);
 
 	useEffect(() => {
 		function onClick(event: MouseEvent) {
@@ -49,6 +56,9 @@ export function FolioNavGate({ children }: { children: ReactNode }) {
 
 	return (
 		<>
+			<Suspense fallback={null}>
+				<SearchHopWatch onHop={clearPending} />
+			</Suspense>
 			{pending ? <HallSplash copy="Listujem." /> : null}
 			{children}
 		</>

@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
 import { Providers } from './providers';
 import { ensureHall } from '@/server/boot';
-import { HallSplash } from '@/components/HallSplash';
 import { FolioNavGate } from '@/components/FolioNavGate';
 import { fontVariables } from './fonts';
 import './globals.css';
@@ -31,15 +29,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				<link rel="preconnect" href="https://images.unsplash.com" />
 				<link rel="dns-prefetch" href="https://images.unsplash.com" />
 			</head>
-			<body>
+			<body suppressHydrationWarning>
 				<a className="skip-link" href="#obsah">
 					Preskočiť na obsah
 				</a>
 				<form id="logout-form" method="POST" action="/logout" className="hidden" />
 				<Providers>
-					<Suspense fallback={<HallSplash copy="Listujem." />}>
-						<FolioNavGate>{children}</FolioNavGate>
-					</Suspense>
+					<FolioNavGate>{children}</FolioNavGate>
 				</Providers>
 			</body>
 		</html>

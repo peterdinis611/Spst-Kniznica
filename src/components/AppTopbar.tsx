@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { FolioLink as Link } from '@/components/FolioLink';
 import dynamic from 'next/dynamic';
 import {
@@ -38,18 +38,13 @@ export function AppTopbar({
 	admin?: boolean;
 }) {
 	const pathname = usePathname();
-	const searchParams = useSearchParams();
 	const title = deskTitle(pathname);
-	const query = searchParams.get('q') ?? '';
-	const odbor = searchParams.get('odbor') ?? '';
 	const hideSearch =
 		pathname.startsWith('/login') ||
 		pathname.startsWith('/auth') ||
 		pathname.startsWith('/admin') ||
 		pathname.startsWith('/profile');
 	const authorSearch = pathname.startsWith('/authors');
-	const chosen = odbor || 'all';
-	const odborLabel = categories.find((cat) => cat.slug === chosen)?.name ?? 'Všetky odbory';
 	const displayName = user?.name ?? 'Hosť';
 	const initials = displayName
 		.split(/\s+/)
@@ -215,71 +210,18 @@ export function AppTopbar({
 					</div>
 				</div>
 				{hideSearch ? null : (
-					<form
-						className="col-span-2 flex h-10 min-w-0 w-full items-center gap-1 rounded-full bg-wash pr-1 pl-2 sm:h-12 sm:gap-2 sm:pr-1.5 sm:pl-2 lg:col-span-1 lg:col-start-2 lg:row-start-1"
-						method="GET"
-						action={authorSearch ? '/authors' : '/books'}
-						data-tour="search"
+					<Suspense
+						fallback={
+							<div className="col-span-2 h-10 lg:col-span-1 lg:col-start-2 lg:row-start-1" />
+						}
 					>
-						{authorSearch ? null : (
-							<>
-								<input type="hidden" name="odbor" value={chosen === 'all' ? '' : chosen} />
-								<div className="relative hidden md:block">
-									<button
-										type="button"
-										className="flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 font-sans text-[0.78rem] font-semibold text-foreground outline-none hover:bg-card"
-										aria-label="Odbor"
-										onClick={() => setOdborOpen((open) => !open)}
-									>
-										{odborLabel}
-										<ChevronDown className="size-3.5 text-muted-foreground" />
-									</button>
-									{odborOpen ? (
-										<div className="absolute top-12 z-20 min-w-56 rounded-2xl bg-card p-2 shadow-[0_18px_40px_rgb(60_42_33/0.14)] ring-1 ring-border">
-											<Link
-												href={query ? `/books?q=${encodeURIComponent(query)}` : '/books'}
-												className="block rounded-full px-3 py-2 font-sans text-[0.82rem] no-underline"
-											>
-												Všetky odbory
-											</Link>
-											{categories.map((cat) => (
-												<Link
-													key={cat.id}
-													href={`/books?odbor=${cat.slug}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-													className="block rounded-full px-3 py-2 font-sans text-[0.82rem] no-underline"
-												>
-													<span className="mr-2 font-mono text-[0.68rem] font-semibold tracking-wider opacity-70">
-														{cat.code}
-													</span>
-													{cat.name}
-												</Link>
-											))}
-										</div>
-									) : null}
-								</div>
-							</>
-						)}
-						<Search className="size-4 shrink-0 text-muted-foreground sm:ml-1" />
-						<label className="sr-only" htmlFor="q-desk">
-							Hľadať
-						</label>
-						<input
-							id="q-desk"
-							className="h-10 min-w-0 flex-1 rounded-none border-0 bg-transparent px-1.5 shadow-none placeholder:truncate focus-visible:border-0 focus-visible:ring-0 sm:h-12 sm:px-3"
-							type="search"
-							name="q"
-							defaultValue={query}
-							placeholder={authorSearch ? 'priezvisko' : 'názov alebo autor'}
+						<DeskSearch
+							categories={categories}
+							authorSearch={authorSearch}
+							odborOpen={odborOpen}
+							setOdborOpen={setOdborOpen}
 						/>
-						<button
-							className="grid size-8 shrink-0 place-items-center rounded-full bg-stamp text-stamp-ink md:h-10 md:w-auto md:px-5 md:text-[0.78rem] md:font-semibold"
-							type="submit"
-							aria-label="Hľadať"
-						>
-							<Search className="size-3.5 md:hidden" />
-							<span className="hidden md:inline">Hľadať</span>
-						</button>
-					</form>
+					</Suspense>
 				)}
 			</div>
 			{menuOpen ? (
@@ -304,5 +246,91 @@ export function AppTopbar({
 				</div>
 			) : null}
 		</header>
+	);
+}
+
+function DeskSearch({
+	categories,
+	authorSearch,
+	odborOpen,
+	setOdborOpen
+}: {
+	categories: CategoryChip[];
+	authorSearch: boolean;
+	odborOpen: boolean;
+	setOdborOpen: (open: boolean | ((value: boolean) => boolean)) => void;
+}) {
+	const searchParams = useSearchParams();
+	const query = searchParams.get('q') ?? '';
+	const odbor = searchParams.get('odbor') ?? '';
+	const chosen = odbor || 'all';
+	const odborLabel = categories.find((cat) => cat.slug === chosen)?.name ?? 'Všetky odbory';
+
+	return (
+		<form
+			className="col-span-2 flex h-10 min-w-0 w-full items-center gap-1 rounded-full bg-wash pr-1 pl-2 sm:h-12 sm:gap-2 sm:pr-1.5 sm:pl-2 lg:col-span-1 lg:col-start-2 lg:row-start-1"
+			method="GET"
+			action={authorSearch ? '/authors' : '/books'}
+			data-tour="search"
+		>
+			{authorSearch ? null : (
+				<>
+					<input type="hidden" name="odbor" value={chosen === 'all' ? '' : chosen} />
+					<div className="relative hidden md:block">
+						<button
+							type="button"
+							className="flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 font-sans text-[0.78rem] font-semibold text-foreground outline-none hover:bg-card"
+							aria-label="Odbor"
+							onClick={() => setOdborOpen((open) => !open)}
+						>
+							{odborLabel}
+							<ChevronDown className="size-3.5 text-muted-foreground" />
+						</button>
+						{odborOpen ? (
+							<div className="absolute top-12 z-20 min-w-56 rounded-2xl bg-card p-2 shadow-[0_18px_40px_rgb(60_42_33/0.14)] ring-1 ring-border">
+								<Link
+									href={query ? `/books?q=${encodeURIComponent(query)}` : '/books'}
+									className="block rounded-full px-3 py-2 font-sans text-[0.82rem] no-underline"
+								>
+									Všetky odbory
+								</Link>
+								{categories.map((cat) => (
+									<Link
+										key={cat.id}
+										href={`/books?odbor=${cat.slug}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
+										className="block rounded-full px-3 py-2 font-sans text-[0.82rem] no-underline"
+									>
+										<span className="mr-2 font-mono text-[0.68rem] font-semibold tracking-wider opacity-70">
+											{cat.code}
+										</span>
+										{cat.name}
+									</Link>
+								))}
+							</div>
+						) : null}
+					</div>
+				</>
+			)}
+			<Search className="size-4 shrink-0 text-muted-foreground sm:ml-1" />
+			<label className="sr-only" htmlFor="q-desk">
+				Hľadať
+			</label>
+			<input
+				id="q-desk"
+				className="h-10 min-w-0 flex-1 rounded-none border-0 bg-transparent px-1.5 shadow-none placeholder:truncate focus-visible:border-0 focus-visible:ring-0 sm:h-12 sm:px-3"
+				type="search"
+				name="q"
+				defaultValue={query}
+				placeholder={authorSearch ? 'priezvisko' : 'názov alebo autor'}
+			/>
+			<button
+				className="grid size-8 shrink-0 place-items-center rounded-full bg-stamp text-stamp-ink md:h-10 md:w-auto md:px-5 md:text-[0.78rem] md:font-semibold"
+				type="submit"
+				aria-label="Hľadať"
+			>
+				<Search className="size-3.5 md:hidden" />
+				<span className="hidden md:inline">Hľadať</span>
+			</button>
+		</form>
 	);
 }

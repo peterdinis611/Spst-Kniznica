@@ -3,13 +3,14 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { canOperateDesk } from '@/server/admin-access';
-import { cancelBossJob, retryBossJob } from '@/server/boss';
+import { cancelBossJob, enqueueFolioBackup, retryBossJob } from '@/server/boss';
 import { runDeskTick } from '@/server/desk-tick';
+import { runFolioBackup } from '@/server/folio-backup';
 import { isFolioQueue } from '@/server/folio-jobs';
 import { noticeHref } from '@/notify/notices';
 import { failIfRateLimited } from '@/server/rate-limit';
 import { actionEvent, getSessionReader } from '@/server/session';
-import { isActionFailure } from '@/http/kit';
+import { isActionFailure, isRedirect } from '@/http/kit';
 
 async function requireLibrarian() {
 	const user = await getSessionReader();
@@ -51,4 +52,27 @@ export async function runQueueTick() {
 		holds: String(report.holds)
 	});
 	redirect(`/admin/queue?${q.toString()}`);
+}
+
+export async function runQueueBackup() {
+	await requireLibrarian();
+	try {
+		await enqueueFolioBackup(true);
+		redirect('/admin/queue?zaloha=1');
+	} catch (err) {
+		if (isRedirect(err)) throw err;
+	}
+
+	try {
+		const report = await runFolioBackup();
+		const q = new URLSearchParams({
+			zaloha: '2',
+			file: report.file,
+			bytes: String(report.bytes)
+		});
+		redirect(`/admin/queue?${q.toString()}`);
+	} catch (err) {
+		if (isRedirect(err)) throw err;
+		redirect('/admin/queue?zaloha=0');
+	}
 }
