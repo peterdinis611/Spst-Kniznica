@@ -1,9 +1,9 @@
-import { FolioLink as Link } from '@/components/FolioLink';
-import { pageMeta } from '@/utils/metadata';
-import { listCategoryChips, pageBookSlips } from '@/server/library';
 import { registerHref } from '@/catalog/register-page';
 import { BookRegister } from '@/components/BookRegister';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { FolioPager } from '@/components/FolioPager';
+import { listCategoryChips, pageBookSlips } from '@/server/library';
+import { pageMeta } from '@/utils/metadata';
 
 export const metadata = pageMeta({
 	title: 'Katalóg',

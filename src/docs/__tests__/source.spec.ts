@@ -9,8 +9,11 @@ describe('docsSource', () => {
 		expect(urls[0]).toBe('/docs');
 		expect(urls).toContain('/docs/katalog');
 		expect(urls).toContain('/docs/objednavky');
+		expect(urls).toContain('/docs/citacka');
+		expect(urls).toContain('/docs/ucitel');
 		expect(urls).toContain('/docs/tempo');
 		expect(urls).toContain('/docs/prevadzka');
+		expect(urls).toContain('/docs/nasadenie');
 		expect(urls.indexOf('/docs/vypozicky')).toBeLessThan(urls.indexOf('/docs/objednavky'));
 		expect(getDocPage([])?.data.title).toBe('Príručka fondu');
 		expect(getDocPage(['email'])?.data.title).toBe('E-mail');

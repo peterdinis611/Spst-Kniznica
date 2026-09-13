@@ -8,6 +8,8 @@ describe('public map', () => {
 		expect(urls.some((url) => url.endsWith('/docs/email'))).toBe(true);
 		expect(urls.some((url) => url.endsWith('/docs/objednavky'))).toBe(true);
 		expect(urls.some((url) => url.endsWith('/docs/prevadzka'))).toBe(true);
+		expect(urls.some((url) => url.endsWith('/docs/ucitel'))).toBe(true);
+		expect(urls.some((url) => url.endsWith('/docs/nasadenie'))).toBe(true);
 	});
 
 	it('keeps the desk out of robots', () => {

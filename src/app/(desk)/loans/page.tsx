@@ -1,8 +1,8 @@
-import { FolioLink as Link } from '@/components/FolioLink';
-import { pageMeta } from '@/utils/metadata';
-import { authorLine, dueStatus, firstName, loanedLabel, readerNumber } from '@/utils/format';
 import { BookCover } from '@/components/BookCover';
-import { HistoryClear, LoanReturn, WaitCancel } from '@/components/LoanMutations';
+import { FolioLink as Link } from '@/components/FolioLink';
+import { HistoryClear, LoanReturn, OrderCancel, WaitCancel } from '@/components/LoanMutations';
+import { authorLine, dueStatus, firstName, loanedLabel, readerNumber } from '@/utils/format';
+import { pageMeta } from '@/utils/metadata';
 import { loadLoans } from './actions';
 import '@/components/loans-ticket.css';
 
@@ -91,10 +91,11 @@ export default async function LoansPage() {
 						<h2 className="font-display text-2xl">V zásobníku</h2>
 						<ul className="mt-4 grid gap-3">
 							{data.orders.map((order) => (
-								<li key={order.id}>
+								<li key={order.id} className="flex items-center justify-between gap-3">
 									<Link href={`/books/${order.bookId}`} className="no-underline">
 										{order.title} · čaká na pečiatku
 									</Link>
+									{order.status === 'queued' ? <OrderCancel orderId={order.id} /> : null}
 								</li>
 							))}
 						</ul>

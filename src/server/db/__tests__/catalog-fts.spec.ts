@@ -11,6 +11,7 @@ import {
 	ensureCatalogFts,
 	ftsBookIds,
 	rebuildCatalogFts,
+	searchBookIdsSql,
 	upsertBookFts
 } from '../catalog-fts';
 
@@ -57,5 +58,10 @@ describe('catalog fts store', () => {
 	it('swallows a missing store', async () => {
 		vi.mocked(db.execute).mockRejectedValue(new Error('relation "book_fts" does not exist'));
 		await expect(ftsBookIds('stroje')).resolves.toEqual([]);
+	});
+
+	it('falls back to a bounded ILIKE search', async () => {
+		vi.mocked(db.execute).mockResolvedValue([{ id: 'book-1' }] as never);
+		await expect(searchBookIdsSql('stroje', 8)).resolves.toEqual(['book-1']);
 	});
 });

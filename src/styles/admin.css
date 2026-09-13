@@ -838,6 +838,36 @@
 	color: var(--pult-brass);
 }
 
+.pult-class-rail {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.45rem;
+	margin: 0.85rem 0 0;
+}
+
+.pult-class-rail a {
+	display: inline-flex;
+	align-items: center;
+	min-height: 2.15rem;
+	padding: 0 0.85rem;
+	border: 1px solid color-mix(in srgb, var(--pult-walnut) 16%, transparent);
+	border-radius: 999px;
+	background: color-mix(in srgb, #fff 42%, var(--pult-paper));
+	color: inherit;
+	font-family: var(--font-mono), monospace;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-decoration: none;
+	text-transform: uppercase;
+}
+
+.pult-class-rail a.is-on {
+	background: var(--pult-walnut);
+	border-color: var(--pult-walnut);
+	color: var(--pult-paper);
+}
+
 .pult-today {
 	display: grid;
 	gap: 1.1rem;

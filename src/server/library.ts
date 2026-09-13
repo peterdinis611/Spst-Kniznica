@@ -1,32 +1,32 @@
 import { and, asc, count, desc, eq, gt, inArray, isNotNull, isNull, ne } from 'drizzle-orm';
-import { ensureHall, hallIsWarming } from './boot';
-import { db } from './db';
-import { author, book, bookAuthor, category, holding, loan, reservation } from './db/schema';
-import { ftsBookIds, searchBookIdsSql } from './db/catalog-fts';
-import { clampRegisterPage, REGISTER_PAGE_SIZE } from '@/catalog/register-page';
-import {
-	getCatalogCache,
-	invalidateCatalogCache,
-	patchCachedCopies,
-	setCatalogCache,
-	type CatalogSnapshot
-} from './catalog-cache';
-import { parseLoanDays } from '@/desk/borrow-fields';
-import { authorLine, daysUntil } from '@/utils/format';
 import { MAX_RENEWALS } from '@/catalog/hold';
-import { borrowConflictMessage, claimAvailableCopy, lockBook, syncCopies } from './desk/copies';
-import { closeHoldOnBorrow, offerCopyToWaiter, waitingBookIds, type HoldOffer } from './waitlist';
+import { clampRegisterPage, REGISTER_PAGE_SIZE } from '@/catalog/register-page';
 import type { CatalogSearchItem } from '@/catalog/search';
+import { parseLoanDays } from '@/desk/borrow-fields';
 import type {
 	AuthorRecord,
 	AuthorSlip,
 	BookSlip,
+	BorrowerDraft,
 	CatalogBook,
 	CategoryChip,
 	CategoryRecord,
-	BorrowerDraft,
 	LoanRecord
 } from '@/types';
+import { authorLine, daysUntil } from '@/utils/format';
+import { ensureHall, hallIsWarming } from './boot';
+import {
+	type CatalogSnapshot,
+	getCatalogCache,
+	invalidateCatalogCache,
+	patchCachedCopies,
+	setCatalogCache
+} from './catalog-cache';
+import { db } from './db';
+import { ftsBookIds, searchBookIdsSql } from './db/catalog-fts';
+import { author, book, bookAuthor, category, holding, loan, reservation } from './db/schema';
+import { borrowConflictMessage, claimAvailableCopy, lockBook, syncCopies } from './desk/copies';
+import { closeHoldOnBorrow, type HoldOffer, offerCopyToWaiter, waitingBookIds } from './waitlist';
 
 export const MAX_ACTIVE_LOANS: number | null = null;
 export const LOAN_DAYS = 21;
@@ -279,11 +279,7 @@ async function listBooksByIds(ids: string[]) {
 	return assembleBooks(await bookQuery(ids));
 }
 
-export async function pageBookSlips(input: {
-	q?: string;
-	categorySlug?: string;
-	page?: string;
-}) {
+export async function pageBookSlips(input: { q?: string; categorySlug?: string; page?: string }) {
 	const q = input.q?.trim() ?? '';
 	const slug = input.categorySlug?.trim() ?? '';
 	let idFilter: string[] | null = null;
@@ -326,11 +322,15 @@ export async function pageBookSlips(input: {
 
 	const found = await listBooksByIds(pageIds.map((row) => row.id));
 	const rank = new Map(pageIds.map((row, i) => [row.id, i]));
-	const books = found
-		.sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99))
-		.map(toSlip);
+	const books = found.sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99)).map(toSlip);
 
-	return { books, total: Number(total), page: leaf.page, pages: leaf.pages, pageSize: leaf.pageSize };
+	return {
+		books,
+		total: Number(total),
+		page: leaf.page,
+		pages: leaf.pages,
+		pageSize: leaf.pageSize
+	};
 }
 
 async function bookQuery(ids?: string[]) {

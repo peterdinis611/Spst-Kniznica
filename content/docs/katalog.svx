@@ -28,7 +28,7 @@ Ak sa nič nenašlo, zruš filter alebo skús kratšie slovo. Fond hľadá v ná
 
 ## Dva pohľady na ten istý fond
 
-**Katalóg** je list — lístok so signatúrou, autorom a stavom výtlačkov. Filter odboru ho zúži.
+**Katalóg** je list — lístok so signatúrou, autorom a stavom výtlačkov. Filter odboru a hľadanie idú na serveri. Keď je zväzkov veľa, dole je **Ďalší list** (48 na stranu).
 
 **Register** na [Všetkých knihách](/holdings) radí tie isté zväzky podľa odboru. Podrobnosti sú v kapitole [Register](/docs/register).
 

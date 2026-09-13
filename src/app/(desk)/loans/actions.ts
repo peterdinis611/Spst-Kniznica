@@ -2,12 +2,11 @@
 
 import { redirect } from 'next/navigation';
 import * as v from 'valibot';
-import { authActionClient } from '@/http/safe-action';
-import { stampDate, daysUntil } from '@/utils/format';
 import { MAX_RENEWALS } from '@/catalog/hold';
-import { queueLoanNotice } from '@/server/loan-mail';
+import { authActionClient } from '@/http/safe-action';
+import { noticeHref } from '@/notify/notices';
+import { cancelBookOrder, listOpenBookOrders } from '@/server/book-order';
 import { notifyHoldReady } from '@/server/hold-mail';
-import { cancelHold, listUserWaits, waitingBookIds } from '@/server/waitlist';
 import {
 	clearReturnedLoans,
 	countActiveLoans,
@@ -16,9 +15,10 @@ import {
 	offerReturn,
 	renewLoan
 } from '@/server/library';
-import { listOpenBookOrders } from '@/server/book-order';
+import { queueLoanNotice } from '@/server/loan-mail';
 import { getSessionReader } from '@/server/session';
-import { noticeHref } from '@/notify/notices';
+import { cancelHold, listUserWaits, waitingBookIds } from '@/server/waitlist';
+import { daysUntil, stampDate } from '@/utils/format';
 
 const loanIdSchema = v.object({
 	loanId: v.pipe(v.string(), v.minLength(1))
@@ -26,6 +26,10 @@ const loanIdSchema = v.object({
 
 const reservationIdSchema = v.object({
 	reservationId: v.pipe(v.string(), v.minLength(1))
+});
+
+const orderIdSchema = v.object({
+	orderId: v.pipe(v.string(), v.minLength(1))
 });
 
 export async function loadLoans() {
@@ -99,6 +103,13 @@ export const renewLoanAction = authActionClient
 			redirect(noticeHref('/loans', 'renew'));
 		}
 		redirect(noticeHref('/loans', 'renew-fail'));
+	});
+
+export const cancelOrder = authActionClient
+	.inputSchema(orderIdSchema)
+	.action(async ({ parsedInput, ctx }) => {
+		const result = await cancelBookOrder(ctx.user.id, parsedInput.orderId);
+		redirect(noticeHref('/loans', result.ok ? 'order-cancel' : 'order-cancel-fail'));
 	});
 
 export const cancelWait = authActionClient

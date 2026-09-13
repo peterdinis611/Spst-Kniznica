@@ -1,0 +1,27 @@
+---
+title: Učiteľ
+description: Trieda vonku — čítaš lístky, fond nemeníš.
+order: 8.3
+---
+
+Pečiatka **učiteľ** otvorí pult, ale nie kartotéku. Vidíš **Prehľad** a lístky triedy. Čítačku, knihy, výtlačky, frontu ani výkazy nie.
+
+## Čo smieš
+
+- otvoriť [Pult](/admin) z preukazu vpravo
+- vybrať triedu (II.A, III.B…) na koľajničke
+- čítať **po lehote** a **cestou na pult**
+- otvoriť kartu zväzku — uvidíš, kto ho drží, fond neuložíš
+
+Raz za týždeň (alebo keď pribudne oneskorenie) príde list `II.A vonku · N lístkov, M po lehote`. Nie denne. Telo je ten istý krémový lístok.
+
+## Čo nesmieš
+
+- založiť ani zmazať zväzok
+- zmeniť termín, rolu preukazu, inventár
+- ťahať tik, zásobník, výkaz
+- posunúť ročníky v septembri — to robí knihovník v zásuvke Čitatelia
+
+V `next dev` môže pult otvoriť aj bežný čitateľ, kým sa role usadia. Na ostrej prevádzke ostáva pečiatka učiteľ alebo knihovník.
+
+Triedu na preukaze doplní knihovník. Ak ju nemáš, vyber ju na koľajničke, alebo ju dopíš do poľa.

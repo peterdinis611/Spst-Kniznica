@@ -11,6 +11,7 @@
 		"format": "biome format --write .",
 		"test:unit": "vitest --config vitest.config.ts",
 		"test": "vitest --config vitest.config.ts --run",
+		"test:e2e": "playwright test",
 		"k6:up": "docker compose -f k6/docker-compose.yml up -d prometheus grafana",
 		"k6:down": "docker compose -f k6/docker-compose.yml down",
 		"shots": "bun scripts/readme-shots.ts",

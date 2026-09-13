@@ -38,7 +38,7 @@ Raz, z [Moje knihy](/loans), kým nie si po lehote a na knihu nikto nečaká. Ď
 
 ## Ako zistím, čo má vonku II.A?
 
-Na pulte v zásuvke [Výpožičky](/admin/loans) zadaj triedu a stlač **Čo je vonku**. Učiteľ to uvidí s pečiatkou **učiteľ** — fond nemení. V septembri najprv v zásuvke [Čitatelia](/admin/readers) **Posunúť ročníky**, inak ostane minulý ročník.
+Na pulte v [Prehľade](/admin) vyber triedu. Uvidíš **po lehote** a **cestou na pult**. Učiteľ to číta s pečiatkou **učiteľ** — fond nemení. Podrobnosti sú v kapitole [Učiteľ](/docs/ucitel). V septembri ročníky posúva knihovník.
 
 ## Dá sa vytlačiť inventúra?
 

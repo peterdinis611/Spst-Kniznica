@@ -69,6 +69,7 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 			db
 				.select({
 					id: loan.id,
+					bookId: book.id,
 					title: book.title,
 					name: user.name,
 					klass: loan.borrowerClass,
@@ -86,14 +87,16 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 		return {
 			overdue: overdueRows.map((row) => ({
 				id: row.id,
-				href: `/admin/loans?class=${encodeURIComponent(klass)}&open=1`,
+				bookId: row.bookId,
+				href: `/books/${row.bookId}`,
 				title: row.title,
 				detail: [row.name, row.klass].filter(Boolean).join(' · '),
 				stamp: 'po lehote'
 			})),
 			inbound: inboundRows.map((row) => ({
 				id: row.id,
-				href: `/admin/loans?class=${encodeURIComponent(klass)}&open=1`,
+				bookId: row.bookId,
+				href: `/books/${row.bookId}`,
 				title: row.title,
 				detail: [row.name, row.klass].filter(Boolean).join(' · '),
 				stamp: 'cestou'
@@ -108,6 +111,7 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 		db
 			.select({
 				id: loan.id,
+				bookId: book.id,
 				title: book.title,
 				name: user.name,
 				klass: loan.borrowerClass,
@@ -123,6 +127,7 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 		db
 			.select({
 				id: reservation.id,
+				bookId: book.id,
 				title: book.title,
 				name: user.name,
 				expiresAt: reservation.expiresAt
@@ -136,6 +141,7 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 		db
 			.select({
 				id: reservation.id,
+				bookId: book.id,
 				title: book.title,
 				name: user.name,
 				createdAt: reservation.createdAt
@@ -162,28 +168,32 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 	return {
 		overdue: overdueRows.map((row) => ({
 			id: row.id,
-			href: `/admin/loans?edit=${row.id}`,
+			bookId: row.bookId,
+			href: `/books/${row.bookId}`,
 			title: row.title,
 			detail: [row.name, row.klass].filter(Boolean).join(' · '),
 			stamp: 'po lehote'
 		})),
 		inbound: inboundRows.map((row) => ({
 			id: row.id,
-			href: `/admin/loans?edit=${row.id}`,
+			bookId: row.bookId,
+			href: `/books/${row.bookId}`,
 			title: row.title,
 			detail: [row.name, row.klass].filter(Boolean).join(' · '),
 			stamp: 'cestou'
 		})),
 		pickup: pickupRows.map((row) => ({
 			id: row.id,
-			href: `/admin/reservations?edit=${row.id}`,
+			bookId: row.bookId,
+			href: `/books/${row.bookId}`,
 			title: row.title,
 			detail: row.name,
 			stamp: 'na pulte'
 		})),
 		waiting: waitingRows.map((row) => ({
 			id: row.id,
-			href: `/admin/reservations?edit=${row.id}`,
+			bookId: row.bookId,
+			href: `/books/${row.bookId}`,
 			title: row.title,
 			detail: row.name,
 			stamp: 'čaká'

@@ -1,11 +1,11 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { hasBorrowErrors, validateBorrow } from '@/desk/borrow-fields';
+import type { BorrowerDraft } from '@/types';
 import { uniqueConstraintMessage } from './admin';
 import { db } from './db';
 import { book, bookOrder, user } from './db/schema';
 import { borrowBook, getActiveLoan } from './library';
 import { queueLoanNotice } from './loan-mail';
-import type { BorrowerDraft } from '@/types';
 
 const ORDER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CATALOG_ID = /^[a-z0-9][a-z0-9._-]{0,79}$/i;
@@ -121,6 +121,23 @@ export async function placeBookOrder(
 		return { ok: true, orderId, status: 'rejected', message: current.message };
 	}
 	return { ok: true, orderId, status: 'queued' };
+}
+
+export async function cancelBookOrder(userId: string, orderId: string) {
+	if (!ORDER_ID.test(orderId)) return { ok: false as const, message: 'Objednávka sa nenašla.' };
+	const [row] = await db
+		.update(bookOrder)
+		.set({
+			status: 'cancelled',
+			message: 'stiahnuté',
+			filledAt: new Date()
+		})
+		.where(
+			and(eq(bookOrder.id, orderId), eq(bookOrder.userId, userId), eq(bookOrder.status, 'queued'))
+		)
+		.returning({ id: bookOrder.id });
+	if (!row) return { ok: false as const, message: 'Objednávku už nevieme stiahnuť.' };
+	return { ok: true as const };
 }
 
 export async function fillBookOrder(orderId: string): Promise<FillOrderResult> {

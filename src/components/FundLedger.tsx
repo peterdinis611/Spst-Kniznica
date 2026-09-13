@@ -1,8 +1,8 @@
 'use client';
 
 import { FolioLink as Link } from '@/components/FolioLink';
-import { volumesLabel } from '@/utils/format';
 import type { BookSlip, CategoryChip } from '@/types';
+import { volumesLabel } from '@/utils/format';
 import { CatalogSlip } from './CatalogSlip';
 import { PrintJacket } from './PrintJacket';
 import { VirtualWindow } from './VirtualWindow';

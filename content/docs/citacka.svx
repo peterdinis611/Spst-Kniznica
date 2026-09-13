@@ -1,0 +1,24 @@
+---
+title: Čítačka
+description: Inventár na chrbte, ISBN a chôdza po polici.
+order: 8.2
+---
+
+Čítačka je zásuvka **00** na pulte. Nie je to katalóg. Knihovník naskenuje **inventár** (vrátenie) alebo **ISBN** (výpožička) bez hľadania v zásuvke.
+
+Adresa je `/admin/scan`. Skratka z prehľadu: pole **ISBN alebo preukaz**.
+
+## Dva režimy
+
+| Režim | Čo naskenuješ | Čo padne |
+| --- | --- | --- |
+| Výpožička / vrátenie | inventár na chrbte, alebo ISBN | lístok von / voľný kus |
+| Inventúra | chôdza po polici | pečiatka nájdený / stratený |
+
+Režim **Inventúra** je chôdza: otvoríš beh, peciatkuješ kusy, uzavrieš. Voľné bez pečiatky sú na [výkaze](/admin/reports) ako chýbajúce. Vonku na lístku sa do chýbajúcich nepočítajú.
+
+## Čo čítačka nie je
+
+Učiteľ ju nevidí. Čitateľ z [Moje knihy](/loans) len nahlási vrátenie — voľný kus spadne až keď pult naskenuje chrbát.
+
+Ak zásuvka ešte nevie lístok otvoriť (pult po migrácii), nahlásenie a výpožička idú z karty knihy a z čítačky na papieri. Podrobnosti správy sú v kapitole [Správa](/docs/sprava).

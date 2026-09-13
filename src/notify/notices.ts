@@ -65,6 +65,16 @@ export const notices = {
 		text: 'Príliš veľa objednávok.',
 		sub: 'Počkaj chvíľu a skús to znova.'
 	},
+	'order-cancel': {
+		kind: 'success',
+		text: 'Objednávka je stiahnutá.',
+		sub: 'Zväzok ostal na polici.'
+	},
+	'order-cancel-fail': {
+		kind: 'error',
+		text: 'Objednávku už nevieme stiahnuť.',
+		sub: 'Pečiatka už padá, alebo lístok nie je tvoj.'
+	},
 	hold: {
 		kind: 'success',
 		text: 'Si v rade.',

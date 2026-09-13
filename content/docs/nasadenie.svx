@@ -1,0 +1,35 @@
+---
+title: Nasadenie
+description: Vercel, ORIGIN, kvóty a prečo katalóg neprefetchuje 2500 lístkov.
+order: 10.6
+---
+
+Ostrá adresa fondu žije na Verceli. Lokálny pult je Docker + `bun run dev`. Táto kapitola je pre toho, kto fond **vyvesí**, nie pre čitateľa.
+
+## ORIGIN
+
+V `.env` (a v dashboarde Vercelu) nastav `ORIGIN` na verejnú adresu — `https://knižnica.example.sk`. Auth listy, sitemap a redirecty berú **tento** údaj, nie hlavičku `Origin` z prehliadača.
+
+V Supabase Auth:
+
+- **Site URL** = `ORIGIN`
+- **Redirect URLs** = `{ORIGIN}/auth/confirm` a `{ORIGIN}/auth/confirm**`
+
+Bez toho odkaz z listu nesmeruje na pult.
+
+## Prečo FolioLink
+
+Katalóg s 2500 lístkami mal na každom slipe `next/link` s prefetchom. Vercel to čítal ako ISR / edge request pri každom náhľade — free plán padol na kvóte.
+
+Vnútorné odkazy idú cez `FolioLink` (`prefetch={false}`). Čitateľ klikne, fond listuje. Karty sa vopred nenaťahujú.
+
+Register na `/books` a `/holdings` berie **jeden list** (48 zväzkov) zo servera. Filter odboru a hľadanie idú v SQL / FTS, nie cez celý snapshot do prehliadača.
+
+## Čo ešte na Verceli
+
+- `DATABASE_URL` na Postgres (nie `localhost`)
+- Supabase kľúče, `ADMIN_EMAILS`, mail (Mailgun)
+- `DESK_TICK_SECRET` — cron `GET /api/desk/tick` **len** s Bearer
+- `SEED_VOLUME` na ostrej nechaj nízke; 2500 je na stres
+
+Hlavičky (CSP, COOP) sú v `next.config.ts`. Podrobnosti tiku a Dockeru sú v [Prevádzke](/docs/prevadzka). Tempo zápisov je v [Tempe](/docs/tempo).

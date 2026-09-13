@@ -1,9 +1,9 @@
-import { FolioLink as Link } from '@/components/FolioLink';
-import { pageMeta } from '@/utils/metadata';
-import { listCategoryChips, pageBookSlips } from '@/server/library';
 import { registerHref } from '@/catalog/register-page';
-import { FundLedger } from '@/components/FundLedger';
+import { FolioLink as Link } from '@/components/FolioLink';
 import { FolioPager } from '@/components/FolioPager';
+import { FundLedger } from '@/components/FundLedger';
+import { listCategoryChips, pageBookSlips } from '@/server/library';
+import { pageMeta } from '@/utils/metadata';
 
 export const metadata = pageMeta({
 	title: 'Všetky knihy',

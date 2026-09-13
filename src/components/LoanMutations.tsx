@@ -1,7 +1,13 @@
 'use client';
 
 import { useAction } from 'next-safe-action/hooks';
-import { cancelWait, clearHistory, renewLoanAction, returnLoan } from '@/app/(desk)/loans/actions';
+import {
+	cancelOrder,
+	cancelWait,
+	clearHistory,
+	renewLoanAction,
+	returnLoan
+} from '@/app/(desk)/loans/actions';
 import { mutationToasts } from '@/notify/toast';
 
 export function LoanReturn({ loanId, canRenew }: { loanId: string; canRenew: boolean }) {
@@ -29,6 +35,20 @@ export function LoanReturn({ loanId, canRenew }: { loanId: string; canRenew: boo
 				</button>
 			) : null}
 		</div>
+	);
+}
+
+export function OrderCancel({ orderId }: { orderId: string }) {
+	const action = useAction(cancelOrder, mutationToasts('Objednávku sa nepodarilo stiahnuť.'));
+	return (
+		<button
+			type="button"
+			disabled={action.isExecuting}
+			onClick={() => action.execute({ orderId })}
+			className="text-sm underline"
+		>
+			Stiahnuť
+		</button>
 	);
 }
 

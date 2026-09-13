@@ -53,4 +53,4 @@ Pečiatka je potvrdenie pohybu, nie pokuta. Papierový výtlačok ostáva rozhod
 
 ## Moje knihy
 
-Na [Moje knihy](/loans) je výpožičný lístok: čo máš vonku, čakacie lístky a čo si už vrátil. Vrátené môžeš z lístka stiahnuť tlačidlom **Vyčistiť vrátené** — vo fonde ostávajú vrátené, len ich na preukaze nevidíš. Strop na počet kníh nie je. Hostia túto stránku nevidia — najprv [účet](/docs/ucet).
+Na [Moje knihy](/loans) je výpožičný lístok: čo máš vonku, objednávky v zásobníku, čakacie lístky a čo si už vrátil. Objednávku v stave `queued` stiahneš tlačidlom **Stiahnuť** — kým pečiatka nepadla. Vrátené môžeš z lístka stiahnuť tlačidlom **Vyčistiť vrátené** — vo fonde ostávajú vrátené, len ich na preukaze nevidíš. Strop na počet kníh nie je. Hostia túto stránku nevidia — najprv [účet](/docs/ucet).

@@ -1,5 +1,5 @@
-import { FolioLink as Link } from '@/components/FolioLink';
 import { registerHref } from '@/catalog/register-page';
+import { FolioLink as Link } from '@/components/FolioLink';
 import './folio-pager.css';
 
 export function FolioPager({
@@ -27,7 +27,7 @@ export function FolioPager({
 			)}
 			<p>
 				List {page} z {pages}
-				<em>{total.toLocaleString('sk-SK')} zväzkov</em>
+				<em> · {total.toLocaleString('sk-SK')} zväzkov</em>
 			</p>
 			{page < pages ? (
 				<Link className="is-next" href={registerHref(path, { q, odbor, page: page + 1 })}>
