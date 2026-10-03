@@ -21,4 +21,6 @@ Režim **Inventúra** je chôdza: otvoríš beh, peciatkuješ kusy, uzavrieš. V
 
 Učiteľ ju nevidí. Čitateľ z [Moje knihy](/loans) len nahlási vrátenie — voľný kus spadne až keď pult naskenuje chrbát.
 
+Keď ISBN vo fonde nie je, čítačka sa opýta **Open Library** a položí lístok **Doplň z ISBN** — názov, autori, rok. Zväzok tým ešte nezaložíš; to ostáva zásuvke Knihy.
+
 Ak zásuvka ešte nevie lístok otvoriť (pult po migrácii), nahlásenie a výpožička idú z karty knihy a z čítačky na papieri. Podrobnosti správy sú v kapitole [Správa](/docs/sprava).

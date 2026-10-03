@@ -1,6 +1,6 @@
 ---
 title: Učiteľ
-description: Trieda vonku — čítaš lístky, fond nemeníš.
+description: Trieda vonku — čítaš lístky, predĺžiš alebo stiahneš.
 order: 8.3
 ---
 
@@ -11,14 +11,15 @@ Pečiatka **učiteľ** otvorí pult, ale nie kartotéku. Vidíš **Prehľad** a 
 - otvoriť [Pult](/admin) z preukazu vpravo
 - vybrať triedu (II.A, III.B…) na koľajničke
 - čítať **po lehote** a **cestou na pult**
-- otvoriť kartu zväzku — uvidíš, kto ho drží, fond neuložíš
+- na lístku po lehote **Predĺžiť** (aj keď termín padol) alebo **Stiahnuť** (nahlási vrátenie)
+- otvoriť kartu zväzku — uvidíš, kto ho drží, kartotéku neuložíš
 
 Raz za týždeň (alebo keď pribudne oneskorenie) príde list `II.A vonku · N lístkov, M po lehote`. Nie denne. Telo je ten istý krémový lístok.
 
 ## Čo nesmieš
 
 - založiť ani zmazať zväzok
-- zmeniť termín, rolu preukazu, inventár
+- zmeniť rolu preukazu, inventár, založiť zväzok
 - ťahať tik, zásobník, výkaz
 - posunúť ročníky v septembri — to robí knihovník v zásuvke Čitatelia
 

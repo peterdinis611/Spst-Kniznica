@@ -1,7 +1,20 @@
 import { FolioLink as Link } from '@/components/FolioLink';
 import type { DeskQueue, DeskQueueRow } from '@/server/desk/queue';
+import { pullClassLoan, renewClassLoan } from '@/app/(desk)/admin/actions';
 
-function Rail({ title, rows, empty }: { title: string; rows: DeskQueueRow[]; empty: string }) {
+function Rail({
+	title,
+	rows,
+	empty,
+	klass,
+	teacher
+}: {
+	title: string;
+	rows: DeskQueueRow[];
+	empty: string;
+	klass?: string;
+	teacher?: boolean;
+}) {
 	return (
 		<div className="pult-rail">
 			<p className="pult-rail-head">{title}</p>
@@ -16,6 +29,24 @@ function Rail({ title, rows, empty }: { title: string; rows: DeskQueueRow[]; emp
 								<strong>{row.title}</strong>
 								<span>{row.detail}</span>
 							</Link>
+							{teacher && klass && (row.canRenew || row.canPull) ? (
+								<div className="pult-rail-acts">
+									{row.canRenew ? (
+										<form action={renewClassLoan}>
+											<input type="hidden" name="loanId" value={row.id} />
+											<input type="hidden" name="class" value={klass} />
+											<button type="submit">Predĺžiť</button>
+										</form>
+									) : null}
+									{row.canPull ? (
+										<form action={pullClassLoan}>
+											<input type="hidden" name="loanId" value={row.id} />
+											<input type="hidden" name="class" value={klass} />
+											<button type="submit">Stiahnuť</button>
+										</form>
+									) : null}
+								</div>
+							) : null}
 						</li>
 					))}
 				</ul>
@@ -26,15 +57,23 @@ function Rail({ title, rows, empty }: { title: string; rows: DeskQueueRow[]; emp
 
 export function DeskQueueBoard({
 	queue,
-	teacher = false
+	teacher = false,
+	klass = ''
 }: {
 	queue: DeskQueue;
 	teacher?: boolean;
+	klass?: string;
 }) {
 	return (
 		<div className="pult-queue">
 			<p className="pult-queue-kicker">{teacher ? 'trieda vonku' : 'dnešný rad'}</p>
-			<Rail title="Po lehote" rows={queue.overdue} empty="Nikto nie je po lehote." />
+			<Rail
+				title="Po lehote"
+				rows={queue.overdue}
+				empty="Nikto nie je po lehote."
+				klass={klass}
+				teacher={teacher}
+			/>
 			<Rail title="Cestou na pult" rows={queue.inbound} empty="Nikto nenahlásil vrátenie." />
 			{teacher ? null : (
 				<>

@@ -28,7 +28,7 @@ Zásobník uvidíš v [Fronta](/admin/queue). **Tik teraz** peciatkuje hneď.
 
 Každú noc o **3:00** (Europe/Bratislava) pg-boss vytiahne lístok `folio-backup`. Worker spraví `pg_dump` (alebo `docker compose exec postgres pg_dump`) do `data/backups/fond-….sql`. Ostáva posledných **14** súborov (`BACKUP_KEEP`).
 
-**Záloha teraz** na pulte zaradí ten istý lístok. Klik na odpis ho stiahne. Na Verceli dump neprejde — filesystem je prázdny a `pg_dump` tam nie je. Vypneš plán `BACKUP_OFF=1`. Cron zmeníš cez `BACKUP_CRON`.
+**Záloha teraz** na pulte zaradí ten istý lístok. Klik na odpis ho stiahne. **Naliať** ho vráti do Postgresu — napíš `naliať`, inak fond neprelejeme. Po naliať reštartuj pult, zásobník sa znova postaví. Na Verceli dump ani restore neprejde. Vypneš plán `BACKUP_OFF=1`. Cron zmeníš cez `BACKUP_CRON`.
 
 ## Listy bez prefetchu
 
@@ -46,7 +46,7 @@ Pomocné súbory sú **TypeScript**. `bun` ich spúšťa priamo.
 | `bun run shots` | `scripts/readme-shots.ts` | snímky do README (Playwright) |
 | `bun run k6:*` | `k6/scripts/*.ts` | dym, záťaž, stres, spike |
 
-Pred prvým `shots` raz: `bunx playwright install chromium`. V CI ostáva `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`.
+Pred prvým `shots` raz: `bunx playwright install chromium`. GitHub Actions (`.github/workflows/e2e.yml`) Chromium stiahne a spustí `bun run test:e2e` proti Postgresu.
 
 Hlavičky pultu (CSP, COOP, `nosniff`) sú v `next.config.ts`. Auth listy berú `ORIGIN`, nie `Origin` z prehliadača.
 

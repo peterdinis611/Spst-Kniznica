@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { canOperateDesk } from '@/server/admin-access';
 import { cancelBossJob, enqueueFolioBackup, retryBossJob } from '@/server/boss';
 import { runDeskTick } from '@/server/desk-tick';
-import { runFolioBackup } from '@/server/folio-backup';
+import { folioRestoreConfirm, restoreFolioBackup, runFolioBackup } from '@/server/folio-backup';
 import { isFolioQueue } from '@/server/folio-jobs';
 import { noticeHref } from '@/notify/notices';
 import { failIfRateLimited } from '@/server/rate-limit';
@@ -74,5 +74,20 @@ export async function runQueueBackup() {
 	} catch (err) {
 		if (isRedirect(err)) throw err;
 		redirect('/admin/queue?zaloha=0');
+	}
+}
+
+export async function restoreQueueBackup(formData: FormData) {
+	await requireLibrarian();
+	const file = String(formData.get('file') ?? '').trim();
+	if (!folioRestoreConfirm(String(formData.get('confirm') ?? ''))) {
+		redirect('/admin/queue?zaloha=5');
+	}
+	try {
+		const report = await restoreFolioBackup(file);
+		redirect(`/admin/queue?zaloha=3&file=${encodeURIComponent(report.file)}`);
+	} catch (err) {
+		if (isRedirect(err)) throw err;
+		redirect('/admin/queue?zaloha=4');
 	}
 }

@@ -39,7 +39,9 @@ export default async function AdminHome({
 					<p className="pult-lede">
 						{klass ? `${klass} · ${open} kníh vonku` : 'Vyber triedu, uvidíš lístky vonku.'}
 					</p>
-					<p className="pult-queue-kicker mt-3">Fond nemeníš — len čítaš triedu.</p>
+					<p className="pult-queue-kicker mt-3">
+						Lístky triedy predĺžiš alebo stiahneš. Kartotéku necháš knihovníkovi.
+					</p>
 					<nav className="pult-class-rail" aria-label="Triedy">
 						{classes.map((item) => (
 							<Link
@@ -68,7 +70,7 @@ export default async function AdminHome({
 						</form>
 					) : null}
 				</div>
-				<DeskQueueBoard queue={queue} teacher />
+				<DeskQueueBoard queue={queue} teacher klass={klass} />
 			</div>
 		);
 	}

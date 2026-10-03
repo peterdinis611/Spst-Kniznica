@@ -18,7 +18,7 @@ export default async function DepartmentsPage() {
 			<p className="max-w-[40ch] font-body text-[1.08rem] leading-relaxed text-muted-foreground">
 				Každý odbor má vlastnú policu. Otvor značku, alebo siahni rovno po chrbte.
 			</p>
-			<ol className="mt-10 m-0 grid min-w-0 list-none gap-10 p-0 [grid-template-columns:minmax(0,1fr)]">
+			<ol className="mt-10 m-0 grid min-w-0 list-none gap-10 p-0 grid-cols-[minmax(0,1fr)]">
 				{categories.map((cat) => (
 					<li key={cat.id} className="min-w-0 border-t border-border pt-6">
 						<div className="mb-4 flex min-w-0 flex-wrap items-end justify-between gap-3">
@@ -37,7 +37,7 @@ export default async function DepartmentsPage() {
 								{booksLabel(cat.bookCount)}
 							</p>
 						</div>
-						<p className="mb-5 max-w-[46ch] font-body text-[1rem] leading-relaxed break-words text-muted-foreground">
+						<p className="mb-5 max-w-[46ch] font-body text-[1rem] leading-relaxed wrap-break-word text-muted-foreground">
 							{cat.description}
 						</p>
 						{cat.books.length ? (

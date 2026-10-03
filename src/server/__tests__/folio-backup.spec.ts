@@ -8,6 +8,7 @@ import {
 	folioBackupName,
 	folioBackupOff,
 	folioBackupStamp,
+	folioRestoreConfirm,
 	isFolioBackupName,
 	sanitizeDumpError
 } from '../folio-backup';
@@ -50,6 +51,13 @@ describe('folio backup slips', () => {
 		expect(folioBackupKeep('3')).toBe(3);
 		expect(folioBackupKeep('0')).toBe(1);
 		expect(folioBackupKeep('400')).toBe(90);
+	});
+
+	it('asks for the pour stamp before a restore', () => {
+		expect(folioRestoreConfirm('naliať')).toBe(true);
+		expect(folioRestoreConfirm(' Naliat ')).toBe(true);
+		expect(folioRestoreConfirm('áno')).toBe(false);
+		expect(folioRestoreConfirm('')).toBe(false);
 	});
 
 	it('reads the night cron and the off stamp', () => {

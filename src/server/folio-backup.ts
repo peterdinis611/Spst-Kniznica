@@ -1,4 +1,4 @@
-import { closeSync, openSync, statSync, unlinkSync } from 'node:fs';
+import { closeSync, openSync, readFileSync, statSync, unlinkSync } from 'node:fs';
 import { mkdir, readdir, stat, unlink } from 'node:fs/promises';
 import { join, resolve, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -36,6 +36,11 @@ export function folioBackupCron(raw = env.BACKUP_CRON) {
 	const cron = String(raw ?? '').trim();
 	if (/^(\S+\s+){4}\S+$/.test(cron)) return cron;
 	return '0 3 * * *';
+}
+
+export function folioRestoreConfirm(raw: string) {
+	const stamp = raw.trim().toLowerCase();
+	return stamp === 'naliať' || stamp === 'naliat';
 }
 
 export function folioBackupOff(raw = env.BACKUP_OFF) {
@@ -141,6 +146,18 @@ export async function runFolioBackup(at = new Date()): Promise<FolioBackupReport
 	return { ok: true, file, bytes: info.size, kept: folioBackupKeep(), via };
 }
 
+export async function restoreFolioBackup(name: string) {
+	const dest = folioBackupFile(name);
+	if (!dest) throw new Error('Taký odpis nie je.');
+	try {
+		assertDump(dest);
+	} catch {
+		throw new Error('Odpis som nenašiel, alebo je prázdny.');
+	}
+	restoreDatabase(dest);
+	return { ok: true as const, file: name };
+}
+
 function dumpDatabase(dest: string): 'pg_dump' | 'docker' {
 	const url = env.DATABASE_URL?.trim();
 	if (!url) throw new Error('DATABASE_URL chýba. Zálohu neviem stiahnuť.');
@@ -216,6 +233,103 @@ function dumpDatabase(dest: string): 'pg_dump' | 'docker' {
 			? `Záloha neprešla. ${last}`
 			: 'pg_dump ani Docker Postgres som nenašiel. Záloha ostala prázdna.'
 	);
+}
+
+const WIPE_SQL =
+	'DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; DROP SCHEMA IF EXISTS pgboss CASCADE;';
+
+function restoreDatabase(dest: string) {
+	const url = env.DATABASE_URL?.trim();
+	if (!url) throw new Error('DATABASE_URL chýba. Odpis neviem naliať.');
+
+	let last = '';
+
+	if (hasBinary('psql')) {
+		try {
+			runSql('psql', ['-v', 'ON_ERROR_STOP=1', `--dbname=${url}`, '-c', WIPE_SQL]);
+			runSql('psql', ['-v', 'ON_ERROR_STOP=1', `--dbname=${url}`, '-f', dest]);
+			return;
+		} catch (err) {
+			last = err instanceof Error ? sanitizeDumpError(err.message) : '';
+			if (!isLocalPostgres(url)) throw err;
+		}
+	}
+
+	if (isLocalPostgres(url)) {
+		const compose = [
+			'compose',
+			'exec',
+			'-T',
+			'postgres',
+			'psql',
+			'-U',
+			'spst',
+			'-d',
+			'spst',
+			'-v',
+			'ON_ERROR_STOP=1'
+		];
+		try {
+			runSql('docker', [...compose, '-c', WIPE_SQL], process.cwd());
+			pipeSql('docker', compose, dest, process.cwd());
+			return;
+		} catch (err) {
+			last = err instanceof Error ? sanitizeDumpError(err.message) : last;
+		}
+
+		const exec = [
+			'exec',
+			'-i',
+			'spst-postgres-1',
+			'psql',
+			'-U',
+			'spst',
+			'-d',
+			'spst',
+			'-v',
+			'ON_ERROR_STOP=1'
+		];
+		try {
+			runSql('docker', [...exec, '-c', WIPE_SQL]);
+			pipeSql('docker', exec, dest);
+			return;
+		} catch (err) {
+			last = err instanceof Error ? sanitizeDumpError(err.message) : last;
+		}
+	}
+
+	throw new Error(
+		last
+			? `Naliatie neprešlo. ${last}`
+			: 'psql ani Docker Postgres som nenašiel. Odpis ostal na polici.'
+	);
+}
+
+function runSql(cmd: string, args: string[], cwd?: string) {
+	const result = spawnSync(cmd, args, {
+		cwd,
+		env: process.env,
+		encoding: 'utf8',
+		timeout: 120_000
+	});
+	if (result.error) throw result.error;
+	if (result.status !== 0) {
+		throw new Error(sanitizeDumpError(result.stderr || `exit ${result.status}`));
+	}
+}
+
+function pipeSql(cmd: string, args: string[], dest: string, cwd?: string) {
+	const result = spawnSync(cmd, args, {
+		cwd,
+		env: process.env,
+		encoding: 'utf8',
+		input: readFileSync(dest),
+		timeout: 180_000
+	});
+	if (result.error) throw result.error;
+	if (result.status !== 0) {
+		throw new Error(sanitizeDumpError(result.stderr || `exit ${result.status}`));
+	}
 }
 
 function writeDump(cmd: string, args: string[], dest: string, cwd?: string) {

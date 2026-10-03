@@ -1,6 +1,8 @@
 import { and, asc, desc, eq, gt, isNotNull, isNull, lte } from 'drizzle-orm';
+import { MAX_RENEWALS } from '@/catalog/hold';
 import { db } from '../db';
 import { book, loan, reservation, user } from '../db/schema';
+import { waitingBookIds } from '../waitlist';
 
 export type DeskQueueRow = {
 	id: string;
@@ -9,6 +11,8 @@ export type DeskQueueRow = {
 	detail: string;
 	stamp: string;
 	bookId?: string;
+	canRenew?: boolean;
+	canPull?: boolean;
 };
 
 export type DeskQueue = {
@@ -73,7 +77,9 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 					title: book.title,
 					name: user.name,
 					klass: loan.borrowerClass,
-					dueAt: loan.dueAt
+					dueAt: loan.dueAt,
+					renewalCount: loan.renewalCount,
+					returnOfferedAt: loan.returnOfferedAt
 				})
 				.from(loan)
 				.innerJoin(book, eq(book.id, loan.bookId))
@@ -84,6 +90,8 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 			inboundQuery
 		]);
 
+		const waiting = await waitingBookIds(overdueRows.map((row) => row.bookId));
+
 		return {
 			overdue: overdueRows.map((row) => ({
 				id: row.id,
@@ -91,7 +99,10 @@ export async function deskQueue(now = new Date(), klass = ''): Promise<DeskQueue
 				href: `/books/${row.bookId}`,
 				title: row.title,
 				detail: [row.name, row.klass].filter(Boolean).join(' · '),
-				stamp: 'po lehote'
+				stamp: 'po lehote',
+				canRenew:
+					row.renewalCount < MAX_RENEWALS && !waiting.has(row.bookId) && !row.returnOfferedAt,
+				canPull: !row.returnOfferedAt
 			})),
 			inbound: inboundRows.map((row) => ({
 				id: row.id,

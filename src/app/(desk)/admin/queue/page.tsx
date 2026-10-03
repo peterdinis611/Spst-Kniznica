@@ -8,7 +8,13 @@ import { folioBackupBytesLabel, folioBackupStamp, listFolioBackups } from '@/ser
 import { deskQueue } from '@/server/desk/queue';
 import { getSessionReader } from '@/server/session';
 import { redirect } from 'next/navigation';
-import { cancelQueueJob, retryQueueJob, runQueueBackup, runQueueTick } from './actions';
+import {
+	cancelQueueJob,
+	restoreQueueBackup,
+	retryQueueJob,
+	runQueueBackup,
+	runQueueTick
+} from './actions';
 
 export const metadata = pageMeta({
 	title: 'Fronta',
@@ -88,6 +94,27 @@ export default async function AdminQueuePage({
 							<span>pg_dump ani Docker som nenašiel.</span>
 						</p>
 					) : null}
+					{backupState === '3' ? (
+						<p className="pult-blot is-clear">
+							<em>odpis naliaty</em>
+							<strong>fond</strong>
+							<span>{params.file ?? 'záloha'} · reštartuj pult, zásobník sa znova postaví.</span>
+						</p>
+					) : null}
+					{backupState === '4' ? (
+						<p className="pult-blot">
+							<em>naliatie zlyhalo</em>
+							<strong>—</strong>
+							<span>psql ani Docker som nenašiel, alebo odpis je poškodený.</span>
+						</p>
+					) : null}
+					{backupState === '5' ? (
+						<p className="pult-blot">
+							<em>pečiatka chýba</em>
+							<strong>—</strong>
+							<span>Napíš naliať. Bez toho fond neprelejeme.</span>
+						</p>
+					) : null}
 				</div>
 			) : null}
 
@@ -142,11 +169,21 @@ export default async function AdminQueuePage({
 					<ol className="pult-backup-stack">
 						{backups.map((slip) => (
 							<li key={slip.name}>
-								<a href={`/api/desk/backup?file=${encodeURIComponent(slip.name)}`}>
-									<em>{folioBackupStamp(slip.name)}</em>
-									<strong>{slip.name}</strong>
-									<span>{folioBackupBytesLabel(slip.bytes)}</span>
-								</a>
+								<div className="pult-backup-slip">
+									<a href={`/api/desk/backup?file=${encodeURIComponent(slip.name)}`}>
+										<em>{folioBackupStamp(slip.name)}</em>
+										<strong>{slip.name}</strong>
+										<span>{folioBackupBytesLabel(slip.bytes)}</span>
+									</a>
+									<form action={restoreQueueBackup} className="pult-backup-pour">
+										<input type="hidden" name="file" value={slip.name} />
+										<label>
+											<span>napíš naliať</span>
+											<input name="confirm" autoComplete="off" spellCheck={false} />
+										</label>
+										<button type="submit">Naliať</button>
+									</form>
+								</div>
 							</li>
 						))}
 					</ol>

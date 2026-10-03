@@ -155,7 +155,7 @@ bun run format       # Biome — zapísať formát
 bun run shots        # snímky do docs/screenshots (Playwright)
 ```
 
-Pomocné skripty sú TypeScript (`scripts/*.ts`, `k6/scripts/*.ts`). Pred prvým `shots`: `bunx playwright install chromium`.
+Pomocné skripty sú TypeScript (`scripts/*.ts`, `k6/scripts/*.ts`). Pred prvým `shots` alebo `test:e2e`: `bunx playwright install chromium`. V GitHub Actions Chromium ide sám.
 
 Kód drží **Biome**. Pravidlá sú v `biome.json` (taby, `'` , šírka 100). V Cursor / VS Code daj rozšírenie `biomejs.biome`.
 
