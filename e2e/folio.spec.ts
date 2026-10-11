@@ -26,3 +26,18 @@ test('order leaf is a card, not a dump of the register', async ({ page }) => {
 	await expect(page.getByRole('heading').first()).toBeVisible();
 	await expect(page.locator('body')).toContainText(/prihlás|požič|objednáv|voľn/i);
 });
+
+test('desk gate sends a guest to login', async ({ page }) => {
+	await page.goto('/admin/books');
+	await expect(page).toHaveURL(/\/login/);
+});
+
+test('scan drawer is not a public hall', async ({ page }) => {
+	await page.goto('/admin/scan');
+	await expect(page).toHaveURL(/\/login/);
+});
+
+test('password recovery leaf exists for the confirm link', async ({ page }) => {
+	await page.goto('/login/password');
+	await expect(page).toHaveURL(/\/login\/(password|recovery)/);
+});

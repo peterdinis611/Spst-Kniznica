@@ -1,3 +1,2 @@
-export function createUploadThing() {
-	throw new Error('Nahrávanie obálok na pulte sa napojí v ďalšom kroku migrácie.');
-}
+/** Server router: `@/server/uploadthing`. React helpers: `@/uploads/react`. */
+export type { OurFileRouter } from '@/server/uploadthing';
