@@ -1,12 +1,17 @@
 import { readFile } from 'node:fs/promises';
 import { canOperateDesk } from '@/server/admin-access';
 import { folioBackupFile } from '@/server/folio-backup';
+import { eventFromRequest, isRateLimited, RATE_LIMIT_MESSAGE } from '@/server/rate-limit';
 import { getSessionReader } from '@/server/session';
 
 export async function GET(request: Request) {
 	const user = await getSessionReader();
 	if (!user || !canOperateDesk(user)) {
 		return new Response('Záloha je len pre knihovníka.', { status: 403 });
+	}
+
+	if (await isRateLimited(eventFromRequest(request), 'backup', user.id)) {
+		return new Response(RATE_LIMIT_MESSAGE, { status: 429 });
 	}
 
 	const file = new URL(request.url).searchParams.get('file') ?? '';

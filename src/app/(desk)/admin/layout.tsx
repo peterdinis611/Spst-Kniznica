@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { canOpenDesk, canOperateDesk } from '@/server/admin-access';
+import { canOpenDesk, canOperateDesk, deskGate } from '@/server/admin-access';
 import { getSessionReader } from '@/server/session';
 import { PultNav } from '@/components/PultNav';
 import { FaultFolio } from '@/components/FaultFolio';
@@ -9,11 +9,23 @@ import '@/styles/admin.css';
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
 	const user = await getSessionReader();
 	if (!user) redirect('/login');
-	if (!canOpenDesk(user)) {
-		return <FaultFolio status={403} message="Pult je len pre správu fondu." />;
+	const pathname = (await headers()).get('x-pathname') || '/admin';
+	const gate = deskGate(pathname, user);
+	if (gate === 'login') redirect('/login');
+	if (gate === 'forbidden') {
+		const teacherDrawer = canOpenDesk(user) && !canOperateDesk(user);
+		return (
+			<FaultFolio
+				status={403}
+				message={
+					teacherDrawer
+						? 'Túto zásuvku otvára len knihovník. Trieda ostáva na Prehľade.'
+						: 'Pult je len pre správu fondu.'
+				}
+			/>
+		);
 	}
 	const manage = canOperateDesk(user);
-	const pathname = (await headers()).get('x-pathname') || '/admin';
 
 	return (
 		<section className="pult">

@@ -1,5 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
-import { canOpenDesk } from '@/server/admin-access';
+import { canOperateDesk } from '@/server/admin-access';
 import { ensureLocalReader, readerFromClaims } from '@/server/readers';
 import { supabasePublic } from '@/config/supabase';
 import type { SignedReader } from '@/types';
@@ -50,8 +50,7 @@ export async function readerFromRequest(req: Request): Promise<SignedReader | un
 			(await ensureLocalReader({
 				id: userData.user.id,
 				email: userData.user.email ?? '',
-				name: String(userData.user.user_metadata?.name ?? ''),
-				role: userData.user.user_metadata?.role
+				name: String(userData.user.user_metadata?.name ?? '')
 			})) ?? undefined
 		);
 	} catch {
@@ -61,6 +60,6 @@ export async function readerFromRequest(req: Request): Promise<SignedReader | un
 
 export async function deskUploader(req: Request): Promise<SignedReader | null> {
 	const reader = await readerFromRequest(req);
-	if (!reader || !canOpenDesk(reader)) return null;
+	if (!reader || !canOperateDesk(reader)) return null;
 	return reader;
 }

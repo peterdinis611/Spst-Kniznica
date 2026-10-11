@@ -5,7 +5,7 @@ import { refreshCatalog } from '../admin';
 import { db } from '../db';
 import { book, category, holding, holdingStatus, loan } from '../db/schema';
 import { nextInventory, syncCopies } from './copies';
-import { caught, fail, needle, ok, type DeskResult } from './shared';
+import { assertOperateDesk, caught, fail, needle, ok, type DeskResult } from './shared';
 
 export async function listDeskHoldings(query = '') {
 	const q = query.trim();
@@ -85,6 +85,8 @@ export async function saveHolding(input: {
 	status: string;
 	acquiredAt?: Date | null;
 }): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const inventoryNo = input.inventoryNo.trim();
 	const issue = deskIssue(holdingSchema, {
 		bookId: input.bookId,
@@ -156,6 +158,8 @@ export async function saveHolding(input: {
 }
 
 export async function deleteHolding(id: string): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const current = await db
 		.select()
 		.from(holding)

@@ -93,7 +93,8 @@ describe('isAdminEmail', () => {
 		expect(isAdminEmail('iny@spst.sk')).toBe(false);
 		expect(isAdminEmail('')).toBe(false);
 		expect(isAdminEmail(null)).toBe(false);
-		expect(isAdminEmail('kto@spst.sk', '*')).toBe(true);
+		expect(isAdminEmail('kto@spst.sk', '*')).toBe(false);
+		expect(isAdminEmail('kto@spst.sk', '*', true)).toBe(true);
 		expect(isAdminEmail('kto@spst.sk', 'a@spst.sk, kto@spst.sk')).toBe(true);
 	});
 });

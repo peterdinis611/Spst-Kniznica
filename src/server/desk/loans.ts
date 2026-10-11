@@ -8,7 +8,7 @@ import { book, holding, loan, user } from '../db/schema';
 import { notifyHoldReady } from '../hold-mail';
 import { offerCopyToWaiter } from '../waitlist';
 import { borrowConflictMessage, claimAvailableCopy, lockBook, syncCopies } from './copies';
-import { caught, fail, needle, ok, type DeskResult } from './shared';
+import { assertOperateDesk, caught, fail, needle, ok, type DeskResult } from './shared';
 
 export type DeskLoanFilter = {
 	q: string;
@@ -145,6 +145,8 @@ export async function saveLoan(input: {
 	returnedAt?: Date | null;
 	renewalCount?: number;
 }): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const first = input.borrowerFirstName.trim();
 	const last = input.borrowerLastName.trim();
 	const klass = normalizeClass(input.borrowerClass);
@@ -234,6 +236,8 @@ export async function saveLoan(input: {
 }
 
 export async function returnDeskLoan(id: string): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const current = await db
 		.select()
 		.from(loan)
@@ -261,6 +265,8 @@ export async function returnDeskLoan(id: string): Promise<DeskResult> {
 }
 
 export async function deleteLoan(id: string): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const current = await db
 		.select()
 		.from(loan)

@@ -52,8 +52,7 @@ export const signInAction = actionClient
 		await ensureLocalReader({
 			id: data.user.id,
 			email: data.user.email ?? email,
-			name: String(data.user.user_metadata?.name ?? ''),
-			role: data.user.user_metadata?.role
+			name: String(data.user.user_metadata?.name ?? '')
 		});
 
 		redirect(noticeHref('/loans', 'login'));
@@ -103,8 +102,7 @@ export const signUpAction = actionClient
 		await ensureLocalReader({
 			id: data.user.id,
 			email: data.user.email ?? email,
-			name: name.trim(),
-			role: data.user.user_metadata?.role
+			name: name.trim()
 		});
 
 		redirect(noticeHref('/loans', 'signup'));

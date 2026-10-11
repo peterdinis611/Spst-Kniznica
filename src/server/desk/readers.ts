@@ -5,7 +5,7 @@ import { normalizeClass } from '@/desk/borrow-fields';
 import { deskIssue, readerSchema } from '@/desk/desk-fields';
 import { db } from '../db';
 import { loan, user } from '../db/schema';
-import { caught, fail, needle, ok, type DeskResult } from './shared';
+import { assertOperateDesk, caught, fail, needle, ok, type DeskResult } from './shared';
 
 export async function listDeskReaders(query = '') {
 	const q = query.trim();
@@ -55,6 +55,8 @@ export async function saveReader(input: {
 	role?: string;
 	className?: string;
 }): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const name = input.name.trim();
 	const email = input.email.trim().toLowerCase();
 	const className = normalizeClass(input.className ?? '');
@@ -92,6 +94,8 @@ export async function saveReader(input: {
 }
 
 export async function deleteReader(id: string): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const current = await db
 		.select()
 		.from(user)

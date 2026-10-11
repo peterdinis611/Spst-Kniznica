@@ -2,6 +2,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { shiftSchoolClass } from '@/utils/class-year';
 import { db } from '../db';
 import { loan, user } from '../db/schema';
+import { requireOperateDesk } from './shared';
 
 export type YearRoll = {
 	promoted: number;
@@ -9,6 +10,7 @@ export type YearRoll = {
 };
 
 export async function rollSchoolYear(): Promise<YearRoll> {
+	await requireOperateDesk();
 	const people = await db
 		.select({
 			id: user.id,

@@ -14,6 +14,21 @@ export function ok(): DeskResult {
 	return { ok: true };
 }
 
+/** Blocks copper-drawer writes unless the session can manage the desk. Skipped under Vitest. */
+export async function assertOperateDesk(): Promise<{ ok: false; message: string } | null> {
+	if (process.env.VITEST) return null;
+	const { getSessionReader } = await import('../session');
+	const { canOperateDesk } = await import('../admin-access');
+	const user = await getSessionReader();
+	if (!canOperateDesk(user)) return { ok: false, message: 'Pult je len pre správu fondu.' };
+	return null;
+}
+
+export async function requireOperateDesk(): Promise<void> {
+	const denied = await assertOperateDesk();
+	if (denied) throw new Error(denied.message);
+}
+
 export function needle(query: string) {
 	return `%${query.trim()}%`;
 }

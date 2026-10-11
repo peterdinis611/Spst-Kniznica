@@ -6,7 +6,7 @@ import { forgetCover, parseCover } from '../cover-files';
 import { db } from '../db';
 import { book, bookAuthor, category, holding, loan } from '../db/schema';
 import { syncCopies } from './copies';
-import { caught, fail, needle, newId, ok, type DeskResult } from './shared';
+import { assertOperateDesk, caught, fail, needle, newId, ok, type DeskResult } from './shared';
 
 export async function listDeskBooks(query = '') {
 	const q = query.trim();
@@ -100,6 +100,8 @@ export async function saveBook(input: {
 	coverUrl?: string;
 	coverKey?: string;
 }): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const title = input.title.trim();
 	const isbn = input.isbn.trim();
 	const callNumber = input.callNumber.trim();
@@ -219,6 +221,8 @@ export async function saveBook(input: {
 }
 
 export async function deleteBook(id: string): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const open =
 		(
 			await db

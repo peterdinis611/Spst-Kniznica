@@ -4,7 +4,11 @@ import { env } from '@/config/env';
 import { defineAbilityFor } from '@/auth/ability';
 import type { SignedReader } from '@/types';
 
-export function isAdminEmail(email: string | null | undefined, allowList = env.ADMIN_EMAILS) {
+export function isAdminEmail(
+	email: string | null | undefined,
+	allowList = env.ADMIN_EMAILS,
+	isDev = dev
+) {
 	if (!email) return false;
 	const needle = email.trim().toLowerCase();
 	if (!needle) return false;
@@ -14,7 +18,8 @@ export function isAdminEmail(email: string | null | undefined, allowList = env.A
 		.map((part) => part.trim().toLowerCase())
 		.filter(Boolean);
 
-	if (list.includes('*')) return true;
+	// `*` is a local emergency only — never promote everyone in production.
+	if (list.includes('*')) return isDev;
 	return list.includes(needle);
 }
 

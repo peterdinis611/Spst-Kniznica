@@ -3,7 +3,7 @@ import { LIST_LIMIT } from '@/desk/admin';
 import { deskIssue, reservationSchema } from '@/desk/desk-fields';
 import { db } from '../db';
 import { book, reservation, reservationStatus, user } from '../db/schema';
-import { caught, fail, needle, ok, type DeskResult } from './shared';
+import { assertOperateDesk, caught, fail, needle, ok, type DeskResult } from './shared';
 
 export async function listDeskReservations(query = '') {
 	const q = query.trim();
@@ -66,6 +66,8 @@ export async function saveReservation(input: {
 	createdAt?: Date | null;
 	expiresAt?: Date | null;
 }): Promise<DeskResult & { id?: string }> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const issue = deskIssue(reservationSchema, {
 		bookId: input.bookId,
 		userId: input.userId,
@@ -132,6 +134,8 @@ export async function saveReservation(input: {
 }
 
 export async function deleteReservation(id: string): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const gone = await db
 		.delete(reservation)
 		.where(eq(reservation.id, id))

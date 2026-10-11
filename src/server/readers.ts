@@ -23,8 +23,9 @@ function pass(id: string, name: string, email: string, role: Role, className = '
 	return { id, name, email, role, className };
 }
 
-function resolvedRole(email: string, stored: unknown, fromMeta: unknown): Role {
-	if (isAdminEmail(email) || fromMeta === 'librarian') return 'librarian';
+function resolvedRole(email: string, stored: unknown): Role {
+	// JWT / user_metadata.role never promotes — only ADMIN_EMAILS or the local DB stamp.
+	if (isAdminEmail(email)) return 'librarian';
 	return parseRole(stored);
 }
 
@@ -32,7 +33,6 @@ export async function ensureLocalReader(input: {
 	id: string;
 	email: string;
 	name: string;
-	role?: unknown;
 }): Promise<SignedReader | null> {
 	const email = input.email.trim().toLowerCase();
 	if (!email) return null;
@@ -51,7 +51,7 @@ export async function ensureLocalReader(input: {
 			.then((rows) => rows[0]));
 
 	if (existing) {
-		const role = resolvedRole(email, existing.role, input.role);
+		const role = resolvedRole(email, existing.role);
 		if (
 			existing.name !== name ||
 			existing.email !== email ||
@@ -67,7 +67,7 @@ export async function ensureLocalReader(input: {
 		return pass(existing.id, name, email, role, existing.className ?? '');
 	}
 
-	const role = resolvedRole(email, 'reader', input.role);
+	const role = resolvedRole(email, 'reader');
 	await db.insert(user).values({
 		id: input.id,
 		name,
@@ -89,7 +89,6 @@ export async function readerFromClaims(claims: {
 	return await ensureLocalReader({
 		id: claims.sub,
 		email: claims.email ?? '',
-		name: String(metaValue(claims.user_metadata, 'name') ?? ''),
-		role: metaValue(claims.user_metadata, 'role')
+		name: String(metaValue(claims.user_metadata, 'name') ?? '')
 	});
 }

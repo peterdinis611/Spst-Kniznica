@@ -8,7 +8,7 @@ Ostrá adresa fondu žije na Verceli. Lokálny pult je Docker + `bun run dev`. T
 
 ## ORIGIN
 
-V `.env` (a v dashboarde Vercelu) nastav `ORIGIN` na verejnú adresu — `https://knižnica.example.sk`. Auth listy, sitemap a redirecty berú **tento** údaj, nie hlavičku `Origin` z prehliadača.
+V `.env` (a v dashboarde Vercelu) nastav `ORIGIN` na verejnú adresu — `https://knižnica.example.sk`. Na ostrej je **povinný**: bez neho pult pri štarte padne. Auth listy, sitemap, CSRF `allowedOrigins` a redirecty berú **tento** údaj, nie hlavičku `Origin` z prehliadača.
 
 V Supabase Auth:
 
@@ -32,4 +32,4 @@ Register na `/books` a `/holdings` berie **jeden list** (48 zväzkov) zo servera
 - `DESK_TICK_SECRET` — cron `GET /api/desk/tick` **len** s Bearer
 - `SEED_VOLUME` na ostrej nechaj nízke; 2500 je na stres
 
-Hlavičky (CSP, COOP) sú v `next.config.ts`. Podrobnosti tiku a Dockeru sú v [Prevádzke](/docs/prevadzka). Tempo zápisov je v [Tempe](/docs/tempo).
+Hlavičky (CSP bez `unsafe-eval` na ostrej, COOP) sú v `next.config.ts`. Rate limit ide cez tabuľku `rate_bucket` (viac inštancií zdieľa pečiatku); `RATE_LIMIT_STORE=memory` ho drží len v RAM. Podrobnosti tiku a Dockeru sú v [Prevádzke](/docs/prevadzka). Tempo zápisov je v [Tempe](/docs/tempo).

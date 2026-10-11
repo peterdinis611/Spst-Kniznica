@@ -4,7 +4,7 @@ import { deskIssue, linkSchema } from '@/desk/desk-fields';
 import { refreshCatalog } from '../admin';
 import { db } from '../db';
 import { author, book, bookAuthor } from '../db/schema';
-import { caught, fail, needle, ok, type DeskResult } from './shared';
+import { assertOperateDesk, caught, fail, needle, ok, type DeskResult } from './shared';
 
 export async function listDeskLinks(query = '') {
 	const q = query.trim();
@@ -29,6 +29,8 @@ export async function saveLink(input: {
 	authorId: string;
 	position: number;
 }): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const issue = deskIssue(linkSchema, {
 		bookId: input.bookId,
 		authorId: input.authorId,
@@ -69,6 +71,8 @@ export async function saveLink(input: {
 }
 
 export async function deleteLink(bookId: string, authorId: string): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const gone = await db
 		.delete(bookAuthor)
 		.where(and(eq(bookAuthor.bookId, bookId), eq(bookAuthor.authorId, authorId)))

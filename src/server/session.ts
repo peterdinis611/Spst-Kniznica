@@ -47,8 +47,7 @@ export const getSessionReader = cache(async (): Promise<SignedReader | null> => 
 			(await ensureLocalReader({
 				id: userData.user.id,
 				email: userData.user.email ?? '',
-				name: String(userData.user.user_metadata?.name ?? ''),
-				role: userData.user.user_metadata?.role
+				name: String(userData.user.user_metadata?.name ?? '')
 			})) ?? null
 		);
 	} catch {

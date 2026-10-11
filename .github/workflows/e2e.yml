@@ -28,7 +28,6 @@ jobs:
       CI: 'true'
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '0'
       ORIGIN: http://localhost:3000
-      BETTER_AUTH_SECRET: ci-folio-e2e-secret-not-for-prod
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

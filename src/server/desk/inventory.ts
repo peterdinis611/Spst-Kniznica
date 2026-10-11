@@ -2,6 +2,7 @@ import { and, count, desc, eq, isNull, ne, or } from 'drizzle-orm';
 import { invalidateCatalogCache } from '../catalog-cache';
 import { db } from '../db';
 import { book, holding, inventoryRun } from '../db/schema';
+import { assertOperateDesk, requireOperateDesk } from './shared';
 
 export type InventoryWalk = {
 	id: string;
@@ -46,6 +47,7 @@ export async function getOpenInventoryRun(): Promise<InventoryWalk | null> {
 }
 
 export async function openInventoryRun(): Promise<InventoryWalk> {
+	await requireOperateDesk();
 	const open = await getOpenInventoryRun();
 	if (open) return open;
 	const [row] = await db.insert(inventoryRun).values({ note: 'chôdza pultu' }).returning();
@@ -56,6 +58,8 @@ export async function openInventoryRun(): Promise<InventoryWalk> {
 export async function closeInventoryRun(): Promise<
 	{ ok: true; missing: number } | { ok: false; message: string }
 > {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const open = await getOpenInventoryRun();
 	if (!open) return { ok: false, message: 'Žiadna otvorená inventúra.' };
 
@@ -77,6 +81,8 @@ export async function closeInventoryRun(): Promise<
 }
 
 export async function markHoldingFound(holdingId: string) {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const open = await openInventoryRun();
 	const copy = await db
 		.select()
@@ -94,6 +100,8 @@ export async function markHoldingFound(holdingId: string) {
 }
 
 export async function markHoldingLost(holdingId: string) {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const copy = await db
 		.select()
 		.from(holding)

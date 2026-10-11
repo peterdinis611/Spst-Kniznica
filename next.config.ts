@@ -10,6 +10,12 @@ const originHost = (() => {
 	}
 })();
 
+const isProdRuntime =
+	process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE !== 'phase-production-build';
+if (isProdRuntime && !originHost) {
+	throw new Error('ORIGIN must be set in production (e.g. https://kniznica.example.sk).');
+}
+
 const coverHosts = [
 	'images.unsplash.com',
 	'utfs.io',
@@ -36,7 +42,10 @@ const securityHeaders = [
 		key: 'Content-Security-Policy',
 		value: [
 			"default-src 'self'",
-			"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+			// next dev needs eval for HMR; production keeps inline for Next, never eval.
+			process.env.NODE_ENV === 'production'
+				? "script-src 'self' 'unsafe-inline'"
+				: "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
 			"style-src 'self' 'unsafe-inline'",
 			"img-src 'self' data: blob: https://images.unsplash.com https://*.utfs.io https://*.ufs.sh https://*.uploadthing.com https://*.supabase.co https://*.tile.openstreetmap.org",
 			"connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.uploadthing.com https://*.ufs.sh https://*.utfs.io",
@@ -69,14 +78,7 @@ const nextConfig: NextConfig = {
 	output: 'standalone',
 	outputFileTracingRoot: import.meta.dirname,
 	productionBrowserSourceMaps: false,
-	serverExternalPackages: [
-		'postgres',
-		'drizzle-orm',
-		'better-auth',
-		'pg-boss',
-		'pg',
-		'pg-connection-string'
-	],
+	serverExternalPackages: ['postgres', 'drizzle-orm', 'pg-boss', 'pg', 'pg-connection-string'],
 	httpAgentOptions: { keepAlive: true },
 	compiler: {
 		removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false

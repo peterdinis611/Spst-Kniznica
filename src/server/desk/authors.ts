@@ -4,7 +4,7 @@ import { authorSchema, deskIssue } from '@/desk/desk-fields';
 import { refreshCatalog } from '../admin';
 import { db } from '../db';
 import { author, bookAuthor } from '../db/schema';
-import { caught, fail, needle, newId, ok, type DeskResult } from './shared';
+import { assertOperateDesk, caught, fail, needle, newId, ok, type DeskResult } from './shared';
 
 export async function listDeskAuthors(query = '') {
 	const q = query.trim();
@@ -61,6 +61,8 @@ export async function saveAuthor(input: {
 	lifespan: string;
 	role: string;
 }): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const name = input.name.trim();
 	const slug = slugify(input.slug || name);
 	const bio = input.bio.trim();
@@ -93,6 +95,8 @@ export async function saveAuthor(input: {
 }
 
 export async function deleteAuthor(id: string): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const gone = await db.delete(author).where(eq(author.id, id)).returning({ id: author.id });
 	if (!gone.length) return fail('Autor sa nenašiel.');
 	await refreshCatalog('all');

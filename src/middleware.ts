@@ -9,11 +9,17 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.redirect(new URL(dest, request.url), 308);
 	}
 
+	const path = request.nextUrl.pathname;
+	const jar = request.cookies.getAll();
+	if (path.startsWith('/admin') && !hasAuthCookies(jar)) {
+		return NextResponse.redirect(new URL('/login', request.url));
+	}
+
 	const { url, key, configured } = supabasePublic();
 	const requestHeaders = new Headers(request.headers);
-	requestHeaders.set('x-pathname', request.nextUrl.pathname);
+	requestHeaders.set('x-pathname', path);
 	const response = NextResponse.next({ request: { headers: requestHeaders } });
-	if (!configured || !hasAuthCookies(request.cookies.getAll())) return response;
+	if (!configured || !hasAuthCookies(jar)) return response;
 
 	const supabase = createServerClient(url, key, {
 		cookies: {

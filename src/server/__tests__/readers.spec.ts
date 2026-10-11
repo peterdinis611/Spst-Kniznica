@@ -74,6 +74,19 @@ describe('ensureLocalReader', () => {
 		expect(reader?.role).toBe('librarian');
 	});
 
+	it('ignores a self-stamped librarian in JWT metadata', async () => {
+		const reader = await readerFromClaims({
+			sub: 'user-1',
+			email: 'peter@spst.sk',
+			user_metadata: { name: 'Peter Dinis', role: 'librarian' }
+		});
+
+		expect(reader?.role).toBe('reader');
+		expect(values).toHaveBeenCalledWith(
+			expect.objectContaining({ role: 'reader', email: 'peter@spst.sk' })
+		);
+	});
+
 	it('refreshes a stale local row', async () => {
 		where.mockResolvedValueOnce([
 			{

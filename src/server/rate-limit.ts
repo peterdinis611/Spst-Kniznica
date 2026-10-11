@@ -3,7 +3,15 @@ import { env } from '@/config/env';
 
 export const RATE_LIMIT_MESSAGE = 'Príliš veľa pokusov. Počkaj chvíľu a skús to znova.';
 
-export type RateLimitKind = 'auth' | 'mail' | 'order' | 'search' | 'tick' | 'action' | 'desk';
+export type RateLimitKind =
+	| 'auth'
+	| 'mail'
+	| 'order'
+	| 'search'
+	| 'tick'
+	| 'action'
+	| 'desk'
+	| 'backup';
 
 type Window = { max: number; ms: number };
 
@@ -19,6 +27,8 @@ const ACTION_IP: Window = { max: 40, ms: 10 * 60 * 1000 };
 const ACTION_USER: Window = { max: 20, ms: 10 * 60 * 1000 };
 const DESK_IP: Window = { max: 200, ms: 10 * 60 * 1000 };
 const DESK_USER: Window = { max: 120, ms: 10 * 60 * 1000 };
+const BACKUP_IP: Window = { max: 12, ms: 60 * 60 * 1000 };
+const BACKUP_USER: Window = { max: 6, ms: 60 * 60 * 1000 };
 
 const buckets = new Map<string, number[]>();
 
@@ -27,7 +37,13 @@ function rateLimitOff() {
 	return flag === 'off' || flag === '0' || flag === 'false';
 }
 
-function hit(key: string, window: Window) {
+function useMemoryStore() {
+	if (process.env.VITEST) return true;
+	const flag = env.RATE_LIMIT_STORE?.trim().toLowerCase();
+	return flag === 'memory' || flag === 'ram';
+}
+
+function hitMemory(key: string, window: Window) {
 	const now = Date.now();
 	const times = (buckets.get(key) ?? []).filter((stamp) => now - stamp < window.ms);
 	if (times.length >= window.max) {
@@ -37,6 +53,38 @@ function hit(key: string, window: Window) {
 	times.push(now);
 	buckets.set(key, times);
 	return false;
+}
+
+async function hitPostgres(key: string, window: Window): Promise<boolean> {
+	const { sqlClient } = await import('./db');
+	return sqlClient.begin(async (sql) => {
+		const rows = await sql<{ hits: number; window_start: Date | string }[]>`
+			SELECT hits, window_start FROM rate_bucket WHERE id = ${key} FOR UPDATE
+		`;
+		const row = rows[0];
+		const now = Date.now();
+		const started = row ? new Date(row.window_start).getTime() : 0;
+		if (!row || !Number.isFinite(started) || now - started >= window.ms) {
+			await sql`
+				INSERT INTO rate_bucket (id, hits, window_start)
+				VALUES (${key}, 1, now())
+				ON CONFLICT (id) DO UPDATE SET hits = 1, window_start = now()
+			`;
+			return false;
+		}
+		if (row.hits >= window.max) return true;
+		await sql`UPDATE rate_bucket SET hits = hits + 1 WHERE id = ${key}`;
+		return false;
+	});
+}
+
+async function hit(key: string, window: Window): Promise<boolean> {
+	if (useMemoryStore()) return hitMemory(key, window);
+	try {
+		return await hitPostgres(key, window);
+	} catch {
+		return hitMemory(key, window);
+	}
 }
 
 export function eventFromRequest(request: Request): RequestEvent {
@@ -57,28 +105,35 @@ export async function isRateLimited(event: RequestEvent, kind: RateLimitKind, su
 	const ip = event.getClientAddress();
 	const ua = event.request.headers.get('user-agent') ?? '';
 	if (kind === 'mail') {
-		return hit(`mail:ip:${ip}`, MAIL_IP) || hit(`mail:ua:${ip}|${ua}`, MAIL_UA);
+		return (await hit(`mail:ip:${ip}`, MAIL_IP)) || (await hit(`mail:ua:${ip}|${ua}`, MAIL_UA));
 	}
 	if (kind === 'order') {
 		return (
-			hit(`order:ip:${ip}`, ORDER_IP) ||
-			(subject ? hit(`order:user:${subject}`, ORDER_USER) : false)
+			(await hit(`order:ip:${ip}`, ORDER_IP)) ||
+			(subject ? await hit(`order:user:${subject}`, ORDER_USER) : false)
 		);
 	}
 	if (kind === 'search') return hit(`search:ip:${ip}`, SEARCH_IP);
 	if (kind === 'tick') return hit(`tick:ip:${ip}`, TICK_IP);
 	if (kind === 'action') {
 		return (
-			hit(`action:ip:${ip}`, ACTION_IP) ||
-			(subject ? hit(`action:user:${subject}`, ACTION_USER) : false)
+			(await hit(`action:ip:${ip}`, ACTION_IP)) ||
+			(subject ? await hit(`action:user:${subject}`, ACTION_USER) : false)
 		);
 	}
 	if (kind === 'desk') {
 		return (
-			hit(`desk:ip:${ip}`, DESK_IP) || (subject ? hit(`desk:user:${subject}`, DESK_USER) : false)
+			(await hit(`desk:ip:${ip}`, DESK_IP)) ||
+			(subject ? await hit(`desk:user:${subject}`, DESK_USER) : false)
 		);
 	}
-	return hit(`auth:ip:${ip}`, AUTH_IP) || hit(`auth:ua:${ip}|${ua}`, AUTH_UA);
+	if (kind === 'backup') {
+		return (
+			(await hit(`backup:ip:${ip}`, BACKUP_IP)) ||
+			(subject ? await hit(`backup:user:${subject}`, BACKUP_USER) : false)
+		);
+	}
+	return (await hit(`auth:ip:${ip}`, AUTH_IP)) || (await hit(`auth:ua:${ip}|${ua}`, AUTH_UA));
 }
 
 export async function failIfRateLimited(

@@ -4,7 +4,7 @@ import { categorySchema, deskIssue } from '@/desk/desk-fields';
 import { refreshCatalog } from '../admin';
 import { db } from '../db';
 import { book, category } from '../db/schema';
-import { caught, fail, needle, newId, ok, type DeskResult } from './shared';
+import { assertOperateDesk, caught, fail, needle, newId, ok, type DeskResult } from './shared';
 
 export async function listDeskCategories(query = '') {
 	const q = query.trim();
@@ -80,6 +80,8 @@ export async function saveCategory(input: {
 	accent: string;
 	sortOrder: number;
 }): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const name = input.name.trim();
 	const slug = slugify(input.slug || name);
 	const description = input.description.trim();
@@ -126,6 +128,8 @@ export async function saveCategory(input: {
 }
 
 export async function deleteCategory(id: string): Promise<DeskResult> {
+	const denied = await assertOperateDesk();
+	if (denied) return denied;
 	const used = await db
 		.select({ c: count() })
 		.from(book)

@@ -338,4 +338,12 @@ export const bookOrderRelations = relations(bookOrder, ({ one }) => ({
 	})
 }));
 
+export const rateBucket = pgTable('rate_bucket', {
+	id: text('id').primaryKey(),
+	hits: integer('hits').notNull().default(1),
+	windowStart: timestamp('window_start', { withTimezone: true, mode: 'date' })
+		.defaultNow()
+		.notNull()
+});
+
 export * from './auth.schema';

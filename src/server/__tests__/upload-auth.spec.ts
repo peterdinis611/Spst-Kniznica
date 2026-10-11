@@ -87,4 +87,20 @@ describe('deskUploader', () => {
 
 		expect(await deskUploader(new Request('http://localhost/api/uploadthing'))).toBeNull();
 	});
+
+	it('keeps a teacher off the envelope route', async () => {
+		vi.mocked(supabasePublic).mockReturnValue({
+			url: 'https://example.supabase.co',
+			key: 'pub',
+			configured: true
+		});
+		vi.mocked(createServerClient).mockReturnValue({
+			auth: {
+				getClaims: async () => ({ data: { claims: { sub: librarian.id } } })
+			}
+		} as never);
+		vi.mocked(readerFromClaims).mockResolvedValue({ ...librarian, role: 'teacher' });
+
+		expect(await deskUploader(new Request('http://localhost/api/uploadthing'))).toBeNull();
+	});
 });
