@@ -15,6 +15,7 @@
 		"k6:up": "docker compose -f k6/docker-compose.yml up -d prometheus grafana",
 		"k6:down": "docker compose -f k6/docker-compose.yml down",
 		"shots": "bun scripts/readme-shots.ts",
+		"mail:slips": "bun scripts/render-supabase-slips.ts",
 		"k6:smoke": "docker compose -f k6/docker-compose.yml --profile run run --rm --use-aliases k6 run -o experimental-prometheus-rw /scripts/smoke.ts",
 		"k6:load": "docker compose -f k6/docker-compose.yml --profile run run --rm --use-aliases k6 run -o experimental-prometheus-rw /scripts/load.ts",
 		"k6:stress": "docker compose -f k6/docker-compose.yml --profile run run --rm --use-aliases k6 run -o experimental-prometheus-rw /scripts/stress.ts",

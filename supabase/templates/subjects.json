@@ -1,0 +1,15 @@
+{
+	"confirmation.html": "Potvrď preukaz · SPŠT knižnica",
+	"invite.html": "Pozvánka · SPŠT knižnica",
+	"magic_link.html": "Vstup do fondu · SPŠT knižnica",
+	"recovery.html": "Nové heslo · SPŠT knižnica",
+	"email_change.html": "Nová adresa · SPŠT knižnica",
+	"reauthentication.html": "Overenie · SPŠT knižnica",
+	"password_changed_notification.html": "Heslo je nové · SPŠT knižnica",
+	"email_changed_notification.html": "Adresa je nová · SPŠT knižnica",
+	"phone_changed_notification.html": "Telefón je nový · SPŠT knižnica",
+	"identity_linked_notification.html": "Nový vstup · SPŠT knižnica",
+	"identity_unlinked_notification.html": "Vstup stiahnutý · SPŠT knižnica",
+	"mfa_factor_enrolled_notification.html": "Overenie pridané · SPŠT knižnica",
+	"mfa_factor_unenrolled_notification.html": "Overenie preč · SPŠT knižnica"
+}

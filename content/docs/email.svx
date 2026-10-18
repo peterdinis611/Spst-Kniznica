@@ -6,7 +6,9 @@ order: 6.5
 
 Správy o účte môžu ísť dvoma cestami. **Výpožička, vrátenie, nové heslo z preukazu a obnova** idú cez poštu pultu (Mailtrap / Mailgun). **Potvrdenie registrácie** ostáva na **Supabase**, kým v dashboarde nenastavíš vlastné SMTP.
 
-Aby odkaz z listu otvoril `/auth/confirm`, vlož šablóny z priečinka `supabase/templates` (aspoň Confirm signup). **Invite user** a **Reauthentication** sú v tom istom priečinku — vlož ich, ak z dashboardu pozývaš čitateľa, alebo keď Auth chce znova overiť preukaz. Obnova hesla šablónu v dashboarde nepotrebuje, keď ide list z pultu.
+Aby odkaz z listu otvoril `/auth/confirm`, vlož šablóny z priečinka `supabase/templates` (aspoň Confirm signup). Tam sú aj **Invite**, **Magic link**, **Change email**, **Reset password**, **Reauthentication** a **bezpečnostné notifikácie** (zmena hesla, adresy, telefónu, MFA, OAuth vstup). Obnova hesla šablónu v dashboarde nepotrebuje, keď ide list z pultu — ale vlož ju ako zálohu.
+
+Predmety sú v `supabase/templates/subjects.json`. HTML sa skladá skriptom `bun scripts/render-supabase-slips.ts` (krémový lístok s medeným chrbtom).
 
 ## Predtým
 
@@ -21,14 +23,30 @@ Bez toho odkaz z listu nesmeruje na pult.
 
 [Authentication → Email Templates](https://supabase.com/dashboard/project/_/auth/templates). Predmet skopíruj z tabuľky, telo z HTML súboru. Celý súbor, vrátane `<!doctype html>`.
 
+### Auth (prihlásenie)
+
 | List v dashboarde | Súbor | Predmet |
 | --- | --- | --- |
-| Confirm signup | `supabase/templates/confirmation.html` | Potvrď preukaz · SPŠT knižnica |
-| Invite user | `supabase/templates/invite.html` | Pozvánka · SPŠT knižnica |
-| Magic link | `supabase/templates/magic_link.html` | Vstup do fondu · SPŠT knižnica |
-| Change email address | `supabase/templates/email_change.html` | Nová adresa · SPŠT knižnica |
-| Reset password | `supabase/templates/recovery.html` | Nové heslo · SPŠT knižnica |
-| Reauthentication | `supabase/templates/reauthentication.html` | Overenie · SPŠT knižnica |
+| Confirm signup | `confirmation.html` | Potvrď preukaz · SPŠT knižnica |
+| Invite user | `invite.html` | Pozvánka · SPŠT knižnica |
+| Magic link | `magic_link.html` | Vstup do fondu · SPŠT knižnica |
+| Change email address | `email_change.html` | Nová adresa · SPŠT knižnica |
+| Reset password | `recovery.html` | Nové heslo · SPŠT knižnica |
+| Reauthentication | `reauthentication.html` | Overenie · SPŠT knižnica |
+
+### Security notifications
+
+Zapni ich v dashboarde (Security notifications). Bez zapnutia Auth list nepošle.
+
+| List v dashboarde | Súbor | Predmet |
+| --- | --- | --- |
+| Password changed | `password_changed_notification.html` | Heslo je nové · SPŠT knižnica |
+| Email address changed | `email_changed_notification.html` | Adresa je nová · SPŠT knižnica |
+| Phone number changed | `phone_changed_notification.html` | Telefón je nový · SPŠT knižnica |
+| Sign-in method linked | `identity_linked_notification.html` | Nový vstup · SPŠT knižnica |
+| Sign-in method removed | `identity_unlinked_notification.html` | Vstup stiahnutý · SPŠT knižnica |
+| Verification method added | `mfa_factor_enrolled_notification.html` | Overenie pridané · SPŠT knižnica |
+| Verification method removed | `mfa_factor_unenrolled_notification.html` | Overenie preč · SPŠT knižnica |
 
 Odkaz v šablóne **nestavaj** na predvolené ConfirmationURL (to ide na Supabase, nie na pult). V HTML je už poskladaný odkaz:
 
