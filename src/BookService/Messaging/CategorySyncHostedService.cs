@@ -32,15 +32,15 @@ public sealed class CategorySyncHostedService(
                 using var consumer = new ConsumerBuilder<string, string>(new ConsumerConfig
                 {
                     BootstrapServers = kafka.BootstrapServers,
-                    GroupId = "book-service-category-sync",
-                    ClientId = $"{kafka.ClientId}-category-sync",
+                    GroupId = "book-service-catalog-sync",
+                    ClientId = $"{kafka.ClientId}-catalog-sync",
                     AutoOffsetReset = AutoOffsetReset.Earliest,
                     EnableAutoCommit = true,
                     SocketTimeoutMs = 10000
                 }).Build();
 
                 consumer.Subscribe(kafka.Topic);
-                logger.LogInformation("BookService category sync subscribed to {Topic}", kafka.Topic);
+                logger.LogInformation("BookService catalog sync subscribed to {Topic}", kafka.Topic);
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
@@ -58,7 +58,9 @@ public sealed class CategorySyncHostedService(
                             : EventJson.TryGetEventType(Encoding.UTF8.GetBytes(result.Message.Value))
                               ?? "Unknown";
 
-                        if (eventType is not (nameof(CategoryUpdatedEvent) or nameof(CategoryDeletedEvent)))
+                        if (eventType is not (
+                            nameof(CategoryUpdatedEvent) or nameof(CategoryDeletedEvent)
+                            or nameof(AuthorUpdatedEvent) or nameof(AuthorDeletedEvent)))
                         {
                             continue;
                         }
@@ -106,60 +108,126 @@ public sealed class CategorySyncHostedService(
         string payload,
         CancellationToken cancellationToken)
     {
-        if (eventType == nameof(CategoryUpdatedEvent))
+        switch (eventType)
         {
-            var updated = EventJson.Deserialize<CategoryUpdatedEvent>(payload);
-            if (updated is null)
+            case nameof(CategoryUpdatedEvent):
             {
+                var updated = EventJson.Deserialize<CategoryUpdatedEvent>(payload);
+                if (updated is null)
+                {
+                    return;
+                }
+
+                var books = await db.Books
+                    .Where(b => b.CategoryId == updated.CategoryId)
+                    .ToListAsync(cancellationToken);
+
+                foreach (var book in books)
+                {
+                    book.CategoryName = updated.Name;
+                    book.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+
+                if (books.Count > 0)
+                {
+                    await db.SaveChangesAsync(cancellationToken);
+                    logger.LogInformation(
+                        "Synced category name '{Name}' to {Count} books",
+                        updated.Name,
+                        books.Count);
+                }
+
                 return;
             }
-
-            var books = await db.Books
-                .Where(b => b.CategoryId == updated.CategoryId)
-                .ToListAsync(cancellationToken);
-
-            foreach (var book in books)
+            case nameof(CategoryDeletedEvent):
             {
-                book.CategoryName = updated.Name;
-                book.UpdatedAt = DateTimeOffset.UtcNow;
-            }
+                var deleted = EventJson.Deserialize<CategoryDeletedEvent>(payload);
+                if (deleted is null)
+                {
+                    return;
+                }
 
-            if (books.Count > 0)
+                var linked = await db.Books
+                    .Where(b => b.CategoryId == deleted.CategoryId)
+                    .ToListAsync(cancellationToken);
+
+                foreach (var book in linked)
+                {
+                    book.CategoryId = null;
+                    book.CategoryName = null;
+                    book.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+
+                if (linked.Count > 0)
+                {
+                    await db.SaveChangesAsync(cancellationToken);
+                    logger.LogInformation(
+                        "Cleared deleted category {CategoryId} from {Count} books",
+                        deleted.CategoryId,
+                        linked.Count);
+                }
+
+                return;
+            }
+            case nameof(AuthorUpdatedEvent):
             {
-                await db.SaveChangesAsync(cancellationToken);
-                logger.LogInformation(
-                    "Synced category name '{Name}' to {Count} books",
-                    updated.Name,
-                    books.Count);
+                var updated = EventJson.Deserialize<AuthorUpdatedEvent>(payload);
+                if (updated is null)
+                {
+                    return;
+                }
+
+                var books = await db.Books
+                    .Where(b => b.AuthorId == updated.AuthorId)
+                    .ToListAsync(cancellationToken);
+
+                foreach (var book in books)
+                {
+                    book.Author = updated.Name;
+                    book.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+
+                if (books.Count > 0)
+                {
+                    await db.SaveChangesAsync(cancellationToken);
+                    logger.LogInformation(
+                        "Synced author name '{Name}' to {Count} books",
+                        updated.Name,
+                        books.Count);
+                }
+
+                return;
             }
+            case nameof(AuthorDeletedEvent):
+            {
+                var deleted = EventJson.Deserialize<AuthorDeletedEvent>(payload);
+                if (deleted is null)
+                {
+                    return;
+                }
 
-            return;
-        }
+                var linked = await db.Books
+                    .Where(b => b.AuthorId == deleted.AuthorId)
+                    .ToListAsync(cancellationToken);
 
-        var deleted = EventJson.Deserialize<CategoryDeletedEvent>(payload);
-        if (deleted is null)
-        {
-            return;
-        }
+                foreach (var book in linked)
+                {
+                    book.AuthorId = null;
+                    book.Author = "Unknown";
+                    book.UpdatedAt = DateTimeOffset.UtcNow;
+                }
 
-        var linked = await db.Books
-            .Where(b => b.CategoryId == deleted.CategoryId)
-            .ToListAsync(cancellationToken);
+                if (linked.Count > 0)
+                {
+                    await db.SaveChangesAsync(cancellationToken);
+                    logger.LogInformation(
+                        "Cleared deleted author {AuthorId} from {Count} books",
+                        deleted.AuthorId,
+                        linked.Count);
+                }
 
-        foreach (var book in linked)
-        {
-            book.CategoryId = null;
-            book.CategoryName = null;
-            book.UpdatedAt = DateTimeOffset.UtcNow;
-        }
-
-        if (linked.Count > 0)
-        {
-            await db.SaveChangesAsync(cancellationToken);
-            logger.LogInformation(
-                "Cleared deleted category {CategoryId} from {Count} books",
-                deleted.CategoryId,
-                linked.Count);
+                return;
+            }
         }
     }
 }

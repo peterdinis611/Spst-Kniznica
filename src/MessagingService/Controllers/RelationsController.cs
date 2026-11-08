@@ -9,9 +9,6 @@ namespace MessagingService.Controllers;
 [Produces("application/json")]
 public class RelationsController(ILibraryRelationService relations) : ControllerBase
 {
-    /// <summary>
-    /// One category with book count (1 category → N books).
-    /// </summary>
     [HttpGet("categories/{categoryId:guid}")]
     [ProducesResponseType(typeof(CategoryRelationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -21,9 +18,6 @@ public class RelationsController(ILibraryRelationService relations) : Controller
         return category is null ? NotFound() : Ok(category);
     }
 
-    /// <summary>
-    /// All books linked to a category.
-    /// </summary>
     [HttpGet("categories/{categoryId:guid}/books")]
     [ProducesResponseType(typeof(IReadOnlyList<BookRelationDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<BookRelationDto>>> GetBooksByCategory(
@@ -33,9 +27,24 @@ public class RelationsController(ILibraryRelationService relations) : Controller
         return Ok(await relations.GetBooksByCategoryAsync(categoryId, cancellationToken));
     }
 
-    /// <summary>
-    /// One book with its single category (1 book → 1 category).
-    /// </summary>
+    [HttpGet("authors/{authorId:guid}")]
+    [ProducesResponseType(typeof(AuthorRelationDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AuthorRelationDto>> GetAuthor(Guid authorId, CancellationToken cancellationToken)
+    {
+        var author = await relations.GetAuthorAsync(authorId, cancellationToken);
+        return author is null ? NotFound() : Ok(author);
+    }
+
+    [HttpGet("authors/{authorId:guid}/books")]
+    [ProducesResponseType(typeof(IReadOnlyList<BookRelationDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<BookRelationDto>>> GetBooksByAuthor(
+        Guid authorId,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await relations.GetBooksByAuthorAsync(authorId, cancellationToken));
+    }
+
     [HttpGet("books/{bookId:guid}")]
     [ProducesResponseType(typeof(BookRelationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -1,5 +1,6 @@
 using Serilog;
 using SpstKniznica.Caching;
+using SpstKniznica.Common.Hosting;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -8,12 +9,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-
-    builder.Host.UseSerilog((context, services, configuration) => configuration
-        .ReadFrom.Configuration(context.Configuration)
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .Enrich.WithProperty("Application", "CacheService"));
+    builder.UseSpstSerilog("CacheService");
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -26,7 +22,7 @@ try
             Description = "SPST knižnica – Redis cache admin (zdieľaná knižnica SpstKniznica.Caching)."
         });
     });
-
+    builder.Services.AddSpstCors(builder.Configuration);
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
 
     var redisConnection = builder.Configuration["Cache:ConnectionString"] ?? "localhost:6379";
@@ -40,7 +36,8 @@ try
         builder.Configuration.GetValue("Cache:Enabled", true),
         redisConnection);
 
-    app.UseSerilogRequestLogging();
+    app.UseSpstRequestLogging();
+    app.UseSpstCors();
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {

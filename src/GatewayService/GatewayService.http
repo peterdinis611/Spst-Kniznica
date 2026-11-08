@@ -1,0 +1,33 @@
+@GatewayService_HostAddress = http://localhost:5200
+
+GET {{GatewayService_HostAddress}}/api/gateway/status
+Accept: application/json
+
+###
+
+GET {{GatewayService_HostAddress}}/api/books?page=1&pageSize=10
+Accept: application/json
+
+###
+
+GET {{GatewayService_HostAddress}}/api/categories?page=1&pageSize=10
+Accept: application/json
+
+###
+
+GET {{GatewayService_HostAddress}}/api/authors?page=1&pageSize=10
+Accept: application/json
+
+###
+
+GET {{GatewayService_HostAddress}}/api/relations/summary
+Accept: application/json
+
+###
+
+GET {{GatewayService_HostAddress}}/api/cache/status
+Accept: application/json
+
+###
+
+GET {{GatewayService_HostAddress}}/health

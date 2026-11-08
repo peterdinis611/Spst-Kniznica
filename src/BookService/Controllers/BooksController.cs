@@ -62,7 +62,7 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
         [FromBody] CreateBookRequest request,
         CancellationToken cancellationToken)
     {
-        logger.LogInformation("Creating book '{Title}' by {Author}", request.Title, request.Author);
+        logger.LogInformation("Creating book '{Title}' for author {AuthorId}", request.Title, request.AuthorId);
         var created = await books.CreateAsync(request, cancellationToken);
         logger.LogInformation("Book created successfully with id {BookId}", created.Id);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);

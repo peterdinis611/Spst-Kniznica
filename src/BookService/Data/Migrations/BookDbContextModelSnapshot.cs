@@ -28,6 +28,9 @@ namespace BookService.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("AuthorId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("AvailableCopies")
                         .HasColumnType("INTEGER");
 
@@ -88,6 +91,10 @@ namespace BookService.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Author");
+
+                    b.HasIndex("AuthorId");
 
                     b.HasIndex("CategoryId");
 

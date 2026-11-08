@@ -30,9 +30,8 @@ public static class BookValidationRules
         validator.RuleFor(x => x.Subtitle)
             .MaximumLength(300);
 
-        validator.RuleFor(x => x.Author)
-            .NotEmpty().WithMessage("Author is required.")
-            .MaximumLength(200);
+        validator.RuleFor(x => x.AuthorId)
+            .NotEmpty().WithMessage("AuthorId is required.");
 
         validator.RuleFor(x => x.Publisher)
             .MaximumLength(200);
@@ -101,7 +100,8 @@ public static class BookValidationRules
             Id = id ?? Guid.NewGuid(),
             Title = request.Title.Trim(),
             Subtitle = NormalizeOptional(request.Subtitle),
-            Author = request.Author.Trim(),
+            AuthorId = request.AuthorId,
+            Author = string.Empty,
             Publisher = NormalizeOptional(request.Publisher),
             Isbn = NormalizeIsbn(request.Isbn),
             PublishedYear = request.PublishedYear,

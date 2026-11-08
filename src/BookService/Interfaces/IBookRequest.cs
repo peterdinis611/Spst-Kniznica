@@ -6,7 +6,7 @@ public interface IBookRequest
 {
     string Title { get; }
     string? Subtitle { get; }
-    string Author { get; }
+    Guid AuthorId { get; }
     string? Publisher { get; }
     string? Isbn { get; }
     int? PublishedYear { get; }

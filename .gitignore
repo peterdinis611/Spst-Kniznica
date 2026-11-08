@@ -9,3 +9,15 @@ logs/
 
 *.db
 categories.db
+
+# Next.js (web/)
+web/node_modules/
+web/.next/
+web/out/
+web/.env*.local
+web/next-env.d.ts
+web/npm-debug.log*
+web/.DS_Store
+
+# Local run artifacts (start-all.sh)
+.run/

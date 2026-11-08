@@ -1,0 +1,21 @@
+@AuthorService_HostAddress = http://localhost:5207
+
+GET {{AuthorService_HostAddress}}/api/authors
+Accept: application/json
+
+###
+
+POST {{AuthorService_HostAddress}}/api/authors
+Content-Type: application/json
+
+{
+  "name": "J. R. R. Tolkien",
+  "biography": "English writer and philologist.",
+  "nationality": "British",
+  "birthYear": 1892,
+  "isActive": true
+}
+
+###
+
+GET {{AuthorService_HostAddress}}/health

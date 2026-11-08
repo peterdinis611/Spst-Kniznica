@@ -18,6 +18,7 @@ namespace BookService.Services;
 
 public class BooksService(
     IUnitOfWork unitOfWork,
+    IAuthorLookup authorLookup,
     ICategoryLookup categoryLookup,
     IAppCache cache,
     IIntegrationEventPublisher eventPublisher,
@@ -80,6 +81,7 @@ public class BooksService(
         EnsureValid(validation);
 
         var book = request.ToBook();
+        await ApplyAuthorAsync(book, request.AuthorId, cancellationToken);
         await ApplyCategoryAsync(book, request.CategoryId, cancellationToken);
         EnsureCopyCountConsistency(book);
         await EnsureUniqueIsbnAsync(book.Isbn, null, cancellationToken);
@@ -91,7 +93,14 @@ public class BooksService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await eventPublisher.PublishAsync(
-            new BookCreatedEvent(book.Id, book.Title, book.Author, book.Isbn, book.CategoryId, book.CategoryName),
+            new BookCreatedEvent(
+                book.Id,
+                book.Title,
+                book.AuthorId,
+                book.Author,
+                book.Isbn,
+                book.CategoryId,
+                book.CategoryName),
             cancellationToken);
 
         var detail = MapDetail(book);
@@ -127,7 +136,6 @@ public class BooksService(
 
         book.Title = updated.Title;
         book.Subtitle = updated.Subtitle;
-        book.Author = updated.Author;
         book.Publisher = updated.Publisher;
         book.Isbn = updated.Isbn;
         book.PublishedYear = updated.PublishedYear;
@@ -137,6 +145,7 @@ public class BooksService(
         book.Format = updated.Format;
         book.ShelfLocation = updated.ShelfLocation;
         book.UpdatedAt = DateTimeOffset.UtcNow;
+        await ApplyAuthorAsync(book, request.AuthorId, cancellationToken);
         await ApplyCategoryAsync(book, request.CategoryId, cancellationToken);
 
         AdjustCopyCount(book, request.TotalCopies);
@@ -146,7 +155,14 @@ public class BooksService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await eventPublisher.PublishAsync(
-            new BookUpdatedEvent(book.Id, book.Title, book.Author, book.Isbn, book.CategoryId, book.CategoryName),
+            new BookUpdatedEvent(
+                book.Id,
+                book.Title,
+                book.AuthorId,
+                book.Author,
+                book.Isbn,
+                book.CategoryId,
+                book.CategoryName),
             cancellationToken);
 
         var detail = MapDetail(book);
@@ -257,6 +273,7 @@ public class BooksService(
                 }
 
                 var book = request.ToBook();
+                await ApplyAuthorAsync(book, request.AuthorId, cancellationToken);
                 await ApplyCategoryAsync(book, request.CategoryId, cancellationToken);
                 if (book.Isbn is not null)
                 {
@@ -286,7 +303,14 @@ public class BooksService(
             foreach (var book in imported)
             {
                 await eventPublisher.PublishAsync(
-                    new BookCreatedEvent(book.Id, book.Title, book.Author, book.Isbn, book.CategoryId, book.CategoryName),
+                    new BookCreatedEvent(
+                        book.Id,
+                        book.Title,
+                        book.AuthorId,
+                        book.Author,
+                        book.Isbn,
+                        book.CategoryId,
+                        book.CategoryName),
                     cancellationToken);
             }
         }
@@ -304,6 +328,37 @@ public class BooksService(
             SkippedCount = errors.Count,
             Errors = errors
         };
+    }
+
+    private async Task ApplyAuthorAsync(Book book, Guid authorId, CancellationToken cancellationToken)
+    {
+        if (authorId == Guid.Empty)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["AuthorId"] = ["AuthorId is required."]
+            });
+        }
+
+        var author = await authorLookup.GetByIdAsync(authorId, cancellationToken);
+        if (author is null)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["AuthorId"] = [$"Author '{authorId}' was not found."]
+            });
+        }
+
+        if (!author.IsActive)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["AuthorId"] = [$"Author '{author.Name}' is inactive."]
+            });
+        }
+
+        book.AuthorId = author.Id;
+        book.Author = author.Name;
     }
 
     private async Task ApplyCategoryAsync(Book book, Guid? categoryId, CancellationToken cancellationToken)
@@ -528,6 +583,7 @@ public class BooksService(
         Id = book.Id,
         Title = book.Title,
         Subtitle = book.Subtitle,
+        AuthorId = book.AuthorId,
         Author = book.Author,
         Publisher = book.Publisher,
         Isbn = book.Isbn,
@@ -558,10 +614,13 @@ public class BooksService(
 
     private static CreateBookRequest MapImportRow(ImportRow row)
     {
-        if (string.IsNullOrWhiteSpace(row.Title) || string.IsNullOrWhiteSpace(row.Author))
+        if (string.IsNullOrWhiteSpace(row.Title))
         {
-            throw new AppValidationException("Title and Author are required.");
+            throw new AppValidationException("Title is required.");
         }
+
+        var authorId = ParseGuid(row.AuthorId)
+            ?? throw new AppValidationException("AuthorId is required.");
 
         var format = BookFormat.Paperback;
         if (!string.IsNullOrWhiteSpace(row.Format) && !Enum.TryParse(row.Format, true, out format))
@@ -602,7 +661,7 @@ public class BooksService(
         {
             Title = row.Title,
             Subtitle = row.Subtitle,
-            Author = row.Author,
+            AuthorId = authorId,
             Publisher = row.Publisher,
             Isbn = row.Isbn,
             PublishedYear = publishedYear,
@@ -699,7 +758,7 @@ public class BooksService(
         {
             Title = Value(book, "title") ?? string.Empty,
             Subtitle = Value(book, "subtitle"),
-            Author = Value(book, "author") ?? string.Empty,
+            AuthorId = Value(book, "authorId", "author"),
             Publisher = Value(book, "publisher"),
             Isbn = Value(book, "isbn"),
             PublishedYear = Value(book, "publishedYear", "year"),
@@ -744,7 +803,7 @@ public class BooksService(
         {
             Title = Cell(row, "title") ?? string.Empty,
             Subtitle = Cell(row, "subtitle"),
-            Author = Cell(row, "author") ?? string.Empty,
+            AuthorId = Cell(row, "authorid", "author"),
             Publisher = Cell(row, "publisher"),
             Isbn = Cell(row, "isbn"),
             PublishedYear = Cell(row, "publishedyear", "year"),
@@ -764,7 +823,7 @@ public class BooksService(
     {
         public string Title { get; set; } = string.Empty;
         public string? Subtitle { get; set; }
-        public string Author { get; set; } = string.Empty;
+        public string? AuthorId { get; set; }
         public string? Publisher { get; set; }
         public string? Isbn { get; set; }
         public string? PublishedYear { get; set; }

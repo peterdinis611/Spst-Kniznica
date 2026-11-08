@@ -4,10 +4,12 @@ public class BookProjection
 {
     public Guid Id { get; set; }
     public required string Title { get; set; }
+    public Guid? AuthorId { get; set; }
     public required string Author { get; set; }
     public string? Isbn { get; set; }
     public Guid? CategoryId { get; set; }
     public string? CategoryName { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public AuthorProjection? AuthorRef { get; set; }
     public CategoryProjection? Category { get; set; }
 }

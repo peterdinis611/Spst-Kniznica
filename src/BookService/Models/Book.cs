@@ -5,6 +5,7 @@ public class Book
     public Guid Id { get; set; }
     public required string Title { get; set; }
     public string? Subtitle { get; set; }
+    public Guid? AuthorId { get; set; }
     public required string Author { get; set; }
     public string? Publisher { get; set; }
     public string? Isbn { get; set; }

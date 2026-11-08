@@ -26,6 +26,8 @@ public class BookDbContext(DbContextOptions<BookDbContext> options) : DbContext(
             entity.Property(b => b.Format).HasConversion<string>().HasMaxLength(20);
 
             entity.HasIndex(b => b.Isbn).IsUnique();
+            entity.HasIndex(b => b.AuthorId);
+            entity.HasIndex(b => b.Author);
             entity.HasIndex(b => b.CategoryId);
             entity.HasIndex(b => b.CategoryName);
             entity.HasIndex(b => b.ShelfLocation);

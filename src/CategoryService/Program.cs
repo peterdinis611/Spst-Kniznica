@@ -7,6 +7,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Caching;
+using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Messaging;
 
 Log.Logger = new LoggerConfiguration()
@@ -16,12 +17,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-
-    builder.Host.UseSerilog((context, services, configuration) => configuration
-        .ReadFrom.Configuration(context.Configuration)
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .Enrich.WithProperty("Application", "CategoryService"));
+    builder.UseSpstSerilog("CategoryService");
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -34,6 +30,7 @@ try
             Description = "SPST knižnica – správa kategórií."
         });
     });
+    builder.Services.AddSpstCors(builder.Configuration);
 
     builder.Services.AddDbContext<CategoryDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -60,24 +57,8 @@ try
     }
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-    app.UseSerilogRequestLogging(options =>
-    {
-        options.MessageTemplate =
-            "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-        options.GetLevel = (httpContext, _, ex) =>
-            ex is not null || httpContext.Response.StatusCode >= 500
-                ? Serilog.Events.LogEventLevel.Error
-                : httpContext.Response.StatusCode >= 400
-                    ? Serilog.Events.LogEventLevel.Warning
-                    : Serilog.Events.LogEventLevel.Information;
-        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
-        {
-            diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
-            diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
-            diagnosticContext.Set("TraceId", httpContext.TraceIdentifier);
-        };
-    });
+    app.UseSpstRequestLogging();
+    app.UseSpstCors();
 
     app.UseSwagger();
     app.UseSwaggerUI(options =>

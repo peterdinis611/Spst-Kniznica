@@ -16,6 +16,7 @@ public class BookRepository(BookDbContext db) : IBookRepository
         {
             ["title"] = b => b.Title,
             ["author"] = b => b.Author,
+            ["authorid"] = b => b.AuthorId ?? Guid.Empty,
             ["publisher"] = b => b.Publisher ?? string.Empty,
             ["publishedyear"] = b => b.PublishedYear ?? 0,
             ["year"] = b => b.PublishedYear ?? 0,
@@ -45,6 +46,7 @@ public class BookRepository(BookDbContext db) : IBookRepository
             Id = b.Id,
             Title = b.Title,
             Subtitle = b.Subtitle,
+            AuthorId = b.AuthorId,
             Author = b.Author,
             Publisher = b.Publisher,
             Isbn = b.Isbn,
@@ -151,6 +153,11 @@ public class BookRepository(BookDbContext db) : IBookRepository
         {
             var title = filter.Title.Trim();
             query = query.Where(b => EF.Functions.Like(b.Title, $"%{title}%"));
+        }
+
+        if (filter.AuthorId.HasValue)
+        {
+            query = query.Where(b => b.AuthorId == filter.AuthorId.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Author))

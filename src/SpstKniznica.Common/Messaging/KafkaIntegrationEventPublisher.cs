@@ -63,6 +63,9 @@ public sealed class KafkaIntegrationEventPublisher : IIntegrationEventPublisher,
         CategoryCreatedEvent e => e.CategoryId.ToString(),
         CategoryUpdatedEvent e => e.CategoryId.ToString(),
         CategoryDeletedEvent e => e.CategoryId.ToString(),
+        AuthorCreatedEvent e => e.AuthorId.ToString(),
+        AuthorUpdatedEvent e => e.AuthorId.ToString(),
+        AuthorDeletedEvent e => e.AuthorId.ToString(),
         _ => integrationEvent.EventId.ToString()
     };
 

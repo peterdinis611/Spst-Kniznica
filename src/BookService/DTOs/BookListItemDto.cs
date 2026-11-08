@@ -7,6 +7,7 @@ public class BookListItemDto
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Subtitle { get; set; }
+    public Guid? AuthorId { get; set; }
     public string Author { get; set; } = string.Empty;
     public string? Publisher { get; set; }
     public string? Isbn { get; set; }

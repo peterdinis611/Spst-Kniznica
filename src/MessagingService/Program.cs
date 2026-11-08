@@ -7,6 +7,7 @@ using MessagingService.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Caching;
+using SpstKniznica.Common.Hosting;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -15,12 +16,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-
-    builder.Host.UseSerilog((context, services, configuration) => configuration
-        .ReadFrom.Configuration(context.Configuration)
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .Enrich.WithProperty("Application", "MessagingService"));
+    builder.UseSpstSerilog("MessagingService");
 
     builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection(KafkaOptions.SectionName));
     builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.SectionName));
@@ -36,6 +32,7 @@ try
             Description = "SPST knižnica – Kafka/RabbitMQ bridge a väzba kniha↔kategória (1:N)."
         });
     });
+    builder.Services.AddSpstCors(builder.Configuration);
 
     builder.Services.AddDbContext<MessagingDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -77,7 +74,8 @@ try
         Log.Information("Messaging projection database migrations applied");
     }
 
-    app.UseSerilogRequestLogging();
+    app.UseSpstRequestLogging();
+    app.UseSpstCors();
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {

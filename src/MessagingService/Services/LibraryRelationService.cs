@@ -23,6 +23,13 @@ public class LibraryRelationService(
             case nameof(CategoryDeletedEvent):
                 await DeleteCategoryAsync(payload, cancellationToken);
                 break;
+            case nameof(AuthorCreatedEvent):
+            case nameof(AuthorUpdatedEvent):
+                await UpsertAuthorAsync(payload, cancellationToken);
+                break;
+            case nameof(AuthorDeletedEvent):
+                await DeleteAuthorAsync(payload, cancellationToken);
+                break;
             case nameof(BookCreatedEvent):
             case nameof(BookUpdatedEvent):
                 await UpsertBookAsync(payload, cancellationToken);
@@ -61,26 +68,40 @@ public class LibraryRelationService(
         Guid categoryId,
         CancellationToken cancellationToken = default)
     {
-        var books = await cache.GetOrSetAsync(
+        return await cache.GetOrSetAsync(
             CacheKeys.RelationCategoryBooks(categoryId),
-            async ct => await db.Books
+            ct => QueryBooksAsync(b => b.CategoryId == categoryId, ct),
+            TimeSpan.FromMinutes(2),
+            cancellationToken);
+    }
+
+    public Task<AuthorRelationDto?> GetAuthorAsync(Guid authorId, CancellationToken cancellationToken = default)
+        => cache.GetOrSetAsync(
+            CacheKeys.RelationAuthor(authorId),
+            async ct => await db.Authors
                 .AsNoTracking()
-                .Where(b => b.CategoryId == categoryId)
-                .OrderBy(b => b.Title)
-                .Select(b => new BookRelationDto
+                .Where(a => a.Id == authorId)
+                .Select(a => new AuthorRelationDto
                 {
-                    Id = b.Id,
-                    Title = b.Title,
-                    Author = b.Author,
-                    Isbn = b.Isbn,
-                    CategoryId = b.CategoryId,
-                    CategoryName = b.CategoryName
+                    Id = a.Id,
+                    Name = a.Name,
+                    Nationality = a.Nationality,
+                    IsActive = a.IsActive,
+                    BookCount = a.Books.Count
                 })
-                .ToListAsync(ct),
+                .FirstOrDefaultAsync(ct),
             TimeSpan.FromMinutes(2),
             cancellationToken);
 
-        return books;
+    public async Task<IReadOnlyList<BookRelationDto>> GetBooksByAuthorAsync(
+        Guid authorId,
+        CancellationToken cancellationToken = default)
+    {
+        return await cache.GetOrSetAsync(
+            CacheKeys.RelationAuthorBooks(authorId),
+            ct => QueryBooksAsync(b => b.AuthorId == authorId, ct),
+            TimeSpan.FromMinutes(2),
+            cancellationToken);
     }
 
     public Task<BookRelationDto?> GetBookAsync(Guid bookId, CancellationToken cancellationToken = default)
@@ -89,15 +110,7 @@ public class LibraryRelationService(
             async ct => await db.Books
                 .AsNoTracking()
                 .Where(b => b.Id == bookId)
-                .Select(b => new BookRelationDto
-                {
-                    Id = b.Id,
-                    Title = b.Title,
-                    Author = b.Author,
-                    Isbn = b.Isbn,
-                    CategoryId = b.CategoryId,
-                    CategoryName = b.CategoryName
-                })
+                .Select(MapBookExpression())
                 .FirstOrDefaultAsync(ct),
             TimeSpan.FromMinutes(2),
             cancellationToken);
@@ -108,12 +121,16 @@ public class LibraryRelationService(
             async ct =>
             {
                 var categoryCount = await db.Categories.CountAsync(ct);
+                var authorCount = await db.Authors.CountAsync(ct);
                 var bookCount = await db.Books.CountAsync(ct);
-                var linkedBookCount = await db.Books.CountAsync(b => b.CategoryId != null, ct);
+                var linkedBookCount = await db.Books.CountAsync(
+                    b => b.CategoryId != null || b.AuthorId != null,
+                    ct);
 
                 return new RelationSummaryDto
                 {
                     CategoryCount = categoryCount,
+                    AuthorCount = authorCount,
                     BookCount = bookCount,
                     LinkedBookCount = linkedBookCount,
                     UnlinkedBookCount = bookCount - linkedBookCount
@@ -121,6 +138,30 @@ public class LibraryRelationService(
             },
             TimeSpan.FromMinutes(1),
             cancellationToken);
+
+    private async Task<List<BookRelationDto>> QueryBooksAsync(
+        System.Linq.Expressions.Expression<Func<BookProjection, bool>> predicate,
+        CancellationToken cancellationToken)
+    {
+        return await db.Books
+            .AsNoTracking()
+            .Where(predicate)
+            .OrderBy(b => b.Title)
+            .Select(MapBookExpression())
+            .ToListAsync(cancellationToken);
+    }
+
+    private static System.Linq.Expressions.Expression<Func<BookProjection, BookRelationDto>> MapBookExpression()
+        => b => new BookRelationDto
+        {
+            Id = b.Id,
+            Title = b.Title,
+            AuthorId = b.AuthorId,
+            Author = b.Author,
+            Isbn = b.Isbn,
+            CategoryId = b.CategoryId,
+            CategoryName = b.CategoryName
+        };
 
     private async Task UpsertCategoryAsync(string payload, CancellationToken cancellationToken)
     {
@@ -194,6 +235,78 @@ public class LibraryRelationService(
             books.Count);
     }
 
+    private async Task UpsertAuthorAsync(string payload, CancellationToken cancellationToken)
+    {
+        var evt = EventJson.Deserialize<AuthorUpdatedEvent>(payload)
+            ?? throw new InvalidOperationException("Invalid author event payload.");
+
+        var author = await db.Authors.FirstOrDefaultAsync(a => a.Id == evt.AuthorId, cancellationToken);
+        if (author is null)
+        {
+            author = new AuthorProjection
+            {
+                Id = evt.AuthorId,
+                Name = evt.Name,
+                Nationality = evt.Nationality,
+                IsActive = evt.IsActive,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            db.Authors.Add(author);
+        }
+        else
+        {
+            author.Name = evt.Name;
+            author.Nationality = evt.Nationality;
+            author.IsActive = evt.IsActive;
+            author.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+
+        var books = await db.Books.Where(b => b.AuthorId == evt.AuthorId).ToListAsync(cancellationToken);
+        foreach (var book in books)
+        {
+            book.Author = evt.Name;
+            book.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        await InvalidateRelationCacheAsync(
+            authorId: evt.AuthorId,
+            bookIds: books.Select(b => b.Id),
+            cancellationToken: cancellationToken);
+        logger.LogInformation("Projection upserted author {AuthorId} '{Name}'", evt.AuthorId, evt.Name);
+    }
+
+    private async Task DeleteAuthorAsync(string payload, CancellationToken cancellationToken)
+    {
+        var deleted = EventJson.Deserialize<AuthorDeletedEvent>(payload)
+            ?? throw new InvalidOperationException("Invalid author deleted payload.");
+
+        var author = await db.Authors.FirstOrDefaultAsync(a => a.Id == deleted.AuthorId, cancellationToken);
+        if (author is null)
+        {
+            return;
+        }
+
+        var books = await db.Books.Where(b => b.AuthorId == deleted.AuthorId).ToListAsync(cancellationToken);
+        foreach (var book in books)
+        {
+            book.AuthorId = null;
+            book.Author = "Unknown";
+            book.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+
+        db.Authors.Remove(author);
+        await db.SaveChangesAsync(cancellationToken);
+        await InvalidateRelationCacheAsync(
+            authorId: deleted.AuthorId,
+            bookIds: books.Select(b => b.Id),
+            cancellationToken: cancellationToken);
+        logger.LogInformation(
+            "Projection deleted author {AuthorId} and unlinked {BookCount} books",
+            deleted.AuthorId,
+            books.Count);
+    }
+
     private async Task UpsertBookAsync(string payload, CancellationToken cancellationToken)
     {
         var evt = EventJson.Deserialize<BookUpdatedEvent>(payload)
@@ -215,14 +328,32 @@ public class LibraryRelationService(
             }
         }
 
+        if (evt.AuthorId.HasValue)
+        {
+            var authorExists = await db.Authors.AnyAsync(a => a.Id == evt.AuthorId.Value, cancellationToken);
+            if (!authorExists)
+            {
+                db.Authors.Add(new AuthorProjection
+                {
+                    Id = evt.AuthorId.Value,
+                    Name = string.IsNullOrWhiteSpace(evt.Author) ? "Unknown" : evt.Author,
+                    IsActive = true,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                });
+                await db.SaveChangesAsync(cancellationToken);
+            }
+        }
+
         var book = await db.Books.FirstOrDefaultAsync(b => b.Id == evt.BookId, cancellationToken);
         var previousCategoryId = book?.CategoryId;
+        var previousAuthorId = book?.AuthorId;
         if (book is null)
         {
             book = new BookProjection
             {
                 Id = evt.BookId,
                 Title = evt.Title,
+                AuthorId = evt.AuthorId,
                 Author = evt.Author,
                 Isbn = evt.Isbn,
                 CategoryId = evt.CategoryId,
@@ -234,6 +365,7 @@ public class LibraryRelationService(
         else
         {
             book.Title = evt.Title;
+            book.AuthorId = evt.AuthorId;
             book.Author = evt.Author;
             book.Isbn = evt.Isbn;
             book.CategoryId = evt.CategoryId;
@@ -254,13 +386,26 @@ public class LibraryRelationService(
             categoryIds.Add(previousCategoryId.Value);
         }
 
+        var authorIds = new List<Guid>();
+        if (evt.AuthorId.HasValue)
+        {
+            authorIds.Add(evt.AuthorId.Value);
+        }
+
+        if (previousAuthorId.HasValue && previousAuthorId != evt.AuthorId)
+        {
+            authorIds.Add(previousAuthorId.Value);
+        }
+
         await InvalidateRelationCacheAsync(
             categoryIds: categoryIds,
+            authorIds: authorIds,
             bookIds: [evt.BookId],
             cancellationToken: cancellationToken);
         logger.LogInformation(
-            "Projection upserted book {BookId} -> category {CategoryId}",
+            "Projection upserted book {BookId} -> author {AuthorId}, category {CategoryId}",
             evt.BookId,
+            evt.AuthorId,
             evt.CategoryId);
     }
 
@@ -276,10 +421,12 @@ public class LibraryRelationService(
         }
 
         var categoryId = book.CategoryId;
+        var authorId = book.AuthorId;
         db.Books.Remove(book);
         await db.SaveChangesAsync(cancellationToken);
         await InvalidateRelationCacheAsync(
             categoryId: categoryId,
+            authorId: authorId,
             bookIds: [deleted.BookId],
             cancellationToken: cancellationToken);
         logger.LogInformation("Projection deleted book {BookId}", deleted.BookId);
@@ -288,6 +435,8 @@ public class LibraryRelationService(
     private async Task InvalidateRelationCacheAsync(
         Guid? categoryId = null,
         IEnumerable<Guid>? categoryIds = null,
+        Guid? authorId = null,
+        IEnumerable<Guid>? authorIds = null,
         IEnumerable<Guid>? bookIds = null,
         CancellationToken cancellationToken = default)
     {
@@ -309,6 +458,26 @@ public class LibraryRelationService(
         {
             await cache.RemoveAsync(CacheKeys.RelationCategory(id), cancellationToken);
             await cache.RemoveAsync(CacheKeys.RelationCategoryBooks(id), cancellationToken);
+        }
+
+        var authors = new HashSet<Guid>();
+        if (authorId.HasValue)
+        {
+            authors.Add(authorId.Value);
+        }
+
+        if (authorIds is not null)
+        {
+            foreach (var id in authorIds)
+            {
+                authors.Add(id);
+            }
+        }
+
+        foreach (var id in authors)
+        {
+            await cache.RemoveAsync(CacheKeys.RelationAuthor(id), cancellationToken);
+            await cache.RemoveAsync(CacheKeys.RelationAuthorBooks(id), cancellationToken);
         }
 
         if (bookIds is not null)

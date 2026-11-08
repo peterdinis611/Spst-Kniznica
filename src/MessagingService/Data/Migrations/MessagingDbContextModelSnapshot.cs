@@ -17,6 +17,34 @@ namespace MessagingService.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.14");
 
+            modelBuilder.Entity("MessagingService.Models.AuthorProjection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Nationality")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Authors", (string)null);
+                });
+
             modelBuilder.Entity("MessagingService.Models.BookProjection", b =>
                 {
                     b.Property<Guid>("Id")
@@ -26,6 +54,9 @@ namespace MessagingService.Data.Migrations
                     b.Property<string>("Author")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("AuthorId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("CategoryId")
@@ -48,6 +79,8 @@ namespace MessagingService.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
 
                     b.HasIndex("CategoryId");
 
@@ -84,12 +117,24 @@ namespace MessagingService.Data.Migrations
 
             modelBuilder.Entity("MessagingService.Models.BookProjection", b =>
                 {
+                    b.HasOne("MessagingService.Models.AuthorProjection", "AuthorRef")
+                        .WithMany("Books")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("MessagingService.Models.CategoryProjection", "Category")
                         .WithMany("Books")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("AuthorRef");
+
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("MessagingService.Models.AuthorProjection", b =>
+                {
+                    b.Navigation("Books");
                 });
 
             modelBuilder.Entity("MessagingService.Models.CategoryProjection", b =>

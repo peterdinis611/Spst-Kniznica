@@ -10,6 +10,7 @@ public abstract record IntegrationEvent
 public sealed record BookCreatedEvent(
     Guid BookId,
     string Title,
+    Guid? AuthorId,
     string Author,
     string? Isbn,
     Guid? CategoryId,
@@ -18,6 +19,7 @@ public sealed record BookCreatedEvent(
 public sealed record BookUpdatedEvent(
     Guid BookId,
     string Title,
+    Guid? AuthorId,
     string Author,
     string? Isbn,
     Guid? CategoryId,
@@ -38,5 +40,19 @@ public sealed record CategoryUpdatedEvent(
     bool IsActive) : IntegrationEvent;
 
 public sealed record CategoryDeletedEvent(Guid CategoryId) : IntegrationEvent;
+
+public sealed record AuthorCreatedEvent(
+    Guid AuthorId,
+    string Name,
+    string? Nationality,
+    bool IsActive) : IntegrationEvent;
+
+public sealed record AuthorUpdatedEvent(
+    Guid AuthorId,
+    string Name,
+    string? Nationality,
+    bool IsActive) : IntegrationEvent;
+
+public sealed record AuthorDeletedEvent(Guid AuthorId) : IntegrationEvent;
 
 public sealed record PingEvent(string Source, string Message) : IntegrationEvent;
