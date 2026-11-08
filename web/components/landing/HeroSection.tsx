@@ -46,7 +46,7 @@ export function HeroSection({ books }: HeroSectionProps) {
             <span className="flex items-center px-6 py-3.5 text-sm font-semibold tracking-wide">
               Preskúmať teraz
             </span>
-            <span className="flex items-center justify-center bg-ink px-4 text-paper transition group-hover:bg-accent group-hover:text-ink">
+            <span className="flex items-center justify-center bg-ink px-4 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground">
               <ArrowRight className="size-4" strokeWidth={2} aria-hidden />
             </span>
           </Link>
@@ -106,7 +106,7 @@ export function HeroSection({ books }: HeroSectionProps) {
         </Link>
 
         <div className="sunburst absolute top-[42%] left-[48%] z-30 flex size-[5.5rem] items-center justify-center bg-accent text-center sm:size-24">
-          <p className="font-display text-sm leading-tight font-semibold text-ink sm:text-base">
+          <p className="font-display text-sm leading-tight font-semibold text-accent-foreground sm:text-base">
             Otvorený
             <br />
             fond

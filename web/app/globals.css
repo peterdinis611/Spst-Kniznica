@@ -58,19 +58,19 @@
 
 .dark {
   --ink: #f4f4f4;
-  --paper: #0f0f0f;
-  --paper-deep: #1a1a1a;
-  --rule: #2c2c2c;
-  --muted-text: #9a9a9a;
+  --paper: #121212;
+  --paper-deep: #1c1c1c;
+  --rule: #2e2e2e;
+  --muted-text: #c4c4c4;
   --accent-brand: #ffe500;
-  --accent-deep: #f0c800;
+  --accent-deep: #ffe566;
   --watermark: #1f1f1f;
   --signal: #f4f4f4;
   --grain: rgba(255, 255, 255, 0.03);
 
-  --background: #0f0f0f;
+  --background: #121212;
   --foreground: #f4f4f4;
-  --card: #1a1a1a;
+  --card: #1c1c1c;
   --card-foreground: #f4f4f4;
   --popover: #1a1a1a;
   --popover-foreground: #f4f4f4;
@@ -79,13 +79,13 @@
   --secondary: #1a1a1a;
   --secondary-foreground: #f4f4f4;
   --muted: #1a1a1a;
-  --muted-foreground: #9a9a9a;
+  --muted-foreground: #c4c4c4;
   --accent: #ffe500;
   --accent-foreground: #0b0b0b;
   --border: #2c2c2c;
   --input: #2c2c2c;
   --ring: #ffe500;
-  --sidebar: #0f0f0f;
+  --sidebar: #121212;
   --sidebar-foreground: #f4f4f4;
   --sidebar-primary: #ffe500;
   --sidebar-primary-foreground: #0b0b0b;
@@ -183,6 +183,11 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Always dark on yellow — never flip with theme ink */
+  .on-accent {
+    color: #0b0b0b;
   }
 
   .reveal {

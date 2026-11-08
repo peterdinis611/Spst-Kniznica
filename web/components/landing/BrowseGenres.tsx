@@ -30,7 +30,7 @@ export function BrowseGenres() {
                     onClick={() => setActive(category.id)}
                     className={`w-full px-3 py-2.5 text-left text-sm transition ${
                       selected
-                        ? "bg-accent font-semibold text-ink"
+                        ? "bg-accent font-semibold text-accent-foreground"
                         : "text-muted-foreground hover:bg-paper-deep hover:text-ink"
                     }`}
                   >
@@ -76,7 +76,7 @@ export function BrowseGenres() {
                   {book.title}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">{book.author}</p>
-                <p className="mt-2 text-sm font-semibold text-accent-deep">
+                <p className="mt-2 text-sm font-semibold text-ink dark:text-accent">
                   {book.availableCopies}/{book.totalCopies} ks
                 </p>
               </Link>

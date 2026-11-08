@@ -78,7 +78,7 @@ export function PopularShelf({ books }: PopularShelfProps) {
                     </p>
                   </div>
                 </div>
-                <p className="mt-3 font-display text-lg text-ink transition group-hover:text-accent">
+                <p className="mt-3 font-display text-lg text-ink transition group-hover:text-accent-deep dark:group-hover:text-accent">
                   {book.title}
                 </p>
                 <p className="text-sm text-muted-foreground">{book.author}</p>

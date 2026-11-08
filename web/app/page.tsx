@@ -22,7 +22,7 @@ export default function HomePage() {
       <Suspense
         fallback={
           <footer className="mt-auto border-t border-rule px-5 py-10 text-muted-foreground">
-            <p className="mx-auto max-w-6xl text-xs lowercase">spst knižnica.</p>
+            <p className="mx-auto max-w-6xl text-xs">SPST Knižnica.</p>
           </footer>
         }
       >

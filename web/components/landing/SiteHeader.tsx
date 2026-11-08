@@ -3,7 +3,8 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Library, Menu } from "lucide-react";
+import { LogIn, Menu } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,10 +16,27 @@ import {
 } from "@/components/ui/sheet";
 
 const links = [
-  { href: "/", label: "Domov" },
-  { href: "/books", label: "Katalóg" },
-  { href: "/authors", label: "Autori" },
-  { href: "/categories", label: "Kategórie" },
+  {
+    href: "/",
+    label: "Domov",
+    isActive: (pathname: string) => pathname === "/",
+  },
+  {
+    href: "/books",
+    label: "Katalóg",
+    isActive: (pathname: string) =>
+      pathname === "/books" || pathname.startsWith("/books/"),
+  },
+  {
+    href: "/authors",
+    label: "Autori",
+    isActive: (pathname: string) => pathname.startsWith("/authors"),
+  },
+  {
+    href: "/categories",
+    label: "Kategórie",
+    isActive: (pathname: string) => pathname.startsWith("/categories"),
+  },
 ] as const;
 
 function NavLinks({
@@ -33,15 +51,16 @@ function NavLinks({
   return (
     <nav className={className}>
       {links.map((link) => {
-        const active =
-          link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+        const active = link.isActive(pathname);
         return (
           <Link
             key={link.href}
             href={link.href}
             onClick={onNavigate}
-            className={`text-sm font-medium transition ${
-              active ? "text-ink" : "text-muted-foreground hover:text-ink"
+            className={`relative text-sm font-medium tracking-wide transition ${
+              active
+                ? "text-ink after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-accent"
+                : "text-ink/60 hover:text-ink dark:text-white/80 dark:hover:text-white"
             }`}
           >
             {link.label}
@@ -56,37 +75,43 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="reveal relative z-20 mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-5 sm:px-6 md:px-8 md:py-7">
-      <Link
-        href="/"
-        className="shrink-0 text-[1.05rem] font-semibold tracking-tight lowercase sm:text-lg"
-      >
-        spst knižnica<span className="text-accent">.</span>
-      </Link>
+    <header className="reveal relative z-20 mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5 sm:gap-4 sm:px-6 md:px-8 md:py-7">
+      <BrandLogo />
 
       <Suspense
         fallback={
-          <nav className="hidden items-center gap-8 md:flex" aria-hidden>
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex" aria-hidden>
             {links.map((link) => (
-              <span key={link.href} className="text-sm text-muted-foreground">
+              <span key={link.href} className="text-sm text-ink/50">
                 {link.label}
               </span>
             ))}
           </nav>
         }
       >
-        <NavLinks className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex" />
+        <NavLinks className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex" />
       </Suspense>
 
       <div className="flex items-center gap-2">
         <ThemeToggle />
+
+        <Button
+          size="sm"
+          className="hidden h-10 rounded-full bg-accent px-4 text-black hover:bg-accent-deep sm:inline-flex"
+          render={<Link href="/login" />}
+        >
+          <LogIn className="size-3.5" strokeWidth={1.8} aria-hidden />
+          Prihlásiť
+        </Button>
+
         <Button
           size="icon"
-          className="hidden size-10 rounded-full bg-ink text-paper hover:bg-ink/85 md:inline-flex"
-          aria-label="Otvoriť katalóg"
-          render={<Link href="/books" />}
+          variant="outline"
+          className="size-10 rounded-full border-rule sm:hidden dark:border-white/25 dark:text-white"
+          aria-label="Prihlásiť sa"
+          render={<Link href="/login" />}
         >
-          <Library className="size-4" strokeWidth={1.8} />
+          <LogIn className="size-4" strokeWidth={1.8} />
         </Button>
 
         <Sheet open={open} onOpenChange={setOpen}>
@@ -95,7 +120,7 @@ export function SiteHeader() {
               <Button
                 variant="outline"
                 size="icon"
-                className="size-10 rounded-full border-ink md:hidden"
+                className="size-10 rounded-full border-rule dark:border-white/25 dark:text-white lg:hidden"
                 aria-label="Otvoriť menu"
               />
             }
@@ -104,9 +129,7 @@ export function SiteHeader() {
           </SheetTrigger>
           <SheetContent side="right" className="w-[min(100%,20rem)] bg-paper">
             <SheetHeader>
-              <SheetTitle className="lowercase tracking-tight">
-                spst knižnica.
-              </SheetTitle>
+              <SheetTitle className="tracking-tight">SPST Knižnica.</SheetTitle>
             </SheetHeader>
             <div className="mt-8 flex flex-col gap-5 px-1">
               <Suspense fallback={null}>
@@ -116,7 +139,15 @@ export function SiteHeader() {
                 />
               </Suspense>
               <Button
-                className="mt-2 rounded-none"
+                className="rounded-none bg-accent text-black hover:bg-accent-deep"
+                render={<Link href="/login" />}
+                onClick={() => setOpen(false)}
+              >
+                Prihlásiť sa
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-none"
                 render={<Link href="/books" />}
                 onClick={() => setOpen(false)}
               >

@@ -266,17 +266,6 @@ export function getRecommendedBooks() {
   return MOCK_BOOKS.filter((book) => book.recommended);
 }
 
-export function searchMockBooks(query?: string, categoryId?: string) {
-  const q = query?.trim().toLowerCase();
-  return MOCK_BOOKS.filter((book) => {
-    const matchesQuery = q
-      ? `${book.title} ${book.author} ${book.categoryName}`.toLowerCase().includes(q)
-      : true;
-    const matchesCategory = categoryId ? book.categoryId === categoryId : true;
-    return matchesQuery && matchesCategory;
-  });
-}
-
 export function getAuthorBooks(authorId: string) {
   return MOCK_BOOKS.filter((book) => book.authorId === authorId);
 }
@@ -284,3 +273,12 @@ export function getAuthorBooks(authorId: string) {
 export function getCategoryBooks(categoryId: string) {
   return MOCK_BOOKS.filter((book) => book.categoryId === categoryId);
 }
+
+export function getAuthorInitials() {
+  return [
+    ...new Set(
+      MOCK_AUTHORS.map((author) => author.name.charAt(0).toUpperCase()),
+    ),
+  ].sort((a, b) => a.localeCompare(b, "sk"));
+}
+

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Sora, IBM_Plex_Mono } from "next/font/google";
+import { ScrollToTop } from "@/components/scroll-to-top";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -46,7 +47,10 @@ export default function RootLayout({
         mono.variable,
       )}
     >
-      <body className="flex min-h-full flex-col overflow-x-hidden bg-paper text-ink">
+      <body
+        className="flex min-h-full flex-col overflow-x-hidden bg-paper text-ink"
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -54,6 +58,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <ScrollToTop />
         </ThemeProvider>
       </body>
     </html>

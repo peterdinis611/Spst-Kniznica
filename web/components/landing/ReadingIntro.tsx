@@ -66,15 +66,21 @@ export function ReadingIntro() {
                 <ul className="mt-4 space-y-3 text-sm text-ink/80">
                   <li className="flex items-center justify-between border-b border-rule/60 pb-2">
                     <span>Knihy</span>
-                    <span className="text-accent">live</span>
+                    <span className="font-semibold text-accent-deep dark:text-accent">
+                      live
+                    </span>
                   </li>
                   <li className="flex items-center justify-between border-b border-rule/60 pb-2">
                     <span>Autori</span>
-                    <span className="text-accent">1 : N</span>
+                    <span className="font-semibold text-accent-deep dark:text-accent">
+                      1 : N
+                    </span>
                   </li>
                   <li className="flex items-center justify-between">
                     <span>Gateway</span>
-                    <span className="text-accent">5200</span>
+                    <span className="font-semibold text-accent-deep dark:text-accent">
+                      5200
+                    </span>
                   </li>
                 </ul>
               </div>

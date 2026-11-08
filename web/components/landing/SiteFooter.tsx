@@ -23,8 +23,8 @@ export async function SiteFooter() {
     <footer className="relative z-10 mt-auto border-t border-rule bg-paper">
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.1fr_1fr_0.9fr] md:gap-8 md:px-8 md:py-16">
         <div>
-          <p className="text-lg font-semibold tracking-tight lowercase">
-            spst knižnica<span className="text-accent">.</span>
+          <p className="text-lg font-semibold tracking-tight">
+            SPST Knižnica<span className="text-accent">.</span>
           </p>
           <ul className="mt-6 space-y-2">
             {nav.map((item) => (
@@ -66,16 +66,16 @@ export async function SiteFooter() {
           </ul>
         </div>
 
-        <div className="bg-accent p-6 text-ink md:self-start">
-          <p className="font-display text-2xl leading-tight">
+        <div className="on-accent bg-accent p-6 text-black md:self-start">
+          <p className="font-display text-2xl leading-tight text-black">
             Pripravení na ďalšiu knihu?
           </p>
-          <p className="mt-3 text-sm text-ink/75">
+          <p className="mt-3 text-sm text-black/75">
             Otvor katalóg a filtrovať podľa autora alebo kategórie.
           </p>
           <Link
             href="/books"
-            className="mt-6 inline-flex border border-ink bg-paper px-4 py-2.5 text-sm font-semibold transition hover:bg-ink hover:text-accent"
+            className="mt-6 inline-flex border border-black bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white hover:text-black"
           >
             Do katalógu
           </Link>
