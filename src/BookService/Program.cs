@@ -6,6 +6,7 @@ using BookService.Services;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using SpstKniznica.Common.Messaging;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -40,6 +41,14 @@ try
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IBooksService, BooksService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+    builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "book-service");
+
+    builder.Services.AddHttpClient<ICategoryLookup, CategoryLookupClient>(client =>
+    {
+        var baseUrl = builder.Configuration["CategoryService:BaseUrl"] ?? "http://localhost:5204";
+        client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+        client.Timeout = TimeSpan.FromSeconds(10);
+    });
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<BookDbContext>("database");

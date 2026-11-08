@@ -3,6 +3,7 @@ using CategoryService.Exceptions;
 using CategoryService.Interfaces;
 using CategoryService.Models;
 using FluentValidation;
+using SpstKniznica.Common.Messaging;
 using SpstKniznica.Common.Pagination;
 using SpstKniznica.Common.Text;
 
@@ -10,6 +11,7 @@ namespace CategoryService.Services;
 
 public class CategoryAppService(
     IUnitOfWork unitOfWork,
+    IIntegrationEventPublisher eventPublisher,
     IValidator<CreateCategoryRequest> createValidator,
     IValidator<UpdateCategoryRequest> updateValidator,
     ILogger<CategoryAppService> logger) : ICategoryService
@@ -59,6 +61,10 @@ public class CategoryAppService(
         await unitOfWork.Categories.AddAsync(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        await eventPublisher.PublishAsync(
+            new CategoryCreatedEvent(category.Id, category.Name, category.Description, category.IsActive),
+            cancellationToken);
+
         logger.LogInformation("Created category {CategoryId} named '{Name}'", category.Id, category.Name);
         return Map(category);
     }
@@ -85,6 +91,10 @@ public class CategoryAppService(
         unitOfWork.Categories.Update(category);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        await eventPublisher.PublishAsync(
+            new CategoryUpdatedEvent(category.Id, category.Name, category.Description, category.IsActive),
+            cancellationToken);
+
         logger.LogInformation("Updated category {CategoryId} named '{Name}'", category.Id, category.Name);
         return Map(category);
     }
@@ -94,6 +104,8 @@ public class CategoryAppService(
         var category = await GetRequiredAsync(id, tracked: true, cancellationToken);
         unitOfWork.Categories.Remove(category);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await eventPublisher.PublishAsync(new CategoryDeletedEvent(id), cancellationToken);
         logger.LogInformation("Deleted category {CategoryId} named '{Name}'", id, category.Name);
     }
 

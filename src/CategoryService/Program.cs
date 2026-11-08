@@ -6,6 +6,7 @@ using CategoryService.Services;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using SpstKniznica.Common.Messaging;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -40,6 +41,7 @@ try
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<ICategoryService, CategoryAppService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+    builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "category-service");
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<CategoryDbContext>("database");

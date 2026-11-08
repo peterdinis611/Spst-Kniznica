@@ -1,7 +1,10 @@
+using MessagingService.Data;
 using MessagingService.Interfaces;
 using MessagingService.Messaging.Kafka;
 using MessagingService.Messaging.RabbitMq;
 using MessagingService.Options;
+using MessagingService.Services;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -29,9 +32,14 @@ try
         {
             Title = "MessagingService API",
             Version = "v1",
-            Description = "SPST knižnica – Kafka + RabbitMQ messaging bridge."
+            Description = "SPST knižnica – Kafka/RabbitMQ bridge a väzba kniha↔kategória (1:N)."
         });
     });
+
+    builder.Services.AddDbContext<MessagingDbContext>(options =>
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    builder.Services.AddScoped<ILibraryRelationService, LibraryRelationService>();
 
     var kafkaEnabled = builder.Configuration.GetValue("Kafka:Enabled", true);
     var rabbitEnabled = builder.Configuration.GetValue("RabbitMq:Enabled", true);
@@ -50,7 +58,8 @@ try
         builder.Services.AddHostedService<RabbitMqConsumerHostedService>();
     }
 
-    builder.Services.AddHealthChecks();
+    builder.Services.AddHealthChecks()
+        .AddDbContextCheck<MessagingDbContext>("database");
 
     var app = builder.Build();
 
@@ -58,6 +67,13 @@ try
         "Starting MessagingService. Kafka={KafkaEnabled}, RabbitMQ={RabbitEnabled}",
         kafkaEnabled,
         rabbitEnabled);
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<MessagingDbContext>();
+        await db.Database.MigrateAsync();
+        Log.Information("Messaging projection database migrations applied");
+    }
 
     app.UseSerilogRequestLogging();
     app.UseSwagger();

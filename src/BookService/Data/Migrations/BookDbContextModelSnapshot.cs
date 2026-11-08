@@ -31,7 +31,10 @@ namespace BookService.Data.Migrations
                     b.Property<int>("AvailableCopies")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Category")
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CategoryName")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
@@ -86,7 +89,9 @@ namespace BookService.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Category");
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("CategoryName");
 
                     b.HasIndex("Isbn")
                         .IsUnique();

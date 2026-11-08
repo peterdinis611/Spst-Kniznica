@@ -10,12 +10,15 @@ using ClosedXML.Excel;
 using CsvHelper;
 using CsvHelper.Configuration;
 using FluentValidation;
+using SpstKniznica.Common.Messaging;
 using SpstKniznica.Common.Pagination;
 
 namespace BookService.Services;
 
 public class BooksService(
     IUnitOfWork unitOfWork,
+    ICategoryLookup categoryLookup,
+    IIntegrationEventPublisher eventPublisher,
     IValidator<CreateBookRequest> createValidator,
     IValidator<UpdateBookRequest> updateValidator,
     ILogger<BooksService> logger) : IBooksService
@@ -25,11 +28,11 @@ public class BooksService(
         CancellationToken cancellationToken = default)
     {
         logger.LogDebug(
-            "Searching books. Page={Page}, PageSize={PageSize}, Search={Search}, Category={Category}",
+            "Searching books. Page={Page}, PageSize={PageSize}, Search={Search}, CategoryId={CategoryId}",
             filter.Page,
             filter.PageSize,
             filter.Search,
-            filter.Category);
+            filter.CategoryId);
 
         var result = await unitOfWork.Books.FindAsync(filter, cancellationToken);
 
@@ -68,6 +71,7 @@ public class BooksService(
         EnsureValid(validation);
 
         var book = request.ToBook();
+        await ApplyCategoryAsync(book, request.CategoryId, cancellationToken);
         EnsureCopyCountConsistency(book);
         await EnsureUniqueIsbnAsync(book.Isbn, null, cancellationToken);
 
@@ -76,6 +80,10 @@ public class BooksService(
 
         await unitOfWork.Books.AddAsync(book, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await eventPublisher.PublishAsync(
+            new BookCreatedEvent(book.Id, book.Title, book.Author, book.Isbn, book.CategoryId, book.CategoryName),
+            cancellationToken);
 
         logger.LogInformation(
             "Created book {BookId} titled '{Title}' with {CopyCount} copies and ISBN {Isbn}",
@@ -112,18 +120,22 @@ public class BooksService(
         book.Isbn = updated.Isbn;
         book.PublishedYear = updated.PublishedYear;
         book.Language = updated.Language;
-        book.Category = updated.Category;
         book.Description = updated.Description;
         book.PageCount = updated.PageCount;
         book.Format = updated.Format;
         book.ShelfLocation = updated.ShelfLocation;
         book.UpdatedAt = DateTimeOffset.UtcNow;
+        await ApplyCategoryAsync(book, request.CategoryId, cancellationToken);
 
         AdjustCopyCount(book, request.TotalCopies);
         book.RecalculateCopyCounts();
 
         unitOfWork.Books.Update(book);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await eventPublisher.PublishAsync(
+            new BookUpdatedEvent(book.Id, book.Title, book.Author, book.Isbn, book.CategoryId, book.CategoryName),
+            cancellationToken);
 
         logger.LogInformation(
             "Updated book {BookId}. Title='{Title}', TotalCopies={TotalCopies}, AvailableCopies={AvailableCopies}",
@@ -156,6 +168,8 @@ public class BooksService(
 
         unitOfWork.Books.Remove(book);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await eventPublisher.PublishAsync(new BookDeletedEvent(id), cancellationToken);
         logger.LogInformation("Deleted book {BookId} titled '{Title}'", id, book.Title);
     }
 
@@ -227,6 +241,7 @@ public class BooksService(
                 }
 
                 var book = request.ToBook();
+                await ApplyCategoryAsync(book, request.CategoryId, cancellationToken);
                 if (book.Isbn is not null)
                 {
                     if (!usedIsbns.Add(book.Isbn) || await unitOfWork.Books.IsbnExistsAsync(book.Isbn, cancellationToken: cancellationToken))
@@ -241,7 +256,7 @@ public class BooksService(
                 book.RecalculateCopyCounts();
                 imported.Add(book);
             }
-            catch (Exception ex) when (ex is AppValidationException or FormatException or ArgumentException or InvalidOperationException)
+            catch (Exception ex) when (ex is AppValidationException or FormatException or ArgumentException or InvalidOperationException or HttpRequestException)
             {
                 errors.Add(new BulkImportError { RowNumber = rowNumber, Message = ex.Message });
             }
@@ -251,6 +266,13 @@ public class BooksService(
         {
             await unitOfWork.Books.AddRangeAsync(imported, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            foreach (var book in imported)
+            {
+                await eventPublisher.PublishAsync(
+                    new BookCreatedEvent(book.Id, book.Title, book.Author, book.Isbn, book.CategoryId, book.CategoryName),
+                    cancellationToken);
+            }
         }
 
         logger.LogInformation(
@@ -266,6 +288,48 @@ public class BooksService(
             SkippedCount = errors.Count,
             Errors = errors
         };
+    }
+
+    private async Task ApplyCategoryAsync(Book book, Guid? categoryId, CancellationToken cancellationToken)
+    {
+        if (categoryId is null || categoryId == Guid.Empty)
+        {
+            book.CategoryId = null;
+            book.CategoryName = null;
+            return;
+        }
+
+        var category = await categoryLookup.GetByIdAsync(categoryId.Value, cancellationToken);
+        if (category is null)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["CategoryId"] = [$"Category '{categoryId}' was not found."]
+            });
+        }
+
+        if (!category.IsActive)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["CategoryId"] = [$"Category '{category.Name}' is inactive."]
+            });
+        }
+
+        book.CategoryId = category.Id;
+        book.CategoryName = category.Name;
+    }
+
+    private static Guid? ParseGuid(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return Guid.TryParse(value.Trim(), out var id) && id != Guid.Empty
+            ? id
+            : throw new AppValidationException($"Invalid CategoryId '{value}'.");
     }
 
     private async Task EnsureUniqueIsbnAsync(string? isbn, Guid? excludeId, CancellationToken cancellationToken)
@@ -453,7 +517,8 @@ public class BooksService(
         Isbn = book.Isbn,
         PublishedYear = book.PublishedYear,
         Language = book.Language,
-        Category = book.Category,
+        CategoryId = book.CategoryId,
+        CategoryName = book.CategoryName,
         Description = book.Description,
         PageCount = book.PageCount,
         Format = book.Format,
@@ -526,7 +591,7 @@ public class BooksService(
             Isbn = row.Isbn,
             PublishedYear = publishedYear,
             Language = row.Language,
-            Category = row.Category,
+            CategoryId = ParseGuid(row.CategoryId),
             Description = row.Description,
             PageCount = pageCount,
             Format = format,
@@ -623,7 +688,7 @@ public class BooksService(
             Isbn = Value(book, "isbn"),
             PublishedYear = Value(book, "publishedYear", "year"),
             Language = Value(book, "language"),
-            Category = Value(book, "category"),
+            CategoryId = Value(book, "categoryId", "category"),
             Description = Value(book, "description"),
             PageCount = Value(book, "pageCount", "pages"),
             Format = Value(book, "format"),
@@ -668,7 +733,7 @@ public class BooksService(
             Isbn = Cell(row, "isbn"),
             PublishedYear = Cell(row, "publishedyear", "year"),
             Language = Cell(row, "language"),
-            Category = Cell(row, "category"),
+            CategoryId = Cell(row, "categoryid", "category"),
             Description = Cell(row, "description"),
             PageCount = Cell(row, "pagecount", "pages"),
             Format = Cell(row, "format"),
@@ -688,7 +753,7 @@ public class BooksService(
         public string? Isbn { get; set; }
         public string? PublishedYear { get; set; }
         public string? Language { get; set; }
-        public string? Category { get; set; }
+        public string? CategoryId { get; set; }
         public string? Description { get; set; }
         public string? PageCount { get; set; }
         public string? Format { get; set; }
