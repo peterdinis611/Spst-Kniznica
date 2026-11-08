@@ -1,6 +1,6 @@
 using BookService.DTOs;
+using BookService.Interfaces;
 using BookService.Models;
-using BookService.Repositories;
 using BookService.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
@@ -15,9 +15,11 @@ public class BooksController(
     IValidator<UpdateBookRequest> updateValidator) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Book>>> GetAll(CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<Book>>> Get(
+        [FromQuery] BookQueryFilter filter,
+        CancellationToken cancellationToken)
     {
-        var result = await books.GetAllAsync(cancellationToken);
+        var result = await books.FindAsync(filter, cancellationToken);
         return Ok(result);
     }
 
@@ -39,16 +41,7 @@ public class BooksController(
             return ValidationProblem(new ValidationProblemDetails(validation.ToDictionary()));
         }
 
-        var book = new Book
-        {
-            Id = Guid.NewGuid(),
-            Title = request.Title.Trim(),
-            Author = request.Author.Trim(),
-            Isbn = BookValidationRules.NormalizeIsbn(request.Isbn),
-            PublishedYear = request.PublishedYear
-        };
-
-        var created = await books.AddAsync(book, cancellationToken);
+        var created = await books.AddAsync(request.ToBook(), cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -67,15 +60,7 @@ public class BooksController(
             return ValidationProblem(new ValidationProblemDetails(validation.ToDictionary()));
         }
 
-        var updated = new Book
-        {
-            Title = request.Title.Trim(),
-            Author = request.Author.Trim(),
-            Isbn = BookValidationRules.NormalizeIsbn(request.Isbn),
-            PublishedYear = request.PublishedYear
-        };
-
-        var book = await books.UpdateAsync(id, updated, cancellationToken);
+        var book = await books.UpdateAsync(id, request.ToBook(id), cancellationToken);
         return book is null ? NotFound() : Ok(book);
     }
 

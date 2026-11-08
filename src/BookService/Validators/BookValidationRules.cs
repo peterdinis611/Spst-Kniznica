@@ -1,3 +1,5 @@
+using BookService.Interfaces;
+using BookService.Models;
 using FluentValidation;
 
 namespace BookService.Validators;
@@ -12,6 +14,62 @@ public static class BookValidationRules
         }
 
         return new string(isbn.Where(c => c is not ('-' or ' ')).ToArray());
+    }
+
+    public static string? NormalizeOptional(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    public static void ApplyCommonRules<T>(AbstractValidator<T> validator) where T : IBookRequest
+    {
+        validator.RuleFor(x => x.Title)
+            .NotEmpty().WithMessage("Title is required.")
+            .MaximumLength(300);
+
+        validator.RuleFor(x => x.Subtitle)
+            .MaximumLength(300);
+
+        validator.RuleFor(x => x.Author)
+            .NotEmpty().WithMessage("Author is required.")
+            .MaximumLength(200);
+
+        validator.RuleFor(x => x.Publisher)
+            .MaximumLength(200);
+
+        validator.RuleFor(x => x.Language)
+            .MaximumLength(50);
+
+        validator.RuleFor(x => x.Category)
+            .MaximumLength(100);
+
+        validator.RuleFor(x => x.Description)
+            .MaximumLength(4000);
+
+        validator.RuleFor(x => x.ShelfLocation)
+            .MaximumLength(50);
+
+        validator.RuleFor(x => x.PageCount)
+            .GreaterThan(0)
+            .When(x => x.PageCount.HasValue)
+            .WithMessage("Page count must be greater than 0.");
+
+        validator.RuleFor(x => x.Format)
+            .IsInEnum()
+            .WithMessage("Format must be a valid book format.");
+
+        validator.RuleFor(x => x.TotalCopies)
+            .GreaterThanOrEqualTo(1)
+            .WithMessage("Total copies must be at least 1.");
+
+        validator.RuleFor(x => x.AvailableCopies)
+            .GreaterThanOrEqualTo(0)
+            .WithMessage("Available copies cannot be negative.")
+            .LessThanOrEqualTo(x => x.TotalCopies)
+            .WithMessage("Available copies cannot exceed total copies.");
+
+        validator.RuleFor(x => x.Isbn).ApplyIsbnFormat();
+        validator.RuleFor(x => x.PublishedYear).ApplyPublishedYear();
     }
 
     public static IRuleBuilderOptions<T, string?> ApplyIsbnFormat<T>(this IRuleBuilder<T, string?> rule)
@@ -32,6 +90,31 @@ public static class BookValidationRules
         return rule
             .Must(year => year is null || (year >= 1450 && year <= maxYear))
             .WithMessage($"Published year must be between 1450 and {maxYear}.");
+    }
+
+    public static Book ToBook(this IBookRequest request, Guid? id = null, DateTimeOffset? createdAt = null)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new Book
+        {
+            Id = id ?? Guid.NewGuid(),
+            Title = request.Title.Trim(),
+            Subtitle = NormalizeOptional(request.Subtitle),
+            Author = request.Author.Trim(),
+            Publisher = NormalizeOptional(request.Publisher),
+            Isbn = NormalizeIsbn(request.Isbn),
+            PublishedYear = request.PublishedYear,
+            Language = NormalizeOptional(request.Language),
+            Category = NormalizeOptional(request.Category),
+            Description = NormalizeOptional(request.Description),
+            PageCount = request.PageCount,
+            Format = request.Format,
+            ShelfLocation = NormalizeOptional(request.ShelfLocation),
+            TotalCopies = request.TotalCopies,
+            AvailableCopies = request.AvailableCopies,
+            CreatedAt = createdAt ?? now,
+            UpdatedAt = now
+        };
     }
 
     private static bool IsValidIsbn(string value)

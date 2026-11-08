@@ -1,5 +1,5 @@
 using BookService.DTOs;
-using BookService.Repositories;
+using BookService.Interfaces;
 using FluentValidation;
 
 namespace BookService.Validators;
@@ -8,16 +8,9 @@ public class UpdateBookRequestValidator : AbstractValidator<UpdateBookRequest>
 {
     public UpdateBookRequestValidator(IBookRepository books)
     {
-        RuleFor(x => x.Title)
-            .NotEmpty().WithMessage("Title is required.")
-            .MaximumLength(300);
-
-        RuleFor(x => x.Author)
-            .NotEmpty().WithMessage("Author is required.")
-            .MaximumLength(200);
+        BookValidationRules.ApplyCommonRules(this);
 
         RuleFor(x => x.Isbn)
-            .ApplyIsbnFormat()
             .MustAsync(async (request, isbn, context, cancellationToken) =>
             {
                 var normalized = BookValidationRules.NormalizeIsbn(isbn);
@@ -32,8 +25,7 @@ public class UpdateBookRequestValidator : AbstractValidator<UpdateBookRequest>
 
                 return !await books.IsbnExistsAsync(normalized, excludeId, cancellationToken);
             })
+            .When(x => !string.IsNullOrWhiteSpace(x.Isbn))
             .WithMessage("A book with this ISBN already exists.");
-
-        RuleFor(x => x.PublishedYear).ApplyPublishedYear();
     }
 }

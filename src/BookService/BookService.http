@@ -5,14 +5,39 @@ Accept: application/json
 
 ###
 
+GET {{BookService_HostAddress}}/api/books?category=Programming&availableOnly=true
+Accept: application/json
+
+###
+
+GET {{BookService_HostAddress}}/api/books?author=Martin&publishedYearFrom=2000&publishedYearTo=2010
+Accept: application/json
+
+###
+
+GET {{BookService_HostAddress}}/api/books?search=clean&format=Paperback
+Accept: application/json
+
+###
+
 POST {{BookService_HostAddress}}/api/books
 Content-Type: application/json
 
 {
   "title": "Clean Code",
+  "subtitle": "A Handbook of Agile Software Craftsmanship",
   "author": "Robert C. Martin",
+  "publisher": "Prentice Hall",
   "isbn": "978-0132350884",
-  "publishedYear": 2008
+  "publishedYear": 2008,
+  "language": "en",
+  "category": "Programming",
+  "description": "Classic book about writing clean, maintainable code.",
+  "pageCount": 464,
+  "format": "Paperback",
+  "shelfLocation": "A-12",
+  "totalCopies": 3,
+  "availableCopies": 3
 }
 
 ###
@@ -24,5 +49,7 @@ Content-Type: application/json
   "title": "",
   "author": "",
   "isbn": "bad",
-  "publishedYear": 1200
+  "publishedYear": 1200,
+  "totalCopies": 0,
+  "availableCopies": 2
 }

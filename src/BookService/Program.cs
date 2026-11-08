@@ -1,11 +1,16 @@
 using BookService.Data;
+using BookService.Filters;
+using BookService.Interfaces;
 using BookService.Repositories;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<RepositoryValidationExceptionFilter>();
+});
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<BookDbContext>(options =>
