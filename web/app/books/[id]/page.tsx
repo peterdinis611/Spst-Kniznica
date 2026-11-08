@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 import { fetchBookDetail } from "@/lib/books";
 
@@ -105,6 +106,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
           <BookDetailContent params={params} />
         </Suspense>
       </article>
+      <SiteFooter />
     </main>
   );
 }

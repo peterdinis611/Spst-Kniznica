@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 
 export const metadata = {
@@ -15,6 +16,7 @@ export default function AuthorsPage() {
           Stub pre AuthorService cez Gateway (`/api/authors`).
         </p>
       </div>
+      <SiteFooter />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 import { apiGet } from "@/lib/api";
 import { DEMO_BOOKS } from "@/lib/books";
@@ -9,13 +10,29 @@ export const metadata = {
   title: "Knihy",
 };
 
-async function BooksList() {
+type BooksPageProps = {
+  searchParams: Promise<{ q?: string }>;
+};
+
+async function BooksList({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   let books: BookListItem[] = [];
   try {
-    const result = await apiGet<PagedResult<BookListItem>>("/api/books?page=1&pageSize=24");
+    const path = q
+      ? `/api/books?page=1&pageSize=24&search=${encodeURIComponent(q)}`
+      : "/api/books?page=1&pageSize=24";
+    const result = await apiGet<PagedResult<BookListItem>>(path);
     books = result.items ?? [];
   } catch {
-    books = DEMO_BOOKS.map((book) => ({
+    books = DEMO_BOOKS.filter((book) =>
+      q
+        ? `${book.title} ${book.author}`.toLowerCase().includes(q.toLowerCase())
+        : true,
+    ).map((book) => ({
       id: book.id,
       title: book.title,
       author: book.author,
@@ -26,25 +43,33 @@ async function BooksList() {
   }
 
   return (
-    <ul className="mt-10 divide-y divide-rule/80">
-      {books.map((book) => (
-        <li key={book.id}>
-          <Link
-            href={`/books/${book.id}`}
-            className="group flex flex-col gap-1 py-5 transition sm:flex-row sm:items-baseline sm:justify-between"
-          >
-            <span className="font-display text-2xl text-ink transition group-hover:text-accent">
-              {book.title}
-            </span>
-            <span className="text-sm text-muted">{book.author}</span>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <>
+      {q ? (
+        <p className="mt-3 text-sm text-accent">Výsledky pre „{q}“</p>
+      ) : null}
+      <ul className="mt-10 divide-y divide-rule/80">
+        {books.map((book) => (
+          <li key={book.id}>
+            <Link
+              href={`/books/${book.id}`}
+              className="group flex flex-col gap-1 py-5 transition sm:flex-row sm:items-baseline sm:justify-between"
+            >
+              <span className="font-display text-2xl text-ink transition group-hover:text-accent">
+                {book.title}
+              </span>
+              <span className="text-sm text-muted">{book.author}</span>
+            </Link>
+          </li>
+        ))}
+        {books.length === 0 ? (
+          <li className="py-10 text-muted">Žiadne knihy pre tento výraz.</li>
+        ) : null}
+      </ul>
+    </>
   );
 }
 
-export default function BooksPage() {
+export default function BooksPage({ searchParams }: BooksPageProps) {
   return (
     <main className="relative flex min-h-full flex-1 flex-col bg-paper">
       <SiteHeader />
@@ -58,9 +83,10 @@ export default function BooksPage() {
         <Suspense
           fallback={<p className="mt-10 text-muted">Načítavam katalóg…</p>}
         >
-          <BooksList />
+          <BooksList searchParams={searchParams} />
         </Suspense>
       </div>
+      <SiteFooter />
     </main>
   );
 }

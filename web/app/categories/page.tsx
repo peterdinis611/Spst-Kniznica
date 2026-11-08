@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 
 export const metadata = {
@@ -15,6 +16,7 @@ export default function CategoriesPage() {
           Stub pre CategoryService cez Gateway (`/api/categories`).
         </p>
       </div>
+      <SiteFooter />
     </main>
   );
 }
