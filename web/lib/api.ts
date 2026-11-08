@@ -23,13 +23,37 @@ export function withQuery(path: string, query?: ApiQuery): string {
   return qs ? `${path}?${qs}` : path;
 }
 
-export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
+async function parseJson<T>(response: Response, path: string): Promise<T> {
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const text = await response.text();
+  if (!text) {
+    return undefined as T;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(`API invalid JSON: ${path}`);
+  }
+}
+
+async function apiRequest<T>(
+  path: string,
+  init?: RequestInit,
+  body?: unknown,
+): Promise<T> {
+  const hasBody = body !== undefined;
   const response = await fetch(apiUrl(path), {
     ...init,
     headers: {
       Accept: "application/json",
+      ...(hasBody ? { "Content-Type": "application/json" } : {}),
       ...init?.headers,
     },
+    body: hasBody ? JSON.stringify(body) : init?.body,
     cache: "no-store",
   });
 
@@ -37,7 +61,42 @@ export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(`API ${response.status}: ${path}`);
   }
 
-  return response.json() as Promise<T>;
+  return parseJson<T>(response, path);
+}
+
+export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
+  return apiRequest<T>(path, { ...init, method: "GET" });
+}
+
+export async function apiPost<T>(
+  path: string,
+  body?: unknown,
+  init?: RequestInit,
+): Promise<T> {
+  return apiRequest<T>(path, { ...init, method: "POST" }, body);
+}
+
+export async function apiPut<T>(
+  path: string,
+  body?: unknown,
+  init?: RequestInit,
+): Promise<T> {
+  return apiRequest<T>(path, { ...init, method: "PUT" }, body);
+}
+
+export async function apiPatch<T>(
+  path: string,
+  body?: unknown,
+  init?: RequestInit,
+): Promise<T> {
+  return apiRequest<T>(path, { ...init, method: "PATCH" }, body);
+}
+
+export async function apiDelete<T = void>(
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
+  return apiRequest<T>(path, { ...init, method: "DELETE" });
 }
 
 export { API_BASE };

@@ -1,0 +1,13 @@
+@WorkersService_HostAddress = http://localhost:5209
+
+GET {{WorkersService_HostAddress}}/health
+Accept: application/json
+
+###
+
+POST {{WorkersService_HostAddress}}/api/orders/enqueue
+Content-Type: application/json
+
+{
+  "orderId": "demo-order-1"
+}

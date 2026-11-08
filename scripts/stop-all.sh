@@ -20,7 +20,7 @@ if [[ -d "$PID_DIR" ]]; then
 fi
 
 # Fallback: kill known ports if something was started outside the script.
-for port in 3000 5200 5203 5204 5205 5206 5207 5208; do
+for port in 3000 5200 5203 5204 5205 5206 5207 5208 5209; do
   if command -v lsof >/dev/null 2>&1; then
     pids="$(lsof -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)"
     if [[ -n "${pids:-}" ]]; then

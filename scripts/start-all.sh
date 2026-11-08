@@ -120,6 +120,7 @@ start_dotnet "author"     "AuthorService/AuthorService.csproj"         "http://l
 start_dotnet "category"   "CategoryService/CategoryService.csproj"     "http://localhost:5204"
 start_dotnet "book"       "BookService/BookService.csproj"             "http://localhost:5203"
 start_dotnet "booking"    "BookingService/BookingService.csproj"       "http://localhost:5208"
+start_dotnet "workers"    "WorkersService/WorkersService.csproj"       "http://localhost:5209"
 start_dotnet "messaging"  "MessagingService/MessagingService.csproj"   "http://localhost:5205"
 start_dotnet "cache"      "CacheService/CacheService.csproj"           "http://localhost:5206"
 start_dotnet "gateway"    "GatewayService/GatewayService.csproj"       "http://localhost:5200"
@@ -134,6 +135,7 @@ wait_http "author"    "http://localhost:5207/health"
 wait_http "category"  "http://localhost:5204/health"
 wait_http "book"      "http://localhost:5203/health"
 wait_http "booking"   "http://localhost:5208/health"
+wait_http "workers"   "http://localhost:5209/health"
 wait_http "messaging" "http://localhost:5205/health"
 wait_http "cache"     "http://localhost:5206/health"
 wait_http "gateway"   "http://localhost:5200/health"
@@ -151,6 +153,7 @@ cat <<EOF
   Cache        http://localhost:5206/swagger
   Author       http://localhost:5207/swagger
   Booking      http://localhost:5208/swagger
+  Workers      http://localhost:5209/swagger  (POST /api/orders/enqueue)
 
   RabbitMQ UI  http://localhost:15672  (guest/guest)
   Logs         $LOG_DIR

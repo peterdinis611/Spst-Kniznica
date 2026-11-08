@@ -13,3 +13,7 @@ export {
   searchCategoriesAction,
   type SearchCategoriesResult,
 } from "./categories";
+export {
+  enqueueOrderAction,
+  type EnqueueOrderResult,
+} from "./orders";
