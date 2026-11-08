@@ -1,0 +1,28 @@
+@BookService_HostAddress = http://localhost:5203
+
+GET {{BookService_HostAddress}}/api/books
+Accept: application/json
+
+###
+
+POST {{BookService_HostAddress}}/api/books
+Content-Type: application/json
+
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "isbn": "978-0132350884",
+  "publishedYear": 2008
+}
+
+###
+
+POST {{BookService_HostAddress}}/api/books
+Content-Type: application/json
+
+{
+  "title": "",
+  "author": "",
+  "isbn": "bad",
+  "publishedYear": 1200
+}
