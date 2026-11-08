@@ -11,7 +11,7 @@ public interface IBookRequest
     string? Isbn { get; }
     int? PublishedYear { get; }
     string? Language { get; }
-    string? Category { get; }
+    Guid? CategoryId { get; }
     string? Description { get; }
     int? PageCount { get; }
     BookFormat Format { get; }

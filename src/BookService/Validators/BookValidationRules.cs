@@ -40,8 +40,9 @@ public static class BookValidationRules
         validator.RuleFor(x => x.Language)
             .MaximumLength(50);
 
-        validator.RuleFor(x => x.Category)
-            .MaximumLength(100);
+        validator.RuleFor(x => x.CategoryId)
+            .Must(id => id is null || id != Guid.Empty)
+            .WithMessage("CategoryId must be a valid non-empty GUID.");
 
         validator.RuleFor(x => x.Description)
             .MaximumLength(4000);
@@ -105,7 +106,8 @@ public static class BookValidationRules
             Isbn = NormalizeIsbn(request.Isbn),
             PublishedYear = request.PublishedYear,
             Language = NormalizeOptional(request.Language),
-            Category = NormalizeOptional(request.Category),
+            CategoryId = request.CategoryId,
+            CategoryName = null,
             Description = NormalizeOptional(request.Description),
             PageCount = request.PageCount,
             Format = request.Format,

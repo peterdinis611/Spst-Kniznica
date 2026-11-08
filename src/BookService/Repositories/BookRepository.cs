@@ -19,7 +19,9 @@ public class BookRepository(BookDbContext db) : IBookRepository
             ["publisher"] = b => b.Publisher ?? string.Empty,
             ["publishedyear"] = b => b.PublishedYear ?? 0,
             ["year"] = b => b.PublishedYear ?? 0,
-            ["category"] = b => b.Category ?? string.Empty,
+            ["category"] = b => b.CategoryName ?? string.Empty,
+            ["categoryid"] = b => b.CategoryId ?? Guid.Empty,
+            ["categoryname"] = b => b.CategoryName ?? string.Empty,
             ["createdat"] = b => b.CreatedAt,
             ["updatedat"] = b => b.UpdatedAt,
             ["totalcopies"] = b => b.TotalCopies,
@@ -48,7 +50,8 @@ public class BookRepository(BookDbContext db) : IBookRepository
             Isbn = b.Isbn,
             PublishedYear = b.PublishedYear,
             Language = b.Language,
-            Category = b.Category,
+            CategoryId = b.CategoryId,
+            CategoryName = b.CategoryName,
             Format = b.Format,
             ShelfLocation = b.ShelfLocation,
             TotalCopies = b.TotalCopies,
@@ -174,10 +177,15 @@ public class BookRepository(BookDbContext db) : IBookRepository
             query = query.Where(b => b.Language != null && EF.Functions.Like(b.Language, $"%{language}%"));
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.Category))
+        if (filter.CategoryId.HasValue)
         {
-            var category = filter.Category.Trim();
-            query = query.Where(b => b.Category != null && EF.Functions.Like(b.Category, $"%{category}%"));
+            query = query.Where(b => b.CategoryId == filter.CategoryId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.CategoryName))
+        {
+            var categoryName = filter.CategoryName.Trim();
+            query = query.Where(b => b.CategoryName != null && EF.Functions.Like(b.CategoryName, $"%{categoryName}%"));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.ShelfLocation))
@@ -234,7 +242,7 @@ public class BookRepository(BookDbContext db) : IBookRepository
                 (b.Isbn != null && (
                     EF.Functions.Like(b.Isbn, $"%{search}%") ||
                     (normalizedSearchIsbn != null && b.Isbn == normalizedSearchIsbn))) ||
-                (b.Category != null && EF.Functions.Like(b.Category, $"%{search}%")) ||
+                (b.CategoryName != null && EF.Functions.Like(b.CategoryName, $"%{search}%")) ||
                 b.Copies.Any(c =>
                     EF.Functions.Like(c.InventoryNumber, $"%{search}%") ||
                     (c.Barcode != null && EF.Functions.Like(c.Barcode, $"%{search}%"))));

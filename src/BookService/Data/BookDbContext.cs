@@ -20,13 +20,14 @@ public class BookDbContext(DbContextOptions<BookDbContext> options) : DbContext(
             entity.Property(b => b.Publisher).HasMaxLength(200);
             entity.Property(b => b.Isbn).HasMaxLength(32);
             entity.Property(b => b.Language).HasMaxLength(50);
-            entity.Property(b => b.Category).HasMaxLength(100);
+            entity.Property(b => b.CategoryName).HasMaxLength(100);
             entity.Property(b => b.Description).HasMaxLength(4000);
             entity.Property(b => b.ShelfLocation).HasMaxLength(50);
             entity.Property(b => b.Format).HasConversion<string>().HasMaxLength(20);
 
             entity.HasIndex(b => b.Isbn).IsUnique();
-            entity.HasIndex(b => b.Category);
+            entity.HasIndex(b => b.CategoryId);
+            entity.HasIndex(b => b.CategoryName);
             entity.HasIndex(b => b.ShelfLocation);
 
             entity.HasMany(b => b.Copies)

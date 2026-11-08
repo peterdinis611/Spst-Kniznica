@@ -12,24 +12,29 @@ public sealed record BookCreatedEvent(
     string Title,
     string Author,
     string? Isbn,
-    string? Category) : IntegrationEvent;
+    Guid? CategoryId,
+    string? CategoryName) : IntegrationEvent;
 
 public sealed record BookUpdatedEvent(
     Guid BookId,
     string Title,
     string Author,
-    string? Category) : IntegrationEvent;
+    string? Isbn,
+    Guid? CategoryId,
+    string? CategoryName) : IntegrationEvent;
 
 public sealed record BookDeletedEvent(Guid BookId) : IntegrationEvent;
 
 public sealed record CategoryCreatedEvent(
     Guid CategoryId,
     string Name,
+    string? Description,
     bool IsActive) : IntegrationEvent;
 
 public sealed record CategoryUpdatedEvent(
     Guid CategoryId,
     string Name,
+    string? Description,
     bool IsActive) : IntegrationEvent;
 
 public sealed record CategoryDeletedEvent(Guid CategoryId) : IntegrationEvent;
