@@ -17,4 +17,11 @@ public class BookQueryFilter
     public BookFormat? Format { get; set; }
     public bool? AvailableOnly { get; set; }
     public string? Search { get; set; }
+    public string? InventoryNumber { get; set; }
+    public string? Barcode { get; set; }
+
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
+    public string SortBy { get; set; } = "title";
+    public string SortDir { get; set; } = "asc";
 }

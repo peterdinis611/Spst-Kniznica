@@ -1,22 +1,20 @@
 namespace BookService.Exceptions;
 
-public class RepositoryValidationException : Exception
+/// <summary>
+/// Kept for backward compatibility; prefer <see cref="AppValidationException"/>.
+/// </summary>
+public class RepositoryValidationException : AppValidationException
 {
-    public IReadOnlyDictionary<string, string[]> Errors { get; }
-
-    public RepositoryValidationException(string message)
-        : this(message, new Dictionary<string, string[]> { ["repository"] = [message] })
+    public RepositoryValidationException(string message) : base(message)
     {
     }
 
-    public RepositoryValidationException(IDictionary<string, string[]> errors)
-        : this("One or more repository validation errors occurred.", errors)
+    public RepositoryValidationException(IDictionary<string, string[]> errors) : base(errors)
     {
     }
 
     public RepositoryValidationException(string message, IDictionary<string, string[]> errors)
-        : base(message)
+        : base(message, errors)
     {
-        Errors = new Dictionary<string, string[]>(errors, StringComparer.OrdinalIgnoreCase);
     }
 }

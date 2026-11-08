@@ -19,4 +19,11 @@ public class Book
     public int AvailableCopies { get; set; } = 1;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public ICollection<BookCopy> Copies { get; set; } = new List<BookCopy>();
+
+    public void RecalculateCopyCounts()
+    {
+        TotalCopies = Copies.Count;
+        AvailableCopies = Copies.Count(c => c.Status == BookCopyStatus.Available);
+    }
 }

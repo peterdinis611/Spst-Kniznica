@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using BookService.Data;
 using BookService.DTOs;
 using BookService.Exceptions;
@@ -9,14 +10,7 @@ namespace BookService.Repositories;
 
 public class BookRepository(BookDbContext db) : IBookRepository
 {
-    private static readonly DateTimeOffset MinCreatedAt = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
-
-    public async Task<IReadOnlyList<Book>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await FindAsync(new BookQueryFilter(), cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Book>> FindAsync(
+    public async Task<PagedResult<Book>> FindAsync(
         BookQueryFilter filter,
         CancellationToken cancellationToken = default)
     {
@@ -24,7 +18,116 @@ public class BookRepository(BookDbContext db) : IBookRepository
         ValidateFilter(filter);
 
         var query = db.Books.AsNoTracking().AsQueryable();
+        query = ApplyFilters(query, filter);
 
+        var totalCount = await query.CountAsync(cancellationToken);
+        query = ApplySorting(query, filter.SortBy, filter.SortDir);
+
+        var page = Math.Max(filter.Page, 1);
+        var pageSize = Math.Clamp(filter.PageSize, 1, 100);
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<Book>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+
+    public Task<Book?> GetByIdAsync(Guid id, bool includeCopies = false, CancellationToken cancellationToken = default)
+    {
+        EnsureValidId(id);
+
+        IQueryable<Book> query = db.Books;
+        if (includeCopies)
+        {
+            query = query.Include(b => b.Copies);
+        }
+
+        return query.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+    }
+
+    public async Task AddAsync(Book book, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(book);
+        await db.Books.AddAsync(book, cancellationToken);
+    }
+
+    public void Update(Book book)
+    {
+        ArgumentNullException.ThrowIfNull(book);
+        db.Books.Update(book);
+    }
+
+    public void Remove(Book book)
+    {
+        ArgumentNullException.ThrowIfNull(book);
+        db.Books.Remove(book);
+    }
+
+    public Task AddRangeAsync(IEnumerable<Book> books, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(books);
+        return db.Books.AddRangeAsync(books, cancellationToken);
+    }
+
+    public Task<bool> IsbnExistsAsync(string isbn, Guid? excludeId = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(isbn))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Isbn"] = ["ISBN is required when checking uniqueness."]
+            });
+        }
+
+        var normalized = NormalizeIsbn(isbn)!;
+        var query = db.Books.AsNoTracking().Where(b => b.Isbn == normalized);
+        if (excludeId.HasValue)
+        {
+            EnsureValidId(excludeId.Value);
+            query = query.Where(b => b.Id != excludeId.Value);
+        }
+
+        return query.AnyAsync(cancellationToken);
+    }
+
+    public Task<bool> InventoryNumberExistsAsync(string inventoryNumber, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(inventoryNumber))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["InventoryNumber"] = ["Inventory number is required when checking uniqueness."]
+            });
+        }
+
+        return db.BookCopies.AsNoTracking()
+            .AnyAsync(c => c.InventoryNumber == inventoryNumber.Trim(), cancellationToken);
+    }
+
+    public Task<bool> BarcodeExistsAsync(string barcode, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(barcode))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Barcode"] = ["Barcode is required when checking uniqueness."]
+            });
+        }
+
+        return db.BookCopies.AsNoTracking()
+            .AnyAsync(c => c.Barcode == barcode.Trim(), cancellationToken);
+    }
+
+    private static IQueryable<Book> ApplyFilters(IQueryable<Book> query, BookQueryFilter filter)
+    {
         if (!string.IsNullOrWhiteSpace(filter.Title))
         {
             var title = filter.Title.Trim();
@@ -92,6 +195,18 @@ public class BookRepository(BookDbContext db) : IBookRepository
             query = query.Where(b => b.AvailableCopies > 0);
         }
 
+        if (!string.IsNullOrWhiteSpace(filter.InventoryNumber))
+        {
+            var inventory = filter.InventoryNumber.Trim();
+            query = query.Where(b => b.Copies.Any(c => c.InventoryNumber == inventory));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Barcode))
+        {
+            var barcode = filter.Barcode.Trim();
+            query = query.Where(b => b.Copies.Any(c => c.Barcode == barcode));
+        }
+
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
             var search = filter.Search.Trim();
@@ -103,12 +218,34 @@ public class BookRepository(BookDbContext db) : IBookRepository
                 (b.Isbn != null && (
                     EF.Functions.Like(b.Isbn, $"%{search}%") ||
                     (normalizedSearchIsbn != null && b.Isbn == normalizedSearchIsbn))) ||
-                (b.Category != null && EF.Functions.Like(b.Category, $"%{search}%")));
+                (b.Category != null && EF.Functions.Like(b.Category, $"%{search}%")) ||
+                b.Copies.Any(c =>
+                    EF.Functions.Like(c.InventoryNumber, $"%{search}%") ||
+                    (c.Barcode != null && EF.Functions.Like(c.Barcode, $"%{search}%"))));
         }
 
-        return await query
-            .OrderBy(b => b.Title)
-            .ToListAsync(cancellationToken);
+        return query;
+    }
+
+    private static IQueryable<Book> ApplySorting(IQueryable<Book> query, string? sortBy, string? sortDir)
+    {
+        var descending = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
+
+        Expression<Func<Book, object>> key = (sortBy ?? "title").Trim().ToLowerInvariant() switch
+        {
+            "author" => b => b.Author,
+            "publisher" => b => b.Publisher ?? string.Empty,
+            "publishedyear" or "year" => b => b.PublishedYear ?? 0,
+            "category" => b => b.Category ?? string.Empty,
+            "createdat" => b => b.CreatedAt,
+            "updatedat" => b => b.UpdatedAt,
+            "totalcopies" => b => b.TotalCopies,
+            "availablecopies" => b => b.AvailableCopies,
+            "isbn" => b => b.Isbn ?? string.Empty,
+            _ => b => b.Title
+        };
+
+        return descending ? query.OrderByDescending(key) : query.OrderBy(key);
     }
 
     private static void ValidateFilter(BookQueryFilter filter)
@@ -124,6 +261,16 @@ public class BookRepository(BookDbContext db) : IBookRepository
             }
 
             list.Add(message);
+        }
+
+        if (filter.Page < 1)
+        {
+            Add(nameof(BookQueryFilter.Page), "Page must be greater than or equal to 1.");
+        }
+
+        if (filter.PageSize < 1 || filter.PageSize > 100)
+        {
+            Add(nameof(BookQueryFilter.PageSize), "PageSize must be between 1 and 100.");
         }
 
         if (filter.PublishedYearFrom.HasValue &&
@@ -149,257 +296,19 @@ public class BookRepository(BookDbContext db) : IBookRepository
 
         if (errors.Count > 0)
         {
-            throw new RepositoryValidationException(
+            throw new AppValidationException(
                 errors.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray(), StringComparer.OrdinalIgnoreCase));
         }
-    }
-
-    public Task<Book?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        EnsureValidId(id);
-        return db.Books
-            .AsNoTracking()
-            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-    }
-
-    public async Task<Book> AddAsync(Book book, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(book);
-        await ValidateForPersistAsync(book, excludeId: null, cancellationToken);
-
-        if (book.Id == Guid.Empty)
-        {
-            book.Id = Guid.NewGuid();
-        }
-
-        var now = DateTimeOffset.UtcNow;
-        if (book.CreatedAt < MinCreatedAt)
-        {
-            book.CreatedAt = now;
-        }
-
-        book.UpdatedAt = now;
-
-        db.Books.Add(book);
-        await db.SaveChangesAsync(cancellationToken);
-        return book;
-    }
-
-    public async Task<Book?> UpdateAsync(Guid id, Book updated, CancellationToken cancellationToken = default)
-    {
-        EnsureValidId(id);
-        ArgumentNullException.ThrowIfNull(updated);
-
-        var book = await db.Books.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-        if (book is null)
-        {
-            return null;
-        }
-
-        await ValidateForPersistAsync(updated, excludeId: id, cancellationToken);
-
-        book.Title = updated.Title;
-        book.Subtitle = updated.Subtitle;
-        book.Author = updated.Author;
-        book.Publisher = updated.Publisher;
-        book.Isbn = updated.Isbn;
-        book.PublishedYear = updated.PublishedYear;
-        book.Language = updated.Language;
-        book.Category = updated.Category;
-        book.Description = updated.Description;
-        book.PageCount = updated.PageCount;
-        book.Format = updated.Format;
-        book.ShelfLocation = updated.ShelfLocation;
-        book.TotalCopies = updated.TotalCopies;
-        book.AvailableCopies = updated.AvailableCopies;
-        book.UpdatedAt = DateTimeOffset.UtcNow;
-
-        await db.SaveChangesAsync(cancellationToken);
-        return book;
-    }
-
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        EnsureValidId(id);
-
-        var book = await db.Books.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-        if (book is null)
-        {
-            return false;
-        }
-
-        if (book.AvailableCopies < book.TotalCopies)
-        {
-            throw new RepositoryValidationException(new Dictionary<string, string[]>
-            {
-                ["AvailableCopies"] =
-                [
-                    "Cannot delete a book while some copies are borrowed."
-                ]
-            });
-        }
-
-        db.Books.Remove(book);
-        await db.SaveChangesAsync(cancellationToken);
-        return true;
-    }
-
-    public Task<bool> IsbnExistsAsync(string isbn, Guid? excludeId = null, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(isbn))
-        {
-            throw new RepositoryValidationException(new Dictionary<string, string[]>
-            {
-                ["Isbn"] = ["ISBN is required when checking uniqueness."]
-            });
-        }
-
-        var normalized = NormalizeIsbn(isbn);
-        var query = db.Books.AsNoTracking().Where(b => b.Isbn == normalized);
-        if (excludeId.HasValue)
-        {
-            EnsureValidId(excludeId.Value);
-            query = query.Where(b => b.Id != excludeId.Value);
-        }
-
-        return query.AnyAsync(cancellationToken);
-    }
-
-    private async Task ValidateForPersistAsync(Book book, Guid? excludeId, CancellationToken cancellationToken)
-    {
-        var errors = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-
-        void Add(string field, string message)
-        {
-            if (!errors.TryGetValue(field, out var list))
-            {
-                list = [];
-                errors[field] = list;
-            }
-
-            list.Add(message);
-        }
-
-        if (string.IsNullOrWhiteSpace(book.Title))
-        {
-            Add(nameof(Book.Title), "Title is required.");
-        }
-        else if (book.Title.Length > 300)
-        {
-            Add(nameof(Book.Title), "Title must be at most 300 characters.");
-        }
-
-        if (string.IsNullOrWhiteSpace(book.Author))
-        {
-            Add(nameof(Book.Author), "Author is required.");
-        }
-        else if (book.Author.Length > 200)
-        {
-            Add(nameof(Book.Author), "Author must be at most 200 characters.");
-        }
-
-        ValidateOptionalLength(book.Subtitle, nameof(Book.Subtitle), 300, Add);
-        ValidateOptionalLength(book.Publisher, nameof(Book.Publisher), 200, Add);
-        ValidateOptionalLength(book.Language, nameof(Book.Language), 50, Add);
-        ValidateOptionalLength(book.Category, nameof(Book.Category), 100, Add);
-        ValidateOptionalLength(book.Description, nameof(Book.Description), 4000, Add);
-        ValidateOptionalLength(book.ShelfLocation, nameof(Book.ShelfLocation), 50, Add);
-
-        if (book.Isbn is not null)
-        {
-            var normalizedIsbn = NormalizeIsbn(book.Isbn);
-            if (normalizedIsbn is null)
-            {
-                Add(nameof(Book.Isbn), "ISBN cannot be empty or whitespace.");
-            }
-            else if (normalizedIsbn.Length > 32)
-            {
-                Add(nameof(Book.Isbn), "ISBN must be at most 32 characters.");
-            }
-            else if (!IsValidIsbn(normalizedIsbn))
-            {
-                Add(nameof(Book.Isbn), "ISBN must be a valid ISBN-10 or ISBN-13.");
-            }
-            else
-            {
-                book.Isbn = normalizedIsbn;
-                if (await IsbnExistsInternalAsync(normalizedIsbn, excludeId, cancellationToken))
-                {
-                    Add(nameof(Book.Isbn), "A book with this ISBN already exists.");
-                }
-            }
-        }
-
-        var maxYear = DateTime.UtcNow.Year + 1;
-        if (book.PublishedYear.HasValue &&
-            (book.PublishedYear.Value < 1450 || book.PublishedYear.Value > maxYear))
-        {
-            Add(nameof(Book.PublishedYear), $"Published year must be between 1450 and {maxYear}.");
-        }
-
-        if (book.PageCount is <= 0)
-        {
-            Add(nameof(Book.PageCount), "Page count must be greater than 0.");
-        }
-
-        if (!Enum.IsDefined(book.Format))
-        {
-            Add(nameof(Book.Format), "Format must be a valid book format.");
-        }
-
-        if (book.TotalCopies < 1)
-        {
-            Add(nameof(Book.TotalCopies), "Total copies must be at least 1.");
-        }
-
-        if (book.AvailableCopies < 0)
-        {
-            Add(nameof(Book.AvailableCopies), "Available copies cannot be negative.");
-        }
-
-        if (book.AvailableCopies > book.TotalCopies)
-        {
-            Add(nameof(Book.AvailableCopies), "Available copies cannot exceed total copies.");
-        }
-
-        if (errors.Count > 0)
-        {
-            throw new RepositoryValidationException(
-                errors.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray(), StringComparer.OrdinalIgnoreCase));
-        }
-    }
-
-    private Task<bool> IsbnExistsInternalAsync(string isbn, Guid? excludeId, CancellationToken cancellationToken)
-    {
-        var query = db.Books.AsNoTracking().Where(b => b.Isbn == isbn);
-        if (excludeId.HasValue)
-        {
-            query = query.Where(b => b.Id != excludeId.Value);
-        }
-
-        return query.AnyAsync(cancellationToken);
     }
 
     private static void EnsureValidId(Guid id)
     {
         if (id == Guid.Empty)
         {
-            throw new RepositoryValidationException(new Dictionary<string, string[]>
+            throw new AppValidationException(new Dictionary<string, string[]>
             {
                 ["Id"] = ["Id must be a non-empty GUID."]
             });
-        }
-    }
-
-    private static void ValidateOptionalLength(
-        string? value,
-        string field,
-        int maxLength,
-        Action<string, string> add)
-    {
-        if (value is not null && value.Length > maxLength)
-        {
-            add(field, $"{field} must be at most {maxLength} characters.");
         }
     }
 

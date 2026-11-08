@@ -6,6 +6,7 @@ namespace BookService.Data;
 public class BookDbContext(DbContextOptions<BookDbContext> options) : DbContext(options)
 {
     public DbSet<Book> Books => Set<Book>();
+    public DbSet<BookCopy> BookCopies => Set<BookCopy>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,6 +28,24 @@ public class BookDbContext(DbContextOptions<BookDbContext> options) : DbContext(
             entity.HasIndex(b => b.Isbn).IsUnique();
             entity.HasIndex(b => b.Category);
             entity.HasIndex(b => b.ShelfLocation);
+
+            entity.HasMany(b => b.Copies)
+                .WithOne(c => c.Book)
+                .HasForeignKey(c => c.BookId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<BookCopy>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.InventoryNumber).HasMaxLength(64).IsRequired();
+            entity.Property(c => c.Barcode).HasMaxLength(64);
+            entity.Property(c => c.ShelfLocation).HasMaxLength(50);
+            entity.Property(c => c.Status).HasConversion<string>().HasMaxLength(20);
+
+            entity.HasIndex(c => c.InventoryNumber).IsUnique();
+            entity.HasIndex(c => c.Barcode).IsUnique();
+            entity.HasIndex(c => c.BookId);
         });
     }
 }

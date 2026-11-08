@@ -1,39 +1,80 @@
 using BookService.Data;
-using BookService.Filters;
 using BookService.Interfaces;
+using BookService.Middleware;
 using BookService.Repositories;
+using BookService.Services;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-builder.Services.AddControllers(options =>
+try
 {
-    options.Filters.Add<RepositoryValidationExceptionFilter>();
-});
-builder.Services.AddOpenApi();
+    var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<BookDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    builder.Host.UseSerilog((context, services, configuration) => configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.File("logs/bookservice-.log", rollingInterval: RollingInterval.Day));
 
-builder.Services.AddScoped<IBookRepository, BookRepository>();
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new()
+        {
+            Title = "BookService API",
+            Version = "v1",
+            Description = "SPST knižnica – správa kníh, exemplárov a importu."
+        });
+    });
 
-var app = builder.Build();
+    builder.Services.AddDbContext<BookDbContext>(options =>
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<BookDbContext>();
-    await db.Database.MigrateAsync();
+    builder.Services.AddScoped<IBookRepository, BookRepository>();
+    builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+    builder.Services.AddScoped<IBooksService, BooksService>();
+    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+    builder.Services.AddHealthChecks()
+        .AddDbContextCheck<BookDbContext>("database");
+
+    var app = builder.Build();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<BookDbContext>();
+        await db.Database.MigrateAsync();
+    }
+
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
+    app.UseSerilogRequestLogging();
+
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "BookService v1");
+        options.RoutePrefix = "swagger";
+    });
+
+    app.UseHttpsRedirection();
+    app.UseAuthorization();
+    app.MapControllers();
+    app.MapHealthChecks("/health");
+
+    await app.RunAsync();
 }
-
-if (app.Environment.IsDevelopment())
+catch (Exception ex)
 {
-    app.MapOpenApi();
+    Log.Fatal(ex, "Application terminated unexpectedly");
 }
-
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
-
-app.Run();
+finally
+{
+    await Log.CloseAndFlushAsync();
+}
