@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, IBM_Plex_Mono, Source_Serif_4 } from "next/font/google";
+import { Cormorant_Garamond, Manrope, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const display = Bricolage_Grotesque({
+const display = Cormorant_Garamond({
   variable: "--font-display-family",
   subsets: ["latin", "latin-ext"],
   weight: ["500", "600", "700"],
 });
 
-const body = Source_Serif_4({
+const body = Manrope({
   variable: "--font-body-family",
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const mono = IBM_Plex_Mono({

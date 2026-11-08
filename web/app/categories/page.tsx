@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SiteHeader } from "@/components/landing/SiteHeader";
 
 export const metadata = {
   title: "Kategórie",
@@ -6,17 +6,15 @@ export const metadata = {
 
 export default function CategoriesPage() {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 py-10 md:px-10">
-      <Link
-        href="/"
-        className="font-mono text-[11px] tracking-[0.2em] text-muted uppercase transition hover:text-ink"
-      >
-        ← Domov
-      </Link>
-      <h1 className="mt-6 font-display text-5xl font-semibold tracking-tight">Kategórie</h1>
-      <p className="mt-4 max-w-2xl text-lg text-muted">
-        Stub pre CategoryService cez Gateway (`/api/categories`).
-      </p>
+    <main className="relative flex min-h-full flex-1 flex-col bg-paper">
+      <SiteHeader />
+      <div className="mx-auto w-full max-w-5xl flex-1 px-5 pb-16 pt-4 md:px-8">
+        <p className="text-xs tracking-[0.2em] text-accent uppercase">Katalóg</p>
+        <h1 className="mt-3 font-display text-5xl text-ink">Kategórie</h1>
+        <p className="mt-4 max-w-2xl text-lg text-muted">
+          Stub pre CategoryService cez Gateway (`/api/categories`).
+        </p>
+      </div>
     </main>
   );
 }

@@ -1,15 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #101410;
-  --paper: #f3efe6;
-  --paper-deep: #e7e1d4;
-  --rule: #c9c2b2;
-  --muted: #5c6358;
-  --accent: #c45c26;
-  --accent-deep: #8f3d12;
-  --signal: #1f6f5b;
-  --grain: rgba(16, 20, 16, 0.045);
+  --ink: #1a1714;
+  --paper: #f7f5f1;
+  --paper-deep: #efeae2;
+  --rule: #d9d2c7;
+  --muted: #6b6560;
+  --accent: #a68b67;
+  --accent-deep: #8b7355;
+  --watermark: #e4dfd6;
+  --signal: #2f4a3c;
+  --grain: rgba(26, 23, 20, 0.035);
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -25,6 +26,7 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-deep: var(--accent-deep);
+  --color-watermark: var(--watermark);
   --color-signal: var(--signal);
   --font-sans: var(--font-body-family);
   --font-display: var(--font-display-family);
@@ -43,7 +45,7 @@
   body {
     background: var(--background);
     color: var(--foreground);
-    font-family: var(--font-body-family), ui-serif, Georgia, serif;
+    font-family: var(--font-body-family), "Segoe UI", sans-serif;
     min-height: 100vh;
   }
 
@@ -58,48 +60,39 @@
     text-wrap: balance;
   }
 
-  .grain {
-    position: relative;
-  }
-
-  .grain::before {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    opacity: 0.55;
+  .paper-grain {
     background-image:
-      radial-gradient(circle at 20% 20%, rgba(196, 92, 38, 0.08), transparent 42%),
-      radial-gradient(circle at 80% 0%, rgba(31, 111, 91, 0.08), transparent 36%),
-      linear-gradient(135deg, transparent 0%, var(--grain) 100%);
+      radial-gradient(circle at 18% 12%, rgba(166, 139, 103, 0.08), transparent 36%),
+      radial-gradient(circle at 82% 8%, rgba(47, 74, 60, 0.05), transparent 30%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
   }
 
   .reveal {
-    animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .reveal-delay-1 {
-    animation-delay: 0.08s;
+    animation-delay: 0.1s;
   }
 
   .reveal-delay-2 {
-    animation-delay: 0.16s;
+    animation-delay: 0.2s;
   }
 
   .reveal-delay-3 {
-    animation-delay: 0.24s;
+    animation-delay: 0.32s;
   }
 
   .reveal-delay-4 {
-    animation-delay: 0.32s;
+    animation-delay: 0.42s;
   }
 }
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(22px);
   }
   to {
     opacity: 1;
