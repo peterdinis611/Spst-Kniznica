@@ -37,10 +37,8 @@ try
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     builder.Services.AddScoped<IBookRepository, BookRepository>();
-    builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IBooksService, BooksService>();
-    builder.Services.AddScoped<ICategoryService, CategoryService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
     builder.Services.AddHealthChecks()

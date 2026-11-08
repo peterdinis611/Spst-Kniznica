@@ -1,16 +1,16 @@
-using BookService.DTOs;
-using BookService.Exceptions;
-using BookService.Interfaces;
-using BookService.Models;
+using CategoryService.DTOs;
+using CategoryService.Exceptions;
+using CategoryService.Interfaces;
+using CategoryService.Models;
 using FluentValidation;
 
-namespace BookService.Services;
+namespace CategoryService.Services;
 
-public class CategoryService(
+public class CategoryAppService(
     IUnitOfWork unitOfWork,
     IValidator<CreateCategoryRequest> createValidator,
     IValidator<UpdateCategoryRequest> updateValidator,
-    ILogger<CategoryService> logger) : ICategoryService
+    ILogger<CategoryAppService> logger) : ICategoryService
 {
     public async Task<PagedResult<CategoryDto>> SearchAsync(
         CategoryQueryFilter filter,

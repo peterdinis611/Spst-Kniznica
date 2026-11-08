@@ -1,6 +1,6 @@
-using BookService.DTOs;
+using CategoryService.DTOs;
 
-namespace BookService.Interfaces;
+namespace CategoryService.Interfaces;
 
 public interface ICategoryService
 {

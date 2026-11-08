@@ -1,7 +1,7 @@
-using BookService.DTOs;
+using CategoryService.DTOs;
 using FluentValidation;
 
-namespace BookService.Validators;
+namespace CategoryService.Validators;
 
 public class UpdateCategoryRequestValidator : AbstractValidator<UpdateCategoryRequest>
 {

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookService", "BookService\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CategoryService", "CategoryService\CategoryService.csproj", "{130A3E58-10F8-49A8-B39A-0A38D958B6EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpstKniznica.Common", "SpstKniznica.Common\SpstKniznica.Common.csproj", "{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Release|x64.Build.0 = Release|Any CPU
 		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Release|x86.ActiveCfg = Release|Any CPU
 		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Release|x86.Build.0 = Release|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Debug|x64.Build.0 = Debug|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Debug|x86.Build.0 = Debug|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Release|x64.ActiveCfg = Release|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Release|x64.Build.0 = Release|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Release|x86.ActiveCfg = Release|Any CPU
+		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

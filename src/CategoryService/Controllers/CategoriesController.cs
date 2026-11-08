@@ -1,8 +1,8 @@
-using BookService.DTOs;
-using BookService.Interfaces;
+using CategoryService.DTOs;
+using CategoryService.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BookService.Controllers;
+namespace CategoryService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

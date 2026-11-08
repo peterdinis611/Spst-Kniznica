@@ -54,23 +54,6 @@ Content-Type: application/xml
 </books>
 --boundary--
 
-### Categories
-GET {{BookService_HostAddress}}/api/categories?page=1&pageSize=20&sortBy=name&isActive=true
-Accept: application/json
-
 ###
-
-POST {{BookService_HostAddress}}/api/categories
-Content-Type: application/json
-
-{
-  "name": "Programming",
-  "description": "Software development and programming books",
-  "color": "#2563EB",
-  "isActive": true
-}
-
-###
-
 GET {{BookService_HostAddress}}/health
 

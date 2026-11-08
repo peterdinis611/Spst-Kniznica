@@ -1,9 +1,15 @@
 using BookService.Models;
+using SpstKniznica.Common.Pagination;
 
 namespace BookService.DTOs;
 
-public class BookQueryFilter
+public class BookQueryFilter : PagedQuery
 {
+    public BookQueryFilter()
+    {
+        SortBy = "title";
+    }
+
     public string? Title { get; set; }
     public string? Author { get; set; }
     public string? Publisher { get; set; }
@@ -16,12 +22,6 @@ public class BookQueryFilter
     public int? PublishedYearTo { get; set; }
     public BookFormat? Format { get; set; }
     public bool? AvailableOnly { get; set; }
-    public string? Search { get; set; }
     public string? InventoryNumber { get; set; }
     public string? Barcode { get; set; }
-
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 20;
-    public string SortBy { get; set; } = "title";
-    public string SortDir { get; set; } = "asc";
 }

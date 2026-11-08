@@ -1,7 +1,7 @@
-using BookService.DTOs;
-using BookService.Models;
+using CategoryService.DTOs;
+using CategoryService.Models;
 
-namespace BookService.Interfaces;
+namespace CategoryService.Interfaces;
 
 public interface ICategoryRepository
 {

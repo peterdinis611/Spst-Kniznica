@@ -1,0 +1,20 @@
+@CategoryService_HostAddress = http://localhost:5204
+
+GET {{CategoryService_HostAddress}}/api/categories?page=1&pageSize=20&sortBy=name&isActive=true
+Accept: application/json
+
+###
+
+POST {{CategoryService_HostAddress}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "Programming",
+  "description": "Software development and programming books",
+  "color": "#2563EB",
+  "isActive": true
+}
+
+###
+
+GET {{CategoryService_HostAddress}}/health

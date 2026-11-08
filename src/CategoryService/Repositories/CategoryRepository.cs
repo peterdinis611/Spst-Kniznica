@@ -1,14 +1,14 @@
 using System.Linq.Expressions;
-using BookService.Data;
-using BookService.DTOs;
-using BookService.Exceptions;
-using BookService.Interfaces;
-using BookService.Models;
+using CategoryService.Data;
+using CategoryService.DTOs;
+using CategoryService.Exceptions;
+using CategoryService.Interfaces;
+using CategoryService.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace BookService.Repositories;
+namespace CategoryService.Repositories;
 
-public class CategoryRepository(BookDbContext db) : ICategoryRepository
+public class CategoryRepository(CategoryDbContext db) : ICategoryRepository
 {
     public async Task<PagedResult<Category>> FindAsync(
         CategoryQueryFilter filter,
