@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SpstKniznica.Common\SpstKniznica.Common.csproj" />
+    <ProjectReference Include="..\SpstKniznica.Caching\SpstKniznica.Caching.csproj" />
   </ItemGroup>
 
 </Project>

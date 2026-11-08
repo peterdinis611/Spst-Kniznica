@@ -39,3 +39,23 @@ Content-Type: application/json
 ###
 
 GET {{MessagingService_HostAddress}}/health
+
+###
+
+GET {{MessagingService_HostAddress}}/api/relations/summary
+Accept: application/json
+
+###
+
+GET {{MessagingService_HostAddress}}/api/relations/categories/00000000-0000-0000-0000-000000000001
+Accept: application/json
+
+###
+
+GET {{MessagingService_HostAddress}}/api/relations/categories/00000000-0000-0000-0000-000000000001/books
+Accept: application/json
+
+###
+
+GET {{MessagingService_HostAddress}}/api/relations/books/00000000-0000-0000-0000-000000000002
+Accept: application/json

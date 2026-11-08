@@ -2,12 +2,14 @@ using MessagingService.Data;
 using MessagingService.DTOs;
 using MessagingService.Models;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Caching;
 using SpstKniznica.Common.Messaging;
 
 namespace MessagingService.Services;
 
 public class LibraryRelationService(
     MessagingDbContext db,
+    IAppCache cache,
     ILogger<LibraryRelationService> logger) : ILibraryRelationService
 {
     public async Task ApplyEventAsync(string eventType, string payload, CancellationToken cancellationToken = default)
@@ -37,77 +39,91 @@ public class LibraryRelationService(
         }
     }
 
-    public async Task<CategoryRelationDto?> GetCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default)
-    {
-        return await db.Categories
-            .AsNoTracking()
-            .Where(c => c.Id == categoryId)
-            .Select(c => new CategoryRelationDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Description = c.Description,
-                IsActive = c.IsActive,
-                BookCount = c.Books.Count
-            })
-            .FirstOrDefaultAsync(cancellationToken);
-    }
+    public Task<CategoryRelationDto?> GetCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default)
+        => cache.GetOrSetAsync(
+            CacheKeys.RelationCategory(categoryId),
+            async ct => await db.Categories
+                .AsNoTracking()
+                .Where(c => c.Id == categoryId)
+                .Select(c => new CategoryRelationDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    IsActive = c.IsActive,
+                    BookCount = c.Books.Count
+                })
+                .FirstOrDefaultAsync(ct),
+            TimeSpan.FromMinutes(2),
+            cancellationToken);
 
     public async Task<IReadOnlyList<BookRelationDto>> GetBooksByCategoryAsync(
         Guid categoryId,
         CancellationToken cancellationToken = default)
     {
-        return await db.Books
-            .AsNoTracking()
-            .Where(b => b.CategoryId == categoryId)
-            .OrderBy(b => b.Title)
-            .Select(b => new BookRelationDto
+        var books = await cache.GetOrSetAsync(
+            CacheKeys.RelationCategoryBooks(categoryId),
+            async ct => await db.Books
+                .AsNoTracking()
+                .Where(b => b.CategoryId == categoryId)
+                .OrderBy(b => b.Title)
+                .Select(b => new BookRelationDto
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Author = b.Author,
+                    Isbn = b.Isbn,
+                    CategoryId = b.CategoryId,
+                    CategoryName = b.CategoryName
+                })
+                .ToListAsync(ct),
+            TimeSpan.FromMinutes(2),
+            cancellationToken);
+
+        return books;
+    }
+
+    public Task<BookRelationDto?> GetBookAsync(Guid bookId, CancellationToken cancellationToken = default)
+        => cache.GetOrSetAsync(
+            CacheKeys.RelationBook(bookId),
+            async ct => await db.Books
+                .AsNoTracking()
+                .Where(b => b.Id == bookId)
+                .Select(b => new BookRelationDto
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Author = b.Author,
+                    Isbn = b.Isbn,
+                    CategoryId = b.CategoryId,
+                    CategoryName = b.CategoryName
+                })
+                .FirstOrDefaultAsync(ct),
+            TimeSpan.FromMinutes(2),
+            cancellationToken);
+
+    public Task<RelationSummaryDto> GetSummaryAsync(CancellationToken cancellationToken = default)
+        => cache.GetOrSetAsync(
+            CacheKeys.RelationSummary(),
+            async ct =>
             {
-                Id = b.Id,
-                Title = b.Title,
-                Author = b.Author,
-                Isbn = b.Isbn,
-                CategoryId = b.CategoryId,
-                CategoryName = b.CategoryName
-            })
-            .ToListAsync(cancellationToken);
-    }
+                var categoryCount = await db.Categories.CountAsync(ct);
+                var bookCount = await db.Books.CountAsync(ct);
+                var linkedBookCount = await db.Books.CountAsync(b => b.CategoryId != null, ct);
 
-    public async Task<BookRelationDto?> GetBookAsync(Guid bookId, CancellationToken cancellationToken = default)
-    {
-        return await db.Books
-            .AsNoTracking()
-            .Where(b => b.Id == bookId)
-            .Select(b => new BookRelationDto
-            {
-                Id = b.Id,
-                Title = b.Title,
-                Author = b.Author,
-                Isbn = b.Isbn,
-                CategoryId = b.CategoryId,
-                CategoryName = b.CategoryName
-            })
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public async Task<RelationSummaryDto> GetSummaryAsync(CancellationToken cancellationToken = default)
-    {
-        var categoryCount = await db.Categories.CountAsync(cancellationToken);
-        var bookCount = await db.Books.CountAsync(cancellationToken);
-        var linkedBookCount = await db.Books.CountAsync(b => b.CategoryId != null, cancellationToken);
-
-        return new RelationSummaryDto
-        {
-            CategoryCount = categoryCount,
-            BookCount = bookCount,
-            LinkedBookCount = linkedBookCount,
-            UnlinkedBookCount = bookCount - linkedBookCount
-        };
-    }
+                return new RelationSummaryDto
+                {
+                    CategoryCount = categoryCount,
+                    BookCount = bookCount,
+                    LinkedBookCount = linkedBookCount,
+                    UnlinkedBookCount = bookCount - linkedBookCount
+                };
+            },
+            TimeSpan.FromMinutes(1),
+            cancellationToken);
 
     private async Task UpsertCategoryAsync(string payload, CancellationToken cancellationToken)
     {
-        // Created/Updated share the same payload shape.
         var evt = EventJson.Deserialize<CategoryUpdatedEvent>(payload)
             ?? throw new InvalidOperationException("Invalid category event payload.");
 
@@ -140,6 +156,10 @@ public class LibraryRelationService(
         }
 
         await db.SaveChangesAsync(cancellationToken);
+        await InvalidateRelationCacheAsync(
+            categoryId: evt.CategoryId,
+            bookIds: books.Select(b => b.Id),
+            cancellationToken: cancellationToken);
         logger.LogInformation("Projection upserted category {CategoryId} '{Name}'", evt.CategoryId, evt.Name);
     }
 
@@ -164,6 +184,10 @@ public class LibraryRelationService(
 
         db.Categories.Remove(category);
         await db.SaveChangesAsync(cancellationToken);
+        await InvalidateRelationCacheAsync(
+            categoryId: deleted.CategoryId,
+            bookIds: books.Select(b => b.Id),
+            cancellationToken: cancellationToken);
         logger.LogInformation(
             "Projection deleted category {CategoryId} and unlinked {BookCount} books",
             deleted.CategoryId,
@@ -192,6 +216,7 @@ public class LibraryRelationService(
         }
 
         var book = await db.Books.FirstOrDefaultAsync(b => b.Id == evt.BookId, cancellationToken);
+        var previousCategoryId = book?.CategoryId;
         if (book is null)
         {
             book = new BookProjection
@@ -217,6 +242,22 @@ public class LibraryRelationService(
         }
 
         await db.SaveChangesAsync(cancellationToken);
+
+        var categoryIds = new List<Guid>();
+        if (evt.CategoryId.HasValue)
+        {
+            categoryIds.Add(evt.CategoryId.Value);
+        }
+
+        if (previousCategoryId.HasValue && previousCategoryId != evt.CategoryId)
+        {
+            categoryIds.Add(previousCategoryId.Value);
+        }
+
+        await InvalidateRelationCacheAsync(
+            categoryIds: categoryIds,
+            bookIds: [evt.BookId],
+            cancellationToken: cancellationToken);
         logger.LogInformation(
             "Projection upserted book {BookId} -> category {CategoryId}",
             evt.BookId,
@@ -234,8 +275,50 @@ public class LibraryRelationService(
             return;
         }
 
+        var categoryId = book.CategoryId;
         db.Books.Remove(book);
         await db.SaveChangesAsync(cancellationToken);
+        await InvalidateRelationCacheAsync(
+            categoryId: categoryId,
+            bookIds: [deleted.BookId],
+            cancellationToken: cancellationToken);
         logger.LogInformation("Projection deleted book {BookId}", deleted.BookId);
+    }
+
+    private async Task InvalidateRelationCacheAsync(
+        Guid? categoryId = null,
+        IEnumerable<Guid>? categoryIds = null,
+        IEnumerable<Guid>? bookIds = null,
+        CancellationToken cancellationToken = default)
+    {
+        var categories = new HashSet<Guid>();
+        if (categoryId.HasValue)
+        {
+            categories.Add(categoryId.Value);
+        }
+
+        if (categoryIds is not null)
+        {
+            foreach (var id in categoryIds)
+            {
+                categories.Add(id);
+            }
+        }
+
+        foreach (var id in categories)
+        {
+            await cache.RemoveAsync(CacheKeys.RelationCategory(id), cancellationToken);
+            await cache.RemoveAsync(CacheKeys.RelationCategoryBooks(id), cancellationToken);
+        }
+
+        if (bookIds is not null)
+        {
+            foreach (var bookId in bookIds)
+            {
+                await cache.RemoveAsync(CacheKeys.RelationBook(bookId), cancellationToken);
+            }
+        }
+
+        await cache.RemoveAsync(CacheKeys.RelationSummary(), cancellationToken);
     }
 }

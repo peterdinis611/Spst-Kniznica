@@ -6,6 +6,7 @@ using MessagingService.Options;
 using MessagingService.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using SpstKniznica.Caching;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -40,6 +41,7 @@ try
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     builder.Services.AddScoped<ILibraryRelationService, LibraryRelationService>();
+    builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
 
     var kafkaEnabled = builder.Configuration.GetValue("Kafka:Enabled", true);
     var rabbitEnabled = builder.Configuration.GetValue("RabbitMq:Enabled", true);

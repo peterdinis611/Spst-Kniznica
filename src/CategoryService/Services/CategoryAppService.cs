@@ -3,6 +3,7 @@ using CategoryService.Exceptions;
 using CategoryService.Interfaces;
 using CategoryService.Models;
 using FluentValidation;
+using SpstKniznica.Caching;
 using SpstKniznica.Common.Messaging;
 using SpstKniznica.Common.Pagination;
 using SpstKniznica.Common.Text;
@@ -11,6 +12,7 @@ namespace CategoryService.Services;
 
 public class CategoryAppService(
     IUnitOfWork unitOfWork,
+    IAppCache cache,
     IIntegrationEventPublisher eventPublisher,
     IValidator<CreateCategoryRequest> createValidator,
     IValidator<UpdateCategoryRequest> updateValidator,
@@ -33,8 +35,15 @@ public class CategoryAppService(
 
     public async Task<CategoryDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var category = await GetRequiredAsync(id, tracked: false, cancellationToken);
-        return Map(category);
+        return await cache.GetOrSetAsync(
+            CacheKeys.Category(id),
+            async ct =>
+            {
+                var category = await GetRequiredAsync(id, tracked: false, ct);
+                return Map(category);
+            },
+            TimeSpan.FromMinutes(10),
+            cancellationToken);
     }
 
     public async Task<CategoryDto> CreateAsync(
@@ -65,8 +74,11 @@ public class CategoryAppService(
             new CategoryCreatedEvent(category.Id, category.Name, category.Description, category.IsActive),
             cancellationToken);
 
+        var dto = Map(category);
+        await cache.SetAsync(CacheKeys.Category(category.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
+
         logger.LogInformation("Created category {CategoryId} named '{Name}'", category.Id, category.Name);
-        return Map(category);
+        return dto;
     }
 
     public async Task<CategoryDto> UpdateAsync(
@@ -95,8 +107,11 @@ public class CategoryAppService(
             new CategoryUpdatedEvent(category.Id, category.Name, category.Description, category.IsActive),
             cancellationToken);
 
+        var dto = Map(category);
+        await cache.SetAsync(CacheKeys.Category(category.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
+
         logger.LogInformation("Updated category {CategoryId} named '{Name}'", category.Id, category.Name);
-        return Map(category);
+        return dto;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -106,6 +121,7 @@ public class CategoryAppService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await eventPublisher.PublishAsync(new CategoryDeletedEvent(id), cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Category(id), cancellationToken);
         logger.LogInformation("Deleted category {CategoryId} named '{Name}'", id, category.Name);
     }
 

@@ -10,6 +10,7 @@ using ClosedXML.Excel;
 using CsvHelper;
 using CsvHelper.Configuration;
 using FluentValidation;
+using SpstKniznica.Caching;
 using SpstKniznica.Common.Messaging;
 using SpstKniznica.Common.Pagination;
 
@@ -18,6 +19,7 @@ namespace BookService.Services;
 public class BooksService(
     IUnitOfWork unitOfWork,
     ICategoryLookup categoryLookup,
+    IAppCache cache,
     IIntegrationEventPublisher eventPublisher,
     IValidator<CreateBookRequest> createValidator,
     IValidator<UpdateBookRequest> updateValidator,
@@ -46,15 +48,22 @@ public class BooksService(
 
     public async Task<BookDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var book = await unitOfWork.Books.GetByIdAsync(id, includeCopies: true, cancellationToken);
-        if (book is null)
-        {
-            logger.LogWarning("Book {BookId} was not found", id);
-            throw new NotFoundException($"Book '{id}' was not found.");
-        }
+        return await cache.GetOrSetAsync(
+            CacheKeys.Book(id),
+            async ct =>
+            {
+                var book = await unitOfWork.Books.GetByIdAsync(id, includeCopies: true, ct);
+                if (book is null)
+                {
+                    logger.LogWarning("Book {BookId} was not found", id);
+                    throw new NotFoundException($"Book '{id}' was not found.");
+                }
 
-        logger.LogDebug("Loaded book {BookId} with {CopyCount} copies", book.Id, book.Copies.Count);
-        return MapDetail(book);
+                logger.LogDebug("Loaded book {BookId} with {CopyCount} copies", book.Id, book.Copies.Count);
+                return MapDetail(book);
+            },
+            TimeSpan.FromMinutes(5),
+            cancellationToken);
     }
 
     public async Task<BookDetailDto> CreateAsync(CreateBookRequest request, CancellationToken cancellationToken = default)
@@ -85,13 +94,16 @@ public class BooksService(
             new BookCreatedEvent(book.Id, book.Title, book.Author, book.Isbn, book.CategoryId, book.CategoryName),
             cancellationToken);
 
+        var detail = MapDetail(book);
+        await cache.SetAsync(CacheKeys.Book(book.Id), detail, TimeSpan.FromMinutes(5), cancellationToken);
+
         logger.LogInformation(
             "Created book {BookId} titled '{Title}' with {CopyCount} copies and ISBN {Isbn}",
             book.Id,
             book.Title,
             book.TotalCopies,
             book.Isbn);
-        return MapDetail(book);
+        return detail;
     }
 
     public async Task<BookDetailDto> UpdateAsync(
@@ -137,13 +149,16 @@ public class BooksService(
             new BookUpdatedEvent(book.Id, book.Title, book.Author, book.Isbn, book.CategoryId, book.CategoryName),
             cancellationToken);
 
+        var detail = MapDetail(book);
+        await cache.SetAsync(CacheKeys.Book(book.Id), detail, TimeSpan.FromMinutes(5), cancellationToken);
+
         logger.LogInformation(
             "Updated book {BookId}. Title='{Title}', TotalCopies={TotalCopies}, AvailableCopies={AvailableCopies}",
             book.Id,
             book.Title,
             book.TotalCopies,
             book.AvailableCopies);
-        return MapDetail(book);
+        return detail;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -170,6 +185,7 @@ public class BooksService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await eventPublisher.PublishAsync(new BookDeletedEvent(id), cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Book(id), cancellationToken);
         logger.LogInformation("Deleted book {BookId} titled '{Title}'", id, book.Title);
     }
 

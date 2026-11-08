@@ -1,0 +1,42 @@
+@CacheService_HostAddress = http://localhost:5206
+
+GET {{CacheService_HostAddress}}/api/cache/status
+Accept: application/json
+
+###
+
+GET {{CacheService_HostAddress}}/api/cache/keys
+Accept: application/json
+
+###
+
+GET {{CacheService_HostAddress}}/api/cache/keys?pattern=category:*
+Accept: application/json
+
+###
+
+PUT {{CacheService_HostAddress}}/api/cache/demo:hello
+Content-Type: application/json
+
+{
+  "value": { "message": "cached" },
+  "ttlSeconds": 60
+}
+
+###
+
+GET {{CacheService_HostAddress}}/api/cache/demo:hello
+Accept: application/json
+
+###
+
+DELETE {{CacheService_HostAddress}}/api/cache/demo:hello
+
+###
+
+DELETE {{CacheService_HostAddress}}/api/cache?prefix=demo:
+Accept: application/json
+
+###
+
+GET {{CacheService_HostAddress}}/health
