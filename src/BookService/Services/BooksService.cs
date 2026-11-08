@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Xml.Linq;
 using BookService.DTOs;
 using BookService.Exceptions;
 using BookService.Interfaces;
@@ -18,23 +19,49 @@ public class BooksService(
     IValidator<UpdateBookRequest> updateValidator,
     ILogger<BooksService> logger) : IBooksService
 {
-    public Task<PagedResult<Book>> SearchAsync(BookQueryFilter filter, CancellationToken cancellationToken = default)
-        => unitOfWork.Books.FindAsync(filter, cancellationToken);
+    public async Task<PagedResult<Book>> SearchAsync(BookQueryFilter filter, CancellationToken cancellationToken = default)
+    {
+        logger.LogDebug(
+            "Repository search started. Filters: Title={Title}, Author={Author}, Category={Category}, AvailableOnly={AvailableOnly}",
+            filter.Title,
+            filter.Author,
+            filter.Category,
+            filter.AvailableOnly);
+
+        var result = await unitOfWork.Books.FindAsync(filter, cancellationToken);
+
+        logger.LogDebug(
+            "Repository search finished. TotalCount={TotalCount}, PageItems={PageItems}",
+            result.TotalCount,
+            result.Items.Count);
+
+        return result;
+    }
 
     public async Task<BookDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var book = await unitOfWork.Books.GetByIdAsync(id, includeCopies: true, cancellationToken);
         if (book is null)
         {
+            logger.LogWarning("Book {BookId} was not found", id);
             throw new NotFoundException($"Book '{id}' was not found.");
         }
 
+        logger.LogDebug("Loaded book {BookId} with {CopyCount} copies", book.Id, book.Copies.Count);
         return MapDetail(book);
     }
 
     public async Task<BookDetailDto> CreateAsync(CreateBookRequest request, CancellationToken cancellationToken = default)
     {
         var validation = await createValidator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            logger.LogWarning(
+                "Create book validation failed for '{Title}'. Errors={ErrorCount}",
+                request.Title,
+                validation.Errors.Count);
+        }
+
         EnsureValid(validation);
 
         var book = request.ToBook();
@@ -47,7 +74,12 @@ public class BooksService(
         await unitOfWork.Books.AddAsync(book, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        logger.LogInformation("Created book {BookId} with {CopyCount} copies", book.Id, book.TotalCopies);
+        logger.LogInformation(
+            "Created book {BookId} titled '{Title}' with {CopyCount} copies and ISBN {Isbn}",
+            book.Id,
+            book.Title,
+            book.TotalCopies,
+            book.Isbn);
         return MapDetail(book);
     }
 
@@ -90,7 +122,12 @@ public class BooksService(
         unitOfWork.Books.Update(book);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        logger.LogInformation("Updated book {BookId}", book.Id);
+        logger.LogInformation(
+            "Updated book {BookId}. Title='{Title}', TotalCopies={TotalCopies}, AvailableCopies={AvailableCopies}",
+            book.Id,
+            book.Title,
+            book.TotalCopies,
+            book.AvailableCopies);
         return MapDetail(book);
     }
 
@@ -99,11 +136,15 @@ public class BooksService(
         var book = await unitOfWork.Books.GetByIdAsync(id, includeCopies: true, cancellationToken);
         if (book is null)
         {
+            logger.LogWarning("Delete failed. Book {BookId} was not found", id);
             throw new NotFoundException($"Book '{id}' was not found.");
         }
 
         if (book.Copies.Any(c => c.Status is BookCopyStatus.Borrowed or BookCopyStatus.Reserved))
         {
+            logger.LogWarning(
+                "Delete blocked for book {BookId} because some copies are borrowed or reserved",
+                id);
             throw new AppValidationException(new Dictionary<string, string[]>
             {
                 ["Copies"] = ["Cannot delete a book while copies are borrowed or reserved."]
@@ -112,8 +153,14 @@ public class BooksService(
 
         unitOfWork.Books.Remove(book);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Deleted book {BookId}", id);
+        logger.LogInformation("Deleted book {BookId} titled '{Title}'", id, book.Title);
     }
+
+    public Task<BulkImportResult> ImportCsvAsync(Stream fileStream, CancellationToken cancellationToken = default)
+        => ImportAsync(fileStream, "import.csv", cancellationToken);
+
+    public Task<BulkImportResult> ImportXmlAsync(Stream fileStream, CancellationToken cancellationToken = default)
+        => ImportAsync(fileStream, "import.xml", cancellationToken);
 
     public async Task<BulkImportResult> ImportAsync(
         Stream fileStream,
@@ -127,15 +174,29 @@ public class BooksService(
         }
 
         var extension = Path.GetExtension(fileName).ToLowerInvariant();
-        var rows = extension switch
+        logger.LogInformation("Parsing import file {FileName} as {Format}", fileName, extension);
+
+        List<ImportRow> rows;
+        try
         {
-            ".csv" => await ReadCsvAsync(fileStream, cancellationToken),
-            ".xlsx" or ".xlsm" => ReadExcel(fileStream),
-            _ => throw new AppValidationException(new Dictionary<string, string[]>
+            rows = extension switch
             {
-                ["file"] = ["Supported formats are .csv and .xlsx."]
-            })
-        };
+                ".csv" => await ReadCsvAsync(fileStream, cancellationToken),
+                ".xml" => await ReadXmlAsync(fileStream, cancellationToken),
+                ".xlsx" or ".xlsm" => ReadExcel(fileStream),
+                _ => throw new AppValidationException(new Dictionary<string, string[]>
+                {
+                    ["file"] = ["Supported formats are .csv, .xml and .xlsx."]
+                })
+            };
+        }
+        catch (Exception ex) when (ex is not AppValidationException)
+        {
+            logger.LogError(ex, "Failed to parse import file {FileName}", fileName);
+            throw;
+        }
+
+        logger.LogInformation("Parsed {RowCount} rows from {FileName}", rows.Count, fileName);
 
         var errors = new List<BulkImportError>();
         var imported = new List<Book>();
@@ -145,7 +206,7 @@ public class BooksService(
 
         for (var i = 0; i < rows.Count; i++)
         {
-            var rowNumber = i + 2; // header is row 1
+            var rowNumber = i + 1;
             var row = rows[i];
 
             try
@@ -177,7 +238,7 @@ public class BooksService(
                 book.RecalculateCopyCounts();
                 imported.Add(book);
             }
-            catch (Exception ex) when (ex is AppValidationException or FormatException or ArgumentException)
+            catch (Exception ex) when (ex is AppValidationException or FormatException or ArgumentException or InvalidOperationException)
             {
                 errors.Add(new BulkImportError { RowNumber = rowNumber, Message = ex.Message });
             }
@@ -301,15 +362,64 @@ public class BooksService(
 
         if (desiredTotal > current)
         {
-            CreateCopies(book, desiredTotal - current);
-            // CreateCopies adds from 1..delta with inventory based on book.Id and i starting 1 - may collide
-            // Fix: regenerate for newly added only - actually CreateCopies uses i from 1 which can collide.
-            // Better approach: remove the ones just added wrongly and add properly.
+            var now = DateTimeOffset.UtcNow;
+            var existingInventory = book.Copies.Select(c => c.InventoryNumber).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var existingBarcodes = book.Copies
+                .Where(c => c.Barcode is not null)
+                .Select(c => c.Barcode!)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var sequence = current + 1;
+            while (book.Copies.Count < desiredTotal)
+            {
+                var inventory = GenerateInventoryNumber(book.Id, sequence);
+                while (!existingInventory.Add(inventory))
+                {
+                    sequence++;
+                    inventory = GenerateInventoryNumber(book.Id, sequence, Guid.NewGuid());
+                }
+
+                var barcode = GenerateBarcode(book.Id, sequence);
+                while (!existingBarcodes.Add(barcode))
+                {
+                    sequence++;
+                    barcode = GenerateBarcode(book.Id, sequence);
+                }
+
+                book.Copies.Add(new BookCopy
+                {
+                    Id = Guid.NewGuid(),
+                    BookId = book.Id,
+                    InventoryNumber = inventory,
+                    Barcode = barcode,
+                    Status = BookCopyStatus.Available,
+                    ShelfLocation = book.ShelfLocation,
+                    CreatedAt = now,
+                    UpdatedAt = now
+                });
+                sequence++;
+            }
+
+            return;
         }
 
-        if (desiredTotal > current)
+        var removable = book.Copies
+            .Where(c => c.Status == BookCopyStatus.Available)
+            .OrderByDescending(c => c.CreatedAt)
+            .Take(current - desiredTotal)
+            .ToList();
+
+        if (removable.Count < current - desiredTotal)
         {
-            // Undo naive create above - CreateCopies always starts at i=1. Rewrite AdjustCopyCount properly.
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["TotalCopies"] = ["Cannot reduce copies below the number of non-available exemplars."]
+            });
+        }
+
+        foreach (var copy in removable)
+        {
+            book.Copies.Remove(copy);
         }
     }
 
@@ -426,13 +536,14 @@ public class BooksService(
     private static async Task<List<ImportRow>> ReadCsvAsync(Stream stream, CancellationToken cancellationToken)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true);
-        using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
             HeaderValidated = null,
             MissingFieldFound = null,
             TrimOptions = TrimOptions.Trim,
             PrepareHeaderForMatch = args => args.Header.Trim().ToLowerInvariant()
-        });
+        };
+        using var csv = new CsvReader(reader, config);
 
         var rows = new List<ImportRow>();
         await foreach (var row in csv.GetRecordsAsync<ImportRow>().WithCancellation(cancellationToken))
@@ -441,6 +552,83 @@ public class BooksService(
         }
 
         return rows;
+    }
+
+    private static async Task<List<ImportRow>> ReadXmlAsync(Stream stream, CancellationToken cancellationToken)
+    {
+        XDocument document;
+        try
+        {
+            document = await XDocument.LoadAsync(stream, System.Xml.Linq.LoadOptions.None, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["file"] = [$"Invalid XML file: {ex.Message}"]
+            });
+        }
+
+        var bookElements = document.Root?
+            .Elements()
+            .Where(e => e.Name.LocalName.Equals("book", StringComparison.OrdinalIgnoreCase))
+            .ToList()
+            ?? [];
+
+        if (bookElements.Count == 0 && document.Root is not null &&
+            document.Root.Name.LocalName.Equals("book", StringComparison.OrdinalIgnoreCase))
+        {
+            bookElements = [document.Root];
+        }
+
+        if (bookElements.Count == 0)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["file"] = ["XML must contain <books><book>...</book></books> elements."]
+            });
+        }
+
+        static string? Value(XElement book, params string[] names)
+        {
+            foreach (var name in names)
+            {
+                var element = book.Elements()
+                    .FirstOrDefault(e => e.Name.LocalName.Equals(name, StringComparison.OrdinalIgnoreCase));
+                if (element is not null)
+                {
+                    return element.Value.Trim();
+                }
+
+                var attribute = book.Attributes()
+                    .FirstOrDefault(a => a.Name.LocalName.Equals(name, StringComparison.OrdinalIgnoreCase));
+                if (attribute is not null)
+                {
+                    return attribute.Value.Trim();
+                }
+            }
+
+            return null;
+        }
+
+        return bookElements.Select(book => new ImportRow
+        {
+            Title = Value(book, "title") ?? string.Empty,
+            Subtitle = Value(book, "subtitle"),
+            Author = Value(book, "author") ?? string.Empty,
+            Publisher = Value(book, "publisher"),
+            Isbn = Value(book, "isbn"),
+            PublishedYear = Value(book, "publishedYear", "year"),
+            Language = Value(book, "language"),
+            Category = Value(book, "category"),
+            Description = Value(book, "description"),
+            PageCount = Value(book, "pageCount", "pages"),
+            Format = Value(book, "format"),
+            ShelfLocation = Value(book, "shelfLocation", "shelf"),
+            TotalCopies = Value(book, "totalCopies", "copies"),
+            InventoryNumber = Value(book, "inventoryNumber", "inventory"),
+            Barcode = Value(book, "barcode")
+        }).ToList();
     }
 
     private static List<ImportRow> ReadExcel(Stream stream)

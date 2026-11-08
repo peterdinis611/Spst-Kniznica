@@ -39,10 +39,6 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                 HttpStatusCode.NotFound,
                 "Resource not found",
                 new Dictionary<string, string[]> { ["error"] = [exception.Message] }),
-            RepositoryValidationException repositoryValidation => (
-                HttpStatusCode.BadRequest,
-                "Repository validation failed",
-                repositoryValidation.Errors),
             _ => (
                 HttpStatusCode.InternalServerError,
                 "An unexpected error occurred",

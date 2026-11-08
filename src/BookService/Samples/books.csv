@@ -1,0 +1,3 @@
+Title,Subtitle,Author,Publisher,Isbn,PublishedYear,Language,Category,Description,PageCount,Format,ShelfLocation,TotalCopies,InventoryNumber,Barcode
+Clean Code,A Handbook of Agile Software Craftsmanship,Robert C. Martin,Prentice Hall,9780132350884,2008,en,Programming,Classic clean code book,464,Paperback,A-12,3,INV-CLEAN-001,BC-CLEAN-001
+Domain-Driven Design,Tackling Complexity in the Heart of Software,Eric Evans,Addison-Wesley,9780321125217,2003,en,Architecture,DDD blue book,560,Hardcover,B-03,2,INV-DDD-001,BC-DDD-001

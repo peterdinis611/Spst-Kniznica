@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookService", "BookService\BookService.csproj", "{DAF2B6B5-2569-4792-A569-67CC0A5D8979}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CategoryService", "CategoryService\CategoryService.csproj", "{130A3E58-10F8-49A8-B39A-0A38D958B6EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{DAF2B6B5-2569-4792-A569-67CC0A5D8979}.Release|x64.Build.0 = Release|Any CPU
 		{DAF2B6B5-2569-4792-A569-67CC0A5D8979}.Release|x86.ActiveCfg = Release|Any CPU
 		{DAF2B6B5-2569-4792-A569-67CC0A5D8979}.Release|x86.Build.0 = Release|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Debug|x64.Build.0 = Debug|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Debug|x86.Build.0 = Debug|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Release|x64.ActiveCfg = Release|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Release|x64.Build.0 = Release|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Release|x86.ActiveCfg = Release|Any CPU
+		{130A3E58-10F8-49A8-B39A-0A38D958B6EC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

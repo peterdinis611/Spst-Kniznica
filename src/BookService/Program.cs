@@ -19,8 +19,7 @@ try
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
-        .WriteTo.Console()
-        .WriteTo.File("logs/bookservice-.log", rollingInterval: RollingInterval.Day));
+        .Enrich.WithProperty("Application", "BookService"));
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -38,8 +37,10 @@ try
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     builder.Services.AddScoped<IBookRepository, BookRepository>();
+    builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IBooksService, BooksService>();
+    builder.Services.AddScoped<ICategoryService, CategoryService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
     builder.Services.AddHealthChecks()
@@ -47,14 +48,36 @@ try
 
     var app = builder.Build();
 
+    Log.Information("Starting BookService in {Environment} environment", app.Environment.EnvironmentName);
+
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<BookDbContext>();
         await db.Database.MigrateAsync();
+        Log.Information("Database migrations applied");
     }
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
-    app.UseSerilogRequestLogging();
+
+    app.UseSerilogRequestLogging(options =>
+    {
+        options.MessageTemplate =
+            "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+        options.GetLevel = (httpContext, _, ex) =>
+            ex is not null || httpContext.Response.StatusCode >= 500
+                ? Serilog.Events.LogEventLevel.Error
+                : httpContext.Response.StatusCode >= 400
+                    ? Serilog.Events.LogEventLevel.Warning
+                    : Serilog.Events.LogEventLevel.Information;
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
+            diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+            diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+            diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
+            diagnosticContext.Set("ClientIP", httpContext.Connection.RemoteIpAddress?.ToString());
+            diagnosticContext.Set("TraceId", httpContext.TraceIdentifier);
+        };
+    });
 
     app.UseSwagger();
     app.UseSwaggerUI(options =>
@@ -68,6 +91,7 @@ try
     app.MapControllers();
     app.MapHealthChecks("/health");
 
+    Log.Information("BookService is ready. Swagger: /swagger, Health: /health");
     await app.RunAsync();
 }
 catch (Exception ex)

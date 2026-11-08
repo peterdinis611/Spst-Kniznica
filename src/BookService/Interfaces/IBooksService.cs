@@ -11,4 +11,6 @@ public interface IBooksService
     Task<BookDetailDto> UpdateAsync(Guid id, UpdateBookRequest request, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<BulkImportResult> ImportAsync(Stream fileStream, string fileName, CancellationToken cancellationToken = default);
+    Task<BulkImportResult> ImportCsvAsync(Stream fileStream, CancellationToken cancellationToken = default);
+    Task<BulkImportResult> ImportXmlAsync(Stream fileStream, CancellationToken cancellationToken = default);
 }

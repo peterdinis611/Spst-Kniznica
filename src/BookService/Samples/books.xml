@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<books>
+  <book>
+    <title>Clean Code</title>
+    <subtitle>A Handbook of Agile Software Craftsmanship</subtitle>
+    <author>Robert C. Martin</author>
+    <publisher>Prentice Hall</publisher>
+    <isbn>9780132350884</isbn>
+    <publishedYear>2008</publishedYear>
+    <language>en</language>
+    <category>Programming</category>
+    <description>Classic clean code book</description>
+    <pageCount>464</pageCount>
+    <format>Paperback</format>
+    <shelfLocation>A-12</shelfLocation>
+    <totalCopies>3</totalCopies>
+    <inventoryNumber>INV-CLEAN-001</inventoryNumber>
+    <barcode>BC-CLEAN-001</barcode>
+  </book>
+  <book>
+    <title>Domain-Driven Design</title>
+    <subtitle>Tackling Complexity in the Heart of Software</subtitle>
+    <author>Eric Evans</author>
+    <publisher>Addison-Wesley</publisher>
+    <isbn>9780321125217</isbn>
+    <publishedYear>2003</publishedYear>
+    <language>en</language>
+    <category>Architecture</category>
+    <description>DDD blue book</description>
+    <pageCount>560</pageCount>
+    <format>Hardcover</format>
+    <shelfLocation>B-03</shelfLocation>
+    <totalCopies>2</totalCopies>
+    <inventoryNumber>INV-DDD-001</inventoryNumber>
+    <barcode>BC-DDD-001</barcode>
+  </book>
+</books>

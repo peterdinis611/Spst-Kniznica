@@ -1,21 +1,7 @@
 @BookService_HostAddress = http://localhost:5203
 
-GET {{BookService_HostAddress}}/api/books
-Accept: application/json
-
-###
-
-GET {{BookService_HostAddress}}/api/books?category=Programming&availableOnly=true
-Accept: application/json
-
-###
-
-GET {{BookService_HostAddress}}/api/books?author=Martin&publishedYearFrom=2000&publishedYearTo=2010
-Accept: application/json
-
-###
-
-GET {{BookService_HostAddress}}/api/books?search=clean&format=Paperback
+### Paged + sorted list
+GET {{BookService_HostAddress}}/api/books?page=1&pageSize=10&sortBy=title&sortDir=asc
 Accept: application/json
 
 ###
@@ -24,32 +10,67 @@ POST {{BookService_HostAddress}}/api/books
 Content-Type: application/json
 
 {
-  "title": "Clean Code",
-  "subtitle": "A Handbook of Agile Software Craftsmanship",
-  "author": "Robert C. Martin",
-  "publisher": "Prentice Hall",
-  "isbn": "978-0132350884",
-  "publishedYear": 2008,
-  "language": "en",
+  "title": "The Pragmatic Programmer",
+  "author": "Andrew Hunt",
+  "isbn": "9780201616224",
+  "publishedYear": 1999,
   "category": "Programming",
-  "description": "Classic book about writing clean, maintainable code.",
-  "pageCount": 464,
-  "format": "Paperback",
-  "shelfLocation": "A-12",
-  "totalCopies": 3,
-  "availableCopies": 3
-}
-
-###
-
-POST {{BookService_HostAddress}}/api/books
-Content-Type: application/json
-
-{
-  "title": "",
-  "author": "",
-  "isbn": "bad",
-  "publishedYear": 1200,
-  "totalCopies": 0,
+  "totalCopies": 2,
   "availableCopies": 2
 }
+
+### CSV import
+POST {{BookService_HostAddress}}/api/books/import/csv
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="books.csv"
+Content-Type: text/csv
+
+Title,Author,Isbn,Category,TotalCopies,InventoryNumber,Barcode
+Refactoring,Martin Fowler,9780201485677,Programming,2,INV-REF-001,BC-REF-001
+--boundary--
+
+### XML import
+POST {{BookService_HostAddress}}/api/books/import/xml
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="books.xml"
+Content-Type: application/xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<books>
+  <book>
+    <title>Working Effectively with Legacy Code</title>
+    <author>Michael Feathers</author>
+    <isbn>9780131177055</isbn>
+    <publishedYear>2004</publishedYear>
+    <category>Programming</category>
+    <totalCopies>1</totalCopies>
+    <inventoryNumber>INV-LEG-001</inventoryNumber>
+    <barcode>BC-LEG-001</barcode>
+  </book>
+</books>
+--boundary--
+
+### Categories
+GET {{BookService_HostAddress}}/api/categories?page=1&pageSize=20&sortBy=name&isActive=true
+Accept: application/json
+
+###
+
+POST {{BookService_HostAddress}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "Programming",
+  "description": "Software development and programming books",
+  "color": "#2563EB",
+  "isActive": true
+}
+
+###
+
+GET {{BookService_HostAddress}}/health
+
