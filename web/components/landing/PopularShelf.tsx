@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRight, Search } from "lucide-react";
 import type { CarouselBook } from "@/lib/types";
 
 type PopularShelfProps = {
@@ -29,17 +30,7 @@ export function PopularShelf({ books }: PopularShelfProps) {
             action="/books"
             className="flex items-center gap-3 rounded-full border border-rule bg-paper-deep/60 px-4 py-3"
           >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4 shrink-0 text-muted"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              aria-hidden
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="M20 20l-3.5-3.5" strokeLinecap="round" />
-            </svg>
+            <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.8} aria-hidden />
             <input
               name="q"
               placeholder="Hľadaj názov, autora, vydanie…"
@@ -54,7 +45,7 @@ export function PopularShelf({ books }: PopularShelfProps) {
             className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm text-paper transition hover:bg-accent"
           >
             Začať prehliadanie
-            <span aria-hidden>↗</span>
+            <ArrowUpRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
           </Link>
           <Link
             href="#ako-pouzivat"

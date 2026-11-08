@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
+import {
+  ArrowUpRight,
+  BookMarked,
+  ExternalLink,
+  Layers,
+  Users,
+} from "lucide-react";
 
 const explore = [
-  { href: "/books", label: "Knihy" },
-  { href: "/authors", label: "Autori" },
-  { href: "/categories", label: "Kategórie" },
+  { href: "/books", label: "Knihy", Icon: BookMarked },
+  { href: "/authors", label: "Autori", Icon: Users },
+  { href: "/categories", label: "Kategórie", Icon: Layers },
 ] as const;
 
 const stack = [
@@ -24,7 +31,7 @@ export async function SiteFooter() {
   const year = await getCurrentYear();
 
   return (
-    <footer className="relative z-10 border-t border-rule/80 bg-ink text-paper">
+    <footer className="relative z-10 mt-auto border-t border-rule/80 bg-ink text-paper">
       <div className="mx-auto grid w-full max-w-6xl gap-12 px-5 py-14 md:grid-cols-[1.4fr_1fr_1fr] md:px-8 md:py-16">
         <div>
           <p className="font-display text-[13px] tracking-[0.22em] uppercase">
@@ -39,7 +46,7 @@ export async function SiteFooter() {
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-paper px-5 py-2.5 text-sm text-ink transition hover:bg-accent hover:text-paper"
           >
             Začať čítať
-            <span aria-hidden>↗</span>
+            <ArrowUpRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
           </Link>
         </div>
 
@@ -52,14 +59,18 @@ export async function SiteFooter() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="text-sm text-paper/75 transition hover:text-paper"
+                  className="inline-flex items-center gap-2 text-sm text-paper/75 transition hover:text-paper"
                 >
+                  <item.Icon className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
                   {item.label}
                 </Link>
               </li>
             ))}
             <li>
-              <a href="#ako-pouzivat" className="text-sm text-paper/75 transition hover:text-paper">
+              <a
+                href="#ako-pouzivat"
+                className="text-sm text-paper/75 transition hover:text-paper"
+              >
                 Ako to používať
               </a>
             </li>
@@ -77,9 +88,10 @@ export async function SiteFooter() {
                   href={item.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-sm text-paper/75 transition hover:text-paper"
+                  className="inline-flex items-center gap-2 text-sm text-paper/75 transition hover:text-paper"
                 >
                   {item.label}
+                  <ExternalLink className="h-3 w-3 opacity-70" strokeWidth={1.8} aria-hidden />
                 </a>
               </li>
             ))}

@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SiteFooter } from "@/components/landing/SiteFooter";
-import { SiteHeader } from "@/components/landing/SiteHeader";
+import { ArrowLeft } from "lucide-react";
 import { fetchBookDetail } from "@/lib/books";
 
 type BookDetailPageProps = {
@@ -91,13 +90,16 @@ async function BookDetailContent({ params }: BookDetailPageProps) {
 
 export default function BookDetailPage({ params }: BookDetailPageProps) {
   return (
-    <main className="relative flex min-h-full flex-1 flex-col bg-paper">
+    <main className="relative flex flex-1 flex-col bg-paper">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_30%_0%,rgba(166,139,103,0.14),transparent_50%)]" />
-      <SiteHeader />
 
       <article className="relative z-10 mx-auto w-full max-w-4xl flex-1 px-5 pb-16 pt-4 md:px-8">
-        <Link href="/" className="text-sm text-muted transition hover:text-accent">
-          ← Späť na landing
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-muted transition hover:text-accent"
+        >
+          <ArrowLeft className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+          Späť na landing
         </Link>
 
         <Suspense
@@ -106,7 +108,6 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
           <BookDetailContent params={params} />
         </Suspense>
       </article>
-      <SiteFooter />
     </main>
   );
 }

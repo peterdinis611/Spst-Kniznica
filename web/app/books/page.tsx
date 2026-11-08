@@ -1,7 +1,5 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { SiteFooter } from "@/components/landing/SiteFooter";
-import { SiteHeader } from "@/components/landing/SiteHeader";
 import { apiGet } from "@/lib/api";
 import { DEMO_BOOKS } from "@/lib/books";
 import type { BookListItem, PagedResult } from "@/lib/types";
@@ -71,8 +69,7 @@ async function BooksList({
 
 export default function BooksPage({ searchParams }: BooksPageProps) {
   return (
-    <main className="relative flex min-h-full flex-1 flex-col bg-paper">
-      <SiteHeader />
+    <main className="relative flex flex-1 flex-col bg-paper">
       <div className="mx-auto w-full max-w-5xl flex-1 px-5 pb-16 pt-4 md:px-8">
         <p className="text-xs tracking-[0.2em] text-accent uppercase">Katalóg</p>
         <h1 className="mt-3 font-display text-5xl text-ink">Knihy</h1>
@@ -86,7 +83,6 @@ export default function BooksPage({ searchParams }: BooksPageProps) {
           <BooksList searchParams={searchParams} />
         </Suspense>
       </div>
-      <SiteFooter />
     </main>
   );
 }

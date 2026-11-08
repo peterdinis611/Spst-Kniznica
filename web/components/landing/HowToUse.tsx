@@ -1,27 +1,45 @@
 import Link from "next/link";
+import {
+  ArrowUpRight,
+  BookOpenCheck,
+  ExternalLink,
+  LibraryBig,
+  MoveHorizontal,
+  Server,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const steps = [
+const steps: ReadonlyArray<{
+  n: string;
+  title: string;
+  body: string;
+  Icon: LucideIcon;
+}> = [
   {
     n: "01",
     title: "Prehliadaj karusel",
     body: "Na landingu ťahaj 3D knižný rad. Stredná kniha je aktívna — bočné klikni, aby sa dostali dopredu.",
+    Icon: MoveHorizontal,
   },
   {
     n: "02",
     title: "Otvor detail",
     body: "Klik na strednú obálku načíta stránku knihy s autorom, kategóriou a exemplármi z BookService.",
+    Icon: BookOpenCheck,
   },
   {
     n: "03",
     title: "Choď do katalógu",
     body: "Sekcie Knihy, Autori a Kategórie vedú cez Gateway. Jedna kniha = jeden autor a jedna kategória.",
+    Icon: LibraryBig,
   },
   {
     n: "04",
     title: "Použi API",
     body: "Swagger na porte 5200 spája mikroslužby. Redis cache a Kafka eventy držia katalóg v synchróne.",
+    Icon: Server,
   },
-] as const;
+];
 
 export function HowToUse() {
   return (
@@ -55,9 +73,14 @@ export function HowToUse() {
                 index >= 2 ? "md:border-t md:border-rule/80" : ""
               }`}
             >
-              <p className="font-display text-sm tracking-[0.18em] text-accent">
-                {step.n}
-              </p>
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full border border-accent/35 bg-paper text-accent">
+                  <step.Icon className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+                </span>
+                <p className="font-display text-sm tracking-[0.18em] text-accent">
+                  {step.n}
+                </p>
+              </div>
               <h3 className="mt-3 font-display text-2xl text-ink">{step.title}</h3>
               <p className="mt-3 max-w-md text-sm leading-relaxed text-muted">
                 {step.body}
@@ -69,17 +92,19 @@ export function HowToUse() {
         <div className="mt-12 flex flex-wrap items-center gap-4">
           <Link
             href="/books"
-            className="rounded-full bg-accent px-6 py-3 text-sm text-paper transition hover:bg-accent-deep"
+            className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm text-paper transition hover:bg-accent-deep"
           >
             Otvoriť katalóg
+            <ArrowUpRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
           </Link>
           <a
             href="http://localhost:5200/swagger"
             target="_blank"
             rel="noreferrer"
-            className="rounded-full border border-rule px-6 py-3 text-sm text-ink transition hover:border-ink"
+            className="inline-flex items-center gap-2 rounded-full border border-rule px-6 py-3 text-sm text-ink transition hover:border-ink"
           >
             Gateway Swagger
+            <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
           </a>
         </div>
       </div>

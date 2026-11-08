@@ -1,16 +1,14 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { Search } from "lucide-react";
 import { LandingContent } from "@/components/landing/LandingContent";
 import { SiteFooter } from "@/components/landing/SiteFooter";
-import { SiteHeader } from "@/components/landing/SiteHeader";
 
 export default function HomePage() {
   return (
-    <main className="relative flex min-h-full flex-1 flex-col overflow-x-hidden bg-paper">
+    <main className="relative flex flex-1 flex-col overflow-x-hidden bg-paper">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[110vh] bg-[radial-gradient(ellipse_at_50%_0%,rgba(166,139,103,0.12),transparent_55%),radial-gradient(ellipse_at_80%_70%,rgba(47,74,60,0.06),transparent_45%)]" />
       <div className="paper-grain pointer-events-none absolute inset-x-0 top-0 h-[110vh] opacity-40" />
-
-      <SiteHeader />
 
       <section className="relative z-10 mx-auto flex w-full max-w-5xl flex-col px-5 pb-6 pt-2 md:px-8 md:pt-4">
         <div className="mx-auto max-w-3xl text-center">
@@ -25,8 +23,9 @@ export default function HomePage() {
           <div className="reveal reveal-delay-2 mt-6 flex justify-center">
             <Link
               href="/books"
-              className="inline-flex min-w-[10rem] items-center justify-center rounded-full bg-accent px-10 py-3 text-sm tracking-[0.04em] text-paper shadow-[0_12px_40px_rgba(166,139,103,0.35)] transition hover:-translate-y-0.5 hover:bg-accent-deep"
+              className="inline-flex min-w-[10rem] items-center justify-center gap-2 rounded-full bg-accent px-10 py-3 text-sm tracking-[0.04em] text-paper shadow-[0_12px_40px_rgba(166,139,103,0.35)] transition hover:-translate-y-0.5 hover:bg-accent-deep"
             >
+              <Search className="h-4 w-4" strokeWidth={1.8} aria-hidden />
               Hľadať
             </Link>
           </div>
@@ -43,7 +42,15 @@ export default function HomePage() {
         <LandingContent />
       </Suspense>
 
-      <SiteFooter />
+      <Suspense
+        fallback={
+          <footer className="mt-auto border-t border-rule/80 bg-ink px-5 py-10 text-paper/45 md:px-8">
+            <p className="mx-auto max-w-6xl text-xs">SPST Knižnica</p>
+          </footer>
+        }
+      >
+        <SiteFooter />
+      </Suspense>
     </main>
   );
 }

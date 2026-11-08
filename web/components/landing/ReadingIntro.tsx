@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRight, BookOpen, Radio, Users } from "lucide-react";
 
 export function ReadingIntro() {
   return (
@@ -21,12 +22,13 @@ export function ReadingIntro() {
               className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm text-paper transition hover:bg-accent"
             >
               Začať čítať
-              <span aria-hidden>↗</span>
+              <ArrowUpRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
             </Link>
             <Link
               href="/authors"
-              className="rounded-full border border-rule px-6 py-3 text-sm text-ink transition hover:border-accent"
+              className="inline-flex items-center gap-2 rounded-full border border-rule px-6 py-3 text-sm text-ink transition hover:border-accent"
             >
+              <Users className="h-4 w-4" strokeWidth={1.8} aria-hidden />
               Prehliadať autorov
             </Link>
           </div>
@@ -40,7 +42,8 @@ export function ReadingIntro() {
           <div className="relative overflow-hidden rounded-[1.5rem] border border-rule/80 bg-paper-deep shadow-[0_30px_80px_rgba(26,23,20,0.12)]">
             <div className="grid grid-cols-2 gap-0">
               <div className="border-r border-rule/70 bg-[#f3ebe0] p-5 md:p-6">
-                <p className="font-display text-xs tracking-[0.16em] text-muted uppercase">
+                <p className="inline-flex items-center gap-2 font-display text-xs tracking-[0.16em] text-muted uppercase">
+                  <BookOpen className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
                   Kapitola
                 </p>
                 <p className="mt-4 font-display text-2xl leading-snug text-ink">
@@ -52,7 +55,8 @@ export function ReadingIntro() {
                 </p>
               </div>
               <div className="bg-[#ebe2d4] p-5 md:p-6">
-                <p className="font-display text-xs tracking-[0.16em] text-muted uppercase">
+                <p className="inline-flex items-center gap-2 font-display text-xs tracking-[0.16em] text-muted uppercase">
+                  <Radio className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
                   Stav
                 </p>
                 <ul className="mt-4 space-y-3 text-sm text-ink/80">
