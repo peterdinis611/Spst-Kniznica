@@ -15,6 +15,7 @@ public static class BookSeed
             return;
         }
 
+        Console.WriteLine("[BookSeed] Seeding mock books…");
         var now = DateTimeOffset.UtcNow;
 
         var books = new List<Book>
@@ -227,6 +228,7 @@ public static class BookSeed
 
         db.Books.AddRange(books);
         await db.SaveChangesAsync(cancellationToken);
+        Console.WriteLine("[BookSeed] Seeded {0} books.", await db.Books.CountAsync(cancellationToken));
     }
 
     private static Book CreateBook(

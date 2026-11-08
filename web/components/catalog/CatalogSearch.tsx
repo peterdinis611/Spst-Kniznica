@@ -6,7 +6,11 @@ import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MOCK_CATEGORIES } from "@/lib/catalog-mock";
+
+type CatalogSearchCategory = {
+  id: string;
+  name: string;
+};
 
 type CatalogSearchProps = {
   /** Base path for query sync (defaults to current pathname) */
@@ -15,8 +19,8 @@ type CatalogSearchProps = {
   defaultCategory?: string;
   placeholder?: string;
   showCategory?: boolean;
+  categories?: CatalogSearchCategory[];
   hiddenFields?: Record<string, string>;
-  /** Live fuse filter callback (frontend search) */
   onQueryChange?: (query: string) => void;
   debounceMs?: number;
 };
@@ -27,6 +31,7 @@ export function CatalogSearch({
   defaultCategory = "",
   placeholder = "Názov, autor alebo téma…",
   showCategory = true,
+  categories = [],
   hiddenFields,
   onQueryChange,
   debounceMs = 180,
@@ -157,7 +162,7 @@ export function CatalogSearch({
             className="border-rule bg-paper-deep h-12 w-full rounded-full border px-4 text-sm outline-none focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-accent/60 dark:border-white/15"
           >
             <option value="">Všetky kategórie</option>
-            {MOCK_CATEGORIES.map((item) => (
+            {categories.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
               </option>

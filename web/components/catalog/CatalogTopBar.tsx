@@ -10,6 +10,7 @@ type CatalogTopBarProps = {
   placeholder?: string;
   showSearch?: boolean;
   showCategorySelect?: boolean;
+  categories?: Array<{ id: string; name: string }>;
   hiddenFields?: Record<string, string>;
   onQueryChange?: (query: string) => void;
 };
@@ -24,6 +25,7 @@ export function CatalogTopBar({
   placeholder,
   showSearch = true,
   showCategorySelect = true,
+  categories,
   hiddenFields,
   onQueryChange,
 }: CatalogTopBarProps) {
@@ -48,6 +50,7 @@ export function CatalogTopBar({
             defaultCategory={defaultCategory}
             placeholder={placeholder}
             showCategory={showCategorySelect}
+            categories={categories}
             hiddenFields={hiddenFields}
             onQueryChange={onQueryChange}
           />

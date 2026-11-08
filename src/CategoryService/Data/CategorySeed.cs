@@ -15,6 +15,7 @@ public static class CategorySeed
             return;
         }
 
+        Console.WriteLine("[CategorySeed] Seeding mock categories…");
         var now = DateTimeOffset.UtcNow;
 
         db.Categories.AddRange(
@@ -80,5 +81,6 @@ public static class CategorySeed
             });
 
         await db.SaveChangesAsync(cancellationToken);
+        Console.WriteLine("[CategorySeed] Seeded {0} categories.", await db.Categories.CountAsync(cancellationToken));
     }
 }

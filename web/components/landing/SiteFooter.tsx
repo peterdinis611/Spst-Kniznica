@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
-import { MOCK_BOOKS } from "@/lib/catalog-mock";
+import { searchBooksAction } from "@/lib/actions/books";
 
 const nav = [
   { href: "/", label: "Domov" },
@@ -17,7 +17,8 @@ async function getCurrentYear() {
 
 export async function SiteFooter() {
   const year = await getCurrentYear();
-  const latest = MOCK_BOOKS.slice(0, 3);
+  const booksResult = await searchBooksAction({ page: 1, pageSize: 3 });
+  const latest = booksResult?.data?.items ?? [];
 
   return (
     <footer className="relative z-10 mt-auto border-t border-rule bg-paper">

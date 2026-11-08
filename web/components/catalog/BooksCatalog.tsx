@@ -8,14 +8,26 @@ import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
+import { useDebouncedCatalogAction } from "@/hooks/use-debounced-catalog-action";
+import {
+  searchBooksAction,
+  type SearchBooksResult,
+} from "@/lib/actions/books";
+import type { CatalogBook, CatalogCategory } from "@/lib/catalog-mappers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { MOCK_CATEGORIES } from "@/lib/catalog-mock";
-import { searchBooks } from "@/lib/catalog-search";
 import { cn } from "@/lib/utils";
 
-export function BooksCatalog() {
+type BooksCatalogProps = {
+  initialBooks: CatalogBook[];
+  initialCategories: CatalogCategory[];
+};
+
+export function BooksCatalog({
+  initialBooks,
+  initialCategories,
+}: BooksCatalogProps) {
   const searchParams = useSearchParams();
   const urlQuery = searchParams.get("q") ?? "";
   const category = searchParams.get("category") ?? "";
@@ -25,12 +37,23 @@ export function BooksCatalog() {
     setLiveQuery(urlQuery);
   }, [urlQuery]);
 
-  const query = liveQuery;
-  const results = useMemo(
-    () => searchBooks(query, category || undefined),
-    [query, category],
+  const input = useMemo(
+    () => ({
+      search: liveQuery.trim() || undefined,
+      categoryId: category || undefined,
+      page: 1,
+      pageSize: 50,
+    }),
+    [liveQuery, category],
   );
-  const activeCategory = MOCK_CATEGORIES.find((item) => item.id === category);
+
+  const { data, isPending } = useDebouncedCatalogAction<
+    typeof input,
+    SearchBooksResult
+  >(searchBooksAction, input);
+
+  const results = data?.items ?? initialBooks;
+  const activeCategory = initialCategories.find((item) => item.id === category);
 
   return (
     <>
@@ -40,26 +63,28 @@ export function BooksCatalog() {
 
       <CatalogTopBar
         title="Knižný fond"
-        lead="Fuzzy hľadanie cez fuse.js — výsledky sa filtrujú hneď pri písaní."
+        lead="Nájdi titul podľa názvu alebo autora. Kategórie filtruj chipmi pod vyhľadávaním."
         defaultQuery={urlQuery}
         defaultCategory={category}
         showCategorySelect={false}
+        categories={initialCategories}
         onQueryChange={setLiveQuery}
       />
 
       <Separator className="mt-10 sm:mt-12" />
 
       <div className="space-y-5 pt-10 sm:pt-12">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
             {activeCategory ? activeCategory.name : "Celý fond"}
-            {query.trim() ? (
+            {liveQuery.trim() ? (
               <>
                 {" "}
                 · výsledky pre „
-                <span className="text-ink">{query.trim()}</span>“
+                <span className="text-ink">{liveQuery.trim()}</span>“
               </>
             ) : null}
+            {isPending ? <span className="ml-2 text-xs">· hľadám…</span> : null}
           </p>
           <Badge
             variant="secondary"
@@ -85,8 +110,8 @@ export function BooksCatalog() {
             render={
               <Link
                 href={
-                  query.trim()
-                    ? `/books?q=${encodeURIComponent(query.trim())}`
+                  liveQuery.trim()
+                    ? `/books?q=${encodeURIComponent(liveQuery.trim())}`
                     : "/books"
                 }
               />
@@ -94,10 +119,10 @@ export function BooksCatalog() {
           >
             Všetky
           </Button>
-          {MOCK_CATEGORIES.map((item) => {
+          {initialCategories.map((item) => {
             const active = category === item.id;
-            const href = query.trim()
-              ? `/books?category=${item.id}&q=${encodeURIComponent(query.trim())}`
+            const href = liveQuery.trim()
+              ? `/books?category=${item.id}&q=${encodeURIComponent(liveQuery.trim())}`
               : `/books?category=${item.id}`;
             return (
               <Button

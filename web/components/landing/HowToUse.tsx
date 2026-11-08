@@ -25,7 +25,7 @@ const steps: ReadonlyArray<{
   {
     n: "02",
     title: "Otvor detail",
-    body: "Klik na strednú obálku načíta stránku knihy s autorom, kategóriou a exemplármi z BookService.",
+    body: "Klik na strednú obálku načíta stránku knihy s autorom, kategóriou a exemplármi z katalógu.",
     Icon: BookOpenCheck,
   },
   {

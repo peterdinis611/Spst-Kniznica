@@ -30,6 +30,27 @@ export type BookDetail = BookListItem & {
   }>;
 };
 
+export type AuthorDto = {
+  id: string;
+  name: string;
+  biography?: string | null;
+  nationality?: string | null;
+  birthYear?: number | null;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type CategoryDto = {
+  id: string;
+  name: string;
+  description?: string | null;
+  color?: string | null;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type PagedResult<T> = {
   items: T[];
   page: number;
@@ -55,5 +76,4 @@ export type CarouselBook = {
   accent: string;
   secondary: string;
   motif?: CoverMotif;
-  isDemo?: boolean;
 };

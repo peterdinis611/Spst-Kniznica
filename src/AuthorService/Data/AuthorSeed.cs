@@ -15,6 +15,7 @@ public static class AuthorSeed
             return;
         }
 
+        Console.WriteLine("[AuthorSeed] Seeding mock authors…");
         var now = DateTimeOffset.UtcNow;
 
         db.Authors.AddRange(
@@ -152,5 +153,6 @@ public static class AuthorSeed
             });
 
         await db.SaveChangesAsync(cancellationToken);
+        Console.WriteLine("[AuthorSeed] Seeded {0} authors.", await db.Authors.CountAsync(cancellationToken));
     }
 }

@@ -1,15 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { FlatCover } from "@/components/landing/FlatCover";
-import { MOCK_BOOKS, MOCK_CATEGORIES } from "@/lib/catalog-mock";
+import type { CatalogBook, CatalogCategory } from "@/lib/catalog-mappers";
 
-export function BrowseGenres() {
-  const [active, setActive] = useState(MOCK_CATEGORIES[0]?.id ?? "");
-  const matched = MOCK_BOOKS.filter((book) => book.categoryId === active);
-  const fillers = MOCK_BOOKS.filter((book) => book.categoryId !== active);
-  const grid = [...matched, ...fillers].slice(0, 4);
+type BrowseGenresProps = {
+  categories: CatalogCategory[];
+  books: CatalogBook[];
+};
+
+export function BrowseGenres({ categories, books }: BrowseGenresProps) {
+  const [active, setActive] = useState(categories[0]?.id ?? "");
+  const grid = useMemo(() => {
+    const matched = books.filter((book) => book.categoryId === active);
+    const fillers = books.filter((book) => book.categoryId !== active);
+    return [...matched, ...fillers].slice(0, 4);
+  }, [active, books]);
+
+  if (categories.length === 0) {
+    return null;
+  }
 
   return (
     <section className="relative z-10 border-t border-rule bg-paper px-4 py-14 sm:px-6 md:px-8 md:py-20">
@@ -21,7 +32,7 @@ export function BrowseGenres() {
             žánre
           </h2>
           <ul className="mt-8 space-y-1">
-            {MOCK_CATEGORIES.map((category) => {
+            {categories.map((category) => {
               const selected = category.id === active;
               return (
                 <li key={category.id}>

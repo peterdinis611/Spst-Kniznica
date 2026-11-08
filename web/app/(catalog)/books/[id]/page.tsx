@@ -15,8 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { MOCK_BOOKS } from "@/lib/catalog-mock";
-import { fetchBookDetail } from "@/lib/books";
+import { getBookAction } from "@/lib/actions/books";
 
 type BookDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -32,29 +31,8 @@ async function BookDetailContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const mock = MOCK_BOOKS.find((book) => book.id === id);
-  const apiBook = mock ? null : await fetchBookDetail(id);
-  const book = mock
-    ? {
-        id: mock.id,
-        title: mock.title,
-        author: mock.author,
-        categoryName: mock.categoryName,
-        publishedYear: mock.year,
-        availableCopies: mock.availableCopies,
-        totalCopies: mock.totalCopies,
-        description:
-          "Mock detail pre návrh katalógu. Po napojení API sa zobrazia skutočné dáta z BookService.",
-        accent: mock.accent,
-        secondary: mock.secondary,
-      }
-    : apiBook
-      ? {
-          ...apiBook,
-          accent: "#1F4E8C",
-          secondary: "#F6E27A",
-        }
-      : null;
+  const result = await getBookAction({ id });
+  const book = result?.data?.book;
 
   if (!book) {
     notFound();
@@ -102,14 +80,14 @@ async function BookDetailContent({
           </p>
 
           <div className="mt-8 grid max-w-xl gap-4 sm:grid-cols-2">
-            {book.publishedYear ? (
+            {book.year ? (
               <Card size="sm" className="rounded-none ring-rule dark:ring-white/10">
                 <CardHeader className="pb-0">
                   <CardDescription className="text-[11px] tracking-[0.16em] uppercase">
                     Rok
                   </CardDescription>
                   <CardTitle className="font-display text-2xl text-ink">
-                    {book.publishedYear}
+                    {book.year}
                   </CardTitle>
                 </CardHeader>
               </Card>

@@ -13,10 +13,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { MockBook } from "@/lib/catalog-mock";
+import type { CatalogBook } from "@/lib/catalog-mappers";
 
 type BookCardProps = {
-  book: MockBook;
+  book: CatalogBook;
   index?: number;
 };
 
@@ -72,7 +72,7 @@ export function BookCard({ book, index = 0 }: BookCardProps) {
 
           <CardFooter className="mt-auto justify-between gap-2 border-t-0 bg-transparent px-4 pt-3 pb-4 text-xs sm:px-5 sm:pb-5">
             <span className="truncate tracking-[0.1em] text-muted-foreground uppercase">
-              {book.categoryName}
+              {book.categoryName ?? "Katalóg"}
             </span>
             <span className="shrink-0 font-medium tabular-nums text-ink">
               {book.availableCopies}/{book.totalCopies} ks
