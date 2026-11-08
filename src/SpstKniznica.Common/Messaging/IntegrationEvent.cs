@@ -55,4 +55,24 @@ public sealed record AuthorUpdatedEvent(
 
 public sealed record AuthorDeletedEvent(Guid AuthorId) : IntegrationEvent;
 
+public sealed record BookingCreatedEvent(
+    Guid BookingId,
+    Guid BookId,
+    Guid? BookCopyId,
+    string BorrowerName,
+    string BorrowerEmail,
+    string Status,
+    DateTimeOffset DueDate) : IntegrationEvent;
+
+public sealed record BookingUpdatedEvent(
+    Guid BookingId,
+    Guid BookId,
+    Guid? BookCopyId,
+    string BorrowerName,
+    string BorrowerEmail,
+    string Status,
+    DateTimeOffset DueDate) : IntegrationEvent;
+
+public sealed record BookingDeletedEvent(Guid BookingId, Guid BookId) : IntegrationEvent;
+
 public sealed record PingEvent(string Source, string Message) : IntegrationEvent;

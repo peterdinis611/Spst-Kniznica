@@ -37,6 +37,7 @@ public class GatewayController(
                 books = configuration["Services:BookService"],
                 categories = configuration["Services:CategoryService"],
                 authors = configuration["Services:AuthorService"],
+                bookings = configuration["Services:BookingService"],
                 messaging = configuration["Services:MessagingService"],
                 cache = configuration["Services:CacheService"]
             }

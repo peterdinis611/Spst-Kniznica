@@ -1,0 +1,23 @@
+@BookingService_HostAddress = http://localhost:5208
+
+GET {{BookingService_HostAddress}}/api/bookings?page=1&pageSize=20&sortBy=dueDate&sortDir=asc&status=Active
+Accept: application/json
+
+
+###
+
+POST {{BookingService_HostAddress}}/api/bookings
+Content-Type: application/json
+
+{
+  "bookId": "c3333333-3333-4333-8333-333333333010",
+  "borrowerName": "Test Student",
+  "borrowerEmail": "student@spst.sk",
+  "status": "Reserved",
+  "dueDate": "2026-12-01T00:00:00Z",
+  "notes": "Test reservation"
+}
+
+###
+
+GET {{BookingService_HostAddress}}/health
