@@ -3,12 +3,15 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { LandingContent } from "@/components/landing/LandingContent";
 import { SiteFooter } from "@/components/landing/SiteFooter";
+import { SiteHeader } from "@/components/landing/SiteHeader";
 
 export default function HomePage() {
   return (
-    <main className="relative flex flex-1 flex-col overflow-x-hidden bg-paper">
+    <main className="relative flex min-h-full flex-1 flex-col overflow-x-hidden bg-paper">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[110vh] bg-[radial-gradient(ellipse_at_50%_0%,rgba(166,139,103,0.12),transparent_55%),radial-gradient(ellipse_at_80%_70%,rgba(47,74,60,0.06),transparent_45%)]" />
       <div className="paper-grain pointer-events-none absolute inset-x-0 top-0 h-[110vh] opacity-40" />
+
+      <SiteHeader />
 
       <section className="relative z-10 mx-auto flex w-full max-w-5xl flex-col px-5 pb-6 pt-2 md:px-8 md:pt-4">
         <div className="mx-auto max-w-3xl text-center">
