@@ -1,8 +1,9 @@
 @BookService_HostAddress = http://localhost:5203
 
-### Paged + sorted list
-GET {{BookService_HostAddress}}/api/books?page=1&pageSize=10&sortBy=title&sortDir=asc
+### Paged + search + sorted list
+GET {{BookService_HostAddress}}/api/books?page=1&pageSize=10&sortBy=title&sortDir=asc&search=clean&availableOnly=true
 Accept: application/json
+
 
 ###
 

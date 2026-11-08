@@ -1,0 +1,41 @@
+@MessagingService_HostAddress = http://localhost:5205
+
+GET {{MessagingService_HostAddress}}/api/messaging/status
+Accept: application/json
+
+###
+
+POST {{MessagingService_HostAddress}}/api/messaging/publish
+Content-Type: application/json
+
+{
+  "source": "http-client",
+  "message": "hello from kafka+rabbit",
+  "target": "all"
+}
+
+###
+
+POST {{MessagingService_HostAddress}}/api/messaging/publish
+Content-Type: application/json
+
+{
+  "source": "http-client",
+  "message": "kafka only",
+  "target": "kafka"
+}
+
+###
+
+POST {{MessagingService_HostAddress}}/api/messaging/publish
+Content-Type: application/json
+
+{
+  "source": "http-client",
+  "message": "rabbit only",
+  "target": "rabbitmq"
+}
+
+###
+
+GET {{MessagingService_HostAddress}}/health

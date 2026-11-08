@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CategoryService", "Category
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpstKniznica.Common", "SpstKniznica.Common\SpstKniznica.Common.csproj", "{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessagingService", "MessagingService\MessagingService.csproj", "{DEF71BE5-D654-4301-96B8-9391FB07EC90}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Release|x64.Build.0 = Release|Any CPU
 		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Release|x86.ActiveCfg = Release|Any CPU
 		{56D87A26-3ECA-4F5D-AB02-FC7891ACD509}.Release|x86.Build.0 = Release|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Debug|x64.Build.0 = Debug|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Debug|x86.Build.0 = Debug|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Release|x64.ActiveCfg = Release|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Release|x64.Build.0 = Release|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Release|x86.ActiveCfg = Release|Any CPU
+		{DEF71BE5-D654-4301-96B8-9391FB07EC90}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

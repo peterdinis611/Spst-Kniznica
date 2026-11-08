@@ -1,11 +1,12 @@
 using BookService.DTOs;
 using BookService.Models;
+using SpstKniznica.Common.Pagination;
 
 namespace BookService.Interfaces;
 
 public interface IBookRepository
 {
-    Task<PagedResult<Book>> FindAsync(BookQueryFilter filter, CancellationToken cancellationToken = default);
+    Task<PagedResult<BookListItemDto>> FindAsync(BookQueryFilter filter, CancellationToken cancellationToken = default);
     Task<Book?> GetByIdAsync(Guid id, bool includeCopies = false, CancellationToken cancellationToken = default);
     Task AddAsync(Book book, CancellationToken cancellationToken = default);
     void Update(Book book);

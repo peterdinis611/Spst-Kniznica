@@ -1,6 +1,7 @@
 using CategoryService.DTOs;
 using CategoryService.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using SpstKniznica.Common.Pagination;
 
 namespace CategoryService.Controllers;
 
@@ -17,10 +18,11 @@ public class CategoriesController(ICategoryService categories, ILogger<Categorie
         CancellationToken cancellationToken)
     {
         logger.LogInformation(
-            "Searching categories. Page={Page}, PageSize={PageSize}, Search={Search}",
+            "Searching categories. Page={Page}, PageSize={PageSize}, Search={Search}, SortBy={SortBy}",
             filter.Page,
             filter.PageSize,
-            filter.Search);
+            filter.Search,
+            filter.SortBy);
 
         var result = await categories.SearchAsync(filter, cancellationToken);
         return Ok(result);
@@ -31,8 +33,7 @@ public class CategoriesController(ICategoryService categories, ILogger<Categorie
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CategoryDto>> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var category = await categories.GetByIdAsync(id, cancellationToken);
-        return Ok(category);
+        return Ok(await categories.GetByIdAsync(id, cancellationToken));
     }
 
     [HttpPost]
@@ -57,8 +58,7 @@ public class CategoriesController(ICategoryService categories, ILogger<Categorie
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Updating category {CategoryId}", id);
-        var updated = await categories.UpdateAsync(id, request, cancellationToken);
-        return Ok(updated);
+        return Ok(await categories.UpdateAsync(id, request, cancellationToken));
     }
 
     [HttpDelete("{id:guid}")]

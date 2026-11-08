@@ -3,6 +3,8 @@ using CategoryService.Exceptions;
 using CategoryService.Interfaces;
 using CategoryService.Models;
 using FluentValidation;
+using SpstKniznica.Common.Pagination;
+using SpstKniznica.Common.Text;
 
 namespace CategoryService.Services;
 
@@ -24,25 +26,12 @@ public class CategoryAppService(
             filter.IsActive);
 
         var result = await unitOfWork.Categories.FindAsync(filter, cancellationToken);
-
-        return new PagedResult<CategoryDto>
-        {
-            Items = result.Items.Select(Map).ToList(),
-            Page = result.Page,
-            PageSize = result.PageSize,
-            TotalCount = result.TotalCount
-        };
+        return result.Map(Map);
     }
 
     public async Task<CategoryDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var category = await unitOfWork.Categories.GetByIdAsync(id, cancellationToken);
-        if (category is null)
-        {
-            logger.LogWarning("Category {CategoryId} was not found", id);
-            throw new NotFoundException($"Category '{id}' was not found.");
-        }
-
+        var category = await GetRequiredAsync(id, tracked: false, cancellationToken);
         return Map(category);
     }
 
@@ -50,25 +39,18 @@ public class CategoryAppService(
         CreateCategoryRequest request,
         CancellationToken cancellationToken = default)
     {
-        var validation = await createValidator.ValidateAsync(request, cancellationToken);
-        EnsureValid(validation);
+        EnsureValid(await createValidator.ValidateAsync(request, cancellationToken));
 
-        var name = request.Name.Trim();
-        if (await unitOfWork.Categories.NameExistsAsync(name, cancellationToken: cancellationToken))
-        {
-            throw new AppValidationException(new Dictionary<string, string[]>
-            {
-                ["Name"] = ["A category with this name already exists."]
-            });
-        }
+        var name = StringNormalize.Required(request.Name);
+        await EnsureUniqueNameAsync(name, null, cancellationToken);
 
         var now = DateTimeOffset.UtcNow;
         var category = new Category
         {
             Id = Guid.NewGuid(),
             Name = name,
-            Description = NormalizeOptional(request.Description),
-            Color = NormalizeOptional(request.Color),
+            Description = StringNormalize.Optional(request.Description),
+            Color = StringNormalize.Optional(request.Color),
             IsActive = request.IsActive,
             CreatedAt = now,
             UpdatedAt = now
@@ -88,28 +70,15 @@ public class CategoryAppService(
     {
         var context = new ValidationContext<UpdateCategoryRequest>(request);
         context.RootContextData["CategoryId"] = id;
-        var validation = await updateValidator.ValidateAsync(context, cancellationToken);
-        EnsureValid(validation);
+        EnsureValid(await updateValidator.ValidateAsync(context, cancellationToken));
 
-        var category = await unitOfWork.Categories.GetByIdAsync(id, cancellationToken);
-        if (category is null)
-        {
-            logger.LogWarning("Update failed. Category {CategoryId} was not found", id);
-            throw new NotFoundException($"Category '{id}' was not found.");
-        }
-
-        var name = request.Name.Trim();
-        if (await unitOfWork.Categories.NameExistsAsync(name, id, cancellationToken))
-        {
-            throw new AppValidationException(new Dictionary<string, string[]>
-            {
-                ["Name"] = ["A category with this name already exists."]
-            });
-        }
+        var category = await GetRequiredAsync(id, tracked: true, cancellationToken);
+        var name = StringNormalize.Required(request.Name);
+        await EnsureUniqueNameAsync(name, id, cancellationToken);
 
         category.Name = name;
-        category.Description = NormalizeOptional(request.Description);
-        category.Color = NormalizeOptional(request.Color);
+        category.Description = StringNormalize.Optional(request.Description);
+        category.Color = StringNormalize.Optional(request.Color);
         category.IsActive = request.IsActive;
         category.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -122,16 +91,36 @@ public class CategoryAppService(
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var category = await unitOfWork.Categories.GetByIdAsync(id, cancellationToken);
-        if (category is null)
-        {
-            logger.LogWarning("Delete failed. Category {CategoryId} was not found", id);
-            throw new NotFoundException($"Category '{id}' was not found.");
-        }
-
+        var category = await GetRequiredAsync(id, tracked: true, cancellationToken);
         unitOfWork.Categories.Remove(category);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Deleted category {CategoryId} named '{Name}'", id, category.Name);
+    }
+
+    private async Task<Category> GetRequiredAsync(Guid id, bool tracked, CancellationToken cancellationToken)
+    {
+        var category = tracked
+            ? await unitOfWork.Categories.GetTrackedByIdAsync(id, cancellationToken)
+            : await unitOfWork.Categories.GetByIdAsync(id, cancellationToken);
+
+        if (category is null)
+        {
+            logger.LogWarning("Category {CategoryId} was not found", id);
+            throw new NotFoundException($"Category '{id}' was not found.");
+        }
+
+        return category;
+    }
+
+    private async Task EnsureUniqueNameAsync(string name, Guid? excludeId, CancellationToken cancellationToken)
+    {
+        if (await unitOfWork.Categories.NameExistsAsync(name, excludeId, cancellationToken))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Name"] = ["A category with this name already exists."]
+            });
+        }
     }
 
     private static CategoryDto Map(Category category) => new()
@@ -144,9 +133,6 @@ public class CategoryAppService(
         CreatedAt = category.CreatedAt,
         UpdatedAt = category.UpdatedAt
     };
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void EnsureValid(FluentValidation.Results.ValidationResult validation)
     {

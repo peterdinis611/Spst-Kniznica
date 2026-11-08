@@ -1,7 +1,7 @@
 using BookService.DTOs;
 using BookService.Interfaces;
-using BookService.Models;
 using Microsoft.AspNetCore.Mvc;
+using SpstKniznica.Common.Pagination;
 
 namespace BookService.Controllers;
 
@@ -14,9 +14,9 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     /// Search books with filtering, sorting and pagination.
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(PagedResult<Book>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResult<BookListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PagedResult<Book>>> Get(
+    public async Task<ActionResult<PagedResult<BookListItemDto>>> Get(
         [FromQuery] BookQueryFilter filter,
         CancellationToken cancellationToken)
     {

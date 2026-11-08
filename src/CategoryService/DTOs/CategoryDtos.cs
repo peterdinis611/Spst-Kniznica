@@ -1,3 +1,5 @@
+using SpstKniznica.Common.Pagination;
+
 namespace CategoryService.DTOs;
 
 public class CategoryDto
@@ -11,7 +13,15 @@ public class CategoryDto
     public DateTimeOffset UpdatedAt { get; set; }
 }
 
-public class CreateCategoryRequest
+public interface ICategoryRequest
+{
+    string Name { get; }
+    string? Description { get; }
+    string? Color { get; }
+    bool IsActive { get; }
+}
+
+public class CreateCategoryRequest : ICategoryRequest
 {
     public required string Name { get; set; }
     public string? Description { get; set; }
@@ -19,7 +29,7 @@ public class CreateCategoryRequest
     public bool IsActive { get; set; } = true;
 }
 
-public class UpdateCategoryRequest
+public class UpdateCategoryRequest : ICategoryRequest
 {
     public required string Name { get; set; }
     public string? Description { get; set; }
@@ -27,24 +37,13 @@ public class UpdateCategoryRequest
     public bool IsActive { get; set; } = true;
 }
 
-public class CategoryQueryFilter
+public class CategoryQueryFilter : PagedQuery
 {
-    public string? Search { get; set; }
+    public CategoryQueryFilter()
+    {
+        SortBy = "name";
+    }
+
     public string? Name { get; set; }
     public bool? IsActive { get; set; }
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 20;
-    public string SortBy { get; set; } = "name";
-    public string SortDir { get; set; } = "asc";
-}
-
-public class PagedResult<T>
-{
-    public required IReadOnlyList<T> Items { get; init; }
-    public int Page { get; init; }
-    public int PageSize { get; init; }
-    public int TotalCount { get; init; }
-    public int TotalPages => PageSize <= 0 ? 0 : (int)Math.Ceiling(TotalCount / (double)PageSize);
-    public bool HasNextPage => Page < TotalPages;
-    public bool HasPreviousPage => Page > 1;
 }

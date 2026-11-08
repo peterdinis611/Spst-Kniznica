@@ -10,6 +10,7 @@ using ClosedXML.Excel;
 using CsvHelper;
 using CsvHelper.Configuration;
 using FluentValidation;
+using SpstKniznica.Common.Pagination;
 
 namespace BookService.Services;
 
@@ -19,19 +20,21 @@ public class BooksService(
     IValidator<UpdateBookRequest> updateValidator,
     ILogger<BooksService> logger) : IBooksService
 {
-    public async Task<PagedResult<Book>> SearchAsync(BookQueryFilter filter, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<BookListItemDto>> SearchAsync(
+        BookQueryFilter filter,
+        CancellationToken cancellationToken = default)
     {
         logger.LogDebug(
-            "Repository search started. Filters: Title={Title}, Author={Author}, Category={Category}, AvailableOnly={AvailableOnly}",
-            filter.Title,
-            filter.Author,
-            filter.Category,
-            filter.AvailableOnly);
+            "Searching books. Page={Page}, PageSize={PageSize}, Search={Search}, Category={Category}",
+            filter.Page,
+            filter.PageSize,
+            filter.Search,
+            filter.Category);
 
         var result = await unitOfWork.Books.FindAsync(filter, cancellationToken);
 
         logger.LogDebug(
-            "Repository search finished. TotalCount={TotalCount}, PageItems={PageItems}",
+            "Books search finished. TotalCount={TotalCount}, PageItems={PageItems}",
             result.TotalCount,
             result.Items.Count);
 

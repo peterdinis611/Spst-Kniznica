@@ -1,5 +1,6 @@
 using CategoryService.DTOs;
 using CategoryService.Models;
+using SpstKniznica.Common.Pagination;
 
 namespace CategoryService.Interfaces;
 
@@ -7,6 +8,7 @@ public interface ICategoryRepository
 {
     Task<PagedResult<Category>> FindAsync(CategoryQueryFilter filter, CancellationToken cancellationToken = default);
     Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Category?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task AddAsync(Category category, CancellationToken cancellationToken = default);
     void Update(Category category);
     void Remove(Category category);

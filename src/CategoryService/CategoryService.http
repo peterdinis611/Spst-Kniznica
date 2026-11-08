@@ -1,7 +1,8 @@
 @CategoryService_HostAddress = http://localhost:5204
 
-GET {{CategoryService_HostAddress}}/api/categories?page=1&pageSize=20&sortBy=name&isActive=true
+GET {{CategoryService_HostAddress}}/api/categories?page=1&pageSize=20&sortBy=name&sortDir=asc&search=prog&isActive=true
 Accept: application/json
+
 
 ###
 

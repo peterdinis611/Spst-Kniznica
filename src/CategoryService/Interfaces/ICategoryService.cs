@@ -1,4 +1,5 @@
 using CategoryService.DTOs;
+using SpstKniznica.Common.Pagination;
 
 namespace CategoryService.Interfaces;
 

@@ -5,58 +5,74 @@ using BookService.Exceptions;
 using BookService.Interfaces;
 using BookService.Models;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Pagination;
 
 namespace BookService.Repositories;
 
 public class BookRepository(BookDbContext db) : IBookRepository
 {
-    public async Task<PagedResult<Book>> FindAsync(
+    private static readonly IReadOnlyDictionary<string, Expression<Func<Book, object>>> SortMap =
+        new Dictionary<string, Expression<Func<Book, object>>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["title"] = b => b.Title,
+            ["author"] = b => b.Author,
+            ["publisher"] = b => b.Publisher ?? string.Empty,
+            ["publishedyear"] = b => b.PublishedYear ?? 0,
+            ["year"] = b => b.PublishedYear ?? 0,
+            ["category"] = b => b.Category ?? string.Empty,
+            ["createdat"] = b => b.CreatedAt,
+            ["updatedat"] = b => b.UpdatedAt,
+            ["totalcopies"] = b => b.TotalCopies,
+            ["availablecopies"] = b => b.AvailableCopies,
+            ["isbn"] = b => b.Isbn ?? string.Empty
+        };
+
+    public async Task<PagedResult<BookListItemDto>> FindAsync(
         BookQueryFilter filter,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
         ValidateFilter(filter);
+        filter.Normalize();
 
-        var query = db.Books.AsNoTracking().AsQueryable();
-        query = ApplyFilters(query, filter);
+        var query = ApplyFilters(db.Books.AsNoTracking(), filter)
+            .OrderByProperty(filter.SortBy, filter.IsDescending, SortMap, b => b.Title);
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        query = ApplySorting(query, filter.SortBy, filter.SortDir);
-
-        var page = Math.Max(filter.Page, 1);
-        var pageSize = Math.Clamp(filter.PageSize, 1, 100);
-
-        var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PagedResult<Book>
+        var projected = query.Select(b => new BookListItemDto
         {
-            Items = items,
-            Page = page,
-            PageSize = pageSize,
-            TotalCount = totalCount
-        };
+            Id = b.Id,
+            Title = b.Title,
+            Subtitle = b.Subtitle,
+            Author = b.Author,
+            Publisher = b.Publisher,
+            Isbn = b.Isbn,
+            PublishedYear = b.PublishedYear,
+            Language = b.Language,
+            Category = b.Category,
+            Format = b.Format,
+            ShelfLocation = b.ShelfLocation,
+            TotalCopies = b.TotalCopies,
+            AvailableCopies = b.AvailableCopies
+        });
+
+        return await projected.ToPagedResultAsync(filter, cancellationToken);
     }
 
     public Task<Book?> GetByIdAsync(Guid id, bool includeCopies = false, CancellationToken cancellationToken = default)
     {
         EnsureValidId(id);
 
-        IQueryable<Book> query = db.Books;
-        if (includeCopies)
-        {
-            query = query.Include(b => b.Copies);
-        }
+        IQueryable<Book> query = includeCopies
+            ? db.Books.Include(b => b.Copies).AsSplitQuery()
+            : db.Books.AsNoTracking();
 
         return query.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
     }
 
-    public async Task AddAsync(Book book, CancellationToken cancellationToken = default)
+    public Task AddAsync(Book book, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(book);
-        await db.Books.AddAsync(book, cancellationToken);
+        return db.Books.AddAsync(book, cancellationToken).AsTask();
     }
 
     public void Update(Book book)
@@ -227,30 +243,12 @@ public class BookRepository(BookDbContext db) : IBookRepository
         return query;
     }
 
-    private static IQueryable<Book> ApplySorting(IQueryable<Book> query, string? sortBy, string? sortDir)
-    {
-        var descending = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
-
-        Expression<Func<Book, object>> key = (sortBy ?? "title").Trim().ToLowerInvariant() switch
-        {
-            "author" => b => b.Author,
-            "publisher" => b => b.Publisher ?? string.Empty,
-            "publishedyear" or "year" => b => b.PublishedYear ?? 0,
-            "category" => b => b.Category ?? string.Empty,
-            "createdat" => b => b.CreatedAt,
-            "updatedat" => b => b.UpdatedAt,
-            "totalcopies" => b => b.TotalCopies,
-            "availablecopies" => b => b.AvailableCopies,
-            "isbn" => b => b.Isbn ?? string.Empty,
-            _ => b => b.Title
-        };
-
-        return descending ? query.OrderByDescending(key) : query.OrderBy(key);
-    }
-
     private static void ValidateFilter(BookQueryFilter filter)
     {
-        var errors = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        var errors = filter.Validate().ToDictionary(
+            pair => pair.Key,
+            pair => pair.Value.ToList(),
+            StringComparer.OrdinalIgnoreCase);
 
         void Add(string field, string message)
         {
@@ -261,16 +259,6 @@ public class BookRepository(BookDbContext db) : IBookRepository
             }
 
             list.Add(message);
-        }
-
-        if (filter.Page < 1)
-        {
-            Add(nameof(BookQueryFilter.Page), "Page must be greater than or equal to 1.");
-        }
-
-        if (filter.PageSize < 1 || filter.PageSize > 100)
-        {
-            Add(nameof(BookQueryFilter.PageSize), "PageSize must be between 1 and 100.");
         }
 
         if (filter.PublishedYearFrom.HasValue &&
@@ -323,9 +311,5 @@ public class BookRepository(BookDbContext db) : IBookRepository
     }
 
     private static bool IsValidIsbn(string value)
-    {
-        return System.Text.RegularExpressions.Regex.IsMatch(
-            value,
-            @"^(97[89]\d{10}|\d{9}[\dXx])$");
-    }
+        => System.Text.RegularExpressions.Regex.IsMatch(value, @"^(97[89]\d{10}|\d{9}[\dXx])$");
 }
