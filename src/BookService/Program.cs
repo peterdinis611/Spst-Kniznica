@@ -69,7 +69,8 @@ try
     {
         var db = scope.ServiceProvider.GetRequiredService<BookDbContext>();
         await db.Database.MigrateAsync();
-        Log.Information("Database migrations applied");
+        await BookSeed.EnsureSeededAsync(db);
+        Log.Information("Database migrations applied; seed checked");
     }
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();

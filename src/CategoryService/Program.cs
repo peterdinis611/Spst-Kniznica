@@ -53,7 +53,8 @@ try
     {
         var db = scope.ServiceProvider.GetRequiredService<CategoryDbContext>();
         await db.Database.MigrateAsync();
-        Log.Information("Database migrations applied");
+        await CategorySeed.EnsureSeededAsync(db);
+        Log.Information("Database migrations applied; seed checked");
     }
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();

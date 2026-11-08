@@ -1,4 +1,5 @@
 import { apiGet } from "./api";
+import { SEED_IDS } from "./catalog-mock";
 import type { BookDetail, BookListItem, CarouselBook, PagedResult } from "./types";
 
 const COVER_PALETTES = [
@@ -13,7 +14,7 @@ const COVER_PALETTES = [
 
 export const DEMO_BOOKS: CarouselBook[] = [
   {
-    id: "demo-fosters-oddities",
+    id: SEED_IDS.books.fostersOddities,
     title: "Foster's Oddities",
     author: "Allen P.",
     accent: "#7BA08A",
@@ -22,7 +23,7 @@ export const DEMO_BOOKS: CarouselBook[] = [
     isDemo: true,
   },
   {
-    id: "demo-sorrow-bliss",
+    id: SEED_IDS.books.sorrowBliss,
     title: "Sorrow and Bliss",
     author: "Meg Mason",
     accent: "#1F4E8C",
@@ -31,7 +32,7 @@ export const DEMO_BOOKS: CarouselBook[] = [
     isDemo: true,
   },
   {
-    id: "demo-available-dark",
+    id: SEED_IDS.books.availableDark,
     title: "Available Dark",
     author: "Elizabeth Hand",
     accent: "#0E1A24",
@@ -40,7 +41,7 @@ export const DEMO_BOOKS: CarouselBook[] = [
     isDemo: true,
   },
   {
-    id: "demo-pretty-people",
+    id: SEED_IDS.books.prettyPeople,
     title: "All the Pretty People",
     author: "Barbara Freethy",
     accent: "#1C6B7A",
@@ -49,7 +50,7 @@ export const DEMO_BOOKS: CarouselBook[] = [
     isDemo: true,
   },
   {
-    id: "demo-degrees",
+    id: SEED_IDS.books.degrees,
     title: "Degrees",
     author: "Mukerji",
     accent: "#3A1D22",
