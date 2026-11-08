@@ -186,23 +186,23 @@ export function BookCarousel({ books }: BookCarouselProps) {
     <div className="relative w-full">
       <p
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[8%] text-center font-display text-[clamp(2.8rem,12vw,7.5rem)] leading-none tracking-[0.04em] text-watermark/90 select-none"
+        className="pointer-events-none absolute inset-x-0 top-[8%] overflow-hidden px-2 text-center font-display text-[clamp(2rem,11vw,7.5rem)] leading-none tracking-[0.04em] text-watermark/90 select-none"
       >
         AUTHOR&apos;S TRACE
       </p>
 
       <div
-        className={`relative h-[300px] w-full touch-none sm:h-[360px] md:h-[400px] ${
+        className={`relative h-[260px] w-full max-w-full touch-none overflow-hidden sm:h-[340px] md:h-[400px] ${
           dragging ? "cursor-grabbing" : "cursor-grab"
         }`}
         onPointerDown={onPointerDown}
       >
         <Canvas
           shadows
-          dpr={[1, 1.75]}
-          camera={{ position: [0, 0.15, 5.6], fov: 32 }}
+          dpr={[1, 1.5]}
+          camera={{ position: [0, 0.15, 5.6], fov: 34 }}
           gl={{ antialias: true, alpha: true }}
-          style={{ background: "transparent" }}
+          style={{ background: "transparent", width: "100%", height: "100%" }}
         >
           <Suspense fallback={null}>
             <AutoSpin enabled={!dragging && !selected} onTick={onAutoTick} />
@@ -220,8 +220,8 @@ export function BookCarousel({ books }: BookCarouselProps) {
         <p className="font-display text-xl text-ink md:text-2xl">
           {activeBook?.title}
         </p>
-        <p className="text-sm text-muted">{activeBook?.author}</p>
-        <p className="mt-1 text-xs tracking-[0.16em] text-muted/80 uppercase">
+        <p className="text-sm text-muted-foreground">{activeBook?.author}</p>
+        <p className="mt-1 text-xs tracking-[0.16em] text-muted-foreground/80 uppercase">
           Ťahaj · klikni pre detail
         </p>
       </div>
@@ -244,7 +244,7 @@ export function BookCarousel({ books }: BookCarouselProps) {
                 Načítavam
               </p>
               <p className="mt-2 font-display text-2xl text-ink">{selected.title}</p>
-              <p className="mt-1 text-muted">{selected.author}</p>
+              <p className="mt-1 text-muted-foreground">{selected.author}</p>
             </motion.div>
           </motion.div>
         ) : null}

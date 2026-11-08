@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { CarouselBook } from "@/lib/types";
 
 type PopularShelfProps = {
@@ -11,16 +13,16 @@ export function PopularShelf({ books }: PopularShelfProps) {
 
   return (
     <section className="relative z-10 border-t border-rule/70 bg-paper">
-      <div className="mx-auto w-full max-w-6xl px-5 py-16 md:px-8 md:py-20">
-        <div className="grid items-end gap-8 md:grid-cols-[1.2fr_0.8fr]">
+      <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-5 sm:py-16 md:px-8 md:py-20">
+        <div className="grid items-end gap-6 md:grid-cols-[1.2fr_0.8fr] md:gap-8">
           <div>
             <p className="text-[11px] tracking-[0.22em] text-accent uppercase">
               Popular now
             </p>
-            <h2 className="mt-3 max-w-xl font-display text-4xl leading-tight text-ink md:text-5xl">
+            <h2 className="mt-3 max-w-xl font-display text-[clamp(1.85rem,5vw,3rem)] leading-tight text-ink">
               Šťastné čítanie v školskom katalógu
             </h2>
-            <p className="mt-4 max-w-lg text-muted">
+            <p className="mt-4 max-w-lg text-muted-foreground">
               Vybrané tituly z karuselu. Otvor detail, alebo choď rovno do
               celého katalógu kníh, autorov a kategórií.
             </p>
@@ -28,34 +30,36 @@ export function PopularShelf({ books }: PopularShelfProps) {
 
           <form
             action="/books"
-            className="flex items-center gap-3 rounded-full border border-rule bg-paper-deep/60 px-4 py-3"
+            className="relative flex items-center"
           >
-            <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.8} aria-hidden />
-            <input
+            <Search
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+              strokeWidth={1.8}
+              aria-hidden
+            />
+            <Input
               name="q"
               placeholder="Hľadaj názov, autora, vydanie…"
-              className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-muted/70"
+              className="h-11 rounded-full bg-paper-deep/60 pl-9"
             />
           </form>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center gap-4">
-          <Link
-            href="/books"
-            className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm text-paper transition hover:bg-accent"
+        <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <Button
+            size="lg"
+            className="rounded-full"
+            render={<Link href="/books" />}
           >
             Začať prehliadanie
-            <ArrowUpRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-          </Link>
-          <Link
-            href="#ako-pouzivat"
-            className="text-sm text-muted underline-offset-4 transition hover:text-ink hover:underline"
-          >
+            <ArrowUpRight className="size-4" strokeWidth={1.8} aria-hidden />
+          </Button>
+          <Button variant="link" className="justify-start px-0" render={<Link href="#ako-pouzivat" />}>
             Ako to funguje
-          </Link>
+          </Button>
         </div>
 
-        <ul className="mt-12 grid grid-cols-2 gap-5 sm:grid-cols-4 md:gap-7">
+        <ul className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5 md:gap-7">
           {items.map((book, index) => (
             <li key={book.id} className={`reveal reveal-delay-${(index % 4) + 1}`}>
               <Link href={`/books/${book.id}`} className="group block">
@@ -77,7 +81,7 @@ export function PopularShelf({ books }: PopularShelfProps) {
                 <p className="mt-3 font-display text-lg text-ink transition group-hover:text-accent">
                   {book.title}
                 </p>
-                <p className="text-sm text-muted">{book.author}</p>
+                <p className="text-sm text-muted-foreground">{book.author}</p>
               </Link>
             </li>
           ))}

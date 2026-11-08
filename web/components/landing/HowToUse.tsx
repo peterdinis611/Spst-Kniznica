@@ -8,6 +8,7 @@ import {
   Server,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const steps: ReadonlyArray<{
   n: string;
@@ -47,15 +48,15 @@ export function HowToUse() {
       id="ako-pouzivat"
       className="relative z-10 border-t border-rule/70 bg-paper-deep/55"
     >
-      <div className="mx-auto w-full max-w-6xl px-5 py-16 md:px-8 md:py-20">
+      <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-5 sm:py-16 md:px-8 md:py-20">
         <div className="max-w-2xl">
           <p className="text-[11px] tracking-[0.22em] text-accent uppercase">
             Ako to používať
           </p>
-          <h2 className="mt-3 font-display text-4xl text-ink md:text-5xl">
+          <h2 className="mt-3 font-display text-[clamp(1.85rem,5vw,3rem)] text-ink">
             Od landingu po katalóg v štyroch krokoch
           </h2>
-          <p className="mt-4 text-muted">
+          <p className="mt-4 text-muted-foreground">
             SPST Knižnica je jednoduchá: nájdi titul, pozri detail, pokračuj k
             autorom alebo kategóriám.
           </p>
@@ -82,30 +83,37 @@ export function HowToUse() {
                 </p>
               </div>
               <h3 className="mt-3 font-display text-2xl text-ink">{step.title}</h3>
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-muted">
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
                 {step.body}
               </p>
             </li>
           ))}
         </ol>
 
-        <div className="mt-12 flex flex-wrap items-center gap-4">
-          <Link
-            href="/books"
-            className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm text-paper transition hover:bg-accent-deep"
+        <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <Button
+            size="lg"
+            className="rounded-full bg-accent text-accent-foreground hover:bg-accent-deep"
+            render={<Link href="/books" />}
           >
             Otvoriť katalóg
-            <ArrowUpRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-          </Link>
-          <a
-            href="http://localhost:5200/swagger"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-rule px-6 py-3 text-sm text-ink transition hover:border-ink"
+            <ArrowUpRight className="size-4" strokeWidth={1.8} aria-hidden />
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="rounded-full"
+            render={
+              <a
+                href="http://localhost:5200/swagger"
+                target="_blank"
+                rel="noreferrer"
+              />
+            }
           >
             Gateway Swagger
-            <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-          </a>
+            <ExternalLink className="size-3.5" strokeWidth={1.8} aria-hidden />
+          </Button>
         </div>
       </div>
     </section>

@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Manrope, IBM_Plex_Mono } from "next/font/google";
+import { Fraunces, Sora, IBM_Plex_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { cn } from "@/lib/utils";
 import "./globals.css";
 
-const display = Cormorant_Garamond({
+const display = Fraunces({
   variable: "--font-display-family",
   subsets: ["latin", "latin-ext"],
   weight: ["500", "600", "700"],
 });
 
-const body = Manrope({
+const body = Sora({
   variable: "--font-body-family",
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700"],
@@ -36,10 +38,23 @@ export default function RootLayout({
   return (
     <html
       lang="sk"
-      className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={cn(
+        "h-full antialiased",
+        display.variable,
+        body.variable,
+        mono.variable,
+      )}
     >
-      <body className="flex min-h-full flex-col bg-paper text-ink">
-        {children}
+      <body className="flex min-h-full flex-col overflow-x-hidden bg-paper text-ink">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

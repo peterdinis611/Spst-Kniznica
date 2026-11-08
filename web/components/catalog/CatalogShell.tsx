@@ -1,163 +1,149 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ArrowLeft, Menu } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
-  BookOpen,
-  Compass,
-  Heart,
-  HelpCircle,
-  Layers,
-  LogOut,
-  Settings,
-  Users,
-} from "lucide-react";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
-const primaryNav = [
+const links = [
   {
     href: "/books",
-    label: "Objaviť",
-    Icon: Compass,
+    label: "Knihy",
     isActive: (pathname: string) =>
       pathname === "/books" || pathname.startsWith("/books/"),
   },
   {
-    href: "/categories",
-    label: "Kategórie",
-    Icon: Layers,
-    isActive: (pathname: string) => pathname.startsWith("/categories"),
-  },
-  {
     href: "/authors",
     label: "Autori",
-    Icon: Users,
     isActive: (pathname: string) => pathname.startsWith("/authors"),
   },
   {
-    href: "/books",
-    label: "Obľúbené",
-    Icon: Heart,
-    isActive: () => false,
+    href: "/categories",
+    label: "Kategórie",
+    isActive: (pathname: string) => pathname.startsWith("/categories"),
   },
 ] as const;
 
-const secondaryNav = [
-  { href: "/", label: "Landing", Icon: BookOpen },
-  { href: "#", label: "Nastavenia", Icon: Settings },
-  { href: "/#ako-pouzivat", label: "Pomoc", Icon: HelpCircle },
-] as const;
-
-function SidebarNav() {
+function CatalogNav({
+  onNavigate,
+  className,
+}: {
+  onNavigate?: () => void;
+  className?: string;
+}) {
   const pathname = usePathname();
 
   return (
-    <nav className="mt-10 flex flex-1 flex-col gap-1">
-      {primaryNav.map((item) => {
-        const active = item.isActive(pathname);
+    <nav className={className}>
+      {links.map((link) => {
+        const active = link.isActive(pathname);
         return (
           <Link
-            key={`${item.href}-${item.label}`}
-            href={item.href}
-            className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition ${
+            key={link.href}
+            href={link.href}
+            onClick={onNavigate}
+            className={`relative text-sm font-medium transition ${
               active
-                ? "bg-paper-deep font-medium text-ink"
-                : "text-muted hover:bg-paper-deep/70 hover:text-ink"
+                ? "text-ink after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-accent"
+                : "text-muted-foreground hover:text-ink"
             }`}
           >
-            <span
-              className={`flex h-2.5 w-2.5 rounded-full ${
-                active ? "bg-accent" : "bg-transparent"
-              }`}
-            />
-            <item.Icon className="h-4 w-4" strokeWidth={1.7} aria-hidden />
-            {item.label}
+            {link.label}
           </Link>
         );
       })}
-
-      <div className="my-4 border-t border-rule/70" />
-
-      {secondaryNav.map((item) => (
-        <Link
-          key={item.label}
-          href={item.href}
-          className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-muted transition hover:bg-paper-deep/70 hover:text-ink"
-        >
-          <span className="h-2.5 w-2.5" />
-          <item.Icon className="h-4 w-4" strokeWidth={1.7} aria-hidden />
-          {item.label}
-        </Link>
-      ))}
-
-      <button
-        type="button"
-        className="mt-1 flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-muted transition hover:bg-paper-deep/70 hover:text-ink"
-      >
-        <span className="h-2.5 w-2.5" />
-        <LogOut className="h-4 w-4" strokeWidth={1.7} aria-hidden />
-        Odhlásiť
-      </button>
     </nav>
   );
 }
 
 export function CatalogShell({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className="relative flex min-h-full flex-1 bg-[#f3efe8]">
-      <div className="pointer-events-none absolute right-0 top-0 h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,rgba(196,168,120,0.22),transparent_68%)]" />
-
-      <aside className="relative z-10 hidden w-[15.5rem] shrink-0 flex-col border-r border-rule/60 bg-paper px-5 py-7 md:flex">
-        <Link
-          href="/books"
-          className="font-display text-xl tracking-[0.08em] text-ink uppercase"
-        >
-          SPST Books
-        </Link>
-
-        <Suspense
-          fallback={<div className="mt-10 flex-1" aria-hidden />}
-        >
-          <SidebarNav />
-        </Suspense>
-
-        <div className="mt-auto border-t border-rule/70 pt-5">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink text-paper">
-              <BookOpen className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+    <div className="relative flex min-h-full flex-1 flex-col overflow-x-hidden bg-paper">
+      <header className="relative z-20 border-b border-rule">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6 md:px-8 md:py-5">
+          <div className="flex min-w-0 items-baseline gap-2.5">
+            <Link
+              href="/"
+              className="truncate text-[1.05rem] font-semibold tracking-tight lowercase"
+            >
+              spst knižnica<span className="text-accent">.</span>
+            </Link>
+            <span className="hidden text-xs text-muted-foreground sm:inline">
+              katalóg
             </span>
-            <div>
-              <p className="text-xs tracking-[0.16em] text-muted uppercase">
-                Book library
-              </p>
-              <p className="font-display text-sm text-ink">SPST Knižnica</p>
-            </div>
           </div>
-        </div>
-      </aside>
 
-      <div className="relative z-10 flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center justify-between gap-3 border-b border-rule/60 bg-paper px-5 py-4 md:hidden">
-          <Link
-            href="/books"
-            className="font-display text-lg tracking-[0.08em] text-ink uppercase"
-          >
-            SPST Books
-          </Link>
-          <div className="flex items-center gap-3 text-sm text-muted">
-            <Link href="/categories" className="hover:text-ink">
-              Kategórie
-            </Link>
-            <Link href="/authors" className="hover:text-ink">
-              Autori
-            </Link>
-            <Link href="/" className="hover:text-ink">
-              Domov
-            </Link>
+          <Suspense fallback={<div className="hidden h-5 w-48 md:block" aria-hidden />}>
+            <CatalogNav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex" />
+          </Suspense>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden rounded-none px-2 sm:inline-flex"
+              render={<Link href="/" />}
+            >
+              <ArrowLeft className="size-3.5" strokeWidth={1.8} aria-hidden />
+              Landing
+            </Button>
+
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-10 rounded-full border-ink md:hidden"
+                    aria-label="Otvoriť menu"
+                  />
+                }
+              >
+                <Menu className="size-4" />
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[min(100%,20rem)] bg-paper">
+                <SheetHeader>
+                  <SheetTitle className="lowercase tracking-tight">
+                    katalóg.
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="mt-8 flex flex-col gap-5 px-1">
+                  <Suspense fallback={null}>
+                    <CatalogNav
+                      className="flex flex-col gap-4"
+                      onNavigate={() => setOpen(false)}
+                    />
+                  </Suspense>
+                  <Separator />
+                  <Button
+                    variant="outline"
+                    className="rounded-none"
+                    render={<Link href="/" />}
+                    onClick={() => setOpen(false)}
+                  >
+                    ← Landing
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
-        {children}
-      </div>
+      </header>
+
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col">{children}</div>
     </div>
   );
 }

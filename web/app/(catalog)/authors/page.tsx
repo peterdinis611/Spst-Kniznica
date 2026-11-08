@@ -8,70 +8,69 @@ export const metadata = {
 
 export default function AuthorsPage() {
   return (
-    <main className="flex flex-1 flex-col px-5 py-6 md:px-8 md:py-8">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-10">
       <CatalogTopBar
-        title="Autori"
-        searchAction="/books"
-        placeholder="Hľadaj autora cez knihy…"
+        title="Autori fondu"
+        lead="Karty autorov s počtom titulov a ukážkou kníh. Klikni na titul a skoč do detailu."
+        showSearch={false}
       />
 
-      <section className="mt-10 pb-8">
-        <div className="mb-5 flex items-end justify-between">
-          <h2 className="font-display text-2xl text-ink md:text-3xl">
-            Knižnica autorov
-          </h2>
-          <p className="text-sm text-muted">{MOCK_AUTHORS.length} profilov</p>
-        </div>
+      <div className="mt-6 flex items-end justify-between gap-4 border-b border-rule pb-3">
+        <p className="text-sm text-muted-foreground">Abecedný prehľad</p>
+        <p className="font-display text-xl text-ink">{MOCK_AUTHORS.length}</p>
+      </div>
 
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {MOCK_AUTHORS.map((author) => {
-            const books = getAuthorBooks(author.id);
-            return (
-              <li key={author.id}>
-                <article className="rounded-[1.5rem] border border-rule/70 bg-paper p-5 transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(26,23,20,0.08)]">
-                  <div className="flex items-start gap-4">
-                    <span
-                      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl font-display text-lg text-paper"
-                      style={{ background: author.accent }}
-                    >
-                      {author.name
-                        .split(" ")
-                        .map((part) => part[0])
-                        .join("")
-                        .slice(0, 2)}
-                    </span>
-                    <div className="min-w-0">
-                      <h3 className="font-display text-2xl text-ink">
-                        {author.name}
-                      </h3>
-                      <p className="mt-1 text-xs tracking-[0.14em] text-muted uppercase">
-                        {author.nationality} · {author.bookCount} kníh
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-4 text-sm leading-relaxed text-muted">
-                    {author.bio}
+      <ul className="grid gap-4 pb-16 pt-8 sm:grid-cols-2 lg:grid-cols-3">
+        {MOCK_AUTHORS.map((author, index) => {
+          const books = getAuthorBooks(author.id);
+          return (
+            <li
+              key={author.id}
+              className="group flex flex-col border border-rule bg-paper transition hover:border-ink"
+            >
+              <div
+                className="h-2 w-full"
+                style={{ background: author.accent }}
+                aria-hidden
+              />
+              <div className="flex flex-1 flex-col p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">
+                    {String(index + 1).padStart(2, "0")} · {author.nationality}
                   </p>
-                  {books.length > 0 ? (
-                    <ul className="mt-4 space-y-2 border-t border-rule/70 pt-4">
-                      {books.slice(0, 2).map((book) => (
-                        <li key={book.id}>
-                          <Link
-                            href={`/books/${book.id}`}
-                            className="text-sm text-ink transition hover:text-accent"
-                          >
-                            {book.title}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </article>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+                  <p className="bg-accent px-2 py-0.5 font-display text-lg text-ink">
+                    {author.bookCount}
+                  </p>
+                </div>
+                <h2 className="mt-3 font-display text-2xl leading-tight text-ink sm:text-3xl">
+                  {author.name}
+                </h2>
+                <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                  {author.bio}
+                </p>
+                {books.length > 0 ? (
+                  <ul className="mt-5 space-y-2 border-t border-rule pt-4">
+                    {books.slice(0, 3).map((book) => (
+                      <li key={book.id}>
+                        <Link
+                          href={`/books/${book.id}`}
+                          className="text-sm text-ink underline-offset-4 transition hover:underline"
+                        >
+                          {book.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-auto pt-5 text-xs text-muted-foreground">
+                    Zatiaľ bez titulov v mock dátach
+                  </p>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </main>
   );
 }

@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { BookCover } from "@/components/catalog/BookCover";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { FlatCover } from "@/components/landing/FlatCover";
+import { Button } from "@/components/ui/button";
 import { MOCK_BOOKS } from "@/lib/catalog-mock";
 import { fetchBookDetail } from "@/lib/books";
 
@@ -39,8 +40,8 @@ async function BookDetailContent({
     : apiBook
       ? {
           ...apiBook,
-          accent: "#8B5A3C",
-          secondary: "#F2E6D8",
+          accent: "#1F4E8C",
+          secondary: "#F6E27A",
         }
       : null;
 
@@ -49,62 +50,67 @@ async function BookDetailContent({
   }
 
   return (
-    <div className="mt-8 grid gap-8 md:grid-cols-[220px_1fr] md:items-start">
-      <BookCover
+    <div className="mt-8 grid gap-8 border-t border-rule pt-8 sm:mt-10 sm:gap-10 sm:pt-10 md:grid-cols-[240px_1fr] md:items-start">
+      <FlatCover
         title={book.title}
         author={book.author}
         accent={book.accent}
         secondary={book.secondary}
-        className="aspect-[2/3] w-full max-w-[220px]"
+        className="mx-auto w-44 max-w-full sm:w-full"
       />
 
-      <div className="rounded-[1.6rem] border border-rule/70 bg-paper p-6 md:p-8">
-        <p className="text-xs tracking-[0.2em] text-accent uppercase">
+      <div>
+        <p className="inline-block bg-accent px-2 py-1 text-xs font-semibold tracking-[0.16em] text-ink uppercase">
           {book.categoryName ?? "Katalóg"}
         </p>
-        <h1 className="mt-3 font-display text-4xl text-ink md:text-5xl">
+        <h1 className="mt-4 font-display text-[clamp(2rem,6vw,3.4rem)] leading-[1.05] tracking-tight text-ink">
           {book.title}
         </h1>
-        <p className="mt-3 text-lg text-muted">{book.author}</p>
+        <p className="mt-3 text-base text-muted-foreground sm:text-lg">
+          {book.author}
+        </p>
 
-        <dl className="mt-8 grid gap-4 sm:grid-cols-2">
+        <dl className="mt-8 grid max-w-xl gap-4 sm:grid-cols-2">
           {book.publishedYear ? (
-            <div className="border-t border-rule/80 pt-3">
-              <dt className="text-[11px] tracking-[0.16em] text-muted uppercase">
+            <div className="border border-rule p-4">
+              <dt className="text-[11px] tracking-[0.16em] text-muted-foreground uppercase">
                 Rok
               </dt>
-              <dd className="mt-1 text-ink">{book.publishedYear}</dd>
+              <dd className="mt-1 font-display text-2xl text-ink">
+                {book.publishedYear}
+              </dd>
             </div>
           ) : null}
-          <div className="border-t border-rule/80 pt-3">
-            <dt className="text-[11px] tracking-[0.16em] text-muted uppercase">
+          <div className="border border-rule p-4">
+            <dt className="text-[11px] tracking-[0.16em] text-muted-foreground uppercase">
               Exempláre
             </dt>
-            <dd className="mt-1 text-ink">
-              {book.availableCopies} / {book.totalCopies} dostupných
+            <dd className="mt-1 font-display text-2xl text-ink">
+              {book.availableCopies}/{book.totalCopies}
             </dd>
           </div>
         </dl>
 
         {book.description ? (
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-muted">
+          <p className="mt-8 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             {book.description}
           </p>
         ) : null}
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/books"
-            className="rounded-full bg-ink px-5 py-2.5 text-sm text-paper transition hover:bg-accent"
-          >
-            Ďalšie knihy
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <Link href="/books" className="split-cta group border border-ink bg-paper">
+            <span className="px-5 py-3 text-sm font-semibold">Späť do fondu</span>
+            <span className="flex items-center bg-ink px-3 text-paper transition group-hover:bg-accent group-hover:text-ink">
+              <ArrowRight className="size-4" aria-hidden />
+            </span>
           </Link>
-          <Link
-            href="/authors"
-            className="rounded-full border border-rule px-5 py-2.5 text-sm text-ink transition hover:border-accent"
+          <Button
+            variant="outline"
+            className="rounded-none border-ink"
+            render={<Link href="/authors" />}
           >
             Autori
-          </Link>
+          </Button>
         </div>
       </div>
     </div>
@@ -113,17 +119,19 @@ async function BookDetailContent({
 
 export default function BookDetailPage({ params }: BookDetailPageProps) {
   return (
-    <main className="flex flex-1 flex-col px-5 py-6 md:px-8 md:py-8">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-10">
       <Link
         href="/books"
-        className="inline-flex items-center gap-2 text-sm text-muted transition hover:text-accent"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-ink"
       >
-        <ArrowLeft className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-        Späť do katalógu
+        <ArrowLeft className="size-4" strokeWidth={1.8} aria-hidden />
+        Knižný fond
       </Link>
 
       <Suspense
-        fallback={<p className="mt-10 text-muted">Načítavam detail knihy…</p>}
+        fallback={
+          <p className="mt-10 text-muted-foreground">Načítavam detail knihy…</p>
+        }
       >
         <BookDetailContent params={params} />
       </Suspense>

@@ -1,7 +1,8 @@
-import { BookCarouselClient } from "@/components/landing/BookCarouselClient";
-import { HowToUse } from "@/components/landing/HowToUse";
-import { PopularShelf } from "@/components/landing/PopularShelf";
-import { ReadingIntro } from "@/components/landing/ReadingIntro";
+import { BrowseGenres } from "@/components/landing/BrowseGenres";
+import { ColorStair } from "@/components/landing/ColorStair";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { MeetupBanner } from "@/components/landing/MeetupBanner";
+import { TrendingBooks } from "@/components/landing/TrendingBooks";
 import { fetchCarouselBooks } from "@/lib/books";
 
 export async function LandingContent() {
@@ -9,14 +10,11 @@ export async function LandingContent() {
 
   return (
     <>
-      <section className="relative z-10 mx-auto w-full max-w-5xl px-5 pb-10 md:px-8">
-        <div className="reveal reveal-delay-3">
-          <BookCarouselClient books={books} />
-        </div>
-      </section>
-      <ReadingIntro />
-      <PopularShelf books={books} />
-      <HowToUse />
+      <HeroSection books={books} />
+      <ColorStair />
+      <TrendingBooks books={books} />
+      <BrowseGenres />
+      <MeetupBanner />
     </>
   );
 }

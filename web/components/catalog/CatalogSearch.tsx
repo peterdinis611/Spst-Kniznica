@@ -1,4 +1,7 @@
 import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { MOCK_CATEGORIES } from "@/lib/catalog-mock";
 
 type CatalogSearchProps = {
@@ -12,48 +15,64 @@ export function CatalogSearch({
   action = "/books",
   defaultQuery = "",
   defaultCategory = "",
-  placeholder = "Nájdi knihu, autora alebo vydanie…",
+  placeholder = "Názov, autor alebo téma…",
 }: CatalogSearchProps) {
   return (
     <form
       action={action}
-      className="flex w-full flex-col gap-2 rounded-[1.6rem] border border-rule/80 bg-paper p-2 shadow-[0_10px_30px_rgba(26,23,20,0.05)] sm:flex-row sm:items-center"
+      className="flex w-full flex-col gap-3 sm:flex-row sm:items-end"
     >
-      <label className="sr-only" htmlFor="catalog-category">
-        Kategória
-      </label>
-      <select
-        id="catalog-category"
-        name="category"
-        defaultValue={defaultCategory}
-        className="rounded-[1.2rem] bg-transparent px-4 py-3 text-sm text-ink outline-none"
-      >
-        <option value="">Všetky kategórie</option>
-        {MOCK_CATEGORIES.map((category) => (
-          <option key={category.id} value={category.id}>
-            {category.name}
-          </option>
-        ))}
-      </select>
-
-      <div className="hidden h-8 w-px bg-rule/80 sm:block" />
-
-      <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
-        <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.8} aria-hidden />
-        <input
-          name="q"
-          defaultValue={defaultQuery}
-          placeholder={placeholder}
-          className="w-full bg-transparent py-3 text-sm text-ink outline-none placeholder:text-muted/70"
-        />
+      <div className="min-w-0 flex-1 space-y-2">
+        <Label
+          htmlFor="catalog-q"
+          className="text-[11px] tracking-[0.18em] uppercase"
+        >
+          Hľadanie
+        </Label>
+        <div className="relative">
+          <Search
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+            strokeWidth={1.7}
+            aria-hidden
+          />
+          <Input
+            id="catalog-q"
+            name="q"
+            defaultValue={defaultQuery}
+            placeholder={placeholder}
+            className="h-11 rounded-none border-ink bg-paper pl-9"
+          />
+        </div>
       </div>
 
-      <button
+      <div className="w-full space-y-2 sm:w-44">
+        <Label
+          htmlFor="catalog-category"
+          className="text-[11px] tracking-[0.18em] uppercase"
+        >
+          Kategória
+        </Label>
+        <select
+          id="catalog-category"
+          name="category"
+          defaultValue={defaultCategory}
+          className="border-ink bg-paper h-11 w-full rounded-none border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          <option value="">Všetky</option>
+          {MOCK_CATEGORIES.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <Button
         type="submit"
-        className="rounded-[1.2rem] bg-ink px-5 py-3 text-sm text-paper transition hover:bg-accent"
+        className="h-11 w-full rounded-none bg-ink text-paper hover:bg-accent hover:text-ink sm:w-auto sm:px-6"
       >
-        Hľadať
-      </button>
+        Filtrovať
+      </Button>
     </form>
   );
 }
