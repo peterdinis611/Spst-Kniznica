@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { BookOpenTickets } from "@/components/catalog/BookOpenTickets";
 import { ReserveSlip } from "@/components/catalog/ReserveSlip";
 import { getBookAction } from "@/lib/actions/books";
 
@@ -120,6 +121,10 @@ async function BookDetailContent({
             title={book.title}
             available={available}
           />
+
+          <Suspense fallback={null}>
+            <BookOpenTickets bookId={book.id} />
+          </Suspense>
 
           <Separator className="my-8 max-w-xl" />
 

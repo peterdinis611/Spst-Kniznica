@@ -106,12 +106,15 @@ if command -v docker >/dev/null 2>&1; then
   if docker info >/dev/null 2>&1; then
     if ! (cd "$ROOT" && docker compose up -d); then
       echo "  ! docker compose failed – continuing with apps anyway"
+      echo "    Development appsettings keep Kafka/Cache/RabbitMQ disabled."
     fi
   else
     echo "  ! Docker daemon not running – skipping brokers/cache containers"
+    echo "    Development appsettings keep Kafka/Cache/RabbitMQ disabled."
   fi
 else
   echo "==> Docker not found – skipping brokers/cache containers"
+  echo "    Development appsettings keep Kafka/Cache/RabbitMQ disabled."
 fi
 echo
 

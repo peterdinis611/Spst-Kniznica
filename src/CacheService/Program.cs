@@ -25,15 +25,19 @@ try
     builder.Services.AddSpstCors(builder.Configuration);
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
 
+    var cacheEnabled = builder.Configuration.GetValue("Cache:Enabled", true);
     var redisConnection = builder.Configuration["Cache:ConnectionString"] ?? "localhost:6379";
-    builder.Services.AddHealthChecks()
-        .AddRedis(redisConnection, name: "redis");
+    var healthChecks = builder.Services.AddHealthChecks();
+    if (cacheEnabled)
+    {
+        healthChecks.AddRedis(redisConnection, name: "redis");
+    }
 
     var app = builder.Build();
 
     Log.Information(
         "Starting CacheService. Enabled={Enabled}, Redis={Redis}",
-        builder.Configuration.GetValue("Cache:Enabled", true),
+        cacheEnabled,
         redisConnection);
 
     app.UseSpstRequestLogging();

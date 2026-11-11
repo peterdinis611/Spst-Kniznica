@@ -46,13 +46,25 @@ public sealed class KafkaIntegrationEventPublisher : IIntegrationEventPublisher,
             ]
         };
 
-        var result = await _producer.ProduceAsync(_options.Topic, message, cancellationToken);
-        _logger.LogInformation(
-            "Published {EventType} to Kafka topic {Topic} (partition {Partition}, offset {Offset})",
-            integrationEvent.EventType,
-            result.Topic,
-            result.Partition.Value,
-            result.Offset.Value);
+        try
+        {
+            var result = await _producer.ProduceAsync(_options.Topic, message, cancellationToken);
+            _logger.LogInformation(
+                "Published {EventType} to Kafka topic {Topic} (partition {Partition}, offset {Offset})",
+                integrationEvent.EventType,
+                result.Topic,
+                result.Partition.Value,
+                result.Offset.Value);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Booking/catalog writes must not fail when the broker is briefly unavailable.
+            _logger.LogError(
+                ex,
+                "Failed to publish {EventType} to Kafka topic {Topic}",
+                integrationEvent.EventType,
+                _options.Topic);
+        }
     }
 
     private static string ResolveKey(IntegrationEvent integrationEvent) => integrationEvent switch
