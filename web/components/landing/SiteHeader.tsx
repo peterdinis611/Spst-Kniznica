@@ -37,6 +37,11 @@ const links = [
     label: "Kategórie",
     isActive: (pathname: string) => pathname.startsWith("/categories"),
   },
+  {
+    href: "/bookings",
+    label: "Výpožičky",
+    isActive: (pathname: string) => pathname.startsWith("/bookings"),
+  },
 ] as const;
 
 function NavLinks({
@@ -80,7 +85,7 @@ export function SiteHeader() {
 
       <Suspense
         fallback={
-          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex" aria-hidden>
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 xl:gap-8 lg:flex" aria-hidden>
             {links.map((link) => (
               <span key={link.href} className="text-sm text-ink/50">
                 {link.label}
@@ -89,7 +94,7 @@ export function SiteHeader() {
           </nav>
         }
       >
-        <NavLinks className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex" />
+        <NavLinks className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 xl:gap-8 lg:flex" />
       </Suspense>
 
       <div className="flex items-center gap-2">

@@ -38,7 +38,7 @@ export function HeroSection({ books }: HeroSectionProps) {
           kategórie a dostupnosť exemplárov na jednom mieste.
         </p>
 
-        <div className="reveal reveal-delay-3 mt-8">
+        <div className="reveal reveal-delay-3 mt-8 flex flex-col items-start">
           <Link
             href="/books"
             className="split-cta group border border-ink bg-paper transition hover:-translate-y-0.5"
@@ -49,6 +49,12 @@ export function HeroSection({ books }: HeroSectionProps) {
             <span className="flex items-center justify-center bg-ink px-4 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground">
               <ArrowRight className="size-4" strokeWidth={2} aria-hidden />
             </span>
+          </Link>
+          <Link
+            href="/bookings"
+            className="mt-4 inline-flex text-sm font-medium text-ink/70 underline-offset-4 hover:text-ink hover:underline"
+          >
+            Alebo otvor výpožičný pult
           </Link>
         </div>
 

@@ -5,7 +5,7 @@ import {
   ExternalLink,
   LibraryBig,
   MoveHorizontal,
-  Server,
+  Ticket,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -36,9 +36,9 @@ const steps: ReadonlyArray<{
   },
   {
     n: "04",
-    title: "Použi API",
-    body: "Swagger na porte 5200 spája mikroslužby. Redis cache a Kafka eventy držia katalóg v synchróne.",
-    Icon: Server,
+    title: "Vystav lístok",
+    body: "Na detaile knihy rezervuj titul. Výpožičný pult ho potom vydá, vráti alebo zruší.",
+    Icon: Ticket,
   },
 ];
 
@@ -57,8 +57,8 @@ export function HowToUse() {
             Od landingu po katalóg v štyroch krokoch
           </h2>
           <p className="mt-4 text-muted-foreground">
-            SPST Knižnica je jednoduchá: nájdi titul, pozri detail, pokračuj k
-            autorom alebo kategóriám.
+            SPST Knižnica je jednoduchá: nájdi titul, pozri detail a vystav
+            výpožičný lístok.
           </p>
         </div>
 

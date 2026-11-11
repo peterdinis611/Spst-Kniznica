@@ -23,6 +23,42 @@ export function withQuery(path: string, query?: ApiQuery): string {
   return qs ? `${path}?${qs}` : path;
 }
 
+async function readErrorMessage(
+  response: Response,
+  path: string,
+): Promise<string> {
+  const fallback = `API ${response.status}: ${path}`;
+  const text = await response.text();
+  if (!text) return fallback;
+
+  try {
+    const body = JSON.parse(text) as {
+      title?: string;
+      detail?: string;
+      errors?: Record<string, string[] | string>;
+    };
+    const errors = body.errors;
+    if (errors && typeof errors === "object") {
+      for (const value of Object.values(errors)) {
+        const message = Array.isArray(value) ? value[0] : value;
+        if (typeof message === "string" && message.trim()) return message;
+      }
+    }
+    if (
+      typeof body.detail === "string" &&
+      body.detail.trim() &&
+      body.detail !== body.title
+    ) {
+      return body.detail;
+    }
+    if (typeof body.title === "string" && body.title.trim()) return body.title;
+  } catch {
+    return text.slice(0, 180);
+  }
+
+  return fallback;
+}
+
 async function parseJson<T>(response: Response, path: string): Promise<T> {
   if (response.status === 204) {
     return undefined as T;
@@ -58,7 +94,7 @@ async function apiRequest<T>(
   });
 
   if (!response.ok) {
-    throw new Error(`API ${response.status}: ${path}`);
+    throw new Error(await readErrorMessage(response, path));
   }
 
   return parseJson<T>(response, path);

@@ -28,7 +28,8 @@ export const metadata: Metadata = {
     default: "SPST Knižnica",
     template: "%s · SPST Knižnica",
   },
-  description: "Katalóg kníh, autorov a kategórií strednej priemyselnej školy.",
+  description:
+    "Katalóg, autori a výpožičný pult strednej priemyselnej školy.",
 };
 
 export default function RootLayout({

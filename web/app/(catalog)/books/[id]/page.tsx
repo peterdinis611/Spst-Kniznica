@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ReserveSlip } from "@/components/catalog/ReserveSlip";
 import { getBookAction } from "@/lib/actions/books";
 
 type BookDetailPageProps = {
@@ -113,6 +114,12 @@ async function BookDetailContent({
               </CardContent>
             </Card>
           ) : null}
+
+          <ReserveSlip
+            bookId={book.id}
+            title={book.title}
+            available={available}
+          />
 
           <Separator className="my-8 max-w-xl" />
 

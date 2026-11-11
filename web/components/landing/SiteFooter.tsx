@@ -7,6 +7,7 @@ const nav = [
   { href: "/books", label: "Katalóg" },
   { href: "/authors", label: "Autori" },
   { href: "/categories", label: "Kategórie" },
+  { href: "/bookings", label: "Výpožičky" },
 ] as const;
 
 async function getCurrentYear() {
@@ -72,14 +73,22 @@ export async function SiteFooter() {
             Pripravení na ďalšiu knihu?
           </p>
           <p className="mt-3 text-sm text-black/75">
-            Otvor katalóg a filtrovať podľa autora alebo kategórie.
+            Otvor fond, alebo choď rovno na výpožičný pult.
           </p>
-          <Link
-            href="/books"
-            className="mt-6 inline-flex border border-black bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white hover:text-black"
-          >
-            Do katalógu
-          </Link>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link
+              href="/books"
+              className="inline-flex border border-black bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white hover:text-black"
+            >
+              Do katalógu
+            </Link>
+            <Link
+              href="/bookings"
+              className="inline-flex border border-black px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-black hover:text-accent"
+            >
+              Na pult
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
