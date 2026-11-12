@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
+import { connection } from "next/server";
 import { searchBooksAction } from "@/lib/catalog/actions";
 
 const nav = [
@@ -17,6 +18,7 @@ async function getCurrentYear() {
 }
 
 export async function SiteFooter() {
+  await connection();
   const year = await getCurrentYear();
   const booksResult = await searchBooksAction({ page: 1, pageSize: 3 });
   const latest = booksResult?.data?.items ?? [];

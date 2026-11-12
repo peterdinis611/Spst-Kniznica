@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { toCarouselBooks } from "./books";
-import type { CatalogBook } from "./mappers";
-import type { BookListItem } from "./types";
+import { toCarouselBooks } from "@/lib/catalog/books";
+import type { CatalogBook } from "@/lib/catalog/mappers";
+import type { BookListItem } from "@/lib/catalog/types";
 
 describe("toCarouselBooks", () => {
   it("maps dto items into carousel books", () => {

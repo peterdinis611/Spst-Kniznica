@@ -1,21 +1,33 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LandingContent } from "@/components/landing/LandingContent";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
+import { RouteLoading } from "@/components/routing/RouteLoading";
+import { siteConfig } from "@/lib/site";
+
+
+export const metadata: Metadata = {
+  title: {
+    absolute: siteConfig.name,
+  },
+  description: siteConfig.description,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: siteConfig.name,
+    description: siteConfig.description,
+    url: "/",
+  },
+};
 
 export default function HomePage() {
   return (
     <main className="relative flex min-h-full flex-1 flex-col overflow-x-hidden bg-paper">
       <SiteHeader />
 
-      <Suspense
-        fallback={
-          <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 md:grid-cols-2 md:px-8">
-            <div className="h-64 animate-pulse bg-paper-deep" />
-            <div className="h-64 animate-pulse bg-paper-deep" />
-          </div>
-        }
-      >
+      <Suspense fallback={<RouteLoading variant="landing" />}>
         <LandingContent />
       </Suspense>
 

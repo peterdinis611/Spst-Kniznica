@@ -4,7 +4,7 @@ import {
   getServerReaderSnapshot,
   subscribeReader,
   writeReader,
-} from "./reader";
+} from "@/lib/bookings/reader";
 
 describe("reader card store", () => {
   beforeEach(() => {

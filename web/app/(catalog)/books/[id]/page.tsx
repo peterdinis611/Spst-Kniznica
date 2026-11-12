@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { FlatCover } from "@/components/landing/FlatCover";
@@ -23,15 +25,44 @@ type BookDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export const metadata = {
-  title: "Detail knihy",
-};
+export async function generateMetadata({
+  params,
+}: BookDetailPageProps): Promise<Metadata> {
+  await connection();
+  const { id } = await params;
+  const result = await getBookAction({ id });
+  const book = result?.data?.book;
+
+  if (!book) {
+    return {
+      title: "Kniha nenájdená",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const description =
+    book.description?.trim() ||
+    `${book.title} od ${book.author} vo fonde SPST Knižnice.`;
+
+  return {
+    title: book.title,
+    description,
+    alternates: { canonical: `/books/${book.id}` },
+    openGraph: {
+      title: book.title,
+      description,
+      url: `/books/${book.id}`,
+      type: "book",
+    },
+  };
+}
 
 async function BookDetailContent({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await connection();
   const { id } = await params;
   const result = await getBookAction({ id });
   const book = result?.data?.book;

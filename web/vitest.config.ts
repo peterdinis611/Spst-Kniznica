@@ -6,10 +6,11 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
     environment: "happy-dom",
-    include: ["**/*.{test,spec}.{ts,tsx}"],
+    include: ["__tests__/**/*.{test,spec}.{ts,tsx}"],
     exclude: ["node_modules", ".next"],
     clearMocks: true,
   },
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "."),

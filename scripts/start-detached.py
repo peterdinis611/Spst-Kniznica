@@ -24,6 +24,8 @@ SERVICES = [
     ("workers", "WorkersService/WorkersService.csproj", "http://127.0.0.1:5209"),
     ("messaging", "MessagingService/MessagingService.csproj", "http://127.0.0.1:5205"),
     ("cache", "CacheService/CacheService.csproj", "http://127.0.0.1:5206"),
+    ("auth", "AuthService/AuthService.csproj", "http://127.0.0.1:5210"),
+    ("admin", "AdminService/AdminService.csproj", "http://127.0.0.1:5211"),
     ("gateway", "GatewayService/GatewayService.csproj", "http://127.0.0.1:5200"),
 ]
 
@@ -31,7 +33,7 @@ SERVICES = [
 def stop_ports() -> None:
     subprocess.run(["bash", str(ROOT / "scripts/stop-all.sh")], check=False)
     time.sleep(0.5)
-    for port in [3000, 5200, 5203, 5204, 5205, 5206, 5207, 5208, 5209]:
+    for port in [3000, 5200, 5203, 5204, 5205, 5206, 5207, 5208, 5209, 5210, 5211]:
         result = subprocess.run(
             ["lsof", f"-tiTCP:{port}", "-sTCP:LISTEN"],
             capture_output=True,

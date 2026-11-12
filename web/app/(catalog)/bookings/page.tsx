@@ -1,11 +1,26 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { BookingsDesk } from "@/components/catalog/BookingsDesk";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { searchBookingsAction } from "@/lib/bookings";
 import { searchBooksAction } from "@/lib/catalog/actions";
 
-export const metadata = {
-  title: "Výpožičky",
+export const metadata: Metadata = {
+  title: "Výpožičný pult",
+  description:
+    "Rezervácie, aktívne výpožičky a vrátenia — pult SPST Knižnice pre čitateľov a službu.",
+  alternates: { canonical: "/bookings" },
+  robots: {
+    index: false,
+    follow: false,
+  },
+  openGraph: {
+    title: "Výpožičný pult",
+    description:
+      "Rezervácie, aktívne výpožičky a vrátenia — pult SPST Knižnice.",
+    url: "/bookings",
+  },
 };
 
 async function BookingsContent({
@@ -13,6 +28,7 @@ async function BookingsContent({
 }: {
   searchParams: Promise<{ book?: string }>;
 }) {
+  await connection();
   const { book } = await searchParams;
   const bookId = book?.trim() || undefined;
   const [bookingsResult, booksResult] = await Promise.all([
@@ -20,10 +36,10 @@ async function BookingsContent({
     searchBooksAction({ page: 1, pageSize: 100 }),
   ]);
 
-  const catalog = (booksResult?.data?.items ?? []).map((book) => ({
-    id: book.id,
-    title: book.title,
-    author: book.author,
+  const catalog = (booksResult?.data?.items ?? []).map((item) => ({
+    id: item.id,
+    title: item.title,
+    author: item.author,
   }));
 
   return (

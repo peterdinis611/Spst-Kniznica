@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiGet, apiUrl, withQuery } from "./client";
+import { apiGet, apiUrl, withQuery } from "@/lib/api/client";
 
 describe("apiUrl", () => {
   it("joins base and absolute path", () => {

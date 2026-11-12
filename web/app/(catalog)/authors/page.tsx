@@ -1,22 +1,32 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { AuthorsCatalog } from "@/components/catalog/AuthorsCatalog";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { searchAuthorsAction } from "@/lib/catalog/actions";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Autori",
+  description:
+    "Abecedný prehľad autorov vo fonde SPST Knižnice s biografiami a národnosťou.",
+  alternates: { canonical: "/authors" },
+  openGraph: {
+    title: "Autori",
+    description:
+      "Abecedný prehľad autorov vo fonde SPST Knižnice s biografiami a národnosťou.",
+    url: "/authors",
+  },
 };
 
 async function AuthorsPageContent() {
+  await connection();
   const result = await searchAuthorsAction({ page: 1, pageSize: 50 });
   const authors = result?.data?.items ?? [];
   const initials = [
     ...new Set(authors.map((author) => author.name.charAt(0).toUpperCase())),
   ].sort((a, b) => a.localeCompare(b, "sk"));
 
-  return (
-    <AuthorsCatalog initialAuthors={authors} initials={initials} />
-  );
+  return <AuthorsCatalog initialAuthors={authors} initials={initials} />;
 }
 
 export default function AuthorsPage() {

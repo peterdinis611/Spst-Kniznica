@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { BrowseGenres } from "@/components/landing/BrowseGenres";
 import { ColorStair } from "@/components/landing/ColorStair";
 import { HeroSection } from "@/components/landing/HeroSection";
@@ -10,6 +11,7 @@ import {
 } from "@/lib/catalog/actions";
 
 export async function LandingContent() {
+  await connection();
   const [booksResult, categoriesResult] = await Promise.all([
     searchBooksAction({ page: 1, pageSize: 12 }),
     searchCategoriesAction({ page: 1, pageSize: 20 }),

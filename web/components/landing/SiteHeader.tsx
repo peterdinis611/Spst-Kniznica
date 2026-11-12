@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, LogIn, Menu, X } from "lucide-react";
+import { AuthNavCluster } from "@/components/auth/AuthNavCluster";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -172,25 +173,7 @@ export function SiteHeader() {
 
       <div className="flex items-center gap-2">
         <ThemeToggle />
-
-        <Button
-          size="sm"
-          className="hidden h-10 rounded-full bg-accent px-4 text-black hover:bg-accent-deep sm:inline-flex"
-          render={<Link href="/login" />}
-        >
-          <LogIn className="size-3.5" strokeWidth={1.8} aria-hidden />
-          Prihlásiť
-        </Button>
-
-        <Button
-          size="icon"
-          variant="outline"
-          className="size-10 rounded-full border-rule sm:hidden dark:border-white/25 dark:text-white"
-          aria-label="Prihlásiť sa"
-          render={<Link href="/login" />}
-        >
-          <LogIn className="size-4" strokeWidth={1.8} />
-        </Button>
+        <AuthNavCluster />
 
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger

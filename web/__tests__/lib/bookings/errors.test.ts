@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { explainBookingError } from "./errors";
+import { explainBookingError } from "@/lib/bookings/errors";
 
 describe("explainBookingError", () => {
   it("translates field validation messages", () => {

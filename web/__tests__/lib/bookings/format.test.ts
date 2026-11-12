@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BOOKING_STATUS } from "./status";
-import { daysUntil, duePhrase, formatDeskDate, toDueDateIso } from "./format";
+import {
+  daysUntil,
+  duePhrase,
+  formatDeskDate,
+  toDueDateIso,
+} from "@/lib/bookings/format";
+import { BOOKING_STATUS } from "@/lib/bookings/status";
 
 describe("toDueDateIso", () => {
   it("appends afternoon UTC time", () => {

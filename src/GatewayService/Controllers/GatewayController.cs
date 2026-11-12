@@ -40,7 +40,9 @@ public class GatewayController(
                 bookings = configuration["Services:BookingService"],
                 workers = configuration["Services:WorkersService"],
                 messaging = configuration["Services:MessagingService"],
-                cache = configuration["Services:CacheService"]
+                cache = configuration["Services:CacheService"],
+                auth = configuration["Services:AuthService"],
+                admin = configuration["Services:AdminService"]
             }
         });
     }

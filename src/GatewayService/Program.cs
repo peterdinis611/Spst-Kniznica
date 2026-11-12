@@ -18,7 +18,7 @@ try
         {
             Title = "GatewayService API",
             Version = "v1",
-            Description = "SPST knižnica – API Gateway (YARP) pre Book, Category, Author, Booking, Workers, Messaging a Cache."
+            Description = "SPST knižnica – API Gateway (YARP) pre Book, Category, Author, Booking, Workers, Messaging, Cache, Auth a Admin."
         });
     });
     builder.Services.AddSpstCors(builder.Configuration);
@@ -46,6 +46,8 @@ try
         options.SwaggerEndpoint("/workers/swagger/v1/swagger.json", "WorkersService");
         options.SwaggerEndpoint("/messaging/swagger/v1/swagger.json", "MessagingService");
         options.SwaggerEndpoint("/cache/swagger/v1/swagger.json", "CacheService");
+        options.SwaggerEndpoint("/auth/swagger/v1/swagger.json", "AuthService");
+        options.SwaggerEndpoint("/admin/swagger/v1/swagger.json", "AdminService");
         options.RoutePrefix = "swagger";
     });
 

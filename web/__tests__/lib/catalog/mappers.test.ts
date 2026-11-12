@@ -4,8 +4,13 @@ import {
   mapBookDetail,
   mapBookListItem,
   mapCategory,
-} from "./mappers";
-import type { AuthorDto, BookDetail, BookListItem, CategoryDto } from "./types";
+} from "@/lib/catalog/mappers";
+import type {
+  AuthorDto,
+  BookDetail,
+  BookListItem,
+  CategoryDto,
+} from "@/lib/catalog/types";
 
 const book: BookListItem = {
   id: "book-1",

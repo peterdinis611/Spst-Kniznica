@@ -175,6 +175,8 @@ start_dotnet "booking"    "BookingService/BookingService.csproj"       "http://1
 start_dotnet "workers"    "WorkersService/WorkersService.csproj"       "http://127.0.0.1:5209"
 start_dotnet "messaging"  "MessagingService/MessagingService.csproj"   "http://127.0.0.1:5205"
 start_dotnet "cache"      "CacheService/CacheService.csproj"           "http://127.0.0.1:5206"
+start_dotnet "auth"       "AuthService/AuthService.csproj"             "http://127.0.0.1:5210"
+start_dotnet "admin"      "AdminService/AdminService.csproj"           "http://127.0.0.1:5211"
 start_dotnet "gateway"    "GatewayService/GatewayService.csproj"       "http://127.0.0.1:5200"
 echo
 
@@ -190,6 +192,8 @@ wait_http "booking"   "http://127.0.0.1:5208/health"
 wait_http "workers"   "http://127.0.0.1:5209/health"
 wait_http "messaging" "http://127.0.0.1:5205/health"
 wait_http "cache"     "http://127.0.0.1:5206/health"
+wait_http "auth"      "http://127.0.0.1:5210/health"
+wait_http "admin"     "http://127.0.0.1:5211/health"
 wait_http "gateway"   "http://127.0.0.1:5200/health"
 wait_http "web"       "http://127.0.0.1:3000"
 echo

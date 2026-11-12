@@ -1,14 +1,28 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { BooksCatalog } from "@/components/catalog/BooksCatalog";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
-import { searchBooksAction } from "@/lib/catalog/actions";
-import { searchCategoriesAction } from "@/lib/catalog/actions";
+import {
+  searchBooksAction,
+  searchCategoriesAction,
+} from "@/lib/catalog/actions";
 
-export const metadata = {
-  title: "Knihy",
+export const metadata: Metadata = {
+  title: "Katalóg kníh",
+  description:
+    "Prehliadajte školský fond SPST — vyhľadávanie podľa názvu, autora a kategórie.",
+  alternates: { canonical: "/books" },
+  openGraph: {
+    title: "Katalóg kníh",
+    description:
+      "Prehliadajte školský fond SPST — vyhľadávanie podľa názvu, autora a kategórie.",
+    url: "/books",
+  },
 };
 
 async function BooksPageContent() {
+  await connection();
   const [booksResult, categoriesResult] = await Promise.all([
     searchBooksAction({ page: 1, pageSize: 50 }),
     searchCategoriesAction({ page: 1, pageSize: 50 }),
