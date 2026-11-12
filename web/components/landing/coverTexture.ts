@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { CarouselBook, CoverMotif } from "@/lib/types";
+import type { CarouselBook, CoverMotif } from "@/lib/catalog";
 
 function wrapLines(
   ctx: CanvasRenderingContext2D,

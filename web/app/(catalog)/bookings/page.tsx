@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { BookingsDesk } from "@/components/catalog/BookingsDesk";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
-import { searchBookingsAction } from "@/lib/actions/bookings";
-import { searchBooksAction } from "@/lib/actions/books";
+import { searchBookingsAction } from "@/lib/bookings";
+import { searchBooksAction } from "@/lib/catalog/actions";
 
 export const metadata = {
   title: "Výpožičky",

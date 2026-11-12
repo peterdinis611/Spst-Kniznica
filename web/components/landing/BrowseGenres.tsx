@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { FlatCover } from "@/components/landing/FlatCover";
-import type { CatalogBook, CatalogCategory } from "@/lib/catalog-mappers";
+import type { CatalogBook, CatalogCategory } from "@/lib/catalog";
 
 type BrowseGenresProps = {
   categories: CatalogCategory[];

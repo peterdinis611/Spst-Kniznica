@@ -4,8 +4,8 @@ import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useAction } from "next-safe-action/hooks";
 import { ArrowRight } from "lucide-react";
-import { createBookingAction } from "@/lib/actions/bookings";
 import {
+  createBookingAction,
   formatDeskDate,
   getReaderSnapshot,
   getServerReaderSnapshot,

@@ -13,7 +13,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { CatalogBook } from "@/lib/catalog-mappers";
+import type { CatalogBook } from "@/lib/catalog";
 
 type BookCardProps = {
   book: CatalogBook;

@@ -17,7 +17,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { BookOpenTickets } from "@/components/catalog/BookOpenTickets";
 import { ReserveSlip } from "@/components/catalog/ReserveSlip";
-import { getBookAction } from "@/lib/actions/books";
+import { getBookAction } from "@/lib/catalog/actions";
 
 type BookDetailPageProps = {
   params: Promise<{ id: string }>;

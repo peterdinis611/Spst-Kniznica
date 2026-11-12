@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { FlatCover } from "@/components/landing/FlatCover";
 import { Button } from "@/components/ui/button";
-import type { CarouselBook } from "@/lib/types";
+import type { CarouselBook } from "@/lib/catalog";
 
 type TrendingBooksProps = {
   books: CarouselBook[];

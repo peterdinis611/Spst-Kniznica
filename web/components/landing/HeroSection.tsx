@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FlatCover } from "@/components/landing/FlatCover";
-import type { CarouselBook } from "@/lib/types";
+import type { CarouselBook } from "@/lib/catalog";
 
 type HeroSectionProps = {
   books: CarouselBook[];

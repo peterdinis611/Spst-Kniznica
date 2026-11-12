@@ -4,7 +4,7 @@ import type {
   BookListItem,
   CategoryDto,
   CoverMotif,
-} from "@/lib/types";
+} from "./types";
 
 const COVER_PALETTES = [
   { accent: "#7BA08A", secondary: "#F3F7F2", motif: "crow" as const },

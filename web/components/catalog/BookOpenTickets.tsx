@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { searchBookingsAction } from "@/lib/actions/bookings";
 import {
   BOOKING_STATUS,
   BOOKING_STATUS_LABEL,
   duePhrase,
   formatDeskDate,
   normalizeBookingStatus,
+  searchBookingsAction,
   type BookingStatusCode,
 } from "@/lib/bookings";
 import { Button } from "@/components/ui/button";

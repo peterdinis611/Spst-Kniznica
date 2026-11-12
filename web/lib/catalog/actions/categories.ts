@@ -2,9 +2,10 @@
 
 import { z } from "zod";
 import { apiGet, withQuery } from "@/lib/api";
-import { mapCategory, type CatalogCategory } from "@/lib/catalog-mappers";
-import { actionClient } from "@/lib/safe-action";
-import type { CategoryDto, PagedResult } from "@/lib/types";
+import { actionClient } from "@/lib/shared";
+import type { PagedResult } from "@/lib/shared";
+import { mapCategory, type CatalogCategory } from "../mappers";
+import type { CategoryDto } from "../types";
 
 const searchCategoriesSchema = z.object({
   search: z

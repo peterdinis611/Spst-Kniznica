@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { CarouselBook } from "@/lib/types";
+import type { CarouselBook } from "@/lib/catalog";
 
 const BookCarousel = dynamic(
   () => import("./BookCarousel").then((mod) => mod.BookCarousel),

@@ -1,6 +1,7 @@
-import { apiGet, withQuery } from "./api";
-import { mapBookListItem, type CatalogBook } from "./catalog-mappers";
-import type { BookDetail, BookListItem, CarouselBook, PagedResult } from "./types";
+import { apiGet, withQuery } from "@/lib/api";
+import type { PagedResult } from "@/lib/shared";
+import { mapBookListItem, type CatalogBook } from "./mappers";
+import type { BookDetail, BookListItem, CarouselBook } from "./types";
 
 export function toCarouselBooks(
   items: Array<BookListItem | CatalogBook>,

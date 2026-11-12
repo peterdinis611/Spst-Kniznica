@@ -14,7 +14,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows } from "@react-three/drei";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import type { CarouselBook } from "@/lib/types";
+import type { CarouselBook } from "@/lib/catalog";
 import { BookMesh, wrappedOffset } from "./BookMesh";
 
 type BookCarouselProps = {

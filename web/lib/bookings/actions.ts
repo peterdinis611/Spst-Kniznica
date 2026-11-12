@@ -2,13 +2,11 @@
 
 import { z } from "zod";
 import { apiGet, apiPost, apiPut, withQuery } from "@/lib/api";
-import {
-  explainBookingError,
-  normalizeBookingStatus,
-  BOOKING_STATUS,
-} from "@/lib/bookings";
-import { actionClient } from "@/lib/safe-action";
-import type { BookingDto, PagedResult } from "@/lib/types";
+import { actionClient } from "@/lib/shared";
+import type { PagedResult } from "@/lib/shared";
+import { explainBookingError } from "./errors";
+import { BOOKING_STATUS, normalizeBookingStatus } from "./status";
+import type { BookingDto } from "./types";
 
 const optionalText = z
   .string()

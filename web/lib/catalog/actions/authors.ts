@@ -2,9 +2,10 @@
 
 import { z } from "zod";
 import { apiGet, withQuery } from "@/lib/api";
-import { mapAuthor, type CatalogAuthor } from "@/lib/catalog-mappers";
-import { actionClient } from "@/lib/safe-action";
-import type { AuthorDto, PagedResult } from "@/lib/types";
+import { actionClient } from "@/lib/shared";
+import type { PagedResult } from "@/lib/shared";
+import { mapAuthor, type CatalogAuthor } from "../mappers";
+import type { AuthorDto } from "../types";
 
 const searchAuthorsSchema = z.object({
   search: z

@@ -12,19 +12,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
-  searchBookingsAction,
-  updateBookingAction,
-  type DeskBooking,
-} from "@/lib/actions/bookings";
-import {
   BOOKING_STATUS,
   BOOKING_STATUS_LABEL,
   duePhrase,
   formatDeskDate,
   getReaderSnapshot,
   getServerReaderSnapshot,
+  searchBookingsAction,
   subscribeReader,
+  updateBookingAction,
   type BookingStatusCode,
+  type DeskBooking,
 } from "@/lib/bookings";
 import { cn } from "@/lib/utils";
 

@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { apiPost } from "@/lib/api";
-import { actionClient } from "@/lib/safe-action";
+import { actionClient } from "@/lib/shared";
 
 const enqueueOrderSchema = z.object({
   orderId: z.string().trim().min(1, "orderId is required"),

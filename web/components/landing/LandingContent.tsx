@@ -3,9 +3,11 @@ import { ColorStair } from "@/components/landing/ColorStair";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { MeetupBanner } from "@/components/landing/MeetupBanner";
 import { TrendingBooks } from "@/components/landing/TrendingBooks";
-import { searchBooksAction } from "@/lib/actions/books";
-import { searchCategoriesAction } from "@/lib/actions/categories";
-import { toCarouselBooks } from "@/lib/books";
+import { toCarouselBooks } from "@/lib/catalog";
+import {
+  searchBooksAction,
+  searchCategoriesAction,
+} from "@/lib/catalog/actions";
 
 export async function LandingContent() {
   const [booksResult, categoriesResult] = await Promise.all([

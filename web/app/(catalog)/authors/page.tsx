@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { AuthorsCatalog } from "@/components/catalog/AuthorsCatalog";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
-import { searchAuthorsAction } from "@/lib/actions/authors";
+import { searchAuthorsAction } from "@/lib/catalog/actions";
 
 export const metadata = {
   title: "Autori",

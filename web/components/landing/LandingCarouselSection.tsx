@@ -1,5 +1,5 @@
 import { BookCarouselClient } from "@/components/landing/BookCarouselClient";
-import { fetchCarouselBooks } from "@/lib/books";
+import { fetchCarouselBooks } from "@/lib/catalog";
 
 export async function LandingCarouselSection() {
   const books = await fetchCarouselBooks();

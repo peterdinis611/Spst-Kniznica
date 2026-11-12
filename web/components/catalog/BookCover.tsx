@@ -1,4 +1,4 @@
-import type { CoverMotif } from "@/lib/types";
+import type { CoverMotif } from "@/lib/catalog";
 
 type BookCoverProps = {
   title: string;

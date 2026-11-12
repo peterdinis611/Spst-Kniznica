@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
-import { searchBooksAction } from "@/lib/actions/books";
+import { searchBooksAction } from "@/lib/catalog/actions";
 
 const nav = [
   { href: "/", label: "Domov" },

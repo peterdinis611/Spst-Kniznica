@@ -2,13 +2,14 @@
 
 import { z } from "zod";
 import { apiGet, withQuery } from "@/lib/api";
+import { actionClient } from "@/lib/shared";
+import type { PagedResult } from "@/lib/shared";
 import {
   mapBookDetail,
   mapBookListItem,
   type CatalogBook,
-} from "@/lib/catalog-mappers";
-import { actionClient } from "@/lib/safe-action";
-import type { BookDetail, BookListItem, PagedResult } from "@/lib/types";
+} from "../mappers";
+import type { BookDetail, BookListItem } from "../types";
 
 const optionalId = z
   .string()

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { CategoriesCatalog } from "@/components/catalog/CategoriesCatalog";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
-import { searchCategoriesAction } from "@/lib/actions/categories";
+import { searchCategoriesAction } from "@/lib/catalog/actions";
 
 export const metadata = {
   title: "Kategórie",

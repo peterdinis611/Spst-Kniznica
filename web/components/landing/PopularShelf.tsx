@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { CarouselBook } from "@/lib/types";
+import type { CarouselBook } from "@/lib/catalog";
 
 type PopularShelfProps = {
   books: CarouselBook[];

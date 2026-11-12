@@ -12,8 +12,8 @@ import { useDebouncedCatalogAction } from "@/hooks/use-debounced-catalog-action"
 import {
   searchBooksAction,
   type SearchBooksResult,
-} from "@/lib/actions/books";
-import type { CatalogBook, CatalogCategory } from "@/lib/catalog-mappers";
+} from "@/lib/catalog/actions";
+import type { CatalogBook, CatalogCategory } from "@/lib/catalog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";

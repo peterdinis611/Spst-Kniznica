@@ -11,8 +11,8 @@ import { useDebouncedCatalogAction } from "@/hooks/use-debounced-catalog-action"
 import {
   searchAuthorsAction,
   type SearchAuthorsResult,
-} from "@/lib/actions/authors";
-import type { CatalogAuthor } from "@/lib/catalog-mappers";
+} from "@/lib/catalog/actions";
+import type { CatalogAuthor } from "@/lib/catalog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
