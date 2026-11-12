@@ -7,6 +7,23 @@ LOG_DIR="$RUN_DIR/logs"
 PID_DIR="$RUN_DIR/pids"
 SRC="$ROOT/src"
 WEB="$ROOT/web"
+MODE="detach"
+
+for arg in "$@"; do
+  case "$arg" in
+    --foreground|-f) MODE="foreground" ;;
+    --detach|-d) MODE="detach" ;;
+    -h|--help)
+      cat <<EOF
+Usage: $(basename "$0") [--detach|--foreground]
+
+  --detach      start services with nohup and exit (default)
+  --foreground  keep this script attached; Ctrl+C stops everything
+EOF
+      exit 0
+      ;;
+  esac
+done
 
 mkdir -p "$LOG_DIR" "$PID_DIR"
 
@@ -21,10 +38,10 @@ cleanup() {
     fi
   done
 
-  # Also stop anything recorded from a previous run that might still be alive.
   if [[ -d "$PID_DIR" ]]; then
     for pidfile in "$PID_DIR"/*.pid; do
       [[ -f "$pidfile" ]] || continue
+      [[ "$(basename "$pidfile")" == "start-all.pid" ]] && continue
       pid="$(cat "$pidfile" 2>/dev/null || true)"
       if [[ -n "${pid:-}" ]] && kill -0 "$pid" 2>/dev/null; then
         kill "$pid" 2>/dev/null || true
@@ -37,7 +54,9 @@ cleanup() {
   echo "==> Done."
 }
 
-trap cleanup EXIT INT TERM
+if [[ "$MODE" == "foreground" ]]; then
+  trap cleanup EXIT INT TERM
+fi
 
 start_dotnet() {
   local name="$1"
@@ -47,14 +66,32 @@ start_dotnet() {
   local pidfile="$PID_DIR/${name}.pid"
 
   echo "  · $name  →  $url"
-  (
-    cd "$SRC"
-    ASPNETCORE_ENVIRONMENT=Development \
-    ASPNETCORE_URLS="$url" \
-    DOTNET_ENVIRONMENT=Development \
-      dotnet run --project "$project" --no-launch-profile \
-      >"$logfile" 2>&1
-  ) &
+  local project_dir="$SRC/$(dirname "$project")"
+  if [[ "$MODE" == "detach" ]]; then
+    (
+      cd "$project_dir"
+      nohup env \
+        ASPNETCORE_ENVIRONMENT=Development \
+        ASPNETCORE_URLS="$url" \
+        DOTNET_ENVIRONMENT=Development \
+        dotnet run --project "$SRC/$project" --no-build --no-launch-profile \
+        >"$logfile" 2>&1 &
+      echo $! >"$pidfile"
+    )
+    local pid
+    pid="$(cat "$pidfile")"
+    PIDS+=("$pid")
+    return
+  else
+    (
+      cd "$project_dir"
+      ASPNETCORE_ENVIRONMENT=Development \
+      ASPNETCORE_URLS="$url" \
+      DOTNET_ENVIRONMENT=Development \
+        dotnet run --project "$SRC/$project" --no-build --no-launch-profile \
+        >"$logfile" 2>&1
+    ) &
+  fi
   local pid=$!
   PIDS+=("$pid")
   echo "$pid" >"$pidfile"
@@ -70,11 +107,16 @@ start_frontend() {
   fi
 
   echo "  · web  →  http://localhost:3000"
-  (
-    cd "$WEB"
-    npm run dev -- --port 3000 \
-      >"$logfile" 2>&1
-  ) &
+  if [[ "$MODE" == "detach" ]]; then
+    nohup bash -lc "cd \"$WEB\" && npm run dev -- --hostname 127.0.0.1 --port 3000" \
+      >"$logfile" 2>&1 &
+  else
+    (
+      cd "$WEB"
+      npm run dev -- --hostname 127.0.0.1 --port 3000 \
+        >"$logfile" 2>&1
+    ) &
+  fi
   local pid=$!
   PIDS+=("$pid")
   echo "$pid" >"$pidfile"
@@ -97,7 +139,7 @@ wait_http() {
   return 0
 }
 
-echo "==> SPST Knižnica – starting stack"
+echo "==> SPST Knižnica – starting stack ($MODE)"
 echo "    root: $ROOT"
 echo
 
@@ -118,15 +160,22 @@ else
 fi
 echo
 
+echo "==> Building .NET solution (once, avoids parallel file locks)"
+(
+  cd "$SRC"
+  dotnet build SpstKniznica.sln -c Debug --nologo -v q
+)
+echo
+
 echo "==> .NET services"
-start_dotnet "author"     "AuthorService/AuthorService.csproj"         "http://localhost:5207"
-start_dotnet "category"   "CategoryService/CategoryService.csproj"     "http://localhost:5204"
-start_dotnet "book"       "BookService/BookService.csproj"             "http://localhost:5203"
-start_dotnet "booking"    "BookingService/BookingService.csproj"       "http://localhost:5208"
-start_dotnet "workers"    "WorkersService/WorkersService.csproj"       "http://localhost:5209"
-start_dotnet "messaging"  "MessagingService/MessagingService.csproj"   "http://localhost:5205"
-start_dotnet "cache"      "CacheService/CacheService.csproj"           "http://localhost:5206"
-start_dotnet "gateway"    "GatewayService/GatewayService.csproj"       "http://localhost:5200"
+start_dotnet "author"     "AuthorService/AuthorService.csproj"         "http://127.0.0.1:5207"
+start_dotnet "category"   "CategoryService/CategoryService.csproj"     "http://127.0.0.1:5204"
+start_dotnet "book"       "BookService/BookService.csproj"             "http://127.0.0.1:5203"
+start_dotnet "booking"    "BookingService/BookingService.csproj"       "http://127.0.0.1:5208"
+start_dotnet "workers"    "WorkersService/WorkersService.csproj"       "http://127.0.0.1:5209"
+start_dotnet "messaging"  "MessagingService/MessagingService.csproj"   "http://127.0.0.1:5205"
+start_dotnet "cache"      "CacheService/CacheService.csproj"           "http://127.0.0.1:5206"
+start_dotnet "gateway"    "GatewayService/GatewayService.csproj"       "http://127.0.0.1:5200"
 echo
 
 echo "==> Frontend"
@@ -134,15 +183,15 @@ start_frontend
 echo
 
 echo "==> Waiting for health endpoints"
-wait_http "author"    "http://localhost:5207/health"
-wait_http "category"  "http://localhost:5204/health"
-wait_http "book"      "http://localhost:5203/health"
-wait_http "booking"   "http://localhost:5208/health"
-wait_http "workers"   "http://localhost:5209/health"
-wait_http "messaging" "http://localhost:5205/health"
-wait_http "cache"     "http://localhost:5206/health"
-wait_http "gateway"   "http://localhost:5200/health"
-wait_http "web"       "http://localhost:3000"
+wait_http "author"    "http://127.0.0.1:5207/health"
+wait_http "category"  "http://127.0.0.1:5204/health"
+wait_http "book"      "http://127.0.0.1:5203/health"
+wait_http "booking"   "http://127.0.0.1:5208/health"
+wait_http "workers"   "http://127.0.0.1:5209/health"
+wait_http "messaging" "http://127.0.0.1:5205/health"
+wait_http "cache"     "http://127.0.0.1:5206/health"
+wait_http "gateway"   "http://127.0.0.1:5200/health"
+wait_http "web"       "http://127.0.0.1:3000"
 echo
 
 cat <<EOF
@@ -150,19 +199,19 @@ cat <<EOF
 
   Frontend     http://localhost:3000
   Gateway      http://localhost:5200/swagger
-  Book         http://localhost:5203/swagger
-  Category     http://localhost:5204/swagger
-  Messaging    http://localhost:5205/swagger
-  Cache        http://localhost:5206/swagger
-  Author       http://localhost:5207/swagger
   Booking      http://localhost:5208/swagger
-  Workers      http://localhost:5209/swagger  (POST /api/orders/enqueue)
-
-  RabbitMQ UI  http://localhost:15672  (guest/guest)
   Logs         $LOG_DIR
+  Stop         $ROOT/scripts/stop-all.sh
 
-  Press Ctrl+C to stop everything.
+  Tip: for a stack that survives closing the terminal, prefer:
+    python3 $ROOT/scripts/start-detached.py
 EOF
 
-# Keep the script alive while children run.
-wait
+if [[ "$MODE" == "foreground" ]]; then
+  echo
+  echo "  Press Ctrl+C to stop everything."
+  wait
+else
+  echo
+  echo "  Detached mode – script exits, services keep running."
+fi

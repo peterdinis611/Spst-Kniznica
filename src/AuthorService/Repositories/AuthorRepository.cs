@@ -72,13 +72,15 @@ public class AuthorRepository(AuthorDbContext db) : IAuthorRepository
     public Task<Author?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         EnsureValidId(id);
-        return db.Authors.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        var idText = id.ToString();
+        return db.Authors.AsNoTracking().FirstOrDefaultAsync(a => a.Id.ToString() == idText, cancellationToken);
     }
 
     public Task<Author?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         EnsureValidId(id);
-        return db.Authors.FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        var idText = id.ToString();
+        return db.Authors.FirstOrDefaultAsync(a => a.Id.ToString() == idText, cancellationToken);
     }
 
     public Task AddAsync(Author author, CancellationToken cancellationToken = default)

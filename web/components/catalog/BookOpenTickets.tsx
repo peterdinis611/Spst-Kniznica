@@ -16,11 +16,13 @@ type BookOpenTicketsProps = {
   bookId: string;
 };
 
-const OPEN = new Set([
-  BOOKING_STATUS.reserved,
-  BOOKING_STATUS.active,
-  BOOKING_STATUS.overdue,
-]);
+function isOpenStatus(status: number): boolean {
+  return (
+    status === BOOKING_STATUS.reserved ||
+    status === BOOKING_STATUS.active ||
+    status === BOOKING_STATUS.overdue
+  );
+}
 
 export async function BookOpenTickets({ bookId }: BookOpenTicketsProps) {
   const result = await searchBookingsAction({
@@ -29,7 +31,7 @@ export async function BookOpenTickets({ bookId }: BookOpenTicketsProps) {
     pageSize: 8,
   });
   const items = (result?.data?.items ?? []).filter((item) =>
-    OPEN.has(normalizeBookingStatus(item.status)),
+    isOpenStatus(normalizeBookingStatus(item.status)),
   );
 
   if (items.length === 0) {

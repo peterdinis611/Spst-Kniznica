@@ -67,11 +67,15 @@ public class BookRepository(BookDbContext db) : IBookRepository
     {
         EnsureValidId(id);
 
-        IQueryable<Book> query = includeCopies
-            ? db.Books.Include(b => b.Copies).AsSplitQuery()
-            : db.Books.AsNoTracking();
+        // SQLite stores seed GUIDs as TEXT; compare as string so EF doesn't bind a BLOB parameter.
+        var idText = id.ToString();
+        IQueryable<Book> query = db.Books.AsNoTracking();
+        if (includeCopies)
+        {
+            query = query.Include(b => b.Copies);
+        }
 
-        return query.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+        return query.FirstOrDefaultAsync(b => b.Id.ToString() == idText, cancellationToken);
     }
 
     public Task AddAsync(Book book, CancellationToken cancellationToken = default)

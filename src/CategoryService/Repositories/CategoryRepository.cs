@@ -63,13 +63,15 @@ public class CategoryRepository(CategoryDbContext db) : ICategoryRepository
     public Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         EnsureValidId(id);
-        return db.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        var idText = id.ToString();
+        return db.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.Id.ToString() == idText, cancellationToken);
     }
 
     public Task<Category?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         EnsureValidId(id);
-        return db.Categories.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        var idText = id.ToString();
+        return db.Categories.FirstOrDefaultAsync(c => c.Id.ToString() == idText, cancellationToken);
     }
 
     public Task AddAsync(Category category, CancellationToken cancellationToken = default)

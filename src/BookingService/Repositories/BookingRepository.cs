@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using BookingService.Data;
 using BookingService.DTOs;
 using BookingService.Exceptions;
@@ -11,19 +10,6 @@ namespace BookingService.Repositories;
 
 public class BookingRepository(BookingDbContext db) : IBookingRepository
 {
-    private static readonly IReadOnlyDictionary<string, Expression<Func<Booking, object>>> SortMap =
-        new Dictionary<string, Expression<Func<Booking, object>>>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["duedate"] = b => b.DueDate,
-            ["reservedat"] = b => b.ReservedAt,
-            ["borrowedat"] = b => b.BorrowedAt!,
-            ["createdat"] = b => b.CreatedAt,
-            ["updatedat"] = b => b.UpdatedAt,
-            ["status"] = b => b.Status,
-            ["borrowername"] = b => b.BorrowerName,
-            ["borroweremail"] = b => b.BorrowerEmail
-        };
-
     public async Task<PagedResult<Booking>> FindAsync(
         BookingQueryFilter filter,
         CancellationToken cancellationToken = default)
@@ -73,8 +59,44 @@ public class BookingRepository(BookingDbContext db) : IBookingRepository
                 (b.Notes != null && EF.Functions.Like(b.Notes, $"%{search}%")));
         }
 
-        query = query.OrderByProperty(filter.SortBy, filter.IsDescending, SortMap, b => b.DueDate);
-        return await query.ToPagedResultAsync(filter, cancellationToken);
+        // SQLite cannot ORDER BY DateTimeOffset in SQL — filter in DB, sort/page in memory.
+        var filtered = await query.ToListAsync(cancellationToken);
+        var sorted = SortInMemory(filtered, filter.SortBy, filter.IsDescending);
+        var totalCount = sorted.Count;
+        var items = sorted
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .ToList();
+
+        return new PagedResult<Booking>
+        {
+            Items = items,
+            Page = filter.Page,
+            PageSize = filter.PageSize,
+            TotalCount = totalCount
+        };
+    }
+
+    private static List<Booking> SortInMemory(
+        IReadOnlyList<Booking> items,
+        string sortBy,
+        bool descending)
+    {
+        Func<Booking, IComparable> key = sortBy.Trim().ToLowerInvariant() switch
+        {
+            "status" => b => (int)b.Status,
+            "borrowername" => b => b.BorrowerName,
+            "borroweremail" => b => b.BorrowerEmail,
+            "reservedat" => b => b.ReservedAt.UtcTicks,
+            "borrowedat" => b => b.BorrowedAt?.UtcTicks ?? long.MinValue,
+            "createdat" => b => b.CreatedAt.UtcTicks,
+            "updatedat" => b => b.UpdatedAt.UtcTicks,
+            _ => b => b.DueDate.UtcTicks
+        };
+
+        return descending
+            ? items.OrderByDescending(key).ToList()
+            : items.OrderBy(key).ToList();
     }
 
     public Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
