@@ -104,7 +104,7 @@ export function AuthorsCatalog({
             className={cn(
               "rounded-full",
               !letter
-                ? "bg-accent text-black hover:bg-accent-deep"
+                ? "bg-accent text-accent-foreground hover:bg-accent-deep"
                 : "border-rule bg-paper-deep text-muted-foreground dark:border-white/10",
             )}
             render={
@@ -132,7 +132,7 @@ export function AuthorsCatalog({
                 className={cn(
                   "min-w-10 rounded-full",
                   active
-                    ? "bg-accent text-black hover:bg-accent-deep"
+                    ? "bg-accent text-accent-foreground hover:bg-accent-deep"
                     : "border-rule bg-paper-deep text-muted-foreground dark:border-white/10",
                 )}
                 render={<Link href={href} />}
@@ -202,7 +202,7 @@ export function AuthorsCatalog({
 
               <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
                 {author.bookCount > 0 ? (
-                  <Badge className="h-auto rounded-full bg-accent px-3 py-1 font-display text-lg tabular-nums text-black hover:bg-accent">
+                  <Badge className="h-auto rounded-full bg-accent px-3 py-1 font-display text-lg tabular-nums text-accent-foreground hover:bg-accent">
                     {author.bookCount}
                   </Badge>
                 ) : null}

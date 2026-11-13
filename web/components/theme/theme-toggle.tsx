@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils";
 
 const toggleClassName =
   "size-10 rounded-full border-rule bg-paper-deep text-ink " +
-  "hover:border-accent hover:bg-accent hover:text-black " +
+  "hover:border-accent hover:bg-accent hover:text-accent-foreground " +
   "dark:border-white/25 dark:bg-transparent dark:text-white " +
-  "dark:hover:border-accent dark:hover:bg-accent dark:hover:text-black";
+  "dark:hover:border-accent dark:hover:bg-accent dark:hover:text-accent-foreground";
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();

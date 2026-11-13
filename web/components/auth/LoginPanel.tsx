@@ -1,93 +1,208 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { ArrowRight, BookOpen, Library, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { resolveUserDisplayName } from "@/lib/auth/display-name";
+import { cn } from "@/lib/utils";
+
+function initials(name: string, email?: string | null): string {
+  const source = name.trim() || email?.split("@")[0] || "?";
+  const parts = source.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return `${parts[0]![0] ?? ""}${parts[1]![0] ?? ""}`.toUpperCase();
+  }
+  return source.slice(0, 2).toUpperCase();
+}
+
+function roleLabel(roles: string[]): string {
+  if (roles.length === 0) return "Čitateľ";
+  if (roles.some((r) => r.toLowerCase() === "admin")) return "Administrátor";
+  if (roles.some((r) => r.toLowerCase() === "librarian")) return "Knižník";
+  return roles[0] ?? "Čitateľ";
+}
 
 export function LoginPanel() {
-  const router = useRouter();
-  const { ready, entraEnabled, user, login, logout, error } = useAuth();
+  const { ready, entraEnabled, user, account, login, logout, error } =
+    useAuth();
 
   if (!ready) {
     return (
-      <p className="text-sm text-muted-foreground">Načítavam autentifikáciu…</p>
+      <PanelShell>
+        <LoadingState />
+      </PanelShell>
     );
   }
 
   if (user?.isAuthenticated) {
+    const fullName = resolveUserDisplayName(user, account);
+    const mono = initials(fullName, user.email);
+    const primaryRole = roleLabel(user.roles);
+
     return (
-      <div className="space-y-5 border border-rule bg-paper-deep/40 p-5 sm:p-6 dark:border-white/10">
-        <div>
-          <p className="text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
-            Prihlásený
-          </p>
-          <h2 className="mt-2 font-display text-3xl tracking-tight text-ink">
-            {user.name}
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {user.email ?? "bez emailu"} · {user.roles.join(", ") || "bez rolí"}
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          {user.isStaff ? (
-            <Button
-              className="h-11 rounded-none bg-accent text-black hover:bg-accent-deep"
-              onClick={() => router.push("/admin")}
-            >
-              Admin pult
-            </Button>
-          ) : null}
-          <Button
-            variant="outline"
-            className="h-11 rounded-none border-ink"
-            onClick={() => void logout()}
+      <PanelShell accentBar>
+        <div className="flex items-start justify-between gap-4">
+          <div
+            className="flex size-12 items-center justify-center border border-sage/25 bg-mint/60 font-display text-base text-sage dark:border-accent/50 dark:bg-accent/15 dark:text-ink"
+            aria-hidden
           >
-            Odhlásiť
-          </Button>
+            {mono}
+          </div>
+          <span className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
+            ● prihlásený
+          </span>
         </div>
-      </div>
+
+        <h2 className="mt-6 font-display text-2xl tracking-tight text-ink">
+          {fullName}
+        </h2>
+        <p className="mt-1 break-all text-sm text-muted-foreground">
+          {user.email ?? "bez emailu"}
+        </p>
+
+        <RoleBadges primaryRole={primaryRole} roles={user.roles} />
+
+        <nav className="mt-6 grid gap-1.5" aria-label="Skratky účtu">
+          <QuickLink href="/books" icon={BookOpen} label="Katalóg kníh" />
+          <QuickLink href="/bookings" icon={Library} label="Moje výpožičky" />
+          {user.isStaff ? (
+            <QuickLink href="/admin" icon={Shield} label="Admin pult" />
+          ) : null}
+        </nav>
+
+        <Button
+          variant="outline"
+          className="mt-6 h-10 w-full rounded-none border-rule bg-paper/50 text-ink hover:bg-mint/30 dark:bg-transparent"
+          onClick={() => void logout()}
+        >
+          <LogOut className="size-4" strokeWidth={1.8} aria-hidden />
+          Odhlásiť sa
+        </Button>
+      </PanelShell>
     );
   }
 
   return (
-    <div className="space-y-5 border border-rule bg-paper-deep/40 p-5 sm:p-6 dark:border-white/10">
-      <div>
-        <p className="text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
-          {entraEnabled ? "Microsoft Entra ID" : "Development auth"}
-        </p>
-        <h2 className="mt-2 font-display text-3xl tracking-tight text-ink">
-          {entraEnabled ? "Prihlásenie cez Entra" : "Lokálny admin režim"}
-        </h2>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          {entraEnabled
-            ? "Prihlás sa firemným účtom. Token pôjde na AuthService/AdminService cez gateway."
-            : "Entra je vypnutá (Entra:Enabled=false). Backend používa Development principal s rolou Admin."}
-        </p>
-      </div>
+    <PanelShell accentBar>
+      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+        {entraEnabled ? "Microsoft Entra" : "Development"}
+      </p>
+      <h2 className="mt-2 font-display text-2xl tracking-tight text-ink">
+        {entraEnabled ? "Prihlás sa" : "Dev režim"}
+      </h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {entraEnabled
+          ? "Účet Microsoft ti odomkne rezerváciu kníh."
+          : "Lokálny administrátor pre vývoj."}
+      </p>
 
       {error ? (
-        <p className="whitespace-pre-wrap border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm leading-relaxed text-red-700 dark:text-red-300">
+        <p className="mt-4 whitespace-pre-wrap border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-800 dark:text-red-300">
           {error}
         </p>
       ) : null}
 
       <Button
-        className="h-11 w-full rounded-none bg-accent text-black hover:bg-accent-deep"
+        className="mt-6 h-11 w-full rounded-none bg-accent text-accent-foreground hover:bg-accent-deep"
         onClick={() => void login()}
       >
         {entraEnabled ? "Prihlásiť cez Entra" : "Pokračovať ako Dev Admin"}
+        <ArrowRight className="size-4" strokeWidth={1.8} aria-hidden />
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground">
-        Späť na{" "}
-        <Link
-          href="/"
-          className="font-medium text-ink underline-offset-4 hover:underline"
-        >
-          landing
-        </Link>
+      <p className="mt-4 text-center text-xs text-muted-foreground">
+        Nemáš účet? Požiadaj správcu školy o prístup v Entra.
       </p>
+    </PanelShell>
+  );
+}
+
+function PanelShell({
+  children,
+  accentBar,
+}: {
+  children: React.ReactNode;
+  accentBar?: boolean;
+}) {
+  return (
+    <div className="relative border border-rule/90 bg-card/90 p-6 shadow-[0_18px_40px_-28px_rgba(14,26,36,0.35)] backdrop-blur-[2px] sm:p-7 dark:border-white/10 dark:bg-paper-deep/50 dark:shadow-none">
+      {accentBar ? (
+        <div
+          aria-hidden
+          className="absolute top-0 left-0 h-full w-1 bg-gradient-to-b from-sage via-mint to-accent-deep dark:from-sage dark:via-accent dark:to-accent-deep"
+        />
+      ) : null}
+      <div className={accentBar ? "pl-2" : undefined}>{children}</div>
     </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <>
+      <div className="h-3 w-20 animate-pulse bg-rule dark:bg-white/10" />
+      <div className="mt-5 h-10 w-40 animate-pulse bg-rule dark:bg-white/10" />
+      <p className="mt-4 text-sm text-muted-foreground">Načítavam…</p>
+    </>
+  );
+}
+
+function RoleBadges({
+  primaryRole,
+  roles,
+}: {
+  primaryRole: string;
+  roles: string[];
+}) {
+  return (
+    <div className="mt-4 flex flex-wrap gap-2">
+      <Badge className="rounded-none border border-sage/20 bg-mint/80 px-2.5 text-xs text-sage dark:border-transparent dark:bg-accent dark:text-accent-foreground">
+        {primaryRole}
+      </Badge>
+      {roles.map((role) => (
+        <Badge
+          key={role}
+          variant="outline"
+          className="rounded-none border-rule text-xs"
+        >
+          {role}
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
+function QuickLink({
+  href,
+  icon: Icon,
+  label,
+}: {
+  href: string;
+  icon: typeof BookOpen;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "group flex items-center justify-between gap-2 border border-transparent px-2 py-2 text-sm text-ink transition",
+        "hover:border-rule hover:bg-accent-soft/40 dark:hover:border-white/10 dark:hover:bg-paper/80",
+      )}
+    >
+      <span className="flex items-center gap-2">
+        <Icon
+          className="size-4 text-sage dark:text-accent"
+          strokeWidth={1.6}
+          aria-hidden
+        />
+        {label}
+      </span>
+      <ArrowRight
+        className="size-3.5 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-ink"
+        aria-hidden
+      />
+    </Link>
   );
 }

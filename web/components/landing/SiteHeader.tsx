@@ -100,14 +100,16 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
                   "group relative flex items-baseline gap-4 px-5 py-4 transition",
                   "border-b border-rule last:border-b-0 dark:border-white/10",
                   active
-                    ? "bg-accent text-black"
+                    ? "bg-accent text-accent-foreground"
                     : "hover:bg-paper-deep/80 dark:hover:bg-white/5",
                 )}
               >
                 <span
                   className={cn(
                     "w-8 shrink-0 font-mono text-[11px] tracking-[0.16em]",
-                    active ? "text-black/55" : "text-muted-foreground",
+                    active
+                      ? "text-accent-foreground/55"
+                      : "text-muted-foreground",
                   )}
                 >
                   {n}
@@ -116,7 +118,7 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
                   <span
                     className={cn(
                       "block font-display text-[1.65rem] leading-none tracking-tight",
-                      active ? "text-black" : "text-ink",
+                      active ? "text-accent-foreground" : "text-ink",
                     )}
                   >
                     {link.label}
@@ -124,7 +126,9 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
                   <span
                     className={cn(
                       "mt-1.5 block text-xs tracking-wide",
-                      active ? "text-black/60" : "text-muted-foreground",
+                      active
+                        ? "text-accent-foreground/60"
+                        : "text-muted-foreground",
                     )}
                   >
                     {link.note}
@@ -133,7 +137,7 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
                 <ArrowRight
                   className={cn(
                     "mt-1 size-4 shrink-0 transition group-hover:translate-x-0.5",
-                    active ? "text-black" : "text-ink/35",
+                    active ? "text-accent-foreground" : "text-ink/35",
                   )}
                   strokeWidth={1.8}
                   aria-hidden
@@ -244,7 +248,7 @@ export function SiteHeader() {
                   <span className="flex items-center px-4 py-3.5 text-sm font-semibold tracking-wide">
                     Prihlásiť sa
                   </span>
-                  <span className="flex items-center justify-center bg-ink px-3.5 text-paper transition group-hover:bg-accent group-hover:text-black">
+                  <span className="flex items-center justify-center bg-ink px-3.5 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground">
                     <LogIn className="size-4" strokeWidth={1.8} aria-hidden />
                   </span>
                 </Link>

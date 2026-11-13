@@ -9,9 +9,35 @@ public static class ClaimsPrincipalExtensions
            ?? user.FindFirstValue(ClaimTypes.NameIdentifier);
 
     public static string? GetDisplayName(this ClaimsPrincipal user)
-        => user.FindFirstValue("name")
-           ?? user.FindFirstValue(ClaimTypes.Name)
-           ?? user.GetEmail();
+    {
+        var name = user.FindFirstValue("name")
+                   ?? user.FindFirstValue(ClaimTypes.Name);
+
+        var given = user.FindFirstValue("given_name");
+        var family = user.FindFirstValue("family_name");
+        var combined = string.Join(
+            " ",
+            new[] { given, family }.Where(static s => !string.IsNullOrWhiteSpace(s)));
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            name = name.Trim();
+            if (!string.IsNullOrWhiteSpace(family)
+                && !name.Contains(' ', StringComparison.Ordinal)
+                && (string.IsNullOrWhiteSpace(given)
+                    || name.Equals(given.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                return $"{name} {family.Trim()}".Trim();
+            }
+
+            return name;
+        }
+
+        if (!string.IsNullOrWhiteSpace(combined))
+            return combined.Trim();
+
+        return user.GetEmail();
+    }
 
     public static string? GetEmail(this ClaimsPrincipal user)
         => user.FindFirstValue(ClaimTypes.Email)

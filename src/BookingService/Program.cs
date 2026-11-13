@@ -7,6 +7,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Caching;
+using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Messaging;
 
@@ -31,6 +32,7 @@ try
         });
     });
     builder.Services.AddSpstCors(builder.Configuration);
+    builder.Services.AddSpstEntraAuthentication(builder.Configuration);
 
     builder.Services.AddDbContext<BookingDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -69,6 +71,7 @@ try
     });
 
     app.UseHttpsRedirection();
+    app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health");

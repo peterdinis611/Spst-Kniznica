@@ -51,7 +51,7 @@ export function AdminDashboard() {
           {entraEnabled ? " cez Entra" : " (dev auth)"}.
         </p>
         <Button
-          className="rounded-none bg-accent text-black hover:bg-accent-deep"
+          className="rounded-none bg-accent text-accent-foreground hover:bg-accent-deep"
           onClick={() => void login()}
         >
           Prihlásiť sa

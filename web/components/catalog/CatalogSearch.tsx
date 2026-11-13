@@ -138,7 +138,7 @@ export function CatalogSearch({
           </div>
           <Button
             type="submit"
-            className="h-12 shrink-0 rounded-none rounded-r-full bg-accent px-5 text-black hover:bg-accent-deep sm:px-6"
+            className="h-12 shrink-0 rounded-none rounded-r-full bg-accent px-5 text-accent-foreground hover:bg-accent-deep sm:px-6"
           >
             Hľadať
           </Button>

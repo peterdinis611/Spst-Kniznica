@@ -94,7 +94,7 @@ async function BookDetailContent({
 
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="rounded-full bg-accent text-black hover:bg-accent">
+            <Badge className="rounded-full bg-accent text-accent-foreground hover:bg-accent">
               {book.categoryName ?? "Katalóg"}
             </Badge>
             <Badge
@@ -167,7 +167,7 @@ async function BookDetailContent({
               <span className="px-5 py-3 text-sm font-semibold">
                 Späť do fondu
               </span>
-              <span className="flex items-center self-stretch bg-ink px-3 text-paper transition group-hover:bg-accent group-hover:text-black">
+              <span className="flex items-center self-stretch bg-ink px-3 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground">
                 <ArrowRight className="size-4" aria-hidden />
               </span>
             </Button>

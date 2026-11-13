@@ -21,6 +21,7 @@ import {
 } from "@/lib/auth/client";
 import { getMsalInstance, resolveApiScope } from "@/lib/auth/config";
 import { formatAuthError } from "@/lib/auth/errors";
+import { resolveUserDisplayName } from "@/lib/auth/display-name";
 import type { AuthConfig, AuthUser } from "@/lib/auth/types";
 
 type AuthContextValue = {
@@ -75,7 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         scopes: scope ? [scope] : ["User.Read"],
       });
       const me = await fetchAuthMe(result.accessToken);
-      setUser(me);
+      setUser({
+        ...me,
+        name: resolveUserDisplayName(me, active),
+      });
       setError(null);
     } catch (err) {
       if (err instanceof InteractionRequiredAuthError) {

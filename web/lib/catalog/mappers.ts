@@ -8,9 +8,9 @@ import type {
 
 const COVER_PALETTES = [
   { accent: "#7BA08A", secondary: "#F3F7F2", motif: "crow" as const },
-  { accent: "#1F4E8C", secondary: "#F6E27A", motif: "yellow" as const },
+  { accent: "#1F4E8C", secondary: "#D8E8F0", motif: "abstract" as const },
   { accent: "#0E1A24", secondary: "#E8EEF2", motif: "forest" as const },
-  { accent: "#1C6B7A", secondary: "#F2D66B", motif: "glass" as const },
+  { accent: "#1C6B7A", secondary: "#C5E4E8", motif: "glass" as const },
   { accent: "#3A1D22", secondary: "#E8D8CF", motif: "silhouette" as const },
   { accent: "#7A4E2D", secondary: "#F5EADF", motif: "abstract" as const },
 ] as const;

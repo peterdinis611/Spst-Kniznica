@@ -70,23 +70,23 @@ export async function SiteFooter() {
           </ul>
         </div>
 
-        <div className="on-accent bg-accent p-6 text-black md:self-start">
-          <p className="font-display text-2xl leading-tight text-black">
+        <div className="on-accent bg-accent p-6 text-accent-foreground md:self-start">
+          <p className="font-display text-2xl leading-tight text-accent-foreground">
             Pripravení na ďalšiu knihu?
           </p>
-          <p className="mt-3 text-sm text-black/75">
+          <p className="mt-3 text-sm text-accent-foreground/75">
             Otvor fond, alebo choď rovno na výpožičný pult.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             <Link
               href="/books"
-              className="inline-flex border border-black bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white hover:text-black"
+              className="inline-flex border border-accent-foreground/30 bg-ink px-4 py-2.5 text-sm font-semibold text-paper transition hover:bg-paper hover:text-ink"
             >
               Do katalógu
             </Link>
             <Link
               href="/bookings"
-              className="inline-flex border border-black px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-black hover:text-accent"
+              className="inline-flex border border-accent-foreground/50 px-4 py-2.5 text-sm font-semibold text-accent-foreground transition hover:bg-accent-foreground hover:text-accent"
             >
               Na pult
             </Link>

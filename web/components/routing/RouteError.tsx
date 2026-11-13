@@ -41,7 +41,7 @@ export function RouteError({
         ) : null}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button
-            className="h-11 rounded-none bg-accent px-5 text-black hover:bg-accent-deep"
+            className="h-11 rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
             onClick={reset}
           >
             <RotateCcw className="size-4" strokeWidth={1.8} aria-hidden />

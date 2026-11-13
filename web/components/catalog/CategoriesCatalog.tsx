@@ -147,7 +147,7 @@ export function CategoriesCatalog({
 
                 {category.bookCount > 0 ? (
                   <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <Badge className="h-auto rounded-full bg-accent px-3.5 py-1.5 font-display text-xl tabular-nums text-black hover:bg-accent">
+                    <Badge className="h-auto rounded-full bg-accent px-3.5 py-1.5 font-display text-xl tabular-nums text-accent-foreground hover:bg-accent">
                       {category.bookCount}
                     </Badge>
                     <span className="text-xs tracking-[0.14em] text-muted-foreground uppercase">
@@ -163,7 +163,7 @@ export function CategoriesCatalog({
                   <span className="px-5 py-2.5 text-sm font-semibold">
                     Zobraziť knihy
                   </span>
-                  <span className="flex items-center self-stretch bg-ink px-3.5 text-paper transition group-hover:bg-accent group-hover:text-black">
+                  <span className="flex items-center self-stretch bg-ink px-3.5 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground">
                     <ArrowRight className="size-4" aria-hidden />
                   </span>
                 </Button>

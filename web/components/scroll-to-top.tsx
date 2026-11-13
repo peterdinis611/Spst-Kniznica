@@ -42,7 +42,7 @@ export function ScrollToTop() {
               type="button"
               size="icon"
               className={cn(
-                "pointer-events-auto size-11 rounded-full border border-ink bg-accent text-black shadow-[4px_4px_0_rgba(0,0,0,0.18)]",
+                "pointer-events-auto size-11 rounded-full border border-ink bg-accent text-accent-foreground shadow-[4px_4px_0_rgba(0,0,0,0.18)]",
                 "hover:bg-accent-deep dark:border-white/20 dark:shadow-[4px_4px_0_rgba(0,0,0,0.45)]",
                 !visible && "pointer-events-none",
               )}

@@ -7,6 +7,12 @@ export function explainBookingError(message: string): string {
   if (/\bbookcopyid\b/i.test(message) || /active reservation/i.test(message)) {
     return "Tento exemplár už má aktívnu výpožičku.";
   }
+  if (/\b401\b/.test(message) || /unauthorized/i.test(message)) {
+    return "Na výpožičku musíš byť prihlásený.";
+  }
+  if (/\b403\b/.test(message) || /forbidden/i.test(message)) {
+    return "Na túto akciu nemáš oprávnenie (potrebná rola knižníka/admina).";
+  }
   if (
     message.startsWith("API ") ||
     /fetch failed/i.test(message) ||

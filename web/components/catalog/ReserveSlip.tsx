@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAction } from "next-safe-action/hooks";
 import { ArrowRight } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import {
   createBookingAction,
   formatDeskDate,
-  getReaderSnapshot,
-  getServerReaderSnapshot,
-  subscribeReader,
   toDueDateIso,
-  writeReader,
 } from "@/lib/bookings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,46 +44,102 @@ function firstValidationMessage(errors: unknown): string | undefined {
 }
 
 export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
-  const stored = useSyncExternalStore(
-    subscribeReader,
-    getReaderSnapshot,
-    getServerReaderSnapshot,
-  );
-  const [name, setName] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
+  const { ready, entraEnabled, user, login, getAccessToken } = useAuth();
   const [dueDate, setDueDate] = useState(defaultDueDate);
   const [notes, setNotes] = useState("");
+  const [clientError, setClientError] = useState<string | null>(null);
   const { execute, result, isPending, reset } = useAction(createBookingAction);
-  const nameValue = name ?? stored?.name ?? "";
-  const emailValue = email ?? stored?.email ?? "";
 
   const issued = result.data;
+  const authenticated = Boolean(user?.isAuthenticated);
+  const displayName = user?.name ?? "";
+  const displayEmail = user?.email ?? "";
 
-  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    setClientError(null);
+  }, [user?.id]);
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    writeReader({ name: nameValue, email: emailValue });
-    execute({
-      bookId,
-      borrowerName: nameValue,
-      borrowerEmail: emailValue,
-      dueDate: toDueDateIso(dueDate),
-      notes: notes.trim() || undefined,
-    });
+    setClientError(null);
+
+    if (!authenticated || !displayEmail) {
+      setClientError("Na výpožičný lístok sa musíš prihlásiť.");
+      return;
+    }
+
+    try {
+      const accessToken = await resolveActionAccessToken({
+        entraEnabled,
+        getAccessToken,
+      });
+      execute({
+        accessToken,
+        bookId,
+        borrowerName: displayName || displayEmail,
+        borrowerEmail: displayEmail,
+        dueDate: toDueDateIso(dueDate),
+        notes: notes.trim() || undefined,
+      });
+    } catch (err) {
+      setClientError(err instanceof Error ? err.message : "Prihlásenie zlyhalo.");
+    }
+  }
+
+  if (!ready) {
+    return (
+      <section className="relative mt-8 max-w-xl border border-rule bg-paper-deep/70 p-5 sm:p-6 dark:border-white/10">
+        <p className="text-sm text-muted-foreground">Načítavam prístup…</p>
+      </section>
+    );
+  }
+
+  if (!authenticated) {
+    return (
+      <section className="relative mt-8 max-w-xl border border-rule bg-paper-deep/70 p-5 sm:p-6 dark:border-white/10">
+        <p className="text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
+          Výpožičný lístok
+        </p>
+        <h2 className="mt-2 font-display text-3xl tracking-tight text-ink">
+          Prihlásenie je povinné
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          Rezerváciu môže vystaviť len prihlásený používateľ. Údaje (meno, email)
+          sa vezmú z tvojho účtu{entraEnabled ? " (Entra)" : ""}.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button
+            type="button"
+            className="h-11 rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
+            onClick={() => void login()}
+          >
+            Prihlásiť sa
+          </Button>
+          <Button
+            variant="outline"
+            className="h-11 rounded-none border-ink"
+            render={<Link href="/login" />}
+          >
+            Otvoriť /login
+          </Button>
+        </div>
+      </section>
+    );
   }
 
   if (issued) {
     return (
-      <section className="reveal relative mt-8 max-w-xl overflow-hidden border border-ink bg-accent p-6 text-black sm:p-7">
+      <section className="on-accent reveal relative mt-8 max-w-xl overflow-hidden border border-ink bg-accent p-6 sm:p-7">
         <p className="text-[11px] font-semibold tracking-[0.22em] uppercase">
           Lístok vystavený
         </p>
-        <p className="mt-4 inline-flex -rotate-6 border-2 border-black px-3 py-1 font-display text-sm tracking-[0.2em] uppercase">
+        <p className="mt-4 inline-flex -rotate-6 border-2 border-accent-foreground px-3 py-1 font-display text-sm tracking-[0.2em] uppercase">
           Rezervované
         </p>
         <h2 className="mt-5 font-display text-4xl leading-none tracking-tight">
           {formatDeskDate(issued.dueDate)}
         </h2>
-        <p className="mt-3 max-w-sm text-sm leading-relaxed text-black/75">
+        <p className="mt-3 max-w-sm text-sm leading-relaxed opacity-75">
           {issued.borrowerName} má {title} rezervované do tohto termínu. Lístok
           je na výpožičnom pulte.
         </p>
@@ -99,7 +153,7 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
           </Button>
           <Button
             variant="outline"
-            className="h-11 rounded-none border-black bg-transparent text-black hover:bg-black hover:text-accent"
+            className="h-11 rounded-none border-accent-foreground bg-transparent text-accent-foreground hover:bg-accent-foreground hover:text-accent"
             onClick={() => reset()}
           >
             Ďalší lístok
@@ -110,7 +164,9 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
   }
 
   const error =
-    result.serverError ?? firstValidationMessage(result.validationErrors);
+    clientError ??
+    result.serverError ??
+    firstValidationMessage(result.validationErrors);
 
   return (
     <section className="relative mt-8 max-w-xl border border-rule bg-paper-deep/70 p-5 sm:p-6 dark:border-white/10">
@@ -136,42 +192,22 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
         </div>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           {available
-            ? "Lístok ide priamo do BookingService. Meno a email si prehliadač zapamätá na ďalší raz — účet zatiaľ nie je napojený."
+            ? "Lístok ide pod tvoj účet do BookingService. Meno a email sú z prihlásenia."
             : "Voľný exemplár práve nie je. Rezerváciu vystavíš, keď sa titul vráti do fondu."}
         </p>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="borrower-name">Meno</Label>
-              <Input
-                id="borrower-name"
-                name="borrowerName"
-                autoComplete="name"
-                value={nameValue}
-                onChange={(event) => setName(event.target.value)}
-                required
-                disabled={!available || isPending}
-                placeholder="Anna Nováková"
-                className="h-11 rounded-none border-rule bg-paper dark:border-white/15"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="borrower-email">Email</Label>
-              <Input
-                id="borrower-email"
-                name="borrowerEmail"
-                type="email"
-                autoComplete="email"
-                value={emailValue}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-                disabled={!available || isPending}
-                placeholder="anna.novakova@spst.sk"
-                className="h-11 rounded-none border-rule bg-paper dark:border-white/15"
-              />
-            </div>
+        <dl className="mt-4 grid gap-2 border border-rule bg-paper/60 px-3 py-3 text-sm dark:border-white/10">
+          <div className="flex flex-wrap justify-between gap-2">
+            <dt className="text-muted-foreground">Čitateľ</dt>
+            <dd className="font-medium text-ink">{displayName || displayEmail}</dd>
           </div>
+          <div className="flex flex-wrap justify-between gap-2">
+            <dt className="text-muted-foreground">Email</dt>
+            <dd className="font-mono text-xs text-ink">{displayEmail}</dd>
+          </div>
+        </dl>
+
+        <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div className="grid gap-4 sm:grid-cols-[0.8fr_1.2fr]">
             <div className="space-y-2">
               <Label htmlFor="due-date">Termín vrátenia</Label>
@@ -210,7 +246,7 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
           <Button
             type="submit"
             disabled={!available || isPending}
-            className="h-11 rounded-none bg-accent px-5 text-black hover:bg-accent-deep"
+            className="h-11 rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
           >
             {isPending ? "Vystavujem…" : "Vystaviť lístok"}
             <ArrowRight className="size-4" aria-hidden />

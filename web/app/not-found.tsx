@@ -17,7 +17,7 @@ export default function NotFound() {
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button
-            className="h-11 rounded-none bg-accent px-5 text-black hover:bg-accent-deep"
+            className="h-11 rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
             render={<Link href="/" />}
           >
             Domov

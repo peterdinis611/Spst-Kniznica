@@ -26,6 +26,7 @@ const searchBookingsSchema = z.object({
 });
 
 const createBookingSchema = z.object({
+  accessToken: z.string().trim().optional(),
   bookId: z.string().trim().min(1, "Chýba kniha."),
   borrowerName: z
     .string()
@@ -46,6 +47,7 @@ const createBookingSchema = z.object({
 });
 
 const updateBookingSchema = z.object({
+  accessToken: z.string().trim().optional(),
   id: z.string().trim().min(1),
   bookId: z.string().trim().min(1),
   bookCopyId: z.string().trim().nullable().optional(),
@@ -139,15 +141,32 @@ export const createBookingAction = actionClient
   .inputSchema(createBookingSchema)
   .action(async ({ parsedInput }): Promise<DeskBooking> => {
     const created = await runBooking(() =>
-      apiPost<BookingDto>("/api/bookings", {
-        bookId: parsedInput.bookId,
-        borrowerName: parsedInput.borrowerName,
-        borrowerEmail: parsedInput.borrowerEmail,
-        status: BOOKING_STATUS.reserved,
-        dueDate: parsedInput.dueDate,
-        notes: parsedInput.notes || null,
-      }),
+      apiPost<BookingDto>(
+        "/api/bookings",
+        {
+          bookId: parsedInput.bookId,
+          borrowerName: parsedInput.borrowerName,
+          borrowerEmail: parsedInput.borrowerEmail,
+          status: BOOKING_STATUS.reserved,
+          dueDate: parsedInput.dueDate,
+          notes: parsedInput.notes || null,
+        },
+        undefined,
+        parsedInput.accessToken,
+      ),
     );
+
+    try {
+      await apiPost(
+        "/api/orders/enqueue",
+        { orderId: created.id },
+        undefined,
+        parsedInput.accessToken,
+      );
+    } catch {
+      // Workers queue je best-effort — rezervácia už je uložená.
+    }
+
     return mapBooking(created);
   });
 
@@ -156,11 +175,16 @@ export const updateBookingAction = actionClient
   .action(async ({ parsedInput }): Promise<DeskBooking> => {
     const { id, bookCopyId, notes, ...rest } = parsedInput;
     const updated = await runBooking(() =>
-      apiPut<BookingDto>(`/api/bookings/${id}`, {
-        ...rest,
-        bookCopyId: bookCopyId || null,
-        notes: notes || null,
-      }),
+      apiPut<BookingDto>(
+        `/api/bookings/${id}`,
+        {
+          ...rest,
+          bookCopyId: bookCopyId || null,
+          notes: notes || null,
+        },
+        undefined,
+        parsedInput.accessToken,
+      ),
     );
     return mapBooking(updated);
   });

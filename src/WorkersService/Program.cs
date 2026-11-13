@@ -1,4 +1,5 @@
 using Serilog;
+using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
 using WorkersService.Jobs;
 using WorkersService.Queue;
@@ -24,6 +25,7 @@ try
         });
     });
     builder.Services.AddSpstCors(builder.Configuration);
+    builder.Services.AddSpstEntraAuthentication(builder.Configuration);
 
     builder.Services.AddSingleton<IOrderJobQueue, ChannelOrderJobQueue>();
     builder.Services.AddHostedService<OrderProcessingHostedService>();
@@ -43,6 +45,8 @@ try
     });
 
     app.UseHttpsRedirection();
+    app.UseSpstAuthentication();
+    app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health");
 

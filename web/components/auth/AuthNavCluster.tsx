@@ -4,15 +4,17 @@ import Link from "next/link";
 import { LogIn } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
+import { resolveUserDisplayName } from "@/lib/auth/display-name";
 
 export function AuthNavCluster() {
-  const { ready, user } = useAuth();
+  const { ready, user, account } = useAuth();
+  const displayName = resolveUserDisplayName(user, account);
 
   if (!ready) {
     return (
       <Button
         size="sm"
-        className="hidden h-10 rounded-full bg-accent px-4 text-black hover:bg-accent-deep sm:inline-flex"
+        className="hidden h-10 rounded-full bg-accent px-4 text-accent-foreground hover:bg-accent-deep sm:inline-flex"
         disabled
       >
         …
@@ -35,10 +37,11 @@ export function AuthNavCluster() {
         ) : null}
         <Button
           size="sm"
-          className="hidden h-10 rounded-full bg-accent px-4 text-black hover:bg-accent-deep sm:inline-flex"
+          className="hidden h-10 max-w-[min(100%,13.5rem)] rounded-full bg-accent px-4 text-accent-foreground hover:bg-accent-deep sm:inline-flex"
           render={<Link href="/login" />}
+          title={displayName}
         >
-          {user.name.split(" ")[0] || "Účet"}
+          <span className="truncate">{displayName}</span>
         </Button>
         <Button
           size="icon"
@@ -57,7 +60,7 @@ export function AuthNavCluster() {
     <>
       <Button
         size="sm"
-        className="hidden h-10 rounded-full bg-accent px-4 text-black hover:bg-accent-deep sm:inline-flex"
+        className="hidden h-10 rounded-full bg-accent px-4 text-accent-foreground hover:bg-accent-deep sm:inline-flex"
         render={<Link href="/login" />}
       >
         <LogIn className="size-3.5" strokeWidth={1.8} aria-hidden />

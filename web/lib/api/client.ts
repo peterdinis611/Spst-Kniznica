@@ -76,10 +76,17 @@ async function parseJson<T>(response: Response, path: string): Promise<T> {
   }
 }
 
+function authHeaders(accessToken?: string | null): Record<string, string> {
+  const token = accessToken?.trim();
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
+
 async function apiRequest<T>(
   path: string,
   init?: RequestInit,
   body?: unknown,
+  accessToken?: string | null,
 ): Promise<T> {
   const hasBody = body !== undefined;
   const response = await fetch(apiUrl(path), {
@@ -87,6 +94,7 @@ async function apiRequest<T>(
     headers: {
       Accept: "application/json",
       ...(hasBody ? { "Content-Type": "application/json" } : {}),
+      ...authHeaders(accessToken),
       ...init?.headers,
     },
     body: hasBody ? JSON.stringify(body) : init?.body,
@@ -100,24 +108,30 @@ async function apiRequest<T>(
   return parseJson<T>(response, path);
 }
 
-export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
-  return apiRequest<T>(path, { ...init, method: "GET" });
+export async function apiGet<T>(
+  path: string,
+  init?: RequestInit,
+  accessToken?: string | null,
+): Promise<T> {
+  return apiRequest<T>(path, { ...init, method: "GET" }, undefined, accessToken);
 }
 
 export async function apiPost<T>(
   path: string,
   body?: unknown,
   init?: RequestInit,
+  accessToken?: string | null,
 ): Promise<T> {
-  return apiRequest<T>(path, { ...init, method: "POST" }, body);
+  return apiRequest<T>(path, { ...init, method: "POST" }, body, accessToken);
 }
 
 export async function apiPut<T>(
   path: string,
   body?: unknown,
   init?: RequestInit,
+  accessToken?: string | null,
 ): Promise<T> {
-  return apiRequest<T>(path, { ...init, method: "PUT" }, body);
+  return apiRequest<T>(path, { ...init, method: "PUT" }, body, accessToken);
 }
 
 export async function apiPatch<T>(

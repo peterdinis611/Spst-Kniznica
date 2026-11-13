@@ -35,7 +35,7 @@ export function BookCard({ book, index = 0 }: BookCardProps) {
       ? "border-rule bg-paper text-muted-foreground"
       : ratio <= 0.35
         ? "border-stair-1/40 bg-stair-1/15 text-stair-1"
-        : "border-transparent bg-accent text-black";
+        : "border-transparent bg-accent text-accent-foreground";
   const stockHint =
     book.availableCopies === 0
       ? "Momentálne nie je voľný exemplár"

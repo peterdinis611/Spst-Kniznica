@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { ArrowRight, Search } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { Badge } from "@/components/ui/badge";
@@ -16,10 +18,7 @@ import {
   BOOKING_STATUS_LABEL,
   duePhrase,
   formatDeskDate,
-  getReaderSnapshot,
-  getServerReaderSnapshot,
   searchBookingsAction,
-  subscribeReader,
   updateBookingAction,
   type BookingStatusCode,
   type DeskBooking,
@@ -49,7 +48,7 @@ const FILTERS: Array<{ id: "all" | BookingStatusCode; label: string }> = [
 
 const STAMP: Record<BookingStatusCode, string> = {
   0: "border-ink text-ink",
-  1: "border-black bg-accent text-black",
+  1: "border-ink bg-accent text-accent-foreground",
   2: "border-rule text-muted-foreground",
   3: "border-rule text-muted-foreground line-through decoration-1",
   4: "border-stair-2 text-stair-2",
@@ -75,13 +74,12 @@ export function BookingsDesk({
   const [status, setStatus] = useState<"all" | BookingStatusCode>("all");
   const [page, setPage] = useState(1);
   const [pageBookId, setPageBookId] = useState(bookId);
-  const [mineOnly, setMineOnly] = useState(false);
+  const [mineOnly, setMineOnly] = useState(true);
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const reader = useSyncExternalStore(
-    subscribeReader,
-    getReaderSnapshot,
-    getServerReaderSnapshot,
-  );
+  const [deskError, setDeskError] = useState<string | null>(null);
+  const { entraEnabled, user, getAccessToken } = useAuth();
+  const userEmail = user?.email ?? null;
+  const canManageDesk = Boolean(user?.isStaff);
 
   if (pageBookId !== bookId) {
     setPageBookId(bookId);
@@ -118,13 +116,13 @@ export function BookingsDesk({
   const input = useMemo(
     () => ({
       search: query.trim() || undefined,
-      borrowerEmail: mineOnly ? reader?.email : undefined,
+      borrowerEmail: mineOnly && userEmail ? userEmail : undefined,
       bookId: bookId || undefined,
       status: status === "all" ? undefined : status,
       page,
       pageSize: 40,
     }),
-    [query, mineOnly, reader?.email, bookId, status, page],
+    [query, mineOnly, userEmail, bookId, status, page],
   );
 
   const inputKey = JSON.stringify(input);
@@ -146,18 +144,29 @@ export function BookingsDesk({
     (item) => item.status === BOOKING_STATUS.overdue,
   ).length;
 
-  function changeStatus(booking: DeskBooking, next: BookingStatusCode) {
+  async function changeStatus(booking: DeskBooking, next: BookingStatusCode) {
+    setDeskError(null);
     setPendingId(booking.id);
-    update.execute({
-      id: booking.id,
-      bookId: booking.bookId,
-      bookCopyId: booking.bookCopyId,
-      borrowerName: booking.borrowerName,
-      borrowerEmail: booking.borrowerEmail,
-      status: next,
-      dueDate: booking.dueDate,
-      notes: booking.notes,
-    });
+    try {
+      const accessToken = await resolveActionAccessToken({
+        entraEnabled,
+        getAccessToken,
+      });
+      update.execute({
+        accessToken,
+        id: booking.id,
+        bookId: booking.bookId,
+        bookCopyId: booking.bookCopyId,
+        borrowerName: booking.borrowerName,
+        borrowerEmail: booking.borrowerEmail,
+        status: next,
+        dueDate: booking.dueDate,
+        notes: booking.notes,
+      });
+    } catch (err) {
+      setPendingId(null);
+      setDeskError(err instanceof Error ? err.message : "Akcia zlyhala.");
+    }
   }
 
   return (
@@ -190,7 +199,7 @@ export function BookingsDesk({
               {String(live).padStart(2, "0")}
             </p>
           </div>
-          <div className="bg-accent px-4 py-5 text-black">
+          <div className="bg-accent px-4 py-5 text-accent-foreground">
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase">
               Po termíne
             </p>
@@ -219,7 +228,7 @@ export function BookingsDesk({
           />
         </label>
         <div className="flex flex-wrap items-center gap-2">
-          {reader ? (
+          {userEmail ? (
             <Button
               type="button"
               size="sm"
@@ -235,7 +244,7 @@ export function BookingsDesk({
                 setPage(1);
               }}
             >
-              {mineOnly ? "Môj preukaz" : reader.name.split(" ")[0]}
+              {mineOnly ? "Moje lístky" : "Celý pult"}
             </Button>
           ) : null}
           {search.isPending ? (
@@ -265,7 +274,7 @@ export function BookingsDesk({
               className={cn(
                 "rounded-full",
                 active
-                  ? "bg-accent text-black hover:bg-accent-deep"
+                  ? "bg-accent text-accent-foreground hover:bg-accent-deep"
                   : "border-rule bg-paper-deep text-muted-foreground dark:border-white/10",
               )}
               onClick={() => {
@@ -292,6 +301,11 @@ export function BookingsDesk({
         </p>
       ) : null}
 
+      {deskError ? (
+        <p className="mt-4 text-sm text-stair-2" role="alert">
+          {deskError}
+        </p>
+      ) : null}
       {update.result.serverError ? (
         <p className="mt-4 text-sm text-stair-2" role="alert">
           {update.result.serverError}
@@ -386,7 +400,7 @@ export function BookingsDesk({
                     {formatDeskDate(booking.dueDate)}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {statusCode === BOOKING_STATUS.reserved ? (
+                    {canManageDesk && statusCode === BOOKING_STATUS.reserved ? (
                       <>
                         <Button
                           type="button"
@@ -411,12 +425,13 @@ export function BookingsDesk({
                         </Button>
                       </>
                     ) : null}
-                    {statusCode === BOOKING_STATUS.active ||
-                    statusCode === BOOKING_STATUS.overdue ? (
+                    {canManageDesk &&
+                    (statusCode === BOOKING_STATUS.active ||
+                      statusCode === BOOKING_STATUS.overdue) ? (
                       <Button
                         type="button"
                         disabled={busy}
-                        className="h-10 rounded-none bg-accent px-4 text-black hover:bg-accent-deep"
+                        className="h-10 rounded-none bg-accent px-4 text-accent-foreground hover:bg-accent-deep"
                         onClick={() =>
                           changeStatus(booking, BOOKING_STATUS.returned)
                         }

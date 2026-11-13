@@ -20,7 +20,7 @@ export function HeroSection({ books }: HeroSectionProps) {
     title: "How Innovation Works",
     author: "Matt Ridley",
     accent: "#1F4E8C",
-    secondary: "#F6E27A",
+    secondary: "#D8E8F0",
   };
 
   return (

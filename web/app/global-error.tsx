@@ -11,7 +11,7 @@ export default function GlobalError({
 }) {
   return (
     <html lang="sk">
-      <body className="min-h-dvh bg-[#f7f3ea] text-[#0e1a24] antialiased">
+      <body className="min-h-dvh bg-paper text-ink antialiased">
         <RouteError
           error={error}
           reset={reset}

@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SpstKniznica.Common.Auth;
 using WorkersService.DTOs;
 using WorkersService.Jobs;
 using WorkersService.Queue;
@@ -13,6 +15,7 @@ public class OrdersController(
     ILogger<OrdersController> logger) : ControllerBase
 {
     [HttpPost("enqueue")]
+    [Authorize(Policy = AuthPolicies.Authenticated)]
     [ProducesResponseType(typeof(EnqueueOrderResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<EnqueueOrderResponse>> Enqueue(

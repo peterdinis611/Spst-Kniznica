@@ -34,7 +34,7 @@ export function CatalogEmpty({
       </EmptyHeader>
       <EmptyContent>
         <Button
-          className="rounded-full bg-accent px-5 text-black hover:bg-accent-deep"
+          className="rounded-full bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
           render={<Link href={resetHref} />}
         >
           {resetLabel}

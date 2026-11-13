@@ -104,7 +104,7 @@ export function BooksCatalog({
             className={cn(
               "rounded-full",
               !category
-                ? "bg-accent text-black hover:bg-accent-deep"
+                ? "bg-accent text-accent-foreground hover:bg-accent-deep"
                 : "border-rule bg-paper-deep text-muted-foreground dark:border-white/10",
             )}
             render={
@@ -132,7 +132,7 @@ export function BooksCatalog({
                 className={cn(
                   "rounded-full",
                   active
-                    ? "bg-accent text-black hover:bg-accent-deep"
+                    ? "bg-accent text-accent-foreground hover:bg-accent-deep"
                     : "border-rule bg-paper-deep text-muted-foreground dark:border-white/10",
                 )}
                 render={<Link href={href} />}
