@@ -5,8 +5,6 @@ export const siteConfig = {
     "Školský katalóg Strednej priemyselnej školy — knihy, autori, kategórie a výpožičný pult na jednom mieste.",
   locale: "sk_SK",
   language: "sk",
-  /** Globálny stav produktu — UI banner + robots. */
-  stage: "development" as "development" | "production",
   keywords: [
     "SPST",
     "knižnica",
@@ -17,9 +15,6 @@ export const siteConfig = {
     "Stredná priemyselná škola",
   ],
 } as const;
-
-export const isDevelopmentStage = siteConfig.stage === "development";
-
 
 export function getSiteUrl(): URL {
   const raw =

@@ -67,7 +67,7 @@ export function LoginPanel() {
       </div>
 
       {error ? (
-        <p className="border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+        <p className="whitespace-pre-wrap border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm leading-relaxed text-red-700 dark:text-red-300">
           {error}
         </p>
       ) : null}

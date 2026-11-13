@@ -20,6 +20,7 @@ import {
   fetchAuthMe,
 } from "@/lib/auth/client";
 import { getMsalInstance, resolveApiScope } from "@/lib/auth/config";
+import { formatAuthError } from "@/lib/auth/errors";
 import type { AuthConfig, AuthUser } from "@/lib/auth/types";
 
 type AuthContextValue = {
@@ -81,7 +82,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         return;
       }
-      setError(err instanceof Error ? err.message : "Auth refresh failed");
+      setError(
+        formatAuthError(
+          err instanceof Error ? err.message : "Auth refresh failed",
+        ),
+      );
     }
   }, [config, instance]);
 
@@ -97,10 +102,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (authConfig.enabled) {
           const msal = await getMsalInstance(authConfig);
           if (cancelled) return;
-          const redirect = await msal.handleRedirectPromise();
-          if (redirect?.account) {
-            msal.setActiveAccount(redirect.account);
-          } else if (!msal.getActiveAccount()) {
+          try {
+            const redirect = await msal.handleRedirectPromise();
+            if (redirect?.account) {
+              msal.setActiveAccount(redirect.account);
+            }
+          } catch (redirectErr) {
+            setError(
+              formatAuthError(
+                redirectErr instanceof Error
+                  ? redirectErr.message
+                  : String(redirectErr),
+              ),
+            );
+          }
+          if (!msal.getActiveAccount()) {
             const first = msal.getAllAccounts()[0];
             if (first) msal.setActiveAccount(first);
           }
@@ -108,7 +124,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Auth bootstrap failed");
+          setError(
+            formatAuthError(
+              err instanceof Error ? err.message : "Auth bootstrap failed",
+            ),
+          );
         }
       } finally {
         if (!cancelled) setReady(true);
@@ -158,7 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const scope = resolveApiScope(config);
     await instance.loginRedirect({
-      scopes: scope ? [scope, "openid", "profile"] : ["openid", "profile"],
+      scopes: scope ? [scope] : ["openid", "profile", "User.Read"],
     });
   }, [config, instance, refreshUser]);
 

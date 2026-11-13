@@ -1,17 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Sora, IBM_Plex_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
-import { DevStatusBanner } from "@/components/dev-status-banner";
+import { ServerStatusBanner } from "@/components/server-status-banner";
 import { ScrollToTopLazy } from "@/components/scroll-to-top-lazy";
 import { ThemeProvider } from "@/components/theme/theme-provider";
-import {
-  absoluteUrl,
-  getSiteUrl,
-  isDevelopmentStage,
-  siteConfig,
-} from "@/lib/site";
+import { absoluteUrl, getSiteUrl, siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import "./globals.css";
+
 
 
 const display = Fraunces({
@@ -67,26 +63,18 @@ export const metadata: Metadata = {
     title: siteConfig.name,
     description: siteConfig.description,
   },
-  robots: isDevelopmentStage
-    ? {
-        index: false,
-        follow: false,
-        googleBot: {
-          index: false,
-          follow: false,
-        },
-      }
-    : {
-        index: true,
-        follow: true,
-        googleBot: {
-          index: true,
-          follow: true,
-          "max-image-preview": "large",
-          "max-snippet": -1,
-          "max-video-preview": -1,
-        },
-      },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
 
   formatDetection: {
     email: false,
@@ -145,8 +133,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <DevStatusBanner />
+            <ServerStatusBanner />
             {children}
+
             <ScrollToTopLazy />
           </AuthProvider>
         </ThemeProvider>
