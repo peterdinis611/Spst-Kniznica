@@ -7,6 +7,18 @@ export function explainBookingError(message: string): string {
   if (/\bbookcopyid\b/i.test(message) || /active reservation/i.test(message)) {
     return "Tento exemplár už má aktívnu výpožičku.";
   }
+  if (
+    /otvorenú rezerváciu|už máš.*výpožičku/i.test(message) ||
+    /already have an open reservation/i.test(message)
+  ) {
+    return "Na túto knihu už máš otvorený lístok.";
+  }
+  if (
+    /všetky exempláre|rezervované alebo vypožičané/i.test(message) ||
+    /all copies of this book/i.test(message)
+  ) {
+    return "Všetky exempláre sú obsadené — niekto iný má titul rezervovaný.";
+  }
   if (/\b401\b/.test(message) || /unauthorized/i.test(message)) {
     return "Na výpožičku musíš byť prihlásený.";
   }

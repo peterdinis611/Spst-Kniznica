@@ -9,13 +9,6 @@ import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { BookOpenTickets } from "@/components/catalog/BookOpenTickets";
 import { ReserveSlip } from "@/components/catalog/ReserveSlip";
@@ -83,68 +76,65 @@ async function BookDetailContent({
         ]}
       />
 
-      <div className="mt-2 grid gap-8 border-t border-rule pt-8 sm:mt-4 sm:gap-10 sm:pt-10 md:grid-cols-[240px_1fr] md:items-start">
-        <FlatCover
-          title={book.title}
-          author={book.author}
-          accent={book.accent}
-          secondary={book.secondary}
-          className="mx-auto w-44 max-w-full sm:w-full"
-        />
+      <div className="mt-2 grid gap-10 border-t border-rule pt-8 sm:mt-4 sm:pt-10 lg:grid-cols-[minmax(10rem,13.5rem)_1fr] lg:items-start lg:gap-14">
+        <div className="lg:sticky lg:top-8">
+          <FlatCover
+            title={book.title}
+            author={book.author}
+            accent={book.accent}
+            secondary={book.secondary}
+            className="mx-auto w-48 max-w-full shadow-[0_32px_64px_-44px_rgba(14,26,36,0.45)] sm:w-52 lg:mx-0"
+          />
+        </div>
 
-        <div>
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="rounded-full bg-accent text-accent-foreground hover:bg-accent">
+            <Badge className="rounded-none border border-sage/30 bg-mint/50 px-3 py-1 font-mono text-[10px] tracking-[0.12em] text-sage uppercase hover:bg-mint/50 dark:border-sage/35 dark:bg-paper-deep">
               {book.categoryName ?? "Katalóg"}
             </Badge>
             <Badge
               variant={available ? "secondary" : "outline"}
-              className="rounded-full"
+              className="rounded-none border border-transparent px-3 py-1 font-mono text-[10px] tracking-[0.12em] uppercase"
             >
               {available ? "Dostupné" : "Nedostupné"}
             </Badge>
           </div>
 
-          <h1 className="mt-4 font-display text-[clamp(2rem,6vw,3.4rem)] leading-[1.05] tracking-tight text-ink">
+          <h1 className="mt-5 font-display text-[clamp(2rem,6vw,3.4rem)] leading-[1.05] tracking-tight text-ink">
             {book.title}
           </h1>
-          <p className="mt-3 text-base text-muted-foreground sm:text-lg">
+          <p className="mt-2 font-display text-lg text-sage sm:text-xl">
             {book.author}
           </p>
 
-          <div className="mt-8 grid max-w-xl gap-4 sm:grid-cols-2">
+          <dl className="mt-8 flex max-w-xl flex-wrap gap-x-10 gap-y-4 border-y border-rule py-5 dark:border-white/10">
             {book.year ? (
-              <Card size="sm" className="rounded-none ring-rule dark:ring-white/10">
-                <CardHeader className="pb-0">
-                  <CardDescription className="text-[11px] tracking-[0.16em] uppercase">
-                    Rok
-                  </CardDescription>
-                  <CardTitle className="font-display text-2xl text-ink">
-                    {book.year}
-                  </CardTitle>
-                </CardHeader>
-              </Card>
+              <div>
+                <dt className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
+                  Rok
+                </dt>
+                <dd className="mt-1 font-display text-2xl tabular-nums text-ink">
+                  {book.year}
+                </dd>
+              </div>
             ) : null}
-            <Card size="sm" className="rounded-none ring-rule dark:ring-white/10">
-              <CardHeader className="pb-0">
-                <CardDescription className="text-[11px] tracking-[0.16em] uppercase">
-                  Exempláre
-                </CardDescription>
-                <CardTitle className="font-display text-2xl text-ink">
-                  {book.availableCopies}/{book.totalCopies}
-                </CardTitle>
-              </CardHeader>
-            </Card>
-          </div>
+            <div>
+              <dt className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
+                Exempláre
+              </dt>
+              <dd className="mt-1 font-display text-2xl tabular-nums text-ink">
+                <span className="text-sage">{book.availableCopies}</span>
+                <span className="text-muted-foreground"> / {book.totalCopies}</span>
+              </dd>
+            </div>
+          </dl>
 
           {book.description ? (
-            <Card className="mt-8 max-w-2xl rounded-none bg-paper-deep/50 ring-rule dark:ring-white/10">
-              <CardContent className="pt-(--card-spacing)">
-                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  {book.description}
-                </p>
-              </CardContent>
-            </Card>
+            <div className="mt-8 max-w-2xl border-l-2 border-sage/50 pl-5">
+              <p className="text-sm leading-relaxed text-muted-foreground sm:text-base sm:leading-7">
+                {book.description}
+              </p>
+            </div>
           ) : null}
 
           <ReserveSlip

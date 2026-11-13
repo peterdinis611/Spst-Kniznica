@@ -10,5 +10,9 @@ public class UnitOfWork(BookingDbContext db, IBookingRepository bookings) : IUni
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => db.SaveChangesAsync(cancellationToken);
 
+    public Task<Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction> BeginTransactionAsync(
+        CancellationToken cancellationToken = default)
+        => db.Database.BeginTransactionAsync(cancellationToken);
+
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

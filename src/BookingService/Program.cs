@@ -1,3 +1,4 @@
+using BookingService.Clients;
 using BookingService.Data;
 using BookingService.Interfaces;
 using BookingService.Middleware;
@@ -36,6 +37,16 @@ try
 
     builder.Services.AddDbContext<BookingDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    builder.Services.Configure<BookCatalogOptions>(
+        builder.Configuration.GetSection(BookCatalogOptions.SectionName));
+    builder.Services.AddHttpClient<IBookCatalogLookup, BookCatalogLookupClient>((sp, client) =>
+    {
+        var bookServiceUrl = sp.GetRequiredService<
+            Microsoft.Extensions.Options.IOptions<BookCatalogOptions>>().Value.BookService;
+        client.BaseAddress = new Uri(bookServiceUrl.TrimEnd('/') + "/");
+        client.Timeout = TimeSpan.FromSeconds(3);
+    });
 
     builder.Services.AddScoped<IBookingRepository, BookingRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

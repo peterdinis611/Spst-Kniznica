@@ -12,6 +12,7 @@ namespace BookingService.Services;
 
 public class BookingAppService(
     IUnitOfWork unitOfWork,
+    IBookCatalogLookup bookCatalog,
     IAppCache cache,
     IIntegrationEventPublisher eventPublisher,
     IValidator<CreateBookingRequest> createValidator,
@@ -52,7 +53,17 @@ public class BookingAppService(
         CancellationToken cancellationToken = default)
     {
         EnsureValid(await createValidator.ValidateAsync(request, cancellationToken));
+
+        var borrowerEmail = NormalizeEmail(request.BorrowerEmail);
+        await using var transaction =
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
         await EnsureCopyAvailableAsync(request.BookCopyId, null, cancellationToken);
+        await EnsureBookCanAcceptReservationAsync(
+            request.BookId,
+            borrowerEmail,
+            excludeBookingId: null,
+            cancellationToken);
 
         var now = DateTimeOffset.UtcNow;
         var status = request.Status;
@@ -62,7 +73,7 @@ public class BookingAppService(
             BookId = request.BookId,
             BookCopyId = request.BookCopyId,
             BorrowerName = StringNormalize.Required(request.BorrowerName),
-            BorrowerEmail = NormalizeEmail(request.BorrowerEmail),
+            BorrowerEmail = borrowerEmail,
             Status = status,
             ReservedAt = now,
             BorrowedAt = status is BookingStatus.Active or BookingStatus.Overdue
@@ -77,6 +88,7 @@ public class BookingAppService(
 
         await unitOfWork.Bookings.AddAsync(booking, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         await eventPublisher.PublishAsync(
             new BookingCreatedEvent(
@@ -111,6 +123,16 @@ public class BookingAppService(
 
         var booking = await GetRequiredAsync(id, tracked: true, cancellationToken);
         await EnsureCopyAvailableAsync(request.BookCopyId, id, cancellationToken);
+
+        var nextStatus = request.Status;
+        if (nextStatus is BookingStatus.Reserved or BookingStatus.Active or BookingStatus.Overdue)
+        {
+            await EnsureBookCanAcceptReservationAsync(
+                request.BookId,
+                NormalizeEmail(request.BorrowerEmail),
+                excludeBookingId: id,
+                cancellationToken);
+        }
 
         var previousStatus = booking.Status;
         var now = DateTimeOffset.UtcNow;
@@ -192,6 +214,46 @@ public class BookingAppService(
             throw new AppValidationException(new Dictionary<string, string[]>
             {
                 ["BookCopyId"] = ["This book copy already has an active reservation or loan."]
+            });
+        }
+    }
+
+    private async Task EnsureBookCanAcceptReservationAsync(
+        Guid bookId,
+        string borrowerEmail,
+        Guid? excludeBookingId,
+        CancellationToken cancellationToken)
+    {
+        if (await unitOfWork.Bookings.HasActiveBookingForBorrowerOnBookAsync(
+                bookId,
+                borrowerEmail,
+                excludeBookingId,
+                cancellationToken))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["BookId"] =
+                [
+                    "Na túto knihu už máš otvorenú rezerváciu alebo výpožičku."
+                ]
+            });
+        }
+
+        var snapshot = await bookCatalog.GetBookAsync(bookId, cancellationToken);
+        var capacity = snapshot?.TotalCopies ?? 1;
+        var activeCount = await unitOfWork.Bookings.CountActiveBookingsForBookAsync(
+            bookId,
+            excludeBookingId,
+            cancellationToken);
+
+        if (activeCount >= capacity)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["BookId"] =
+                [
+                    "Všetky exempláre tohto titulu sú už rezervované alebo vypožičané."
+                ]
             });
         }
     }

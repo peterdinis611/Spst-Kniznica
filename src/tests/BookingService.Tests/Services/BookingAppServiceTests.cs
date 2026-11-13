@@ -1,3 +1,4 @@
+using BookingService.Clients;
 using BookingService.DTOs;
 using BookingService.Exceptions;
 using BookingService.Interfaces;
@@ -6,6 +7,7 @@ using BookingService.Services;
 using BookingService.Tests.Infrastructure;
 using BookingService.Validators;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using SpstKniznica.Caching;
@@ -17,14 +19,32 @@ public class BookingAppServiceTests
 {
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly IBookingRepository _bookings = Substitute.For<IBookingRepository>();
+    private readonly IBookCatalogLookup _bookCatalog = Substitute.For<IBookCatalogLookup>();
     private readonly RecordingEventPublisher _events = new();
     private readonly BookingAppService _sut;
 
     public BookingAppServiceTests()
     {
         _unitOfWork.Bookings.Returns(_bookings);
+        var transaction = Substitute.For<IDbContextTransaction>();
+        _unitOfWork.BeginTransactionAsync(Arg.Any<CancellationToken>()).Returns(transaction);
+        _bookCatalog.GetBookAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(new BookAvailabilitySnapshot(3, 2));
+        _bookings.CountActiveBookingsForBookAsync(
+                Arg.Any<Guid>(),
+                Arg.Any<Guid?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(0);
+        _bookings.HasActiveBookingForBorrowerOnBookAsync(
+                Arg.Any<Guid>(),
+                Arg.Any<string>(),
+                Arg.Any<Guid?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(false);
+
         _sut = new BookingAppService(
             _unitOfWork,
+            _bookCatalog,
             new NullAppCache(),
             _events,
             new CreateBookingRequestValidator(),
@@ -79,6 +99,50 @@ public class BookingAppServiceTests
 
         saved!.BorrowedAt.Should().NotBeNull();
         saved.ReturnedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateAsync_rejects_when_all_copies_are_taken()
+    {
+        var bookId = Guid.NewGuid();
+        _bookings.CountActiveBookingsForBookAsync(bookId, null, Arg.Any<CancellationToken>())
+            .Returns(3);
+        _bookCatalog.GetBookAsync(bookId, Arg.Any<CancellationToken>())
+            .Returns(new BookAvailabilitySnapshot(3, 0));
+
+        var act = async () => await _sut.CreateAsync(new CreateBookingRequest
+        {
+            BookId = bookId,
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            DueDate = DateTimeOffset.UtcNow.AddDays(7)
+        });
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("BookId"));
+    }
+
+    [Fact]
+    public async Task CreateAsync_rejects_duplicate_open_booking_for_same_borrower()
+    {
+        var bookId = Guid.NewGuid();
+        _bookings.HasActiveBookingForBorrowerOnBookAsync(
+                bookId,
+                "eva@spst.sk",
+                null,
+                Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        var act = async () => await _sut.CreateAsync(new CreateBookingRequest
+        {
+            BookId = bookId,
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            DueDate = DateTimeOffset.UtcNow.AddDays(7)
+        });
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("BookId"));
     }
 
     [Fact]

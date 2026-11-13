@@ -152,6 +152,59 @@ public class BookingRepository(BookingDbContext db) : IBookingRepository
         return query.AnyAsync(cancellationToken);
     }
 
+    public Task<int> CountActiveBookingsForBookAsync(
+        Guid bookId,
+        Guid? excludeId = null,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureValidId(bookId, "BookId");
+
+        var query = db.Bookings.AsNoTracking()
+            .Where(b =>
+                b.BookId == bookId &&
+                (b.Status == BookingStatus.Reserved ||
+                 b.Status == BookingStatus.Active ||
+                 b.Status == BookingStatus.Overdue));
+
+        if (excludeId.HasValue)
+        {
+            EnsureValidId(excludeId.Value);
+            query = query.Where(b => b.Id != excludeId.Value);
+        }
+
+        return query.CountAsync(cancellationToken);
+    }
+
+    public Task<bool> HasActiveBookingForBorrowerOnBookAsync(
+        Guid bookId,
+        string borrowerEmail,
+        Guid? excludeId = null,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureValidId(bookId, "BookId");
+        if (string.IsNullOrWhiteSpace(borrowerEmail))
+        {
+            return Task.FromResult(false);
+        }
+
+        var normalized = borrowerEmail.Trim().ToLowerInvariant();
+        var query = db.Bookings.AsNoTracking()
+            .Where(b =>
+                b.BookId == bookId &&
+                b.BorrowerEmail.ToLower() == normalized &&
+                (b.Status == BookingStatus.Reserved ||
+                 b.Status == BookingStatus.Active ||
+                 b.Status == BookingStatus.Overdue));
+
+        if (excludeId.HasValue)
+        {
+            EnsureValidId(excludeId.Value);
+            query = query.Where(b => b.Id != excludeId.Value);
+        }
+
+        return query.AnyAsync(cancellationToken);
+    }
+
     private static void EnsureValidId(Guid id, string field = "Id")
     {
         if (id == Guid.Empty)

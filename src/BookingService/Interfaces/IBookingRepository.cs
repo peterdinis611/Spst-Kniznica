@@ -13,4 +13,15 @@ public interface IBookingRepository
     void Update(Booking booking);
     void Remove(Booking booking);
     Task<bool> HasActiveBookingForCopyAsync(Guid bookCopyId, Guid? excludeId = null, CancellationToken cancellationToken = default);
+
+    Task<int> CountActiveBookingsForBookAsync(
+        Guid bookId,
+        Guid? excludeId = null,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> HasActiveBookingForBorrowerOnBookAsync(
+        Guid bookId,
+        string borrowerEmail,
+        Guid? excludeId = null,
+        CancellationToken cancellationToken = default);
 }
