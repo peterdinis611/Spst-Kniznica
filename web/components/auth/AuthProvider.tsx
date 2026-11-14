@@ -15,13 +15,12 @@ import {
   type IPublicClientApplication,
 } from "@azure/msal-browser";
 import { MsalProvider } from "@azure/msal-react";
-import {
-  fetchAuthConfig,
-  fetchAuthMe,
-} from "@/lib/auth/client";
+import { fetchAuthConfig, fetchAuthMe } from "@/lib/auth/client";
 import { getMsalInstance, resolveApiScope } from "@/lib/auth/config";
 import { formatAuthError } from "@/lib/auth/errors";
 import { resolveUserDisplayName } from "@/lib/auth/display-name";
+import { syncBrowserSession } from "@/lib/auth/session-client";
+import { UNAUTHORIZED_EVENT } from "@/lib/auth/session-constants";
 import type { AuthConfig, AuthUser } from "@/lib/auth/types";
 
 type AuthContextValue = {
@@ -57,6 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!config.enabled) {
         const me = await fetchAuthMe(null);
         setUser(me);
+        // Placeholder so middleware allows /admin|/bookings in local DevAuth mode
+        await syncBrowserSession("dev-local-session");
         setError(null);
         return;
       }
@@ -67,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAccount(active);
       if (!active) {
         setUser(null);
+        await syncBrowserSession(null);
         return;
       }
 
@@ -75,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         account: active,
         scopes: scope ? [scope] : ["User.Read"],
       });
+      await syncBrowserSession(result.accessToken);
       const me = await fetchAuthMe(result.accessToken);
       setUser({
         ...me,
@@ -84,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       if (err instanceof InteractionRequiredAuthError) {
         setUser(null);
+        await syncBrowserSession(null);
         return;
       }
       setError(
@@ -110,6 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const redirect = await msal.handleRedirectPromise();
             if (redirect?.account) {
               msal.setActiveAccount(redirect.account);
+            }
+            if (redirect?.accessToken) {
+              await syncBrowserSession(redirect.accessToken);
             }
           } catch (redirectErr) {
             setError(
@@ -149,6 +156,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refreshUser();
   }, [ready, config, instance, refreshUser]);
 
+  useEffect(() => {
+    const onUnauthorized = () => {
+      setUser(null);
+      setAccount(null);
+      void syncBrowserSession(null);
+      if (config?.enabled && instance) {
+        const active = instance.getActiveAccount();
+        void instance.logoutRedirect({ account: active ?? undefined });
+      }
+    };
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+  }, [config, instance]);
+
   const getAccessToken = useCallback(async () => {
     if (!config?.enabled || !instance) return null;
     const active =
@@ -160,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         account: active,
         scopes: scope ? [scope] : ["User.Read"],
       });
+      await syncBrowserSession(result.accessToken);
       return result.accessToken;
     } catch {
       return null;
@@ -187,6 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [config, instance, refreshUser]);
 
   const logout = useCallback(async () => {
+    await syncBrowserSession(null);
     if (!config?.enabled || !instance) {
       setUser(null);
       setAccount(null);

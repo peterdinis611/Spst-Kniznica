@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { RefreshCw, WifiOff } from "lucide-react";
 import { API_BASE, apiUrl } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
@@ -87,26 +88,34 @@ export function ServerStatusBanner() {
             dočasne nefungovať.
           </span>
         </p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className={cn(
-            "h-8 shrink-0 rounded-none border-paper/30 bg-transparent px-3 text-paper",
-            "hover:bg-paper/10 hover:text-paper",
-          )}
-          onClick={() => {
-            void check();
-          }}
-          disabled={checking}
-        >
-          <RefreshCw
-            className={cn("size-3.5", checking && "animate-spin")}
-            strokeWidth={1.8}
-            aria-hidden
-          />
-          Skúsiť znova
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/503"
+            className="text-[12px] font-medium text-paper/80 underline-offset-2 hover:text-paper hover:underline"
+          >
+            Viac info
+          </Link>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className={cn(
+              "h-8 rounded-none border-paper/30 bg-transparent px-3 text-paper",
+              "hover:bg-paper/10 hover:text-paper",
+            )}
+            onClick={() => {
+              void check();
+            }}
+            disabled={checking}
+          >
+            <RefreshCw
+              className={cn("size-3.5", checking && "animate-spin")}
+              strokeWidth={1.8}
+              aria-hidden
+            />
+            Skúsiť znova
+          </Button>
+        </div>
       </div>
     </div>
   );

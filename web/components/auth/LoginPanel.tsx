@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, BookOpen, Library, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Badge } from "@/components/ui/badge";
@@ -24,9 +26,24 @@ function roleLabel(roles: string[]): string {
   return roles[0] ?? "Čitateľ";
 }
 
+function safeNextPath(raw: string | null): string | null {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+}
+
 export function LoginPanel() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { ready, entraEnabled, user, account, login, logout, error } =
     useAuth();
+
+  useEffect(() => {
+    if (!ready || !user?.isAuthenticated) return;
+    const next = safeNextPath(searchParams.get("next"));
+    if (next) {
+      router.replace(next);
+    }
+  }, [ready, user?.isAuthenticated, searchParams, router]);
 
   if (!ready) {
     return (

@@ -1,6 +1,6 @@
 import type { AuthConfig } from "./types";
 
-/** Bearer token pre server actions — pri Entra musí byť prihlásený používateľ. */
+/** Bearer token pre server actions — prefer BFF cookie on server; sync MSAL AT first. */
 export async function resolveActionAccessToken(input: {
   entraEnabled: boolean;
   getAccessToken: () => Promise<string | null>;
@@ -9,6 +9,8 @@ export async function resolveActionAccessToken(input: {
   if (input.entraEnabled && !token) {
     throw new Error("Na výpožičku musíš byť prihlásený.");
   }
+  // Token is also mirrored into HttpOnly cookie by getAccessToken/syncBrowserSession.
+  // Server actions may omit forwarding AT and rely on cookie via api/client.
   return token ?? undefined;
 }
 

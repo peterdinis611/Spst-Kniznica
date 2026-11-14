@@ -1,5 +1,9 @@
 import type { Configuration } from "@azure/msal-browser";
-import { LogLevel, PublicClientApplication } from "@azure/msal-browser";
+import {
+  BrowserCacheLocation,
+  LogLevel,
+  PublicClientApplication,
+} from "@azure/msal-browser";
 import type { AuthConfig } from "./types";
 
 export function buildMsalConfig(auth: AuthConfig): Configuration {
@@ -24,11 +28,13 @@ export function buildMsalConfig(auth: AuthConfig): Configuration {
         typeof window !== "undefined" ? window.location.origin : "/",
     },
     cache: {
-      cacheLocation: "sessionStorage",
+      // Session only — BFF mirrors AT into HttpOnly cookie, not document.cookie.
+      cacheLocation: BrowserCacheLocation.SessionStorage,
     },
     system: {
       loggerOptions: {
         logLevel: LogLevel.Warning,
+        piiLoggingEnabled: false,
       },
     },
   };

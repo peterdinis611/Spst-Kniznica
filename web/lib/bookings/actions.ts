@@ -2,11 +2,17 @@
 
 import { z } from "zod";
 import { apiGet, apiPost, apiPut, withQuery } from "@/lib/api";
+import { readSessionAccessToken } from "@/lib/auth/session";
 import { actionClient } from "@/lib/shared";
 import type { PagedResult } from "@/lib/shared";
 import { explainBookingError } from "./errors";
 import { BOOKING_STATUS, normalizeBookingStatus } from "./status";
 import type { BookingDto } from "./types";
+
+async function resolveServerToken(explicit?: string): Promise<string | undefined> {
+  const fromCookie = await readSessionAccessToken();
+  return fromCookie ?? explicit?.trim() ?? undefined;
+}
 
 const optionalText = z
   .string()
@@ -115,6 +121,7 @@ export const searchBookingsAction = actionClient
       page,
       pageSize,
     } = parsedInput;
+    const token = await resolveServerToken(accessToken);
 
     const result = await runBooking(() =>
       apiGet<PagedResult<BookingDto>>(
@@ -129,7 +136,7 @@ export const searchBookingsAction = actionClient
           sortDir: "asc",
         }),
         undefined,
-        accessToken,
+        token,
       ),
     );
 
@@ -150,6 +157,7 @@ export const searchBookingsAction = actionClient
 export const createBookingAction = actionClient
   .inputSchema(createBookingSchema)
   .action(async ({ parsedInput }): Promise<DeskBooking> => {
+    const token = await resolveServerToken(parsedInput.accessToken);
     const created = await runBooking(() =>
       apiPost<BookingDto>(
         "/api/bookings",
@@ -162,7 +170,7 @@ export const createBookingAction = actionClient
           notes: parsedInput.notes || null,
         },
         undefined,
-        parsedInput.accessToken,
+        token,
       ),
     );
 
@@ -171,7 +179,7 @@ export const createBookingAction = actionClient
         "/api/orders/enqueue",
         { orderId: created.id },
         undefined,
-        parsedInput.accessToken,
+        token,
       );
     } catch {
       // Workers queue je best-effort — rezervácia už je uložená.
@@ -183,7 +191,8 @@ export const createBookingAction = actionClient
 export const updateBookingAction = actionClient
   .inputSchema(updateBookingSchema)
   .action(async ({ parsedInput }): Promise<DeskBooking> => {
-    const { id, bookCopyId, notes, ...rest } = parsedInput;
+    const { id, bookCopyId, notes, accessToken, ...rest } = parsedInput;
+    const token = await resolveServerToken(accessToken);
     const updated = await runBooking(() =>
       apiPut<BookingDto>(
         `/api/bookings/${id}`,
@@ -193,7 +202,7 @@ export const updateBookingAction = actionClient
           notes: notes || null,
         },
         undefined,
-        parsedInput.accessToken,
+        token,
       ),
     );
     return mapBooking(updated);

@@ -6,12 +6,14 @@ export async function fetchAuthConfig(): Promise<AuthConfig> {
 }
 
 export async function fetchAuthMe(accessToken?: string | null): Promise<AuthUser> {
+  // Prefer BFF cookie; explicit token still supported during login bootstrap.
   const response = await fetch(apiUrl("/api/auth/me"), {
     headers: {
       Accept: "application/json",
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
     cache: "no-store",
+    credentials: "same-origin",
   });
 
   if (!response.ok) {
@@ -28,6 +30,7 @@ export async function fetchAdminDashboard(accessToken?: string | null) {
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
     cache: "no-store",
+    credentials: "same-origin",
   });
 
   if (!response.ok) {

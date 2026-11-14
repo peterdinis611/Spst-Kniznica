@@ -6,6 +6,7 @@ export {
   apiPost,
   apiPut,
   apiUrl,
+  gatewayUrl,
   withQuery,
   type ApiQuery,
 } from "./client";

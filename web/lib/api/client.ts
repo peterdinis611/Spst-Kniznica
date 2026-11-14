@@ -1,8 +1,22 @@
+import { UNAUTHORIZED_EVENT } from "@/lib/auth/session-constants";
+
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5200"
 ).replace(/\/$/, "");
 
+const isBrowser = typeof window !== "undefined";
+
+/** Browser → same-origin BFF; server → gateway directly. */
 export function apiUrl(path: string): string {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  if (isBrowser) {
+    return `/api/bff${normalized}`;
+  }
+  return `${API_BASE}${normalized}`;
+}
+
+/** Direct gateway URL (health probes, server-only). */
+export function gatewayUrl(path: string): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;
   return `${API_BASE}${normalized}`;
 }
@@ -23,6 +37,13 @@ export function withQuery(path: string, query?: ApiQuery): string {
   return qs ? `${path}?${qs}` : path;
 }
 
+function sanitizeErrorText(text: string): string {
+  // Never echo tokens / large dumps into UI
+  return text
+    .replace(/Bearer\s+[A-Za-z0-9._\-]+/gi, "Bearer [redacted]")
+    .slice(0, 180);
+}
+
 async function readErrorMessage(
   response: Response,
   path: string,
@@ -41,7 +62,9 @@ async function readErrorMessage(
     if (errors && typeof errors === "object") {
       for (const value of Object.values(errors)) {
         const message = Array.isArray(value) ? value[0] : value;
-        if (typeof message === "string" && message.trim()) return message;
+        if (typeof message === "string" && message.trim()) {
+          return sanitizeErrorText(message);
+        }
       }
     }
     if (
@@ -49,11 +72,13 @@ async function readErrorMessage(
       body.detail.trim() &&
       body.detail !== body.title
     ) {
-      return body.detail;
+      return sanitizeErrorText(body.detail);
     }
-    if (typeof body.title === "string" && body.title.trim()) return body.title;
+    if (typeof body.title === "string" && body.title.trim()) {
+      return sanitizeErrorText(body.title);
+    }
   } catch {
-    return text.slice(0, 180);
+    return sanitizeErrorText(text);
   }
 
   return fallback;
@@ -76,10 +101,17 @@ async function parseJson<T>(response: Response, path: string): Promise<T> {
   }
 }
 
-function authHeaders(accessToken?: string | null): Record<string, string> {
-  const token = accessToken?.trim();
-  if (!token) return {};
-  return { Authorization: `Bearer ${token}` };
+function resolveAccessToken(accessToken?: string | null): string | undefined {
+  const explicit = accessToken?.trim();
+  if (explicit) return explicit;
+  // Browser: BFF cookie is attached by /api/bff (no Authorization from JS).
+  // Server: callers must pass accessToken or readSessionAccessToken() in the action.
+  return undefined;
+}
+
+function notifyUnauthorized() {
+  if (!isBrowser) return;
+  window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
 }
 
 async function apiRequest<T>(
@@ -89,17 +121,26 @@ async function apiRequest<T>(
   accessToken?: string | null,
 ): Promise<T> {
   const hasBody = body !== undefined;
+  const token = resolveAccessToken(accessToken);
+
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...(hasBody ? { "Content-Type": "application/json" } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(init?.headers as Record<string, string> | undefined),
+  };
+
   const response = await fetch(apiUrl(path), {
     ...init,
-    headers: {
-      Accept: "application/json",
-      ...(hasBody ? { "Content-Type": "application/json" } : {}),
-      ...authHeaders(accessToken),
-      ...init?.headers,
-    },
+    headers,
     body: hasBody ? JSON.stringify(body) : init?.body,
     cache: "no-store",
+    credentials: isBrowser ? "same-origin" : init?.credentials,
   });
+
+  if (response.status === 401) {
+    notifyUnauthorized();
+  }
 
   if (!response.ok) {
     throw new Error(await readErrorMessage(response, path));

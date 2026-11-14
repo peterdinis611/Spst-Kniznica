@@ -9,6 +9,7 @@ import {
 describe("reader card store", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    window.sessionStorage.clear();
   });
 
   it("returns null on the server snapshot", () => {
@@ -19,20 +20,34 @@ describe("reader card store", () => {
     expect(getReaderSnapshot()).toBeNull();
   });
 
-  it("writes and reads a trimmed reader card", () => {
+  it("writes and reads a trimmed reader card in sessionStorage", () => {
     writeReader({ name: "  Eva Nováková  ", email: " eva@spst.sk " });
     expect(getReaderSnapshot()).toEqual({
       name: "Eva Nováková",
       email: "eva@spst.sk",
     });
+    expect(window.localStorage.getItem("spst-reader")).toBeNull();
+    expect(window.sessionStorage.getItem("spst-reader")).toBeTruthy();
   });
 
-  it("ignores incomplete localStorage payloads", () => {
-    window.localStorage.setItem(
+  it("ignores incomplete payloads", () => {
+    window.sessionStorage.setItem(
       "spst-reader",
       JSON.stringify({ name: "Eva" }),
     );
     expect(getReaderSnapshot()).toBeNull();
+  });
+
+  it("migrates legacy localStorage into sessionStorage", () => {
+    window.localStorage.setItem(
+      "spst-reader",
+      JSON.stringify({ name: "Eva", email: "eva@spst.sk" }),
+    );
+    expect(getReaderSnapshot()).toEqual({
+      name: "Eva",
+      email: "eva@spst.sk",
+    });
+    expect(window.localStorage.getItem("spst-reader")).toBeNull();
   });
 
   it("notifies subscribers after write", () => {

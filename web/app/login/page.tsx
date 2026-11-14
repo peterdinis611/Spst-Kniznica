@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { LoginPanel } from "@/components/auth/LoginPanel";
@@ -47,7 +48,9 @@ export default function LoginPage() {
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,22rem)_1fr] lg:items-start lg:gap-16">
           <div className="lg:sticky lg:top-8">
-            <LoginPanel />
+            <Suspense fallback={<p className="text-sm text-muted-foreground">Načítavam…</p>}>
+              <LoginPanel />
+            </Suspense>
           </div>
           <AppOnboarding />
         </div>
