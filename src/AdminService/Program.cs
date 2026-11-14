@@ -30,8 +30,15 @@ try
         builder.Environment,
         requireAuthenticatedByDefault: true);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
-    builder.Services.AddHttpClient();
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddHttpClient("admin-downstream", client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(3);
+        client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+    });
+    builder.Services.AddSingleton<AdminService.Services.AdminDownstreamClient>();
     builder.Services.AddSingleton<AdminService.Services.AdminDashboardService>();
+    builder.Services.AddSingleton<AdminService.Services.AdminOverviewService>();
     builder.Services.AddHealthChecks();
 
     var app = builder.Build();

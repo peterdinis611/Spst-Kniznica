@@ -12,6 +12,8 @@ type WhoAmI = {
   name?: string;
   email?: string;
   roles?: string[];
+  isStaff?: boolean;
+  isAdmin?: boolean;
 };
 
 type AuthMe = Awaited<ReturnType<typeof fetchAuthMe>>;
@@ -115,6 +117,22 @@ export function AccountPage() {
                 <dd className="font-mono text-xs">
                   {(whoami.roles ?? []).join(", ") || "—"}
                 </dd>
+              </div>
+              <div className="flex gap-3 pt-1 font-mono text-[11px] tracking-wide uppercase">
+                <span
+                  className={
+                    whoami.isStaff ? "text-sage" : "text-stair-2"
+                  }
+                >
+                  staff {whoami.isStaff ? "yes" : "no"}
+                </span>
+                <span
+                  className={
+                    whoami.isAdmin ? "text-sage" : "text-muted-foreground"
+                  }
+                >
+                  admin {whoami.isAdmin ? "yes" : "no"}
+                </span>
               </div>
             </dl>
           ) : (

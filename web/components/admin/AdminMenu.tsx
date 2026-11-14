@@ -9,6 +9,7 @@ import QueueIcon from "@mui/icons-material/Queue";
 import BadgeIcon from "@mui/icons-material/Badge";
 import RouterIcon from "@mui/icons-material/Router";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
+import DnsIcon from "@mui/icons-material/Dns";
 import LinkIcon from "@mui/icons-material/Link";
 
 export function AdminMenu() {
@@ -30,6 +31,11 @@ export function AdminMenu() {
         to="/tools/health"
         primaryText="Health probe"
         leftIcon={<MonitorHeartIcon />}
+      />
+      <Menu.Item
+        to="/tools/services"
+        primaryText="Služby"
+        leftIcon={<DnsIcon />}
       />
       <Menu.Item
         to="/tools/cache"

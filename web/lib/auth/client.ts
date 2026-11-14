@@ -46,6 +46,7 @@ export async function fetchAdminDashboard(accessToken?: string | null) {
       url: string;
       healthy: boolean;
       status: string;
+      latencyMs?: number | null;
     }>;
     healthyCount: number;
     unhealthyCount: number;

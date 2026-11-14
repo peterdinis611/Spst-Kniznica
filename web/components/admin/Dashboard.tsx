@@ -1,19 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Title, useGetIdentity, useGetList } from "react-admin";
+import { Title, useGetIdentity } from "react-admin";
 import { Link as RaLink } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Link from "next/link";
 import { AdminHealthChart } from "@/components/auth/AdminHealthChart";
-import { fetchAdminDashboard } from "@/lib/auth/client";
-import { BOOKING_STATUS } from "@/lib/bookings/status";
+import {
+  fetchAdminOverview,
+  type AdminOverview,
+} from "@/lib/admin/ops";
+import {
+  BOOKING_STATUS_LABEL,
+  normalizeBookingStatus,
+  type BookingStatusCode,
+} from "@/lib/bookings/status";
 import { cn } from "@/lib/utils";
 
 const TOOL_LINKS = [
   { to: "/tools/import", label: "Import" },
   { to: "/tools/gateway", label: "Gateway" },
   { to: "/tools/health", label: "Health" },
+  { to: "/tools/services", label: "Služby" },
   { to: "/tools/cache", label: "Cache" },
   { to: "/tools/messaging", label: "Messaging" },
   { to: "/tools/relations", label: "Relácie" },
@@ -22,83 +30,66 @@ const TOOL_LINKS = [
   { to: "/tools/account", label: "Účet" },
 ] as const;
 
-type Dashboard = Awaited<ReturnType<typeof fetchAdminDashboard>>;
-
-function CatalogWidgets() {
-  const books = useGetList("books", {
-    pagination: { page: 1, perPage: 1 },
-    sort: { field: "id", order: "ASC" },
-  });
-  const authors = useGetList("authors", {
-    pagination: { page: 1, perPage: 1 },
-    sort: { field: "id", order: "ASC" },
-  });
-  const categories = useGetList("categories", {
-    pagination: { page: 1, perPage: 1 },
-    sort: { field: "id", order: "ASC" },
-  });
-  const bookings = useGetList("bookings", {
-    pagination: { page: 1, perPage: 1 },
-    sort: { field: "id", order: "ASC" },
-  });
-  const overdue = useGetList("bookings", {
-    pagination: { page: 1, perPage: 1 },
-    sort: { field: "dueDate", order: "ASC" },
-    filter: { status: BOOKING_STATUS.overdue },
-  });
-  const active = useGetList("bookings", {
-    pagination: { page: 1, perPage: 1 },
-    sort: { field: "dueDate", order: "ASC" },
-    filter: { status: BOOKING_STATUS.active },
-  });
-
+function CatalogWidgets({ data }: { data: AdminOverview }) {
   const tiles = [
     {
       to: "/books",
       label: "Knihy",
-      total: books.total,
-      loading: books.isLoading,
+      total: data.catalog.books,
+    },
+    {
+      to: "/books",
+      label: "Dostupné tituly",
+      total: data.catalog.availableBooks,
+      tone: "sage" as const,
     },
     {
       to: "/authors",
       label: "Autori",
-      total: authors.total,
-      loading: authors.isLoading,
+      total: data.catalog.authors,
     },
     {
       to: "/categories",
       label: "Kategórie",
-      total: categories.total,
-      loading: categories.isLoading,
+      total: data.catalog.categories,
     },
     {
       to: "/bookings",
       label: "Rezervácie",
-      total: bookings.total,
-      loading: bookings.isLoading,
+      total: data.bookings.total,
     },
     {
       to: "/bookings?filter=%7B%22status%22%3A1%7D",
       label: "Požičané",
-      total: active.total,
-      loading: active.isLoading,
+      total: data.bookings.active,
       tone: "sage" as const,
     },
     {
       to: "/bookings?filter=%7B%22status%22%3A4%7D",
       label: "Po termíne",
-      total: overdue.total,
-      loading: overdue.isLoading,
+      total: data.bookings.overdue,
       tone: "warn" as const,
+    },
+    {
+      to: "/bookings?filter=%7B%22status%22%3A0%7D",
+      label: "Čakajúce",
+      total: data.bookings.reserved,
     },
   ];
 
   return (
     <section>
-      <p className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
-        Katalóg · výpožičky
-      </p>
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+          Katalóg · výpožičky
+        </p>
+        {data.catalog.partial || data.bookings.partial ? (
+          <p className="font-mono text-[10px] text-stair-2 uppercase">
+            čiastočné dáta
+          </p>
+        ) : null}
+      </div>
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {tiles.map((tile) => (
           <li key={tile.label}>
             <Button
@@ -127,7 +118,7 @@ function CatalogWidgets() {
                   !tile.tone && "text-ink",
                 )}
               >
-                {tile.loading ? "…" : (tile.total ?? "—")}
+                {tile.total}
               </span>
             </Button>
           </li>
@@ -137,17 +128,83 @@ function CatalogWidgets() {
   );
 }
 
+function AttentionList({ data }: { data: AdminOverview }) {
+  if (data.attention.length === 0) {
+    return (
+      <section>
+        <p className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+          Pozornosť
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Žiadne po termíne ani blížiace sa termíny.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section>
+      <p className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+        Pozornosť · overdue / due soon
+      </p>
+      <ul className="divide-y divide-rule border border-rule dark:divide-white/10 dark:border-white/10">
+        {data.attention.map((item) => {
+          const status = normalizeBookingStatus(item.status) as BookingStatusCode;
+          return (
+            <li key={item.id}>
+              <Button
+                component={RaLink}
+                to={`/bookings/${item.id}/show`}
+                fullWidth
+                sx={{
+                  borderRadius: 0,
+                  justifyContent: "space-between",
+                  px: 2,
+                  py: 1.5,
+                  textAlign: "left",
+                }}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate font-display text-lg text-ink">
+                    {item.borrowerName}
+                  </span>
+                  <span className="block truncate font-mono text-[11px] text-muted-foreground">
+                    {item.borrowerEmail}
+                  </span>
+                </span>
+                <span className="shrink-0 text-right font-mono text-[11px]">
+                  <span
+                    className={cn(
+                      "block uppercase tracking-wide",
+                      status === 4 ? "text-stair-2" : "text-muted-foreground",
+                    )}
+                  >
+                    {BOOKING_STATUS_LABEL[status]}
+                  </span>
+                  <span className="block tabular-nums text-muted-foreground">
+                    {new Date(item.dueDate).toLocaleString("sk-SK")}
+                  </span>
+                </span>
+              </Button>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 export function AdminRaDashboard() {
   const { data: identity } = useGetIdentity();
-  const [data, setData] = useState<Dashboard | null>(null);
+  const [data, setData] = useState<AdminOverview | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const dashboard = await fetchAdminDashboard();
-        if (!cancelled) setData(dashboard);
+        const overview = await fetchAdminOverview();
+        if (!cancelled) setData(overview);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Načítanie zlyhalo");
@@ -166,13 +223,13 @@ export function AdminRaDashboard() {
       <header className="flex flex-col gap-5 border-b border-rule pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-white/10">
         <div className="min-w-0">
           <p className="font-mono text-[10px] tracking-[0.22em] text-sage uppercase">
-            AdminService · prevádzka
+            AdminService · overview
           </p>
           <h1 className="mt-2 font-display text-[clamp(1.9rem,4vw,2.75rem)] leading-none tracking-tight text-ink">
             Prevádzkový pult
           </h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            {identity?.fullName}
+            {identity?.fullName ?? data?.actor}
             {data ? (
               <>
                 {" · "}
@@ -231,8 +288,6 @@ export function AdminRaDashboard() {
         ))}
       </nav>
 
-      <CatalogWidgets />
-
       {error ? (
         <p
           className="border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300"
@@ -244,6 +299,9 @@ export function AdminRaDashboard() {
 
       {data ? (
         <>
+          <CatalogWidgets data={data} />
+          <AttentionList data={data} />
+
           <AdminHealthChart
             services={data.services}
             healthyCount={data.healthyCount}
@@ -283,6 +341,11 @@ export function AdminRaDashboard() {
                   <p className="mt-2 truncate pl-1 font-mono text-[11px] text-muted-foreground">
                     {service.url}
                   </p>
+                  {typeof service.latencyMs === "number" ? (
+                    <p className="mt-1 pl-1 font-mono text-[10px] text-muted-foreground tabular-nums">
+                      {service.latencyMs} ms
+                    </p>
+                  ) : null}
                 </li>
               ))}
             </ul>

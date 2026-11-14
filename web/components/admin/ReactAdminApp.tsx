@@ -46,6 +46,7 @@ import { LinksToolsPage } from "@/components/admin/tools/LinksToolsPage";
 import { MessagingToolsPage } from "@/components/admin/tools/MessagingToolsPage";
 import { OrdersToolsPage } from "@/components/admin/tools/OrdersToolsPage";
 import { RelationsPage } from "@/components/admin/tools/RelationsPage";
+import { ServicesRegistryPage } from "@/components/admin/tools/ServicesRegistryPage";
 
 export default function ReactAdminApp() {
   return (
@@ -101,6 +102,7 @@ export default function ReactAdminApp() {
         <Route path="/tools/import" element={<BookImportPage />} />
         <Route path="/tools/gateway" element={<GatewayToolsPage />} />
         <Route path="/tools/health" element={<HealthToolsPage />} />
+        <Route path="/tools/services" element={<ServicesRegistryPage />} />
         <Route path="/tools/cache" element={<CacheToolsPage />} />
         <Route path="/tools/messaging" element={<MessagingToolsPage />} />
         <Route path="/tools/relations" element={<RelationsPage />} />
