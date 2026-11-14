@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { X } from "lucide-react";
 import { BookCard } from "@/components/catalog/BookCard";
 import { BooksCatalogFacets } from "@/components/catalog/BooksCatalogFacets";
@@ -10,7 +11,9 @@ import { BooksCatalogFiltersDialog } from "@/components/catalog/BooksCatalogFilt
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
+import { useCatalogColumnCount } from "@/hooks/use-catalog-column-count";
 import { useDebouncedCatalogAction } from "@/hooks/use-debounced-catalog-action";
+import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import {
   buildBooksCatalogHref,
   parseBooksCatalogFilters,
@@ -87,6 +90,24 @@ export function BooksCatalog({
   >(searchBooksAction, input);
 
   const results = data?.items ?? initialBooks;
+  const columns = useCatalogColumnCount();
+  const gridRef = useRef<HTMLUListElement>(null);
+  const scrollMargin = useWindowScrollMargin(gridRef, [
+    results.length,
+    columns,
+    activeFilters.q,
+    activeFilters.category,
+    activeFilters.author,
+    activeFilters.shelf,
+    activeFilters.available,
+  ]);
+  const virtualizer = useWindowVirtualizer({
+    count: results.length,
+    estimateSize: () => 360,
+    overscan: 10,
+    lanes: columns,
+    scrollMargin,
+  });
   const activeAuthor = initialAuthors.find(
     (item) => item.id === filters.author,
   );
@@ -223,10 +244,29 @@ export function BooksCatalog({
           resetHref="/books"
         />
       ) : (
-        <ul className="mt-8 grid grid-cols-2 gap-3 pb-16 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 md:gap-5">
-          {results.map((book, index) => (
-            <BookCard key={book.id} book={book} index={index} />
-          ))}
+        <ul
+          ref={gridRef}
+          className="relative mt-8 pb-16"
+          style={{ height: virtualizer.getTotalSize() }}
+        >
+          {virtualizer.getVirtualItems().map((virtualItem) => {
+            const book = results[virtualItem.index];
+            return (
+              <li
+                key={book.id}
+                data-index={virtualItem.index}
+                ref={virtualizer.measureElement}
+                className="absolute top-0 p-1.5 sm:p-2 md:p-2.5"
+                style={{
+                  width: `${100 / columns}%`,
+                  left: `${(virtualItem.lane * 100) / columns}%`,
+                  transform: `translateY(${virtualItem.start - scrollMargin}px)`,
+                }}
+              >
+                <BookCard book={book} index={virtualItem.index} />
+              </li>
+            );
+          })}
         </ul>
       )}
     </>

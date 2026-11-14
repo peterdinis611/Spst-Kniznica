@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef, useState, useTransition } from "react";
+import { useEffect, useEffectEvent, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +43,6 @@ export function CatalogSearch({
   const [, startTransition] = useTransition();
   const [query, setQuery] = useState(defaultQuery);
   const [category, setCategory] = useState(defaultCategory);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const basePath = action ?? pathname;
 
   useEffect(() => {
@@ -86,25 +86,21 @@ export function CatalogSearch({
     onQueryChange?.(value);
   });
 
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
+  const debouncedSync = useDebouncedCallback(
+    (value: string, nextCategory: string) => {
+      syncUrl(value, nextCategory, true);
+    },
+    { wait: debounceMs },
+  );
 
   const handleQueryChange = (value: string) => {
     setQuery(value);
     emitQuery(value);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      syncUrl(value, category, true);
-    }, debounceMs);
+    debouncedSync(value, category);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (debounceRef.current) clearTimeout(debounceRef.current);
     emitQuery(query);
     syncUrl(query, category, false);
   };

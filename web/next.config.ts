@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withRedact } from "@tanstack/redact/next";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -79,6 +80,9 @@ const nextConfig: NextConfig = {
       "framer-motion",
       "@react-three/drei",
       "@react-three/fiber",
+      "@tanstack/react-pacer",
+      "@tanstack/react-virtual",
+      "@tanstack/charts",
     ],
   },
   turbopack: {
@@ -99,4 +103,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withRedact(nextConfig);

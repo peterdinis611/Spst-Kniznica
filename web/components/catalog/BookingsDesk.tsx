@@ -4,12 +4,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
+import { useDebouncedCallback } from "@tanstack/react-pacer";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { ArrowRight, Search } from "lucide-react";
 import { useAbility } from "@/components/auth/AbilityProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
+import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,33 +135,36 @@ export function BookingsDesk({
 
   const inputKey = JSON.stringify(input);
   const executeSearch = search.execute;
+  const searchGeneration = useRef(0);
 
-  useEffect(() => {
-    let cancelled = false;
-    const payload = JSON.parse(inputKey) as typeof input;
-    filtersRef.current = payload;
-    const timer = window.setTimeout(() => {
+  const runDebouncedSearch = useDebouncedCallback(
+    (payload: typeof input) => {
+      const generation = ++searchGeneration.current;
       void (async () => {
         try {
           const accessToken = await resolveActionAccessToken({
             entraEnabled,
             getAccessToken,
           });
-          if (cancelled) return;
+          if (generation !== searchGeneration.current) return;
           executeSearch({
             ...payload,
             accessToken: accessToken ?? undefined,
           });
         } catch {
-          if (!cancelled) executeSearch(payload);
+          if (generation !== searchGeneration.current) return;
+          executeSearch(payload);
         }
       })();
-    }, 180);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [inputKey, executeSearch, entraEnabled, getAccessToken]);
+    },
+    { wait: 180 },
+  );
+
+  useEffect(() => {
+    const payload = JSON.parse(inputKey) as typeof input;
+    filtersRef.current = payload;
+    runDebouncedSearch(payload);
+  }, [inputKey, runDebouncedSearch]);
 
   const result = search.result.data;
   const items = result?.items ?? initialBookings;
@@ -168,6 +174,15 @@ export function BookingsDesk({
   const late = items.filter(
     (item) => item.status === BOOKING_STATUS.overdue,
   ).length;
+
+  const listRef = useRef<HTMLUListElement>(null);
+  const scrollMargin = useWindowScrollMargin(listRef, [items.length, status, page]);
+  const virtualizer = useWindowVirtualizer({
+    count: items.length,
+    estimateSize: () => 180,
+    overscan: 6,
+    scrollMargin,
+  });
 
   async function changeStatus(booking: DeskBooking, next: BookingStatusCode) {
     setDeskError(null);
@@ -356,115 +371,122 @@ export function BookingsDesk({
           resetLabel="Do katalógu"
         />
       ) : (
-        <ul className="mt-2">
-          {items.map((booking, index) => {
+        <ul
+          ref={listRef}
+          className="relative mt-2"
+          style={{ height: virtualizer.getTotalSize() }}
+        >
+          {virtualizer.getVirtualItems().map((virtualRow) => {
+            const booking = items[virtualRow.index];
             const book = titles.get(booking.bookId);
             const statusCode = booking.status as BookingStatusCode;
             const busy = pendingId === booking.id && update.isPending;
             return (
               <li
                 key={booking.id}
-                className={cn(
-                  "relative grid gap-5 border-b border-rule py-7 md:grid-cols-[1fr_auto] md:items-center dark:border-white/10",
-                  index < 4 && "reveal",
-                  index === 1 && "reveal-delay-1",
-                  index === 2 && "reveal-delay-2",
-                  index === 3 && "reveal-delay-3",
-                )}
+                data-index={virtualRow.index}
+                ref={virtualizer.measureElement}
+                className="absolute inset-x-0 top-0"
+                style={{
+                  transform: `translateY(${virtualRow.start - scrollMargin}px)`,
+                }}
               >
-                <span
-                  aria-hidden
-                  className="absolute top-7 bottom-7 left-0 border-l border-dashed border-ink/20"
-                />
-                <div className="min-w-0 pl-5">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span
-                      className={cn(
-                        "inline-flex -rotate-3 border-2 px-2 py-0.5 font-display text-[11px] tracking-[0.18em] uppercase",
-                        STAMP[statusCode],
+                <div className="relative grid gap-5 border-b border-rule py-7 md:grid-cols-[1fr_auto] md:items-center dark:border-white/10">
+                  <span
+                    aria-hidden
+                    className="absolute top-7 bottom-7 left-0 border-l border-dashed border-ink/20"
+                  />
+                  <div className="min-w-0 pl-5">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span
+                        className={cn(
+                          "inline-flex -rotate-3 border-2 px-2 py-0.5 font-display text-[11px] tracking-[0.18em] uppercase",
+                          STAMP[statusCode],
+                        )}
+                      >
+                        {BOOKING_STATUS_LABEL[statusCode]}
+                      </span>
+                      <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+                        {duePhrase(booking.dueDate, statusCode)}
+                      </span>
+                    </div>
+                    <h2 className="mt-3 font-display text-3xl leading-none tracking-tight text-ink">
+                      {book ? (
+                        <Link
+                          href={`/books/${book.id}`}
+                          className="hover:text-ink/70"
+                        >
+                          {book.title}
+                        </Link>
+                      ) : (
+                        "Titul mimo katalógu"
                       )}
-                    >
-                      {BOOKING_STATUS_LABEL[statusCode]}
-                    </span>
-                    <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
-                      {duePhrase(booking.dueDate, statusCode)}
-                    </span>
-                  </div>
-                  <h2 className="mt-3 font-display text-3xl leading-none tracking-tight text-ink">
-                    {book ? (
-                      <Link
-                        href={`/books/${book.id}`}
-                        className="hover:text-ink/70"
-                      >
-                        {book.title}
-                      </Link>
-                    ) : (
-                      "Titul mimo katalógu"
-                    )}
-                  </h2>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {booking.borrowerName}
-                    <span className="px-1.5 text-ink/30">/</span>
-                    {booking.borrowerEmail}
-                    {book ? (
-                      <>
-                        <span className="px-1.5 text-ink/30">/</span>
-                        {book.author}
-                      </>
-                    ) : null}
-                  </p>
-                  {booking.notes ? (
-                    <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-                      {booking.notes}
+                    </h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {booking.borrowerName}
+                      <span className="px-1.5 text-ink/30">/</span>
+                      {booking.borrowerEmail}
+                      {book ? (
+                        <>
+                          <span className="px-1.5 text-ink/30">/</span>
+                          {book.author}
+                        </>
+                      ) : null}
                     </p>
-                  ) : null}
-                </div>
+                    {booking.notes ? (
+                      <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+                        {booking.notes}
+                      </p>
+                    ) : null}
+                  </div>
 
-                <div className="flex flex-col items-start gap-3 pl-5 md:items-end md:pl-0">
-                  <p className="font-display text-4xl leading-none tracking-tight text-ink">
-                    {formatDeskDate(booking.dueDate)}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {canManageDesk && statusCode === BOOKING_STATUS.reserved ? (
-                      <>
+                  <div className="flex flex-col items-start gap-3 pl-5 md:items-end md:pl-0">
+                    <p className="font-display text-4xl leading-none tracking-tight text-ink">
+                      {formatDeskDate(booking.dueDate)}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {canManageDesk &&
+                      statusCode === BOOKING_STATUS.reserved ? (
+                        <>
+                          <Button
+                            type="button"
+                            disabled={busy}
+                            className="h-10 rounded-none bg-ink px-4 text-paper hover:bg-ink/85"
+                            onClick={() =>
+                              changeStatus(booking, BOOKING_STATUS.active)
+                            }
+                          >
+                            {busy ? "Ukladám…" : "Vydať"}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={busy}
+                            className="h-10 rounded-none border-ink"
+                            onClick={() =>
+                              changeStatus(booking, BOOKING_STATUS.cancelled)
+                            }
+                          >
+                            Zrušiť
+                          </Button>
+                        </>
+                      ) : null}
+                      {canManageDesk &&
+                      (statusCode === BOOKING_STATUS.active ||
+                        statusCode === BOOKING_STATUS.overdue) ? (
                         <Button
                           type="button"
                           disabled={busy}
-                          className="h-10 rounded-none bg-ink px-4 text-paper hover:bg-ink/85"
+                          className="h-10 rounded-none bg-accent px-4 text-accent-foreground hover:bg-accent-deep"
                           onClick={() =>
-                            changeStatus(booking, BOOKING_STATUS.active)
+                            changeStatus(booking, BOOKING_STATUS.returned)
                           }
                         >
-                          {busy ? "Ukladám…" : "Vydať"}
+                          {busy ? "Ukladám…" : "Vrátiť"}
+                          <ArrowRight className="size-4" aria-hidden />
                         </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          disabled={busy}
-                          className="h-10 rounded-none border-ink"
-                          onClick={() =>
-                            changeStatus(booking, BOOKING_STATUS.cancelled)
-                          }
-                        >
-                          Zrušiť
-                        </Button>
-                      </>
-                    ) : null}
-                    {canManageDesk &&
-                    (statusCode === BOOKING_STATUS.active ||
-                      statusCode === BOOKING_STATUS.overdue) ? (
-                      <Button
-                        type="button"
-                        disabled={busy}
-                        className="h-10 rounded-none bg-accent px-4 text-accent-foreground hover:bg-accent-deep"
-                        onClick={() =>
-                          changeStatus(booking, BOOKING_STATUS.returned)
-                        }
-                      >
-                        {busy ? "Ukladám…" : "Vrátiť"}
-                        <ArrowRight className="size-4" aria-hidden />
-                      </Button>
-                    ) : null}
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </li>

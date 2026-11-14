@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useAction } from "next-safe-action/hooks";
+import { useDebouncedCallback } from "@tanstack/react-pacer";
 
 export function useDebouncedCatalogAction<TInput extends object, TData>(
   // next-safe-action generics are deep; cast at the boundary
@@ -18,19 +19,24 @@ export function useDebouncedCatalogAction<TInput extends object, TData>(
   const first = useRef(true);
   const inputKey = JSON.stringify(input);
 
+  const runDebounced = useDebouncedCallback(
+    (payload: TInput) => {
+      execute(payload);
+    },
+    { wait: delayMs },
+  );
+
   useEffect(() => {
     const payload = JSON.parse(inputKey) as TInput;
-    const run = () => execute(payload);
 
     if (first.current) {
       first.current = false;
-      run();
+      execute(payload);
       return;
     }
 
-    const timer = window.setTimeout(run, delayMs);
-    return () => window.clearTimeout(timer);
-  }, [inputKey, delayMs, execute]);
+    runDebounced(payload);
+  }, [inputKey, execute, runDebounced]);
 
   return {
     data: result.data as TData | undefined,

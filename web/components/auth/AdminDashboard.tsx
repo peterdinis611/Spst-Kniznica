@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { AdminHealthChart } from "@/components/auth/AdminHealthChart";
 import { fetchAdminDashboard } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 
@@ -102,30 +103,37 @@ export function AdminDashboard() {
       ) : null}
 
       {data ? (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {data.services.map((service) => (
-            <li
-              key={service.name}
-              className="border border-rule px-4 py-4 dark:border-white/10"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-display text-xl text-ink">{service.name}</p>
-                <span
-                  className={
-                    service.healthy
-                      ? "text-xs tracking-[0.14em] text-emerald-700 uppercase dark:text-emerald-300"
-                      : "text-xs tracking-[0.14em] text-red-700 uppercase dark:text-red-300"
-                  }
-                >
-                  {service.status}
-                </span>
-              </div>
-              <p className="mt-2 truncate text-xs text-muted-foreground">
-                {service.url}
-              </p>
-            </li>
-          ))}
-        </ul>
+        <div className="space-y-8">
+          <AdminHealthChart
+            services={data.services}
+            healthyCount={data.healthyCount}
+            unhealthyCount={data.unhealthyCount}
+          />
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {data.services.map((service) => (
+              <li
+                key={service.name}
+                className="border border-rule px-4 py-4 dark:border-white/10"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-display text-xl text-ink">{service.name}</p>
+                  <span
+                    className={
+                      service.healthy
+                        ? "text-xs tracking-[0.14em] text-emerald-700 uppercase dark:text-emerald-300"
+                        : "text-xs tracking-[0.14em] text-red-700 uppercase dark:text-red-300"
+                    }
+                  >
+                    {service.status}
+                  </span>
+                </div>
+                <p className="mt-2 truncate text-xs text-muted-foreground">
+                  {service.url}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
     </div>
   );

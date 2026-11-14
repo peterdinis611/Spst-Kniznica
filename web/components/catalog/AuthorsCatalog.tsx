@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { ArrowUpRight } from "lucide-react";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useDebouncedCatalogAction } from "@/hooks/use-debounced-catalog-action";
+import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import {
   searchAuthorsAction,
   type SearchAuthorsResult,
@@ -62,6 +64,14 @@ export function AuthorsCatalog({
   >(searchAuthorsAction, input);
 
   const results = data?.items ?? initialAuthors;
+  const listRef = useRef<HTMLOListElement>(null);
+  const scrollMargin = useWindowScrollMargin(listRef, [results.length, letter, liveQuery]);
+  const virtualizer = useWindowVirtualizer({
+    count: results.length,
+    estimateSize: () => 148,
+    overscan: 8,
+    scrollMargin,
+  });
 
   return (
     <>
@@ -155,14 +165,24 @@ export function AuthorsCatalog({
           resetHref="/authors"
         />
       ) : (
-        <ol className="mt-4 divide-y divide-rule border-y border-rule pb-20 dark:divide-white/10 dark:border-white/10">
-          {results.map((author, index) => {
+        <ol
+          ref={listRef}
+          className="relative mt-4 border-y border-rule pb-20 dark:border-white/10"
+          style={{ height: virtualizer.getTotalSize() }}
+        >
+          {virtualizer.getVirtualItems().map((virtualRow) => {
+            const author = results[virtualRow.index];
+            const index = virtualRow.index;
             const initial = author.name.charAt(0).toUpperCase();
             return (
               <li
                 key={author.id}
-                className="reveal"
-                style={{ animationDelay: `${(index % 10) * 0.04}s` }}
+                data-index={virtualRow.index}
+                ref={virtualizer.measureElement}
+                className="absolute inset-x-0 top-0 border-b border-rule dark:border-white/10"
+                style={{
+                  transform: `translateY(${virtualRow.start - scrollMargin}px)`,
+                }}
               >
                 <Link
                   href={`/authors/${author.id}`}
