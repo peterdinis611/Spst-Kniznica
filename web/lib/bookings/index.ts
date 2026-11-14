@@ -26,3 +26,19 @@ export {
   type DeskBooking,
   type SearchBookingsResult,
 } from "./actions";
+export {
+  addFavoriteAction,
+  cancelBookingAction,
+  getDeskDailyAction,
+  getLoanPolicyAction,
+  joinWaitlistAction,
+  leaveWaitlistAction,
+  listFavoritesAction,
+  listMyWaitlistAction,
+  removeFavoriteByBookAction,
+  renewBookingAction,
+  type DeskDaily,
+  type FavoriteBook,
+  type LoanPolicy,
+  type WaitlistEntry,
+} from "./library-ops";

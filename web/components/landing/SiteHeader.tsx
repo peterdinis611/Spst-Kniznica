@@ -48,20 +48,29 @@ const links = [
     isActive: (pathname: string) => pathname.startsWith("/categories"),
   },
   {
+    href: "/library",
+    label: "Moja knižnica",
+    note: "Moje lístky a termíny",
+    isActive: (pathname: string) => pathname.startsWith("/library"),
+  },
+  {
     href: "/bookings",
     label: "Výpožičky",
     note: "Výpožičný pult",
-    isActive: (pathname: string) => pathname.startsWith("/bookings"),
+    isActive: (pathname: string) =>
+      pathname.startsWith("/bookings") || pathname.startsWith("/desk"),
   },
 ] as const;
 
 function DesktopNav({ className }: { className?: string }) {
   const pathname = usePathname();
   const ability = useAbility();
-  const visibleLinks = links.filter(
-    (link) =>
-      link.href !== "/bookings" || ability.can("access", "BookingsPage"),
-  );
+  const visibleLinks = links.filter((link) => {
+    if (link.href === "/bookings" || link.href === "/library") {
+      return ability.can("access", "BookingsPage");
+    }
+    return true;
+  });
 
   return (
     <nav className={className} data-tour="nav" aria-label="Hlavná navigácia">
@@ -89,10 +98,12 @@ function DesktopNav({ className }: { className?: string }) {
 function MobileNav({ onNavigate }: { onNavigate: () => void }) {
   const pathname = usePathname();
   const ability = useAbility();
-  const visibleLinks = links.filter(
-    (link) =>
-      link.href !== "/bookings" || ability.can("access", "BookingsPage"),
-  );
+  const visibleLinks = links.filter((link) => {
+    if (link.href === "/bookings" || link.href === "/library") {
+      return ability.can("access", "BookingsPage");
+    }
+    return true;
+  });
 
   return (
     <nav className="mt-2 flex flex-1 flex-col" aria-label="Mobilné menu">

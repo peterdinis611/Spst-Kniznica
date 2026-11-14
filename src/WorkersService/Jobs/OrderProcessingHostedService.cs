@@ -44,8 +44,12 @@ public sealed class OrderProcessingHostedService(
 
     private Task ProcessAsync(ProcessOrderJob job, CancellationToken cancellationToken)
     {
-        // Scaffold only — replace with order fulfillment side-effects later.
-        logger.LogInformation("Processing order {OrderId}", job.OrderId);
+        // Reservation enqueue hook — lifecycle scanning runs in LoanLifecycleHostedService.
+        // Keep this as an audit/ack path for newly created bookings.
+        logger.LogInformation(
+            "Acknowledged reservation job {JobId} for booking/order {OrderId}",
+            job.JobId,
+            job.OrderId);
         return Task.CompletedTask;
     }
 }

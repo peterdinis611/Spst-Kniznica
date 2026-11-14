@@ -13,6 +13,8 @@ import {
   BOOKING_STATUS,
   createBookingAction,
   formatDeskDate,
+  getLoanPolicyAction,
+  joinWaitlistAction,
   normalizeBookingStatus,
   searchBookingsAction,
   toDueDateIso,
@@ -27,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FavoriteToggle } from "@/components/catalog/FavoriteToggle";
 
 type ReserveSlipProps = {
   bookId: string;
@@ -40,9 +43,9 @@ function dateInputValue(date: Date): string {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
-function defaultDueDate(): string {
+function defaultDueDate(days = 14): string {
   const date = new Date();
-  date.setDate(date.getDate() + 14);
+  date.setDate(date.getDate() + days);
   return dateInputValue(date);
 }
 
@@ -96,10 +99,14 @@ function readerInitials(name: string, email: string): string {
 export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
   const { ready, entraEnabled, user, account, getAccessToken } = useAuth();
   const [open, setOpen] = useState(false);
-  const [dueDate, setDueDate] = useState(defaultDueDate);
+  const [loanDays, setLoanDays] = useState(14);
+  const [dueDate, setDueDate] = useState(() => defaultDueDate(14));
   const [notes, setNotes] = useState("");
   const [clientError, setClientError] = useState<string | null>(null);
+  const [waitlistJoined, setWaitlistJoined] = useState(false);
   const { execute, result, isPending, reset } = useAction(createBookingAction);
+  const policy = useAction(getLoanPolicyAction);
+  const waitlist = useAction(joinWaitlistAction);
   const {
     execute: lookupOpenBookings,
     result: lookupMineResult,
@@ -115,6 +122,18 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
   useEffect(() => {
     setClientError(null);
   }, [user?.id]);
+
+  useEffect(() => {
+    void policy.execute({});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const days = policy.result.data?.defaultLoanDays;
+    if (typeof days === "number" && days > 0) {
+      setLoanDays(days);
+      setDueDate(defaultDueDate(days));
+    }
+  }, [policy.result.data?.defaultLoanDays]);
 
   useEffect(() => {
     if (!authenticated || !displayEmail) return;
@@ -241,26 +260,40 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
     if (issued) {
       return (
         <SlipPanel accent>
-          <p className="font-mono text-[11px] font-semibold tracking-[0.22em] uppercase opacity-80">
-            Lístok vystavený
-          </p>
-          <p className="mt-4 inline-flex -rotate-3 border border-accent-foreground/50 bg-accent-foreground/10 px-3 py-1 font-display text-sm tracking-[0.18em] uppercase">
-            Rezervované
-          </p>
-          <h2 className="mt-5 font-display text-4xl leading-none tracking-tight">
-            {formatDeskDate(issued.dueDate)}
-          </h2>
-          <p className="mt-3 max-w-md text-sm leading-relaxed opacity-85">
-            {issued.borrowerName} má {title} rezervované do tohto termínu.
-            Lístok je na výpožičnom pulte.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div id="print-slip" className="print:text-black">
+            <p className="font-mono text-[11px] font-semibold tracking-[0.22em] uppercase opacity-80">
+              Lístok vystavený
+            </p>
+            <p className="mt-4 inline-flex -rotate-3 border border-accent-foreground/50 bg-accent-foreground/10 px-3 py-1 font-display text-sm tracking-[0.18em] uppercase print:rotate-0">
+              Rezervované
+            </p>
+            <h2 className="mt-5 font-display text-4xl leading-none tracking-tight">
+              {formatDeskDate(issued.dueDate)}
+            </h2>
+            <p className="mt-3 max-w-md text-sm leading-relaxed opacity-85">
+              {issued.borrowerName} · {issued.borrowerEmail}
+            </p>
+            <p className="mt-1 max-w-md text-sm leading-relaxed opacity-85">
+              {title} — rezervované do tohto termínu. Lístok ID{" "}
+              <span className="font-mono text-xs">{issued.id}</span>
+            </p>
+            <p className="mt-4 font-mono text-[10px] tracking-[0.2em] uppercase opacity-70">
+              *{issued.id.replace(/-/g, "").slice(0, 12)}*
+            </p>
+          </div>
+          <div className="mt-8 flex flex-wrap gap-3 print:hidden">
             <Button
               className="h-11 rounded-none bg-ink px-5 text-paper hover:bg-ink/90"
-              render={<Link href={`/bookings?book=${bookId}`} />}
+              onClick={() => window.print()}
+            >
+              Tlačiť lístok
+            </Button>
+            <Button
+              className="h-11 rounded-none bg-ink/80 px-5 text-paper hover:bg-ink/70"
+              render={<Link href={`/library`} />}
               onClick={() => setOpen(false)}
             >
-              Otvoriť pult
+              Moja knižnica
               <ArrowRight className="size-4" aria-hidden />
             </Button>
             <Button
@@ -307,7 +340,7 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
             <p className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
               Štandard
             </p>
-            <p className="font-display text-2xl text-ink">14 dní</p>
+            <p className="font-display text-2xl text-ink">{loanDays} dní</p>
           </div>
         </div>
 
@@ -363,17 +396,54 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
             >
               Zrušiť
             </Button>
-            <Button
-              type="submit"
-              disabled={!available || isPending}
-              className="group h-11 min-w-[14rem] rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
-            >
-              {isPending ? "Vystavujem…" : "Vystaviť lístok"}
-              <ArrowRight
-                className="size-4 transition group-hover:translate-x-0.5"
-                aria-hidden
-              />
-            </Button>
+            {!available ? (
+              <Button
+                type="button"
+                disabled={waitlist.isPending || waitlistJoined}
+                className="h-11 min-w-[14rem] rounded-none bg-ink px-5 text-paper hover:bg-ink/90"
+                onClick={async () => {
+                  setClientError(null);
+                  try {
+                    const accessToken = await resolveActionAccessToken({
+                      entraEnabled,
+                      getAccessToken,
+                    });
+                    const result = await waitlist.executeAsync({
+                      accessToken,
+                      bookId,
+                      borrowerName: displayName || displayEmail,
+                    });
+                    if (result?.serverError) {
+                      setClientError(result.serverError);
+                    } else {
+                      setWaitlistJoined(true);
+                    }
+                  } catch (err) {
+                    setClientError(
+                      err instanceof Error ? err.message : "Fronta zlyhala.",
+                    );
+                  }
+                }}
+              >
+                {waitlistJoined
+                  ? "Si vo fronte"
+                  : waitlist.isPending
+                    ? "Zaraďujem…"
+                    : "Zaradiť do čakacieho zoznamu"}
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={isPending || policy.result.data?.freezeNewLoans}
+                className="group h-11 min-w-[14rem] rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
+              >
+                {isPending ? "Vystavujem…" : "Vystaviť lístok"}
+                <ArrowRight
+                  className="size-4 transition group-hover:translate-x-0.5"
+                  aria-hidden
+                />
+              </Button>
+            )}
           </div>
         </form>
       </SlipPanel>
@@ -400,15 +470,18 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
                 : "Fond je momentálne obsadený, server rezerváciu aj tak odmietne."}
           </p>
         </div>
-        <Button
-          type="button"
-          disabled={!ready}
-          className="h-12 shrink-0 rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
-          onClick={() => setOpen(true)}
-        >
-          <Ticket className="size-4" strokeWidth={1.6} aria-hidden />
-          {triggerLabel}
-        </Button>
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+          <FavoriteToggle bookId={bookId} />
+          <Button
+            type="button"
+            disabled={!ready}
+            className="h-12 shrink-0 rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
+            onClick={() => setOpen(true)}
+          >
+            <Ticket className="size-4" strokeWidth={1.6} aria-hidden />
+            {triggerLabel}
+          </Button>
+        </div>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>

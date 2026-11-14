@@ -3,6 +3,7 @@ using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
 using WorkersService.Jobs;
 using WorkersService.Queue;
+using LoanLifecycleOptions = WorkersService.Jobs.LoanLifecycleOptions;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -32,8 +33,15 @@ try
         requireAuthenticatedByDefault: true);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
 
+    builder.Services.Configure<LoanLifecycleOptions>(
+        builder.Configuration.GetSection(LoanLifecycleOptions.SectionName));
+    builder.Services.AddHttpClient("loan-lifecycle", client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(30);
+    });
     builder.Services.AddSingleton<IOrderJobQueue, ChannelOrderJobQueue>();
     builder.Services.AddHostedService<OrderProcessingHostedService>();
+    builder.Services.AddHostedService<LoanLifecycleHostedService>();
     builder.Services.AddHealthChecks();
 
     var app = builder.Build();

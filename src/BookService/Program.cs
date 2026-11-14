@@ -48,6 +48,7 @@ try
     builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "book-service");
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
     builder.Services.AddHostedService<CategorySyncHostedService>();
+    builder.Services.AddHostedService<BookingCopySyncHostedService>();
 
     builder.Services.AddHttpClient<ICategoryLookup, CategoryLookupClient>(client =>
     {

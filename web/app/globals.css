@@ -497,3 +497,24 @@
 .dark .driver-popover.spst-driver-theme .driver-popover-arrow-side-top {
   border-bottom-color: var(--surface-3) !important;
 }
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  #print-slip,
+  #print-slip * {
+    visibility: visible !important;
+  }
+
+  #print-slip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 24px;
+    color: #000 !important;
+    background: #fff !important;
+  }
+}

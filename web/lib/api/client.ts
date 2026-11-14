@@ -195,8 +195,9 @@ export async function apiPatch<T>(
 export async function apiDelete<T = void>(
   path: string,
   init?: RequestInit,
+  accessToken?: string | null,
 ): Promise<T> {
-  return apiRequest<T>(path, { ...init, method: "DELETE" });
+  return apiRequest<T>(path, { ...init, method: "DELETE" }, undefined, accessToken);
 }
 
 export { API_BASE };

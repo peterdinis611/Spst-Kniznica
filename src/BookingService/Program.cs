@@ -78,8 +78,9 @@ try
     {
         var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
         await db.Database.MigrateAsync();
+        await LibraryOpsSchema.EnsureAsync(db);
         await BookingSeed.EnsureSeededAsync(db);
-        Log.Information("Database migrations applied; seed checked");
+        Log.Information("Database migrations applied; library ops schema + seed checked");
     }
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();

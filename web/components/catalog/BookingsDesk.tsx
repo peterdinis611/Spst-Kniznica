@@ -20,8 +20,10 @@ import { Separator } from "@/components/ui/separator";
 import {
   BOOKING_STATUS,
   BOOKING_STATUS_LABEL,
+  cancelBookingAction,
   duePhrase,
   formatDeskDate,
+  renewBookingAction,
   searchBookingsAction,
   updateBookingAction,
   type BookingStatusCode,
@@ -92,6 +94,8 @@ export function BookingsDesk({
   }
 
   const search = useAction(searchBookingsAction);
+  const cancelMine = useAction(cancelBookingAction);
+  const renewMine = useAction(renewBookingAction);
   const filtersRef = useRef({
     search: undefined as string | undefined,
     borrowerEmail: undefined as string | undefined,
@@ -268,6 +272,17 @@ export function BookingsDesk({
           />
         </label>
         <div className="flex flex-wrap items-center gap-2">
+          {canManageDesk ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="rounded-full border-rule"
+              render={<Link href="/desk" />}
+            >
+              Denná tabuľa
+            </Button>
+          ) : null}
           {canManageDesk && userEmail ? (
             <Button
               type="button"
@@ -484,6 +499,66 @@ export function BookingsDesk({
                         >
                           {busy ? "Ukladám…" : "Vrátiť"}
                           <ArrowRight className="size-4" aria-hidden />
+                        </Button>
+                      ) : null}
+                      {!canManageDesk &&
+                      statusCode === BOOKING_STATUS.reserved ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={busy || cancelMine.isPending}
+                          className="h-10 rounded-none border-ink"
+                          onClick={async () => {
+                            setPendingId(booking.id);
+                            setDeskError(null);
+                            const accessToken =
+                              await resolveActionAccessToken({
+                                entraEnabled,
+                                getAccessToken,
+                              });
+                            const result = await cancelMine.executeAsync({
+                              id: booking.id,
+                              accessToken,
+                            });
+                            setPendingId(null);
+                            if (result?.serverError) {
+                              setDeskError(result.serverError);
+                            } else {
+                              runDebouncedSearch(filtersRef.current);
+                            }
+                          }}
+                        >
+                          Zrušiť rezerváciu
+                        </Button>
+                      ) : null}
+                      {!canManageDesk &&
+                      (statusCode === BOOKING_STATUS.active ||
+                        statusCode === BOOKING_STATUS.overdue) ? (
+                        <Button
+                          type="button"
+                          disabled={busy || renewMine.isPending}
+                          className="h-10 rounded-none bg-accent px-4 text-accent-foreground hover:bg-accent-deep"
+                          onClick={async () => {
+                            setPendingId(booking.id);
+                            setDeskError(null);
+                            const accessToken =
+                              await resolveActionAccessToken({
+                                entraEnabled,
+                                getAccessToken,
+                              });
+                            const result = await renewMine.executeAsync({
+                              id: booking.id,
+                              accessToken,
+                            });
+                            setPendingId(null);
+                            if (result?.serverError) {
+                              setDeskError(result.serverError);
+                            } else {
+                              runDebouncedSearch(filtersRef.current);
+                            }
+                          }}
+                        >
+                          Predĺžiť
                         </Button>
                       ) : null}
                     </div>
