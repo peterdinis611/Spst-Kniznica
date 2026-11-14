@@ -9,7 +9,7 @@ PID_DIR="$RUN_DIR/pids"
 SRC="$ROOT/src"
 WEB="$ROOT/web"
 
-MODE="detach"
+MODE="foreground"
 SKIP_DOCKER=0
 SKIP_BUILD=0
 NO_STOP=0
@@ -21,8 +21,8 @@ Usage: $(basename "$0") [options]
   Spustí Docker infra, všetky .NET mikroslužby, gateway a frontend.
 
 Options:
-  --detach, -d       spusti na pozadí a ukonči skript (default)
-  --foreground, -f   nechaj skript bežať; Ctrl+C zastaví všetko
+  --foreground, -f   nechaj skript bežať; Ctrl+C zastaví všetko (default)
+  --detach, -d       spusti na pozadí a ukonči skript
   --skip-docker      nespúšťaj docker compose
   --skip-build       nespúšťaj dotnet build (použi existujúci build)
   --no-stop          pred štartom nezastavuj bežiace procesy
@@ -265,9 +265,11 @@ EOF
 
 if [[ "$MODE" == "foreground" ]]; then
   echo
-  echo "  Foreground mód – Ctrl+C zastaví všetko."
+  echo "  Beží v popredí – Ctrl+C zastaví všetko."
+  echo "  (Na pozadí: ./start.sh --detach)"
   wait
 else
   echo
   echo "  Detached mód – skript končí, služby bežia na pozadí."
+  echo "  Stop: ./scripts/stop-all.sh"
 fi

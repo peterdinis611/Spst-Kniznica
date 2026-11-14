@@ -23,11 +23,19 @@ const searchAuthorsSchema = z.object({
   pageSize: z.number().int().min(1).max(100).default(50),
 });
 
+const getAuthorSchema = z.object({
+  id: z.string().trim().min(1),
+});
+
 export type SearchAuthorsResult = {
   items: CatalogAuthor[];
   page: number;
   pageSize: number;
   totalCount: number;
+};
+
+export type GetAuthorResult = {
+  author: CatalogAuthor;
 };
 
 export const searchAuthorsAction = actionClient
@@ -58,4 +66,11 @@ export const searchAuthorsAction = actionClient
       pageSize: result.pageSize,
       totalCount: letter ? items.length : result.totalCount,
     };
+  });
+
+export const getAuthorAction = actionClient
+  .inputSchema(getAuthorSchema)
+  .action(async ({ parsedInput }): Promise<GetAuthorResult> => {
+    const author = await apiGet<AuthorDto>(`/api/authors/${parsedInput.id}`);
+    return { author: mapAuthor(author) };
   });

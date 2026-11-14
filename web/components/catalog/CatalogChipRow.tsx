@@ -1,6 +1,5 @@
 "use client";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 export function CatalogChipRow({
@@ -13,14 +12,19 @@ export function CatalogChipRow({
   label: string;
 }) {
   return (
-    <ScrollArea className={cn("w-full", className)}>
+    <div
+      className={cn(
+        "w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        className,
+      )}
+    >
       <div
         role="tablist"
         aria-label={label}
-        className="flex w-max max-w-none gap-2 pb-2.5"
+        className="flex w-max max-w-none gap-2 pb-1"
       >
         {children}
       </div>
-    </ScrollArea>
+    </div>
   );
 }

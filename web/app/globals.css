@@ -375,3 +375,125 @@
     animation: none;
   }
 }
+
+/* driver.js — SPST theme (beat `all: unset` + footer-btn defaults) */
+.driver-popover.spst-driver-theme {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--rule) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 28px 64px -36px rgba(14, 26, 36, 0.45) !important;
+  max-width: 22rem !important;
+  padding: 1rem 1.1rem 1rem !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-title {
+  font-family: var(--font-display-family), Georgia, serif !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--ink) !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-description {
+  font-size: 0.875rem !important;
+  line-height: 1.55 !important;
+  color: var(--muted-text) !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-progress-text {
+  font-family: var(--font-mono-family), ui-monospace, monospace !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: var(--sage) !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-footer-btn,
+.driver-popover.spst-driver-theme .driver-popover-prev-btn,
+.driver-popover.spst-driver-theme .driver-popover-next-btn {
+  all: unset !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  border: 1px solid var(--rule) !important;
+  border-radius: 0 !important;
+  background: var(--paper-deep) !important;
+  color: var(--ink) !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  padding: 0.5rem 0.9rem !important;
+  text-shadow: none !important;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-footer-btn:hover,
+.driver-popover.spst-driver-theme .driver-popover-footer-btn:focus-visible,
+.driver-popover.spst-driver-theme .driver-popover-prev-btn:hover,
+.driver-popover.spst-driver-theme .driver-popover-prev-btn:focus-visible {
+  background: color-mix(in srgb, var(--mint) 70%, var(--paper)) !important;
+  border-color: color-mix(in srgb, var(--sage) 45%, var(--rule)) !important;
+  color: var(--ink) !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-next-btn {
+  background: var(--accent-brand) !important;
+  border-color: var(--accent-brand) !important;
+  color: var(--on-accent-fg) !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-next-btn:hover,
+.driver-popover.spst-driver-theme .driver-popover-next-btn:focus-visible {
+  background: var(--accent-deep) !important;
+  border-color: var(--accent-deep) !important;
+  color: var(--on-accent-fg) !important;
+  transform: translateY(-1px) !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-close-btn {
+  color: var(--muted-text) !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-close-btn:hover,
+.driver-popover.spst-driver-theme .driver-popover-close-btn:focus-visible {
+  color: var(--ink) !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-arrow {
+  border-color: var(--paper) !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-arrow-side-bottom {
+  border-top-color: var(--paper) !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+}
+
+.driver-popover.spst-driver-theme .driver-popover-arrow-side-top {
+  border-bottom-color: var(--paper) !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-top-color: transparent !important;
+}
+
+.dark .driver-popover.spst-driver-theme {
+  background: var(--surface-3) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 28px 64px -28px rgba(0, 0, 0, 0.7) !important;
+}
+
+.dark .driver-popover.spst-driver-theme .driver-popover-arrow-side-bottom {
+  border-top-color: var(--surface-3) !important;
+}
+
+.dark .driver-popover.spst-driver-theme .driver-popover-arrow-side-top {
+  border-bottom-color: var(--surface-3) !important;
+}

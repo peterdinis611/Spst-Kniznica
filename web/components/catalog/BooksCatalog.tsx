@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { SlidersHorizontal, X } from "lucide-react";
+import { X } from "lucide-react";
 import { BookCard } from "@/components/catalog/BookCard";
+import { BooksCatalogFacets } from "@/components/catalog/BooksCatalogFacets";
 import { BooksCatalogFiltersDialog } from "@/components/catalog/BooksCatalogFiltersDialog";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
@@ -21,9 +22,7 @@ import {
 } from "@/lib/catalog/actions";
 import type { CatalogAuthor, CatalogBook, CatalogCategory } from "@/lib/catalog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
 
 type BooksCatalogProps = {
   initialBooks: CatalogBook[];
@@ -32,12 +31,11 @@ type BooksCatalogProps = {
   shelfZones: Array<{ id: string; label: string }>;
 };
 
-function countActiveFilters(filters: BooksCatalogFilters): number {
+/** Advanced filters that live in the dialog (category + available are inline). */
+function countAdvancedFilters(filters: BooksCatalogFilters): number {
   let n = 0;
-  if (filters.category) n += 1;
   if (filters.author) n += 1;
   if (filters.shelf) n += 1;
-  if (filters.available) n += 1;
   return n;
 }
 
@@ -89,19 +87,18 @@ export function BooksCatalog({
   >(searchBooksAction, input);
 
   const results = data?.items ?? initialBooks;
-  const activeCategory = initialCategories.find(
-    (item) => item.id === filters.category,
-  );
   const activeAuthor = initialAuthors.find(
     (item) => item.id === filters.author,
   );
   const activeShelf = shelfZones.find((item) => item.id === filters.shelf);
-  const filterCount = countActiveFilters(filters);
+  const advancedCount = countAdvancedFilters(filters);
+  const hasAnyFilter =
+    Boolean(filters.category) ||
+    Boolean(filters.available) ||
+    advancedCount > 0 ||
+    Boolean(liveQuery.trim());
 
   const activeTags = [
-    activeCategory
-      ? { key: "category", label: activeCategory.name, clear: { category: undefined } }
-      : null,
     activeAuthor
       ? { key: "author", label: activeAuthor.name, clear: { author: undefined } }
       : null,
@@ -110,13 +107,6 @@ export function BooksCatalog({
           key: "shelf",
           label: `Trakt ${activeShelf.id}`,
           clear: { shelf: undefined },
-        }
-      : null,
-    filters.available
-      ? {
-          key: "available",
-          label: "Len dostupné",
-          clear: { available: undefined },
         }
       : null,
   ].filter(Boolean) as Array<{
@@ -133,7 +123,7 @@ export function BooksCatalog({
 
       <CatalogTopBar
         title="Knižný fond"
-        lead="Vyhľadaj titul alebo otvor filtre — kategória, autor, trakt poličiek, dostupnosť."
+        lead="Hľadaj názov alebo tému — kategóriu a dostupnosť prepneš jedným klikom."
         defaultQuery={urlQuery}
         defaultCategory={filters.category}
         showCategorySelect={false}
@@ -143,33 +133,19 @@ export function BooksCatalog({
 
       <Separator className="mt-10 sm:mt-12" />
 
-      <div className="flex flex-wrap items-start justify-between gap-4 pt-10 sm:items-center sm:pt-12">
-        <div className="min-w-0 flex-1 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className={cn(
-                "h-10 rounded-none border-rule bg-paper-deep/60 dark:border-white/15",
-                filterCount > 0 && "border-sage/40",
-              )}
-              onClick={() => setFiltersOpen(true)}
-            >
-              <SlidersHorizontal className="size-4 text-sage" aria-hidden />
-              Filtre
-              {filterCount > 0 ? (
-                <span className="ml-1.5 rounded-sm bg-sage/15 px-1.5 py-0.5 font-mono text-[10px] text-sage tabular-nums">
-                  {filterCount}
-                </span>
-              ) : null}
-            </Button>
-            {isPending ? (
-              <span className="text-xs text-muted-foreground">Hľadám…</span>
-            ) : null}
-          </div>
+      <div className="flex flex-wrap items-start justify-between gap-4 pt-8 sm:pt-10">
+        <div className="min-w-0 flex-1 space-y-4">
+          <BooksCatalogFacets
+            filters={filters}
+            liveQuery={liveQuery}
+            categories={initialCategories}
+            filterCount={advancedCount}
+            onOpenAdvanced={() => setFiltersOpen(true)}
+            isPending={isPending}
+          />
 
           {activeTags.length > 0 ? (
-            <ul className="flex flex-wrap gap-2">
+            <ul className="flex flex-wrap items-center gap-2">
               {activeTags.map((tag) => (
                 <li key={tag.key}>
                   <Link
@@ -178,6 +154,7 @@ export function BooksCatalog({
                       ...tag.clear,
                       q: liveQuery.trim() || undefined,
                     })}
+                    scroll={false}
                     className="group inline-flex items-center gap-1.5 border border-rule bg-card/80 py-1 pr-2 pl-2.5 text-xs text-ink transition hover:border-sage/40 dark:border-white/12"
                   >
                     {tag.label}
@@ -189,22 +166,32 @@ export function BooksCatalog({
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link
-                  href={buildBooksCatalogHref({
-                    q: liveQuery.trim() || undefined,
-                  })}
-                  className="text-xs text-sage underline-offset-2 hover:underline"
-                >
-                  Zrušiť všetko
-                </Link>
-              </li>
             </ul>
+          ) : null}
+
+          {hasAnyFilter ? (
+            <p className="text-sm text-muted-foreground">
+              {liveQuery.trim() ? (
+                <>
+                  Výsledky pre „{liveQuery.trim()}“
+                  {filters.category || filters.available || advancedCount > 0
+                    ? " · s filtrami"
+                    : null}
+                </>
+              ) : (
+                "Aktívne filtre — zoznam je zúžený"
+              )}{" "}
+              <Link
+                href="/books"
+                scroll={false}
+                className="text-sage underline-offset-2 hover:underline"
+              >
+                Zrušiť všetko
+              </Link>
+            </p>
           ) : (
             <p className="text-sm text-muted-foreground">
-              {liveQuery.trim()
-                ? `Výsledky pre „${liveQuery.trim()}“ · celý fond`
-                : "Celý fond — bez aktívnych filtrov"}
+              Celý fond — bez aktívnych filtrov
             </p>
           )}
         </div>
@@ -224,7 +211,6 @@ export function BooksCatalog({
         open={filtersOpen}
         onOpenChange={setFiltersOpen}
         applied={filters}
-        categories={initialCategories}
         authors={initialAuthors}
         shelfZones={shelfZones}
         searchQuery={liveQuery}

@@ -7,7 +7,7 @@ import {
   buildBooksCatalogHref,
   type BooksCatalogFilters,
 } from "@/lib/catalog/catalog-url";
-import type { CatalogAuthor, CatalogCategory } from "@/lib/catalog";
+import type { CatalogAuthor } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,7 +25,6 @@ type BooksCatalogFiltersDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   applied: BooksCatalogFilters;
-  categories: CatalogCategory[];
   authors: CatalogAuthor[];
   shelfZones: ShelfZone[];
   searchQuery?: string;
@@ -63,7 +62,6 @@ export function BooksCatalogFiltersDialog({
   open,
   onOpenChange,
   applied,
-  categories,
   authors,
   shelfZones,
   searchQuery,
@@ -92,7 +90,9 @@ export function BooksCatalogFiltersDialog({
   function apply() {
     router.push(
       buildBooksCatalogHref({
-        ...draft,
+        ...applied,
+        author: draft.author,
+        shelf: draft.shelf,
         q: searchQuery?.trim() || undefined,
       }),
     );
@@ -100,10 +100,15 @@ export function BooksCatalogFiltersDialog({
   }
 
   function reset() {
-    setDraft({
-      q: searchQuery?.trim() || undefined,
-    });
+    setDraft((prev) => ({
+      ...prev,
+      author: undefined,
+      shelf: undefined,
+    }));
   }
+
+  const dirty =
+    draft.author !== applied.author || draft.shelf !== applied.shelf;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -111,37 +116,14 @@ export function BooksCatalogFiltersDialog({
         <DialogHeader className="border-b border-rule px-5 py-4 text-left dark:border-white/10">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <SlidersHorizontal className="size-4 text-sage" aria-hidden />
-            Filtre fondu
+            Autor & trakt
           </DialogTitle>
           <DialogDescription>
-            Kategória, autor, sektor poličiek a dostupnosť.
+            Doplnkové filtre. Kategóriu a dostupnosť nastavíš priamo v katalógu.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
-          <fieldset className="space-y-3">
-            <legend className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              Kategória
-            </legend>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <FilterOption
-                active={!draft.category}
-                onClick={() => patch({ category: undefined })}
-              >
-                Všetky
-              </FilterOption>
-              {categories.map((item) => (
-                <FilterOption
-                  key={item.id}
-                  active={draft.category === item.id}
-                  onClick={() => patch({ category: item.id })}
-                >
-                  {item.name}
-                </FilterOption>
-              ))}
-            </div>
-          </fieldset>
-
           <fieldset className="space-y-3">
             <legend className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
               Autor
@@ -152,7 +134,7 @@ export function BooksCatalogFiltersDialog({
               placeholder="Hľadať meno autora…"
               className="h-10 rounded-none border-rule bg-paper dark:border-white/15 dark:bg-paper-deep"
             />
-            <div className="max-h-36 space-y-1 overflow-y-auto pr-1">
+            <div className="max-h-44 space-y-1 overflow-y-auto pr-1">
               <FilterOption
                 active={!draft.author}
                 onClick={() => patch({ author: undefined })}
@@ -210,26 +192,6 @@ export function BooksCatalogFiltersDialog({
               </div>
             </fieldset>
           ) : null}
-
-          <fieldset className="space-y-3">
-            <legend className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              Dostupnosť
-            </legend>
-            <div className="grid grid-cols-2 gap-2">
-              <FilterOption
-                active={!draft.available}
-                onClick={() => patch({ available: undefined })}
-              >
-                Všetky stavy
-              </FilterOption>
-              <FilterOption
-                active={Boolean(draft.available)}
-                onClick={() => patch({ available: true })}
-              >
-                Len voľné kusy
-              </FilterOption>
-            </div>
-          </fieldset>
         </div>
 
         <div className="flex flex-col-reverse gap-2 border-t border-rule bg-paper-deep/40 px-5 py-4 sm:flex-row sm:justify-between dark:border-white/10 dark:bg-paper-deep/20">
@@ -238,6 +200,7 @@ export function BooksCatalogFiltersDialog({
             variant="ghost"
             className="h-10 rounded-none text-muted-foreground"
             onClick={reset}
+            disabled={!draft.author && !draft.shelf}
           >
             Vymazať výber
           </Button>
@@ -254,8 +217,9 @@ export function BooksCatalogFiltersDialog({
               type="button"
               className="h-10 flex-1 rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep sm:min-w-[9rem]"
               onClick={apply}
+              disabled={!dirty}
             >
-              Použiť filtre
+              Použiť
             </Button>
           </div>
         </div>

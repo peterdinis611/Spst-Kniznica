@@ -15,6 +15,7 @@ export function BrandLogo({
   return (
     <Link
       href={href}
+      data-tour="brand"
       className={cn(
         "shrink-0 text-[1.05rem] font-semibold tracking-tight text-ink sm:text-lg",
         className,

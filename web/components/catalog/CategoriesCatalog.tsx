@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
@@ -15,8 +15,8 @@ import {
 } from "@/lib/catalog/actions";
 import type { CatalogCategory } from "@/lib/catalog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 type CategoriesCatalogProps = {
   initialCategories: CatalogCategory[];
@@ -58,7 +58,7 @@ export function CategoriesCatalog({
 
       <CatalogTopBar
         title="Žánre a rady"
-        lead="Hľadaj kategóriu podľa názvu. Chipy skočia na sekciu; CTA otvorí filtrovaný fond."
+        lead="Tematické rady školského fondu. Otvor kategóriu a pozri tituly."
         searchAction="/categories"
         defaultQuery={urlQuery}
         placeholder="Názov kategórie…"
@@ -68,22 +68,29 @@ export function CategoriesCatalog({
 
       <Separator className="mt-10 sm:mt-12" />
 
-      <div className="space-y-5 pt-10 sm:pt-12">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            Register kategórií
-            {liveQuery.trim() ? (
-              <>
-                {" "}
-                · výsledky pre „
-                <span className="text-ink">{liveQuery.trim()}</span>“
-              </>
-            ) : null}
-            {isPending ? <span className="ml-2 text-xs">· hľadám…</span> : null}
-          </p>
+      <div
+        className="space-y-6 pt-10 sm:pt-12"
+        data-tour="categories-register"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+              Register
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Tematické rady
+              {liveQuery.trim() ? (
+                <>
+                  {" "}
+                  · „<span className="text-ink">{liveQuery.trim()}</span>“
+                </>
+              ) : null}
+              {isPending ? <span className="ml-2 text-xs">· hľadám…</span> : null}
+            </p>
+          </div>
           <Badge
             variant="secondary"
-            className="h-auto rounded-full bg-paper-deep px-3 py-1 font-display text-sm tabular-nums text-ink ring-1 ring-rule dark:ring-white/10"
+            className="h-auto rounded-none bg-paper-deep px-3 py-1 font-display text-sm tabular-nums text-ink ring-1 ring-rule dark:ring-white/10"
           >
             {results.length}{" "}
             <span className="font-sans font-normal text-muted-foreground">
@@ -94,15 +101,13 @@ export function CategoriesCatalog({
 
         <CatalogChipRow label="Rýchly skok na kategóriu">
           {chips.map((item) => (
-            <Button
+            <Link
               key={item.id}
-              size="sm"
-              variant="outline"
-              className="rounded-full border-rule bg-paper-deep text-muted-foreground dark:border-white/10"
-              render={<a href={`#${item.id}`} />}
+              href={`/categories/${item.id}`}
+              className="shrink-0 border-b-2 border-transparent px-1 pb-2 text-sm text-muted-foreground transition hover:border-accent/50 hover:text-ink"
             >
               {item.name}
-            </Button>
+            </Link>
           ))}
         </CatalogChipRow>
       </div>
@@ -115,61 +120,77 @@ export function CategoriesCatalog({
           resetLabel="Resetovať"
         />
       ) : (
-        <ul className="mt-10 space-y-0 pb-16">
-          {results.map((category, index) => (
-            <li
-              key={category.id}
-              id={category.id}
-              className="reveal scroll-mt-28 border-t border-rule py-10 last:border-b dark:border-white/10 sm:py-12"
-              style={{ animationDelay: `${(index % 6) * 0.05}s` }}
-            >
-              <div className="min-w-0 max-w-2xl">
-                <div className="flex items-center gap-3">
+        <ul className="mt-6 grid grid-cols-1 gap-0 border-t border-rule pb-20 dark:border-white/10 sm:grid-cols-2">
+          {results.map((category, index) => {
+            const featured = index === 0;
+            return (
+              <li
+                key={category.id}
+                id={category.id}
+                className={cn(
+                  "reveal border-b border-rule dark:border-white/10",
+                  featured && "sm:col-span-2",
+                )}
+                style={{ animationDelay: `${(index % 6) * 0.05}s` }}
+              >
+                <Link
+                  href={`/categories/${category.id}`}
+                  className={cn(
+                    "group relative flex gap-5 overflow-hidden px-1 py-8 transition sm:gap-8 sm:py-10",
+                    featured ? "flex-col sm:flex-row sm:items-end" : "flex-col",
+                  )}
+                >
                   <span
-                    className="size-2.5 shrink-0 rounded-full"
+                    className="pointer-events-none absolute top-6 right-0 font-display text-[clamp(4rem,14vw,7rem)] leading-none text-ink/[0.04] tabular-nums select-none dark:text-white/[0.05]"
+                    aria-hidden
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+
+                  <div
+                    className={cn(
+                      "relative shrink-0",
+                      featured ? "h-2 w-24 sm:h-28 sm:w-2" : "h-1.5 w-16",
+                    )}
                     style={{ background: category.accent }}
                     aria-hidden
                   />
-                  <Badge
-                    variant="outline"
-                    className="rounded-full text-[10px] tracking-[0.16em] uppercase"
-                  >
-                    {String(index + 1).padStart(2, "0")}
-                  </Badge>
-                </div>
 
-                <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3.1rem)] leading-[0.98] tracking-tight text-ink">
-                  {category.name}
-                </h2>
-                <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
-                  {category.description}
-                </p>
+                  <div className="relative min-w-0 flex-1">
+                    <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+                      Rada {String(index + 1).padStart(2, "0")}
+                    </p>
+                    <h2
+                      className={cn(
+                        "mt-2 font-display leading-[0.98] tracking-tight text-ink transition group-hover:text-sage",
+                        featured
+                          ? "text-[clamp(2.4rem,6vw,4rem)]"
+                          : "text-[clamp(1.75rem,4vw,2.5rem)]",
+                      )}
+                    >
+                      {category.name}
+                    </h2>
+                    <p
+                      className={cn(
+                        "mt-3 text-sm leading-relaxed text-muted-foreground sm:text-[15px]",
+                        featured ? "max-w-lg" : "max-w-sm",
+                      )}
+                    >
+                      {category.description}
+                    </p>
 
-                {category.bookCount > 0 ? (
-                  <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <Badge className="h-auto rounded-full bg-accent px-3.5 py-1.5 font-display text-xl tabular-nums text-accent-foreground hover:bg-accent">
-                      {category.bookCount}
-                    </Badge>
-                    <span className="text-xs tracking-[0.14em] text-muted-foreground uppercase">
-                      titulov vo fonde
+                    <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-ink">
+                      Otvoriť kategóriu
+                      <ArrowUpRight
+                        className="size-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                        aria-hidden
+                      />
                     </span>
                   </div>
-                ) : null}
-
-                <Button
-                  className="group mt-8 h-auto gap-0 overflow-hidden rounded-full border border-ink bg-paper p-0 text-ink hover:bg-paper dark:border-white/30"
-                  render={<Link href={`/books?category=${category.id}`} />}
-                >
-                  <span className="px-5 py-2.5 text-sm font-semibold">
-                    Zobraziť knihy
-                  </span>
-                  <span className="flex items-center self-stretch bg-ink px-3.5 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground">
-                    <ArrowRight className="size-4" aria-hidden />
-                  </span>
-                </Button>
-              </div>
-            </li>
-          ))}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </>

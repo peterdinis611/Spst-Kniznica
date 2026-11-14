@@ -5,7 +5,9 @@ export {
   type SearchBooksResult,
 } from "./books";
 export {
+  getAuthorAction,
   searchAuthorsAction,
+  type GetAuthorResult,
   type SearchAuthorsResult,
 } from "./authors";
 export {

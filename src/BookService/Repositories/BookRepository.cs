@@ -161,7 +161,10 @@ public class BookRepository(BookDbContext db) : IBookRepository
 
         if (filter.AuthorId.HasValue)
         {
-            query = query.Where(b => b.AuthorId == filter.AuthorId.Value);
+            // SQLite stores GUIDs as TEXT; compare as string (same as GetByIdAsync).
+            var authorIdText = filter.AuthorId.Value.ToString();
+            query = query.Where(b =>
+                b.AuthorId != null && b.AuthorId.ToString() == authorIdText);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Author))
@@ -190,7 +193,10 @@ public class BookRepository(BookDbContext db) : IBookRepository
 
         if (filter.CategoryId.HasValue)
         {
-            query = query.Where(b => b.CategoryId == filter.CategoryId.Value);
+            // SQLite stores GUIDs as TEXT; compare as string (same as GetByIdAsync).
+            var categoryIdText = filter.CategoryId.Value.ToString();
+            query = query.Where(b =>
+                b.CategoryId != null && b.CategoryId.ToString() == categoryIdText);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.CategoryName))

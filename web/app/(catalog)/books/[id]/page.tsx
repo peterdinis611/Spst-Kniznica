@@ -10,6 +10,7 @@ import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { AuthorMoreBooks } from "@/components/catalog/AuthorMoreBooks";
 import { BookOpenTickets } from "@/components/catalog/BookOpenTickets";
 import { ReserveSlip } from "@/components/catalog/ReserveSlip";
 import { getBookAction } from "@/lib/catalog/actions";
@@ -89,9 +90,18 @@ async function BookDetailContent({
 
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="rounded-none border border-sage/30 bg-mint/50 px-3 py-1 font-mono text-[10px] tracking-[0.12em] text-sage uppercase hover:bg-mint/50 dark:border-sage/35 dark:bg-paper-deep">
-              {book.categoryName ?? "Katalóg"}
-            </Badge>
+            {book.categoryId ? (
+              <Badge
+                className="rounded-none border border-sage/30 bg-mint/50 px-3 py-1 font-mono text-[10px] tracking-[0.12em] text-sage uppercase hover:bg-mint/50 dark:border-sage/35 dark:bg-paper-deep"
+                render={<Link href={`/categories/${book.categoryId}`} />}
+              >
+                {book.categoryName ?? "Katalóg"}
+              </Badge>
+            ) : (
+              <Badge className="rounded-none border border-sage/30 bg-mint/50 px-3 py-1 font-mono text-[10px] tracking-[0.12em] text-sage uppercase hover:bg-mint/50 dark:border-sage/35 dark:bg-paper-deep">
+                {book.categoryName ?? "Katalóg"}
+              </Badge>
+            )}
             <Badge
               variant={available ? "secondary" : "outline"}
               className="rounded-none border border-transparent px-3 py-1 font-mono text-[10px] tracking-[0.12em] uppercase"
@@ -104,7 +114,16 @@ async function BookDetailContent({
             {book.title}
           </h1>
           <p className="mt-2 font-display text-lg text-sage sm:text-xl">
-            {book.author}
+            {book.authorId ? (
+              <Link
+                href={`/authors/${book.authorId}`}
+                className="transition hover:text-ink hover:underline hover:underline-offset-4"
+              >
+                {book.author}
+              </Link>
+            ) : (
+              book.author
+            )}
           </p>
 
           <dl className="mt-8 flex max-w-xl flex-wrap gap-x-10 gap-y-4 border-y border-rule py-5 dark:border-white/10">
@@ -178,6 +197,14 @@ async function BookDetailContent({
           </div>
         </div>
       </div>
+
+      <Suspense fallback={<CatalogSkeleton rows={1} />}>
+        <AuthorMoreBooks
+          authorId={book.authorId}
+          authorName={book.author}
+          excludeBookId={book.id}
+        />
+      </Suspense>
     </>
   );
 }

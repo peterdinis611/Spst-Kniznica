@@ -14,6 +14,7 @@ export function AuthNavCluster() {
     return (
       <Button
         size="sm"
+        data-tour="auth"
         className="hidden h-10 rounded-full bg-accent px-4 text-accent-foreground hover:bg-accent-deep sm:inline-flex"
         disabled
       >
@@ -24,7 +25,7 @@ export function AuthNavCluster() {
 
   if (user?.isAuthenticated) {
     return (
-      <>
+      <span data-tour="auth" className="inline-flex items-center gap-2">
         {user.isStaff ? (
           <Button
             size="sm"
@@ -52,12 +53,12 @@ export function AuthNavCluster() {
         >
           <LogIn className="size-4" strokeWidth={1.8} />
         </Button>
-      </>
+      </span>
     );
   }
 
   return (
-    <>
+    <span data-tour="auth" className="inline-flex items-center gap-2">
       <Button
         size="sm"
         className="hidden h-10 rounded-full bg-accent px-4 text-accent-foreground hover:bg-accent-deep sm:inline-flex"
@@ -75,6 +76,6 @@ export function AuthNavCluster() {
       >
         <LogIn className="size-4" strokeWidth={1.8} />
       </Button>
-    </>
+    </span>
   );
 }

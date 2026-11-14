@@ -7,6 +7,7 @@ import { ArrowRight, LogIn, Menu, X } from "lucide-react";
 import { useAbility } from "@/components/auth/AbilityProvider";
 import { AuthNavCluster } from "@/components/auth/AuthNavCluster";
 import { BrandLogo } from "@/components/brand-logo";
+import { AppTourTrigger } from "@/components/onboarding/AppTourTrigger";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,7 +64,7 @@ function DesktopNav({ className }: { className?: string }) {
   );
 
   return (
-    <nav className={className}>
+    <nav className={className} data-tour="nav" aria-label="Hlavná navigácia">
       {visibleLinks.map((link) => {
         const active = link.isActive(pathname);
         return (
@@ -187,6 +188,7 @@ export function SiteHeader() {
       </Suspense>
 
       <div className="flex items-center gap-2">
+        <AppTourTrigger />
         <ThemeToggle />
         <AuthNavCluster />
 

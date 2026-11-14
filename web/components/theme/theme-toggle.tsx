@@ -42,6 +42,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       type="button"
       variant="outline"
       size="icon"
+      data-tour="theme"
       className={cn(toggleClassName, className)}
       aria-label={isDark ? "Zapnúť light mode" : "Zapnúť dark mode"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
