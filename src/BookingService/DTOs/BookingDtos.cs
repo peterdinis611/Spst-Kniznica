@@ -16,6 +16,7 @@ public class BookingDto
     public DateTimeOffset DueDate { get; set; }
     public DateTimeOffset? ReturnedAt { get; set; }
     public string? Notes { get; set; }
+    public int RenewalCount { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }

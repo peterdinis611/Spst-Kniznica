@@ -14,6 +14,11 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
+  openGraph: {
+    title: "Prihlásenie",
+    description: "Prihlásenie do SPST Knižnica cez školský Microsoft Entra účet.",
+    url: "/login",
+  },
 };
 
 export default function LoginPage() {

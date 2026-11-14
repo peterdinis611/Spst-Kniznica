@@ -1,21 +1,16 @@
-import { ImageResponse } from "next/og";
-import { OgFrame } from "@/lib/og/frame";
-import { ogSize } from "@/lib/og/theme";
+import { renderOg, ogContentType, ogSize } from "@/lib/og/render";
 
 export const alt = "Autori · SPST Knižnica";
 export const size = ogSize;
-export const contentType = "image/png";
+export const contentType = ogContentType;
 
 export default function AuthorsOpenGraphImage() {
-  return new ImageResponse(
-    (
-      <OgFrame
-        eyebrow="Katalóg"
-        title="Autori"
-        description="Zoznam autorov v školskom fonde SPST — od klasiky po odbornú literatúru."
-        footerRight="autori · katalog"
-      />
-    ),
-    { ...ogSize },
-  );
+  return renderOg({
+    variant: "list",
+    eyebrow: "Katalóg",
+    title: "Autori",
+    description:
+      "Zoznam autorov v školskom fonde SPST — od klasiky po odbornú literatúru.",
+    footerRight: "autori · katalog",
+  });
 }

@@ -24,4 +24,18 @@ public interface IBookingRepository
         string borrowerEmail,
         Guid? excludeId = null,
         CancellationToken cancellationToken = default);
+
+    Task<int> CountOpenBookingsForBorrowerAsync(
+        string borrowerEmail,
+        Guid? excludeId = null,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Booking>> ListActivePastDueAsync(
+        DateTimeOffset asOfUtc,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Booking>> ListDueSoonAsync(
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        CancellationToken cancellationToken = default);
 }

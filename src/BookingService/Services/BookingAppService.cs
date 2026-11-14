@@ -2,7 +2,9 @@ using BookingService.DTOs;
 using BookingService.Exceptions;
 using BookingService.Interfaces;
 using BookingService.Models;
+using BookingService.Options;
 using FluentValidation;
+using Microsoft.Extensions.Options;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Messaging;
 using SpstKniznica.Common.Pagination;
@@ -17,6 +19,8 @@ public class BookingAppService(
     IIntegrationEventPublisher eventPublisher,
     IValidator<CreateBookingRequest> createValidator,
     IValidator<UpdateBookingRequest> updateValidator,
+    IOptions<LoanPolicyOptions> policyOptions,
+    LoanLifecycleService lifecycle,
     ILogger<BookingAppService> logger) : IBookingService
 {
     public async Task<PagedResult<BookingDto>> SearchAsync(
@@ -53,8 +57,12 @@ public class BookingAppService(
         CancellationToken cancellationToken = default)
     {
         EnsureValid(await createValidator.ValidateAsync(request, cancellationToken));
+        EnsureNotFrozen();
 
         var borrowerEmail = NormalizeEmail(request.BorrowerEmail);
+        await EnsureReaderUnderLoanLimitAsync(borrowerEmail, excludeBookingId: null, cancellationToken);
+        request.DueDate = ClampDueDate(request.DueDate);
+
         await using var transaction =
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
@@ -142,7 +150,7 @@ public class BookingAppService(
         booking.BorrowerName = StringNormalize.Required(request.BorrowerName);
         booking.BorrowerEmail = NormalizeEmail(request.BorrowerEmail);
         booking.Status = request.Status;
-        booking.DueDate = request.DueDate;
+        booking.DueDate = ClampDueDate(request.DueDate);
         booking.Notes = StringNormalize.Optional(request.Notes);
         booking.UpdatedAt = now;
 
@@ -162,6 +170,12 @@ public class BookingAppService(
                 booking.DueDate),
             cancellationToken);
 
+        if ((previousStatus is BookingStatus.Reserved or BookingStatus.Active or BookingStatus.Overdue)
+            && (nextStatus is BookingStatus.Returned or BookingStatus.Cancelled))
+        {
+            await lifecycle.TryPromoteWaitlistAsync(booking.BookId, cancellationToken);
+        }
+
         var dto = Map(booking);
         await cache.SetAsync(CacheKeys.Booking(booking.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
 
@@ -173,15 +187,105 @@ public class BookingAppService(
         return dto;
     }
 
+    public async Task<BookingDto> CancelAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var booking = await GetRequiredAsync(id, tracked: true, cancellationToken);
+        if (booking.Status != BookingStatus.Reserved)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Status"] = ["Zrušiť môžeš len rezerváciu (ešte nevydanú)."]
+            });
+        }
+
+        return await UpdateAsync(
+            id,
+            new UpdateBookingRequest
+            {
+                BookId = booking.BookId,
+                BookCopyId = booking.BookCopyId,
+                BorrowerName = booking.BorrowerName,
+                BorrowerEmail = booking.BorrowerEmail,
+                Status = BookingStatus.Cancelled,
+                DueDate = booking.DueDate,
+                Notes = booking.Notes,
+            },
+            cancellationToken);
+    }
+
+    public async Task<BookingDto> RenewAsync(
+        Guid id,
+        int? extraDays = null,
+        CancellationToken cancellationToken = default)
+    {
+        var policy = policyOptions.Value;
+        var booking = await GetRequiredAsync(id, tracked: true, cancellationToken);
+
+        if (booking.Status is not (BookingStatus.Active or BookingStatus.Overdue))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Status"] = ["Predĺžiť môžeš len aktívnu alebo oneskorenú výpožičku."]
+            });
+        }
+
+        if (booking.RenewalCount >= policy.MaxRenewals)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["RenewalCount"] = [$"Dosiahnutý limit predĺžení ({policy.MaxRenewals})."]
+            });
+        }
+
+        var days = extraDays is > 0 ? extraDays.Value : policy.RenewExtraDays;
+        var nextDue = ClampDueDate(booking.DueDate.AddDays(days));
+        if (nextDue <= booking.DueDate)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["DueDate"] = ["Termín sa nedá predĺžiť (koniec školského roka / freeze)."]
+            });
+        }
+
+        booking.DueDate = nextDue;
+        booking.RenewalCount += 1;
+        booking.Status = BookingStatus.Active;
+        booking.UpdatedAt = DateTimeOffset.UtcNow;
+        unitOfWork.Bookings.Update(booking);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await eventPublisher.PublishAsync(
+            new BookingUpdatedEvent(
+                booking.Id,
+                booking.BookId,
+                booking.BookCopyId,
+                booking.BorrowerName,
+                booking.BorrowerEmail,
+                booking.Status.ToString(),
+                booking.DueDate),
+            cancellationToken);
+
+        var dto = Map(booking);
+        await cache.SetAsync(CacheKeys.Booking(booking.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
+        logger.LogInformation(
+            "Renewed booking {BookingId} → due {DueDate:o} (#{RenewalCount})",
+            booking.Id,
+            booking.DueDate,
+            booking.RenewalCount);
+        return dto;
+    }
+
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var booking = await GetRequiredAsync(id, tracked: true, cancellationToken);
+        var bookId = booking.BookId;
         unitOfWork.Bookings.Remove(booking);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await eventPublisher.PublishAsync(new BookingDeletedEvent(id, booking.BookId), cancellationToken);
+        await eventPublisher.PublishAsync(new BookingDeletedEvent(id, bookId), cancellationToken);
         await cache.RemoveAsync(CacheKeys.Booking(id), cancellationToken);
-        logger.LogInformation("Deleted booking {BookingId} for book {BookId}", id, booking.BookId);
+        await lifecycle.TryPromoteWaitlistAsync(bookId, cancellationToken);
+        logger.LogInformation("Deleted booking {BookingId} for book {BookId}", id, bookId);
     }
 
     private async Task<Booking> GetRequiredAsync(Guid id, bool tracked, CancellationToken cancellationToken)
@@ -252,10 +356,56 @@ public class BookingAppService(
             {
                 ["BookId"] =
                 [
-                    "Všetky exempláre tohto titulu sú už rezervované alebo vypožičané."
+                    "Všetky exempláre tohto titulu sú už rezervované alebo vypožičané. Môžeš sa zaradiť do čakacieho zoznamu."
                 ]
             });
         }
+    }
+
+    private async Task EnsureReaderUnderLoanLimitAsync(
+        string borrowerEmail,
+        Guid? excludeBookingId,
+        CancellationToken cancellationToken)
+    {
+        var max = policyOptions.Value.MaxActiveLoansPerReader;
+        if (max <= 0) return;
+
+        var open = await unitOfWork.Bookings.CountOpenBookingsForBorrowerAsync(
+            borrowerEmail,
+            excludeBookingId,
+            cancellationToken);
+        if (open >= max)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["BorrowerEmail"] =
+                [
+                    $"Dosiahnutý limit otvorených výpožičiek ({max}). Vráť niektorú knihu alebo zruš rezerváciu."
+                ]
+            });
+        }
+    }
+
+    private void EnsureNotFrozen()
+    {
+        if (policyOptions.Value.FreezeNewLoans)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Status"] = ["Nové rezervácie sú dočasne pozastavené (koniec školského obdobia)."]
+            });
+        }
+    }
+
+    private DateTimeOffset ClampDueDate(DateTimeOffset due)
+    {
+        var yearEnd = policyOptions.Value.SchoolYearEndUtc;
+        if (yearEnd is { } end && due > end)
+        {
+            return end;
+        }
+
+        return due;
     }
 
     private static void ApplyStatusTimestamps(
@@ -295,6 +445,7 @@ public class BookingAppService(
         DueDate = booking.DueDate,
         ReturnedAt = booking.ReturnedAt,
         Notes = booking.Notes,
+        RenewalCount = booking.RenewalCount,
         CreatedAt = booking.CreatedAt,
         UpdatedAt = booking.UpdatedAt
     };

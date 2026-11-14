@@ -1,21 +1,46 @@
-import { ogTheme } from "./theme";
+import { ogFontFamily, ogTheme } from "./theme";
 
-type OgFrameProps = {
+export type OgBadge = {
+  label: string;
+  tone?: "ok" | "warn" | "neutral";
+};
+
+export type OgFrameProps = {
+  variant?: "list" | "entity";
   eyebrow: string;
   title: string;
   description: string;
+  /** Secondary line under the title (author · year, nationality, …). */
+  meta?: string;
+  badge?: OgBadge;
+  /** Override left accent stripe / dots (e.g. category color). */
+  accentColor?: string;
   footerLeft?: string;
   footerRight?: string;
 };
 
+function badgeColor(tone: OgBadge["tone"]) {
+  if (tone === "warn") return ogTheme.warn;
+  if (tone === "ok") return ogTheme.ok;
+  return ogTheme.paperMuted;
+}
+
 /** JSX for `ImageResponse` — every multi-child node uses `display: flex`. */
 export function OgFrame({
+  variant = "list",
   eyebrow,
   title,
   description,
+  meta,
+  badge,
+  accentColor,
   footerLeft = "spst-kniznica",
   footerRight = "katalog · autori · vypozicky",
 }: OgFrameProps) {
+  const accent = accentColor || ogTheme.accent;
+  const isEntity = variant === "entity";
+  const titleSize = isEntity ? 64 : 88;
+
   return (
     <div
       style={{
@@ -25,6 +50,7 @@ export function OgFrame({
         position: "relative",
         background: ogTheme.ink,
         color: ogTheme.paper,
+        fontFamily: ogFontFamily.body,
       }}
     >
       <div
@@ -35,7 +61,7 @@ export function OgFrame({
           width: 28,
           height: "100%",
           display: "flex",
-          background: ogTheme.accent,
+          background: accent,
         }}
       />
 
@@ -57,6 +83,7 @@ export function OgFrame({
           right: 48,
           top: 36,
           display: "flex",
+          fontFamily: ogFontFamily.display,
           fontSize: 220,
           fontWeight: 700,
           letterSpacing: "-0.08em",
@@ -74,43 +101,65 @@ export function OgFrame({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          padding: "64px 72px 56px 88px",
+          padding: isEntity ? "56px 72px 52px 88px" : "64px 72px 56px 88px",
         }}
       >
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 16,
+            justifyContent: "space-between",
+            gap: 24,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              width: 14,
-              height: 14,
-              background: ogTheme.accent,
-            }}
-          />
-          <div
-            style={{
-              display: "flex",
-              fontSize: 24,
-              letterSpacing: "0.22em",
-              textTransform: "uppercase",
-              color: ogTheme.accent,
-            }}
-          >
-            {eyebrow}
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                width: 14,
+                height: 14,
+                background: accent,
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                fontFamily: ogFontFamily.mono,
+                fontSize: 22,
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                color: accent,
+              }}
+            >
+              {eyebrow}
+            </div>
           </div>
+
+          {badge ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                border: `1px solid ${badgeColor(badge.tone)}`,
+                padding: "10px 16px",
+                fontFamily: ogFontFamily.mono,
+                fontSize: 18,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: badgeColor(badge.tone),
+              }}
+            >
+              {badge.label}
+            </div>
+          ) : null}
         </div>
 
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 22,
-            maxWidth: 920,
+            gap: isEntity ? 16 : 22,
+            maxWidth: 960,
           }}
         >
           <div
@@ -119,28 +168,47 @@ export function OgFrame({
               flexWrap: "wrap",
               alignItems: "flex-end",
               gap: 8,
-              fontSize: 88,
+              fontFamily: ogFontFamily.display,
+              fontSize: titleSize,
               fontWeight: 700,
               letterSpacing: "-0.045em",
               lineHeight: 0.98,
             }}
           >
             <span style={{ display: "flex" }}>{title}</span>
-            <span style={{ display: "flex", color: ogTheme.accent }}>.</span>
+            <span style={{ display: "flex", color: accent }}>.</span>
           </div>
+
+          {meta ? (
+            <div
+              style={{
+                display: "flex",
+                fontFamily: ogFontFamily.mono,
+                fontSize: 22,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: ogTheme.paperMuted,
+              }}
+            >
+              {meta}
+            </div>
+          ) : null}
+
           <div
             style={{
               display: "flex",
               width: 96,
               height: 4,
-              background: ogTheme.accent,
+              background: accent,
             }}
           />
+
           <div
             style={{
               display: "flex",
               maxWidth: 780,
-              fontSize: 28,
+              fontSize: isEntity ? 26 : 28,
+              fontWeight: 400,
               lineHeight: 1.35,
               color: ogTheme.paperMuted,
             }}
@@ -156,6 +224,7 @@ export function OgFrame({
             justifyContent: "space-between",
             borderTop: `1px solid ${ogTheme.ruleStrong}`,
             paddingTop: 22,
+            fontFamily: ogFontFamily.mono,
             fontSize: 18,
             letterSpacing: "0.14em",
             textTransform: "uppercase",

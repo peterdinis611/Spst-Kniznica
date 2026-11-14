@@ -2,6 +2,7 @@ using BookingService.Clients;
 using BookingService.Data;
 using BookingService.Interfaces;
 using BookingService.Middleware;
+using BookingService.Options;
 using BookingService.Repositories;
 using BookingService.Services;
 using FluentValidation;
@@ -46,6 +47,8 @@ try
 
     builder.Services.Configure<BookCatalogOptions>(
         builder.Configuration.GetSection(BookCatalogOptions.SectionName));
+    builder.Services.Configure<LoanPolicyOptions>(
+        builder.Configuration.GetSection(LoanPolicyOptions.SectionName));
     builder.Services.AddHttpClient<IBookCatalogLookup, BookCatalogLookupClient>((sp, client) =>
     {
         var bookServiceUrl = sp.GetRequiredService<
@@ -56,6 +59,9 @@ try
 
     builder.Services.AddScoped<IBookingRepository, BookingRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+    builder.Services.AddScoped<WaitlistService>();
+    builder.Services.AddScoped<FavoritesService>();
+    builder.Services.AddScoped<LoanLifecycleService>();
     builder.Services.AddScoped<IBookingService, BookingAppService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
     builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "booking-service");

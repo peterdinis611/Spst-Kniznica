@@ -10,4 +10,6 @@ public interface IBookingService
     Task<BookingDto> CreateAsync(CreateBookingRequest request, CancellationToken cancellationToken = default);
     Task<BookingDto> UpdateAsync(Guid id, UpdateBookingRequest request, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<BookingDto> CancelAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<BookingDto> RenewAsync(Guid id, int? extraDays = null, CancellationToken cancellationToken = default);
 }

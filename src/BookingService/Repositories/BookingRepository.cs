@@ -205,6 +205,57 @@ public class BookingRepository(BookingDbContext db) : IBookingRepository
         return query.AnyAsync(cancellationToken);
     }
 
+    public Task<int> CountOpenBookingsForBorrowerAsync(
+        string borrowerEmail,
+        Guid? excludeId = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(borrowerEmail))
+        {
+            return Task.FromResult(0);
+        }
+
+        var normalized = borrowerEmail.Trim().ToLowerInvariant();
+        var query = db.Bookings.AsNoTracking()
+            .Where(b =>
+                b.BorrowerEmail.ToLower() == normalized &&
+                (b.Status == BookingStatus.Reserved ||
+                 b.Status == BookingStatus.Active ||
+                 b.Status == BookingStatus.Overdue));
+
+        if (excludeId.HasValue)
+        {
+            EnsureValidId(excludeId.Value);
+            query = query.Where(b => b.Id != excludeId.Value);
+        }
+
+        return query.CountAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Booking>> ListActivePastDueAsync(
+        DateTimeOffset asOfUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var items = await db.Bookings
+            .Where(b => b.Status == BookingStatus.Active)
+            .ToListAsync(cancellationToken);
+        return items.Where(b => b.DueDate < asOfUtc).ToList();
+    }
+
+    public async Task<IReadOnlyList<Booking>> ListDueSoonAsync(
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var items = await db.Bookings
+            .Where(b => b.Status == BookingStatus.Active || b.Status == BookingStatus.Reserved)
+            .ToListAsync(cancellationToken);
+        return items
+            .Where(b => b.DueDate >= fromUtc && b.DueDate <= toUtc)
+            .OrderBy(b => b.DueDate)
+            .ToList();
+    }
+
     private static void EnsureValidId(Guid id, string field = "Id")
     {
         if (id == Guid.Empty)
