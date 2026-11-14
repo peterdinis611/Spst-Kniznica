@@ -1,0 +1,122 @@
+import polyglotI18nProvider from "ra-i18n-polyglot";
+import englishMessages from "ra-language-english";
+import type { TranslationMessages } from "ra-core";
+
+const skMessages = {
+  ...englishMessages,
+  ra: {
+    ...englishMessages.ra,
+    action: {
+      ...englishMessages.ra.action,
+      create: "Vytvoriť",
+      edit: "Upraviť",
+      delete: "Zmazať",
+      list: "Zoznam",
+      save: "Uložiť",
+      cancel: "Zrušiť",
+      refresh: "Obnoviť",
+      show: "Zobraziť",
+      export: "Export",
+      search: "Hľadať",
+      clear_input_value: "Vymazať",
+      add_filter: "Filter",
+      remove_filter: "Odstrániť filter",
+      back: "Späť",
+      bulk_actions: "%{smart_count} vybrané",
+      confirm: "Potvrdiť",
+    },
+    navigation: {
+      ...englishMessages.ra.navigation,
+      no_results: "Nič sa nenašlo",
+      page_out_of_boundaries: "Stránka %{page} mimo rozsahu",
+      page_out_from_end: "Ďalej už nie je",
+      page_out_from_begin: "Pred prvou stránkou",
+      page_range_info: "%{offsetBegin}-%{offsetEnd} z %{total}",
+      next: "Ďalšie",
+      prev: "Predošlé",
+      skip_nav: "Preskočiť na obsah",
+    },
+    page: {
+      ...englishMessages.ra.page,
+      create: "Vytvoriť %{name}",
+      dashboard: "Prehľad",
+      edit: "%{name} #%{id}",
+      error: "Niečo sa pokazilo",
+      list: "%{name}",
+      loading: "Načítavam",
+      empty: "Zatiaľ prázdne",
+      invite: "Chceš pridať prvý záznam?",
+    },
+    auth: {
+      ...englishMessages.ra.auth,
+      auth_check_error: "Prihlás sa, prosím",
+      user_menu: "Profil",
+      username: "Meno",
+      password: "Heslo",
+      sign_in: "Prihlásiť",
+      sign_in_error: "Prihlásenie zlyhalo",
+      logout: "Odhlásiť",
+    },
+    notification: {
+      ...englishMessages.ra.notification,
+      updated: "Uložené",
+      created: "Vytvorené",
+      deleted: "Zmazané",
+      http_error: "Chyba komunikácie so serverom",
+      data_provider_error: "Chyba data providera",
+    },
+  },
+  resources: {
+    books: {
+      name: "Kniha |||| Knihy",
+      fields: {
+        title: "Názov",
+        subtitle: "Podtitul",
+        authorId: "Autor",
+        categoryId: "Kategória",
+        publisher: "Vydavateľ",
+        isbn: "ISBN",
+        publishedYear: "Rok",
+        language: "Jazyk",
+        description: "Popis",
+        pageCount: "Strany",
+        format: "Formát",
+        shelfLocation: "Polica",
+        totalCopies: "Kusov",
+        availableCopies: "Dostupných",
+      },
+    },
+    authors: {
+      name: "Autor |||| Autori",
+      fields: {
+        name: "Meno",
+        biography: "Biografia",
+        nationality: "Národnosť",
+        birthYear: "Narodenie",
+        isActive: "Aktívny",
+      },
+    },
+    categories: {
+      name: "Kategória |||| Kategórie",
+      fields: {
+        name: "Názov",
+        description: "Popis",
+        color: "Farba",
+        isActive: "Aktívna",
+      },
+    },
+    bookings: {
+      name: "Rezervácia |||| Rezervácie",
+      fields: {
+        bookId: "Kniha",
+        borrowerName: "Meno",
+        borrowerEmail: "E-mail",
+        status: "Stav",
+        dueDate: "Termín",
+        notes: "Poznámka",
+      },
+    },
+  },
+} as TranslationMessages;
+
+export const adminI18nProvider = polyglotI18nProvider(() => skMessages, "sk");

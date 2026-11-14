@@ -24,6 +24,13 @@ public sealed class EntraOptions
 
     public string Instance { get; set; } = "https://login.microsoftonline.com/";
 
+    /// <summary>
+    /// Development only. When true and the access token has no Admin/Librarian
+    /// app roles yet, inject staff roles so local /admin works before Azure
+    /// role assignment is finished.
+    /// </summary>
+    public bool GrantStaffInDevelopment { get; set; }
+
     public string Authority =>
         $"{Instance.TrimEnd('/')}/{TenantId}/v2.0";
 }

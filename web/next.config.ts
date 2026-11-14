@@ -83,6 +83,9 @@ const nextConfig: NextConfig = {
       "@tanstack/react-pacer",
       "@tanstack/react-virtual",
       "@tanstack/charts",
+      "react-admin",
+      "@mui/material",
+      "@mui/icons-material",
     ],
   },
   turbopack: {

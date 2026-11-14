@@ -57,6 +57,7 @@ export function LoginPanel() {
     const fullName = resolveUserDisplayName(user, account);
     const mono = initials(fullName, user.email);
     const primaryRole = roleLabel(user.roles);
+    const wantsAdmin = safeNextPath(searchParams.get("next")) === "/admin";
 
     return (
       <PanelShell accentBar>
@@ -81,12 +82,23 @@ export function LoginPanel() {
 
         <RoleBadges primaryRole={primaryRole} roles={user.roles} />
 
+        {wantsAdmin && !user.isStaff ? (
+          <p className="mt-4 border border-stair-1/35 bg-stair-1/10 px-3 py-2 text-sm text-ink">
+            Účet ešte nemá rolu Admin/Librarian. Po reštarte služieb s{" "}
+            <code className="font-mono text-xs">GrantStaffInDevelopment</code>{" "}
+            by mal stačiť odhlásiť → prihlásiť. V Azure: App roles → priraď{" "}
+            <strong>Admin</strong>.
+          </p>
+        ) : null}
+
         <nav className="mt-6 grid gap-1.5" aria-label="Skratky účtu">
           <QuickLink href="/books" icon={BookOpen} label="Katalóg kníh" />
           <QuickLink href="/bookings" icon={Library} label="Moje výpožičky" />
           {user.isStaff ? (
             <QuickLink href="/admin" icon={Shield} label="Admin pult" />
-          ) : null}
+          ) : (
+            <QuickLink href="/admin" icon={Shield} label="Admin pult (vyžaduje staff)" />
+          )}
         </nav>
 
         <Button

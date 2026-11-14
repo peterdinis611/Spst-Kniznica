@@ -61,6 +61,10 @@ public static class EntraAuthServiceCollectionExtensions
                         OnTokenValidated = context =>
                         {
                             MapRoles(context.Principal);
+                            if (environment.IsDevelopment() && entra.GrantStaffInDevelopment)
+                            {
+                                EnsureDevelopmentStaffRoles(context.Principal);
+                            }
                             return Task.CompletedTask;
                         },
                     };
@@ -147,5 +151,31 @@ public static class EntraAuthServiceCollectionExtensions
                 identity.AddClaim(new Claim(ClaimTypes.Role, role));
             }
         }
+    }
+
+    /// <summary>
+    /// Local Entra often authenticates before App roles exist in Azure.
+    /// Give Admin+Librarian so the admin panel and staff writes work in Development.
+    /// </summary>
+    private static void EnsureDevelopmentStaffRoles(ClaimsPrincipal? principal)
+    {
+        if (principal?.Identity is not ClaimsIdentity identity)
+        {
+            return;
+        }
+
+        var hasStaff = identity.HasClaim(ClaimTypes.Role, AppRoles.Admin)
+            || identity.HasClaim(ClaimTypes.Role, AppRoles.Librarian)
+            || identity.FindAll("roles").Any(c =>
+                c.Value.Equals(AppRoles.Admin, StringComparison.OrdinalIgnoreCase)
+                || c.Value.Equals(AppRoles.Librarian, StringComparison.OrdinalIgnoreCase));
+
+        if (hasStaff)
+        {
+            return;
+        }
+
+        identity.AddClaim(new Claim(ClaimTypes.Role, AppRoles.Admin));
+        identity.AddClaim(new Claim(ClaimTypes.Role, AppRoles.Librarian));
     }
 }

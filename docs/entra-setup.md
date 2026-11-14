@@ -49,7 +49,19 @@ az login --use-device-code --tenant 3cd05ac6-46c1-4798-9df3-062237bfdcc4
    - Display name: `Librarian`, Value: `Librarian`, Allowed member types: Users/Groups
 2. **Enterprise applications** → Spst-Kniznica → Users and groups → priraď sebe rolu `Admin`
 
-Bez role `Admin` sa prihlásenie podarí, ale `/admin` ostane bez admin práv.
+Bez role `Admin` sa prihlásenie podarí, ale `/admin` ostane bez admin práv
+(okrem lokálneho Development override nižšie).
+
+### Lokálny Development override
+
+V `appsettings.Development.json` je:
+
+```json
+"GrantStaffInDevelopment": true
+```
+
+Keď Entra token nemá App roles, Auth/API v Development doplnia `Admin` + `Librarian`,
+aby `/admin` fungoval pred dokončením Azure role assignment. **Nikdy nezapínaj v Production.**
 
 ### 4. Token configuration (odporúčané)
 
