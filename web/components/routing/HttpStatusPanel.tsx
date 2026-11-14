@@ -84,6 +84,10 @@ type HttpStatusPanelProps = {
   className?: string;
   /** Override primary CTA (e.g. login with ?next=) */
   primaryHref?: string;
+  title?: string;
+  description?: string;
+  /** Prefer this href for the Domov / home-style action */
+  homeHref?: string;
   /** Optional retry for 500 / 502 / 503 */
   onRetry?: () => void;
   retryLabel?: string;
@@ -93,11 +97,24 @@ export function HttpStatusPanel({
   code,
   className,
   primaryHref,
+  title,
+  description,
+  homeHref,
   onRetry,
   retryLabel = "Skúsiť znova",
 }: HttpStatusPanelProps) {
   const reduceMotion = useReducedMotion();
-  const copy = HTTP_STATUS_COPY[code];
+  const base = HTTP_STATUS_COPY[code];
+  const copy = {
+    ...base,
+    title: title ?? base.title,
+    description: description ?? base.description,
+    actions: base.actions.map((action) =>
+      homeHref && (action.href === "/" || action.label === "Domov")
+        ? { ...action, href: homeHref, label: action.label === "Domov" ? "Späť" : action.label }
+        : action,
+    ),
+  };
   const Icon = ICONS[code];
   const titleId = `http-status-${code}-title`;
   const accentRing =

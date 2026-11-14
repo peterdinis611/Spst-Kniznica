@@ -14,14 +14,27 @@ type RouteErrorProps = {
   homeHref?: string;
 };
 
-export function RouteError({ error, reset }: RouteErrorProps) {
+export function RouteError({
+  error,
+  reset,
+  title,
+  description,
+  homeHref,
+}: RouteErrorProps) {
   useEffect(() => {
     console.error("[route-error]", error.digest ?? error.name, error.message);
   }, [error]);
 
   return (
     <HttpStatusPageShell>
-      <HttpStatusPanel code={500} onRetry={reset} retryLabel="Skúsiť znova" />
+      <HttpStatusPanel
+        code={500}
+        title={title}
+        description={description}
+        homeHref={homeHref}
+        onRetry={reset}
+        retryLabel="Skúsiť znova"
+      />
     </HttpStatusPageShell>
   );
 }
