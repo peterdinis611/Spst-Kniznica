@@ -13,7 +13,15 @@ public static class OpenLibraryCovers
     public static string? NormalizeIsbn(string? isbn)
     {
         if (string.IsNullOrWhiteSpace(isbn)) return null;
-        var digits = new string(isbn.Where(c => char.IsAsciiLetterOrDigit(c)).ToArray());
-        return digits.Length is 10 or 13 ? digits.ToUpperInvariant() : null;
+        var digits = new string(isbn.Where(c => char.IsAsciiLetterOrDigit(c)).ToArray()).ToUpperInvariant();
+        if (digits.Length is not (10 or 13)) return null;
+
+        // ISBN-10 may end with X; otherwise only digits are valid.
+        var body = digits.Length == 10 ? digits[..9] : digits;
+        if (!body.All(char.IsAsciiDigit)) return null;
+        if (digits.Length == 10 && !(char.IsAsciiDigit(digits[^1]) || digits[^1] == 'X')) return null;
+        if (digits.Length == 13 && !digits.All(char.IsAsciiDigit)) return null;
+
+        return digits;
     }
 }

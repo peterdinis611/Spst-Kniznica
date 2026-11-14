@@ -32,7 +32,8 @@ export function normalizeBookingStatus(
     return value as BookingStatusCode;
   }
   if (typeof value === "string") {
-    if (value in STATUS_BY_NAME) return STATUS_BY_NAME[value];
+    const byName = STATUS_BY_NAME[value];
+    if (byName !== undefined) return byName;
     const numeric = Number(value);
     if (numeric in BOOKING_STATUS_LABEL) return numeric as BookingStatusCode;
   }

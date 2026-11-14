@@ -4,23 +4,15 @@ import { connection } from "next/server";
 import { BookingsAccessGate } from "@/components/catalog/BookingsAccessGate";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { searchBooksAction } from "@/lib/catalog/actions";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Výpožičný pult",
   description:
     "Rezervácie, aktívne výpožičky a vrátenia — pult SPST Knižnice pre čitateľov a službu.",
-  alternates: { canonical: "/bookings" },
-  robots: {
-    index: false,
-    follow: false,
-  },
-  openGraph: {
-    title: "Výpožičný pult",
-    description:
-      "Rezervácie, aktívne výpožičky a vrátenia — pult SPST Knižnice.",
-    url: "/bookings",
-  },
-};
+  path: "/bookings",
+  noIndex: true,
+});
 
 async function BookingsContent() {
   await connection();

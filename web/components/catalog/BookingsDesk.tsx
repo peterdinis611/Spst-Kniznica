@@ -393,6 +393,7 @@ export function BookingsDesk({
         >
           {virtualizer.getVirtualItems().map((virtualRow) => {
             const booking = items[virtualRow.index];
+            if (!booking) return null;
             const book = titles.get(booking.bookId);
             const statusCode = booking.status as BookingStatusCode;
             const busy = pendingId === booking.id && update.isPending;

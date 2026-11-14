@@ -44,14 +44,21 @@ public class AuthorAppServiceTests
             Name = "  Ján Kováč  ",
             Biography = "  ",
             Nationality = " SK ",
-            BirthYear = 1970
+            BirthYear = 1970,
+            WikidataId = " Q42 ",
+            ViafId = " 102333412 ",
+            ProfileUrl = " https://www.wikidata.org/wiki/Q42 ",
         });
 
         saved.Should().NotBeNull();
         saved!.Name.Should().Be("Ján Kováč");
         saved.Biography.Should().BeNull();
         saved.Nationality.Should().Be("SK");
+        saved.WikidataId.Should().Be("Q42");
+        saved.ViafId.Should().Be("102333412");
+        saved.ProfileUrl.Should().Be("https://www.wikidata.org/wiki/Q42");
         dto.Name.Should().Be("Ján Kováč");
+        dto.WikidataId.Should().Be("Q42");
         _events.Events.Should().ContainSingle(e => e is AuthorCreatedEvent);
     }
 

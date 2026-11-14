@@ -20,7 +20,8 @@ function paletteFor(seed: string, index = 0) {
   for (let i = 0; i < seed.length; i += 1) {
     hash = (hash + seed.charCodeAt(i) * (i + 1)) % 997;
   }
-  return COVER_PALETTES[(hash + index) % COVER_PALETTES.length];
+  const palette = COVER_PALETTES[(hash + index) % COVER_PALETTES.length];
+  return palette ?? COVER_PALETTES[0];
 }
 
 export type CatalogBook = {
@@ -33,6 +34,9 @@ export type CatalogBook = {
   shelfLocation?: string | null;
   year?: number | null;
   description?: string | null;
+  isbn?: string | null;
+  language?: string | null;
+  coverUrl?: string | null;
   accent: string;
   secondary: string;
   motif: CoverMotif;
@@ -46,6 +50,9 @@ export type CatalogAuthor = {
   bio: string;
   nationality: string;
   birthYear?: number | null;
+  profileUrl?: string | null;
+  wikidataId?: string | null;
+  viafId?: string | null;
   accent: string;
   bookCount: number;
 };
@@ -74,6 +81,9 @@ export function mapBookListItem(
     categoryName: book.categoryName,
     shelfLocation: book.shelfLocation,
     year: book.publishedYear,
+    isbn: book.isbn,
+    language: book.language,
+    coverUrl: book.coverUrl,
     accent: palette.accent,
     secondary: palette.secondary,
     motif: palette.motif,
@@ -97,6 +107,9 @@ export function mapAuthor(author: AuthorDto, index = 0): CatalogAuthor {
     bio: author.biography?.trim() || "Bez biografie.",
     nationality: author.nationality?.trim() || "—",
     birthYear: author.birthYear,
+    profileUrl: author.profileUrl,
+    wikidataId: author.wikidataId,
+    viafId: author.viafId,
     accent: palette.accent,
     bookCount: 0,
   };

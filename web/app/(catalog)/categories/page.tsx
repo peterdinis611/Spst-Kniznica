@@ -4,19 +4,15 @@ import { connection } from "next/server";
 import { CategoriesCatalog } from "@/components/catalog/CategoriesCatalog";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { searchCategoriesAction } from "@/lib/catalog/actions";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Kategórie",
   description:
     "Tematické rady školského fondu — elektrotechnika, strojárstvo a ďalšie odbory.",
-  alternates: { canonical: "/categories" },
-  openGraph: {
-    title: "Kategórie",
-    description:
-      "Tematické rady školského fondu — elektrotechnika, strojárstvo a ďalšie odbory.",
-    url: "/categories",
-  },
-};
+  path: "/categories",
+  keywords: ["kategórie", "odborové rady"],
+});
 
 async function CategoriesPageContent() {
   await connection();

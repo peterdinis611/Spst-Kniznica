@@ -22,8 +22,10 @@ declare global {
 
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
 
-export function isTurnstileConfigured() {
-  return SITE_KEY.length > 0;
+export function isTurnstileConfigured(
+  siteKey: string | undefined | null = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+) {
+  return Boolean(siteKey?.trim());
 }
 
 export function TurnstileWidget({

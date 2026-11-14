@@ -5,12 +5,14 @@ import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { MyLibrary } from "@/components/catalog/MyLibrary";
 import { searchBooksAction } from "@/lib/catalog/actions";
 import { searchBookingsAction } from "@/lib/bookings";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Moja knižnica",
   description: "Tvoje výpožičky, termíny, história a čakací zoznam.",
-  alternates: { canonical: "/library" },
-};
+  path: "/library",
+  noIndex: true,
+});
 
 async function LibraryContent() {
   await connection();

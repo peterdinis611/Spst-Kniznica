@@ -20,7 +20,7 @@ describe("toCarouselBooks", () => {
       title: "Titul 0",
       author: "Autor 0",
     });
-    expect(carousel[0].accent).toBeTruthy();
+    expect(carousel[0]?.accent).toBeTruthy();
   });
 
   it("keeps already mapped catalog books", () => {

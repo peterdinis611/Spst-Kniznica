@@ -4,21 +4,17 @@ import { LandingContent } from "@/components/landing/LandingContent";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 import { RouteLoading } from "@/components/routing/RouteLoading";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/site";
 
-
 export const metadata: Metadata = {
-  title: {
-    absolute: siteConfig.name,
-  },
-  description: siteConfig.description,
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
+  ...buildPageMetadata({
     title: siteConfig.name,
     description: siteConfig.description,
-    url: "/",
+    path: "/",
+  }),
+  title: {
+    absolute: siteConfig.name,
   },
 };
 

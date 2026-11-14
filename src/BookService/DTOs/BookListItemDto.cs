@@ -20,4 +20,5 @@ public class BookListItemDto
     public string? ShelfLocation { get; set; }
     public int TotalCopies { get; set; }
     public int AvailableCopies { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }

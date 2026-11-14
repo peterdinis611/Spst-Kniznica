@@ -16,6 +16,8 @@ export const siteConfig = {
     "autori",
     "kategórie",
     "Stredná priemyselná škola",
+    "školská knižnica",
+    "katalóg kníh",
   ],
 } as const;
 

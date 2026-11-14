@@ -172,6 +172,7 @@ export function AuthorsCatalog({
         >
           {virtualizer.getVirtualItems().map((virtualRow) => {
             const author = results[virtualRow.index];
+            if (!author) return null;
             const index = virtualRow.index;
             const initial = author.name.charAt(0).toUpperCase();
             return (

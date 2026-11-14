@@ -2,12 +2,17 @@
 
 import { useEffect, useRef } from "react";
 import { useAction } from "next-safe-action/hooks";
-import { useDebouncedCallback } from "@tanstack/react-pacer";
 
+type ExecutableAction<TInput extends object> = (
+  input: TInput,
+) => Promise<unknown> | unknown;
+
+/**
+ * Debounced wrapper around next-safe-action hooks.
+ * Keeps the action boundary typed without leaking `any`.
+ */
 export function useDebouncedCatalogAction<TInput extends object, TData>(
-  // next-safe-action generics are deep; cast at the boundary
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: (...args: any[]) => any,
+  action: ExecutableAction<TInput>,
   input: TInput,
   delayMs = 220,
 ): {
@@ -15,16 +20,13 @@ export function useDebouncedCatalogAction<TInput extends object, TData>(
   serverError: string | undefined;
   isPending: boolean;
 } {
-  const { execute, result, isPending } = useAction(action);
+  // useAction expects a SafeAction; cast only at this framework boundary.
+  const { execute, result, isPending } = useAction(
+    action as Parameters<typeof useAction>[0],
+  );
   const first = useRef(true);
   const inputKey = JSON.stringify(input);
-
-  const runDebounced = useDebouncedCallback(
-    (payload: TInput) => {
-      execute(payload);
-    },
-    { wait: delayMs },
-  );
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const payload = JSON.parse(inputKey) as TInput;
@@ -35,12 +37,20 @@ export function useDebouncedCatalogAction<TInput extends object, TData>(
       return;
     }
 
-    runDebounced(payload);
-  }, [inputKey, execute, runDebounced]);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      execute(payload);
+    }, delayMs);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [inputKey, execute, delayMs]);
 
   return {
     data: result.data as TData | undefined,
-    serverError: result.serverError as string | undefined,
+    serverError:
+      typeof result.serverError === "string" ? result.serverError : undefined,
     isPending,
   };
 }

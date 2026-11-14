@@ -15,7 +15,7 @@ export async function resolveActionAccessToken(input: {
 }
 
 export function readerFromAuth(
-  config: AuthConfig | null,
+  _config: AuthConfig | null,
   user: { name: string; email: string | null } | null,
 ): { name: string; email: string } | null {
   if (!user?.email) return null;

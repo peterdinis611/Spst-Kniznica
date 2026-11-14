@@ -8,6 +8,7 @@ import { BookCard } from "@/components/catalog/BookCard";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,12 @@ import {
   getAuthorAction,
   searchBooksAction,
 } from "@/lib/catalog/actions";
+import {
+  authorSameAsLinks,
+  breadcrumbJsonLd,
+  personJsonLd,
+} from "@/lib/seo/json-ld";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 type AuthorDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -41,16 +48,15 @@ export async function generateMetadata({
       ? author.bio
       : `${author.name} vo fonde SPST Knižnice.`;
 
-  return {
+  return buildPageMetadata({
     title: author.name,
     description,
-    alternates: { canonical: `/authors/${author.id}` },
-    openGraph: {
-      title: author.name,
-      description,
-      url: `/authors/${author.id}`,
-    },
-  };
+    path: `/authors/${author.id}`,
+    type: "profile",
+    keywords: [author.name, author.nationality].filter(
+      (value) => value && value !== "—",
+    ),
+  });
 }
 
 async function AuthorDetailContent({
@@ -75,6 +81,23 @@ async function AuthorDetailContent({
 
   return (
     <>
+      <JsonLd
+        data={[
+          personJsonLd({
+            id: author.id,
+            name: author.name,
+            bio: author.bio,
+            nationality: author.nationality,
+            birthYear: author.birthYear,
+            sameAs: authorSameAsLinks(author),
+          }),
+          breadcrumbJsonLd([
+            { name: "Domov", path: "/" },
+            { name: "Autori", path: "/authors" },
+            { name: author.name, path: `/authors/${author.id}` },
+          ]),
+        ]}
+      />
       <CatalogBreadcrumb
         items={[
           { label: "Katalóg", href: "/books" },

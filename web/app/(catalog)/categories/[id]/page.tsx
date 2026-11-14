@@ -8,6 +8,7 @@ import { BookCard } from "@/components/catalog/BookCard";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buildBooksCatalogHref } from "@/lib/catalog/catalog-url";
@@ -15,6 +16,8 @@ import {
   getCategoryAction,
   searchBooksAction,
 } from "@/lib/catalog/actions";
+import { breadcrumbJsonLd, collectionJsonLd } from "@/lib/seo/json-ld";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 type CategoryDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -40,16 +43,12 @@ export async function generateMetadata({
       ? category.description
       : `${category.name} — tematická rada vo fonde SPST Knižnice.`;
 
-  return {
+  return buildPageMetadata({
     title: category.name,
     description,
-    alternates: { canonical: `/categories/${category.id}` },
-    openGraph: {
-      title: category.name,
-      description,
-      url: `/categories/${category.id}`,
-    },
-  };
+    path: `/categories/${category.id}`,
+    keywords: [category.name],
+  });
 }
 
 async function CategoryDetailContent({
@@ -74,6 +73,20 @@ async function CategoryDetailContent({
 
   return (
     <>
+      <JsonLd
+        data={[
+          collectionJsonLd({
+            id: category.id,
+            name: category.name,
+            description: category.description,
+          }),
+          breadcrumbJsonLd([
+            { name: "Domov", path: "/" },
+            { name: "Kategórie", path: "/categories" },
+            { name: category.name, path: `/categories/${category.id}` },
+          ]),
+        ]}
+      />
       <CatalogBreadcrumb
         items={[
           { label: "Katalóg", href: "/books" },

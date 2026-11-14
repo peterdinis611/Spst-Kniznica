@@ -251,6 +251,7 @@ export function BooksCatalog({
         >
           {virtualizer.getVirtualItems().map((virtualItem) => {
             const book = results[virtualItem.index];
+            if (!book) return null;
             return (
               <li
                 key={book.id}

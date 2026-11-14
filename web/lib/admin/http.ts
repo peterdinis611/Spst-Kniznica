@@ -53,6 +53,21 @@ export function adminQuery(path: string, query?: ApiQuery) {
   return withQuery(path, query);
 }
 
+/** Parse Content-Disposition filename for export downloads. */
+export function parseContentDispositionFileName(
+  disposition: string | null | undefined,
+  fallbackFileName: string,
+): string {
+  if (!disposition) return fallbackFileName;
+  const match = /filename\*?=(?:UTF-8''|")?([^\";]+)/i.exec(disposition);
+  if (!match?.[1]) return fallbackFileName;
+  try {
+    return decodeURIComponent(match[1].replace(/"/g, ""));
+  } catch {
+    return match[1].replace(/"/g, "") || fallbackFileName;
+  }
+}
+
 /** Download a binary/file response (CSV/XML export). */
 export async function adminHttpDownload(
   path: string,
@@ -83,11 +98,10 @@ export async function adminHttpDownload(
     throw new HttpError(message, response.status);
   }
 
-  const disposition = response.headers.get("content-disposition") ?? "";
-  const match = /filename\*?=(?:UTF-8''|")?([^\";]+)/i.exec(disposition);
-  const fileName = match
-    ? decodeURIComponent(match[1].replace(/"/g, ""))
-    : fallbackFileName;
+  const fileName = parseContentDispositionFileName(
+    response.headers.get("content-disposition"),
+    fallbackFileName,
+  );
 
   return { fileName, blob: await response.blob() };
 }

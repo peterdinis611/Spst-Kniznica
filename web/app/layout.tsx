@@ -2,14 +2,14 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Sora, IBM_Plex_Mono } from "next/font/google";
 import { AbilityProvider } from "@/components/auth/AbilityProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { ServerStatusBanner } from "@/components/server-status-banner";
 import { ScrollToTopLazy } from "@/components/scroll-to-top-lazy";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { libraryJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
 import { absoluteUrl, getSiteUrl, siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import "./globals.css";
-
-
 
 const display = Fraunces({
   variable: "--font-display-family",
@@ -48,8 +48,13 @@ export const metadata: Metadata = {
   creator: siteConfig.name,
   publisher: siteConfig.name,
   category: "education",
+  classification: "Library Catalog",
+  referrer: "origin-when-cross-origin",
   alternates: {
     canonical: "/",
+    languages: {
+      sk: "/",
+    },
   },
   openGraph: {
     type: "website",
@@ -75,12 +80,18 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
-
-
+  icons: {
+    icon: [{ url: "/icon", type: "image/png" }],
+    apple: [{ url: "/apple-icon", type: "image/png" }],
+  },
+  manifest: "/manifest.webmanifest",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
+  },
+  other: {
+    "geo.region": "SK",
   },
 };
 
@@ -92,15 +103,6 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
   width: "device-width",
   initialScale: 1,
-};
-
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Library",
-  name: siteConfig.name,
-  description: siteConfig.description,
-  url: absoluteUrl("/"),
-  inLanguage: siteConfig.language,
 };
 
 export default function RootLayout({
@@ -123,10 +125,7 @@ export default function RootLayout({
         className="flex min-h-full flex-col overflow-x-hidden bg-paper text-ink"
         suppressHydrationWarning
       >
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <JsonLd data={[libraryJsonLd(), websiteJsonLd()]} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

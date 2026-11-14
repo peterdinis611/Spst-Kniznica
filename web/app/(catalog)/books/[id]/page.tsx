@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { FlatCover } from "@/components/landing/FlatCover";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -14,6 +15,8 @@ import { AuthorMoreBooks } from "@/components/catalog/AuthorMoreBooks";
 import { BookOpenTickets } from "@/components/catalog/BookOpenTickets";
 import { ReserveSlip } from "@/components/catalog/ReserveSlip";
 import { getBookAction } from "@/lib/catalog/actions";
+import { bookJsonLd, breadcrumbJsonLd } from "@/lib/seo/json-ld";
+import { buildBookMetadata } from "@/lib/seo/metadata";
 
 type BookDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -38,17 +41,20 @@ export async function generateMetadata({
     book.description?.trim() ||
     `${book.title} od ${book.author} vo fonde SPST Knižnice.`;
 
-  return {
+  return buildBookMetadata({
     title: book.title,
     description,
-    alternates: { canonical: `/books/${book.id}` },
-    openGraph: {
-      title: book.title,
-      description,
-      url: `/books/${book.id}`,
-      type: "book",
-    },
-  };
+    path: `/books/${book.id}`,
+    authors: [book.author],
+    isbn: book.isbn,
+    releaseDate: book.year ? String(book.year) : null,
+    keywords: [
+      book.title,
+      book.author,
+      book.categoryName ?? "",
+      book.isbn ?? "",
+    ].filter(Boolean),
+  });
 }
 
 async function BookDetailContent({
@@ -69,6 +75,25 @@ async function BookDetailContent({
 
   return (
     <>
+      <JsonLd
+        data={[
+          bookJsonLd({
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            description: book.description,
+            isbn: book.isbn,
+            publishedYear: book.year,
+            language: book.language,
+            coverUrl: book.coverUrl,
+          }),
+          breadcrumbJsonLd([
+            { name: "Domov", path: "/" },
+            { name: "Knihy", path: "/books" },
+            { name: book.title, path: `/books/${book.id}` },
+          ]),
+        ]}
+      />
       <CatalogBreadcrumb
         items={[
           { label: "Katalóg", href: "/books" },

@@ -58,7 +58,8 @@ public class BookRepository(BookDbContext db) : IBookRepository
             CoverUrl = b.CoverUrl,
             ShelfLocation = b.ShelfLocation,
             TotalCopies = b.TotalCopies,
-            AvailableCopies = b.AvailableCopies
+            AvailableCopies = b.AvailableCopies,
+            UpdatedAt = b.UpdatedAt
         });
 
         var page = await projected.ToPagedResultAsync(filter, cancellationToken);

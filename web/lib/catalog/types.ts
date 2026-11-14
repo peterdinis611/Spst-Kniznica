@@ -15,6 +15,7 @@ export type BookListItem = {
   shelfLocation?: string | null;
   totalCopies: number;
   availableCopies: number;
+  updatedAt?: string;
 };
 
 export type BookDetail = BookListItem & {

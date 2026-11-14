@@ -4,19 +4,15 @@ import { connection } from "next/server";
 import { AuthorsCatalog } from "@/components/catalog/AuthorsCatalog";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { searchAuthorsAction } from "@/lib/catalog/actions";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Autori",
   description:
     "Abecedný prehľad autorov vo fonde SPST Knižnice s biografiami a národnosťou.",
-  alternates: { canonical: "/authors" },
-  openGraph: {
-    title: "Autori",
-    description:
-      "Abecedný prehľad autorov vo fonde SPST Knižnice s biografiami a národnosťou.",
-    url: "/authors",
-  },
-};
+  path: "/authors",
+  keywords: ["autori", "biografie"],
+});
 
 async function AuthorsPageContent() {
   await connection();

@@ -9,19 +9,15 @@ import {
   searchCategoriesAction,
 } from "@/lib/catalog/actions";
 import { shelfZonesFromShelfCodes } from "@/lib/catalog/catalog-url";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Katalóg kníh",
   description:
     "Prehliadajte školský fond SPST — vyhľadávanie podľa názvu, autora a kategórie.",
-  alternates: { canonical: "/books" },
-  openGraph: {
-    title: "Katalóg kníh",
-    description:
-      "Prehliadajte školský fond SPST — vyhľadávanie podľa názvu, autora a kategórie.",
-    url: "/books",
-  },
-};
+  path: "/books",
+  keywords: ["katalóg kníh", "vyhľadávanie kníh"],
+});
 
 async function BooksPageContent() {
   await connection();

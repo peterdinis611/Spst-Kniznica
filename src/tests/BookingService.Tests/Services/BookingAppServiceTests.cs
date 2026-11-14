@@ -1,27 +1,37 @@
 using BookingService.Clients;
+using BookingService.Data;
 using BookingService.DTOs;
 using BookingService.Exceptions;
 using BookingService.Interfaces;
 using BookingService.Models;
+using BookingService.Options;
 using BookingService.Services;
 using BookingService.Tests.Infrastructure;
 using BookingService.Validators;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using SpstKniznica.Caching;
+using SpstKniznica.Common.Integrations;
 using SpstKniznica.Common.Messaging;
+using MsOptions = Microsoft.Extensions.Options.Options;
 
 namespace BookingService.Tests.Services;
 
-public class BookingAppServiceTests
+public class BookingAppServiceTests : IAsyncLifetime
 {
+    public Task InitializeAsync() => Task.CompletedTask;
+
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly IBookingRepository _bookings = Substitute.For<IBookingRepository>();
     private readonly IBookCatalogLookup _bookCatalog = Substitute.For<IBookCatalogLookup>();
     private readonly RecordingEventPublisher _events = new();
+    private readonly BookingDbContext _db;
     private readonly BookingAppService _sut;
+    private readonly Microsoft.Extensions.Options.IOptions<LoanPolicyOptions> _policy;
 
     public BookingAppServiceTests()
     {
@@ -42,6 +52,38 @@ public class BookingAppServiceTests
                 Arg.Any<CancellationToken>())
             .Returns(false);
 
+        _policy = MsOptions.Create(new LoanPolicyOptions
+        {
+            SkipNonSchoolDays = false,
+            MaxActiveLoansPerReader = 5,
+            MaxRenewals = 1,
+            RenewExtraDays = 14,
+            DefaultLoanDays = 14,
+        });
+
+        var dbOptions = new DbContextOptionsBuilder<BookingDbContext>()
+            .UseSqlite("DataSource=:memory:")
+            .Options;
+        _db = new BookingDbContext(dbOptions);
+        _db.Database.OpenConnection();
+        _db.Database.EnsureCreated();
+
+        var nager = new NagerDateClient(
+            new HttpClient(new EmptyJsonHandler()),
+            new MemoryCache(new MemoryCacheOptions()),
+            NullLogger<NagerDateClient>.Instance);
+        var calendar = new SchoolCalendarService(nager, _policy);
+        var waitlist = new WaitlistService(_db, NullLogger<WaitlistService>.Instance);
+        var lifecycle = new LoanLifecycleService(
+            _unitOfWork,
+            new NullAppCache(),
+            _events,
+            _policy,
+            waitlist,
+            _bookCatalog,
+            calendar,
+            NullLogger<LoanLifecycleService>.Instance);
+
         _sut = new BookingAppService(
             _unitOfWork,
             _bookCatalog,
@@ -49,7 +91,15 @@ public class BookingAppServiceTests
             _events,
             new CreateBookingRequestValidator(),
             new UpdateBookingRequestValidator(),
+            _policy,
+            lifecycle,
+            calendar,
             NullLogger<BookingAppService>.Instance);
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _db.DisposeAsync();
     }
 
     [Fact]
@@ -166,6 +216,23 @@ public class BookingAppServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_rejects_when_new_loans_are_frozen()
+    {
+        _policy.Value.FreezeNewLoans = true;
+
+        var act = async () => await _sut.CreateAsync(new CreateBookingRequest
+        {
+            BookId = Guid.NewGuid(),
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            DueDate = DateTimeOffset.UtcNow.AddDays(7)
+        });
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("Status"));
+    }
+
+    [Fact]
     public async Task UpdateAsync_sets_returned_at_when_closing_loan()
     {
         var id = Guid.NewGuid();
@@ -276,5 +343,16 @@ public class BookingAppServiceTests
         _bookings.Received(1).Remove(Arg.Any<Booking>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         _events.Events.Should().ContainSingle(e => e is BookingDeletedEvent);
+    }
+
+    private sealed class EmptyJsonHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("[]", System.Text.Encoding.UTF8, "application/json")
+            });
     }
 }

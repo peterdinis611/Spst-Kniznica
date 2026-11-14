@@ -79,4 +79,21 @@ public class BookValidationRulesTests
             e.PropertyName == "Isbn" &&
             e.ErrorMessage.Contains("already exists", StringComparison.OrdinalIgnoreCase));
     }
+
+    [Fact]
+    public void ToBook_maps_cover_url_and_normalizes_isbn()
+    {
+        var book = new CreateBookRequest
+        {
+            Title = "Test",
+            AuthorId = Guid.NewGuid(),
+            Isbn = "978-0-13-110362-7",
+            CoverUrl = " https://covers.openlibrary.org/b/isbn/9780131103627-L.jpg ",
+            TotalCopies = 1,
+            AvailableCopies = 1,
+        }.ToBook();
+
+        book.Isbn.Should().Be("9780131103627");
+        book.CoverUrl.Should().Be("https://covers.openlibrary.org/b/isbn/9780131103627-L.jpg");
+    }
 }
