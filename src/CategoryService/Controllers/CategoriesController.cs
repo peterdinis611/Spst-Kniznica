@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Export;
 using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Pagination;
 
@@ -12,7 +13,10 @@ namespace CategoryService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class CategoriesController(ICategoryService categories, ILogger<CategoriesController> logger) : ControllerBase
+public class CategoriesController(
+    ICategoryService categories,
+    IAuditLogger audit,
+    ILogger<CategoriesController> logger) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
@@ -32,6 +36,59 @@ public class CategoriesController(ICategoryService categories, ILogger<Categorie
 
         var result = await categories.SearchAsync(filter, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpGet("export")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.DataExportPolicy)]
+    [Produces("text/csv", "application/xml")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> Export(
+        [FromQuery] CategoryQueryFilter filter,
+        [FromQuery] ExportQuery export,
+        CancellationToken cancellationToken)
+    {
+        export.Normalize();
+        var items = await ExportPaging.CollectAsync(
+            filter,
+            categories.SearchAsync,
+            export.Take,
+            cancellationToken);
+
+        string[] headers =
+        [
+            "id", "name", "description", "color", "isActive", "createdAt", "updatedAt",
+        ];
+
+        var rows = items.Select(c => (IReadOnlyList<string?>)
+        [
+            SecureTabularExport.Cell(c.Id),
+            SecureTabularExport.Cell(c.Name),
+            SecureTabularExport.Cell(c.Description),
+            SecureTabularExport.Cell(c.Color),
+            SecureTabularExport.Cell(c.IsActive),
+            SecureTabularExport.Cell(c.CreatedAt),
+            SecureTabularExport.Cell(c.UpdatedAt),
+        ]);
+
+        audit.StaffAction(User, "category.export", "Category", export.Format, new
+        {
+            export.Format,
+            Count = items.Count,
+            Cap = export.Take,
+        });
+
+        return ExportFileResult.Create(
+            this,
+            export.ResolvedFormat,
+            "categories",
+            headers,
+            rows,
+            "categories",
+            "category");
     }
 
     [HttpGet("{id:guid}")]

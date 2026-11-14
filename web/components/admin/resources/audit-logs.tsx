@@ -3,7 +3,6 @@
 import {
   Datagrid,
   DateField,
-  ExportButton,
   List,
   Pagination,
   SearchInput,
@@ -16,25 +15,37 @@ import {
 } from "react-admin";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import { ServerExportButtons } from "@/components/admin/ServerExportButtons";
 
 const ACTION_CHOICES = [
   { id: "book.create", name: "book.create" },
   { id: "book.update", name: "book.update" },
   { id: "book.delete", name: "book.delete" },
   { id: "book.import", name: "book.import" },
+  { id: "book.export", name: "book.export" },
+  { id: "author.export", name: "author.export" },
+  { id: "category.export", name: "category.export" },
   { id: "booking.update", name: "booking.update" },
   { id: "booking.delete", name: "booking.delete" },
   { id: "booking.cancel", name: "booking.cancel" },
   { id: "booking.renew", name: "booking.renew" },
+  { id: "booking.export", name: "booking.export" },
+  { id: "booking.desk.export", name: "booking.desk.export" },
+  { id: "audit.export", name: "audit.export" },
 ];
 
 const ENTITY_CHOICES = [
   { id: "Book", name: "Book" },
+  { id: "Author", name: "Author" },
+  { id: "Category", name: "Category" },
   { id: "Booking", name: "Booking" },
+  { id: "AuditLog", name: "AuditLog" },
 ];
 
 const SOURCE_CHOICES = [
   { id: "BookService", name: "BookService" },
+  { id: "AuthorService", name: "AuthorService" },
+  { id: "CategoryService", name: "CategoryService" },
   { id: "BookingService", name: "BookingService" },
   { id: "AdminService", name: "AdminService" },
 ];
@@ -66,7 +77,10 @@ const auditFilters = [
 
 const ListActions = () => (
   <TopToolbar>
-    <ExportButton />
+    <ServerExportButtons
+      path="/api/admin/audit-logs/export"
+      fileStem="audit-logs"
+    />
   </TopToolbar>
 );
 

@@ -52,6 +52,14 @@ async function proxy(request: Request, pathParts: string[]) {
     if (upstreamType) responseHeaders.set("content-type", upstreamType);
     const retryAfter = upstream.headers.get("retry-after");
     if (retryAfter) responseHeaders.set("retry-after", retryAfter);
+    const disposition = upstream.headers.get("content-disposition");
+    if (disposition) responseHeaders.set("content-disposition", disposition);
+    const cacheControl = upstream.headers.get("cache-control");
+    if (cacheControl) responseHeaders.set("cache-control", cacheControl);
+    const pragma = upstream.headers.get("pragma");
+    if (pragma) responseHeaders.set("pragma", pragma);
+    const nosniff = upstream.headers.get("x-content-type-options");
+    if (nosniff) responseHeaders.set("x-content-type-options", nosniff);
 
     return new NextResponse(body, {
       status: upstream.status,

@@ -44,6 +44,7 @@ import {
 } from "@/components/admin/resources/categories";
 import { AccountPage } from "@/components/admin/tools/AccountPage";
 import { BookImportPage } from "@/components/admin/tools/BookImportPage";
+import { DataExportPage } from "@/components/admin/tools/DataExportPage";
 import { CacheToolsPage } from "@/components/admin/tools/CacheToolsPage";
 import { GatewayToolsPage } from "@/components/admin/tools/GatewayToolsPage";
 import { HealthToolsPage } from "@/components/admin/tools/HealthToolsPage";
@@ -112,6 +113,7 @@ export default function ReactAdminApp() {
       />
       <CustomRoutes>
         <Route path="/tools/import" element={<BookImportPage />} />
+        <Route path="/tools/export" element={<DataExportPage />} />
         <Route path="/tools/gateway" element={<GatewayToolsPage />} />
         <Route path="/tools/health" element={<HealthToolsPage />} />
         <Route path="/tools/services" element={<ServicesRegistryPage />} />

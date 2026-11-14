@@ -7,7 +7,6 @@ import {
   DeleteButton,
   Edit,
   EditButton,
-  ExportButton,
   List,
   Pagination,
   ReferenceManyField,
@@ -33,6 +32,7 @@ import {
   SectionTitle,
   StockField,
 } from "@/components/admin/shared";
+import { ServerExportButtons } from "@/components/admin/ServerExportButtons";
 
 const categoryFilters = [
   <SearchInput key="q" source="q" alwaysOn placeholder="Názov kategórie…" />,
@@ -47,7 +47,7 @@ const categoryFilters = [
 
 const ListActions = () => (
   <TopToolbar>
-    <ExportButton />
+    <ServerExportButtons path="/api/categories/export" fileStem="categories" />
   </TopToolbar>
 );
 

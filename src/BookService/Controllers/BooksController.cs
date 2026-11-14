@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Export;
 using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Pagination;
 
@@ -46,6 +47,65 @@ public class BooksController(
             result.Page);
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Export books as CSV or XML (staff). Cap <paramref name="export"/>.Take at 5000.
+    /// </summary>
+    [HttpGet("export")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.DataExportPolicy)]
+    [Produces("text/csv", "application/xml")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> Export(
+        [FromQuery] BookQueryFilter filter,
+        [FromQuery] ExportQuery export,
+        CancellationToken cancellationToken)
+    {
+        export.Normalize();
+        var items = await ExportPaging.CollectAsync(
+            filter,
+            books.SearchAsync,
+            export.Take,
+            cancellationToken);
+
+        string[] headers =
+        [
+            "id", "title", "subtitle", "authorId", "author", "publisher", "isbn",
+            "publishedYear", "language", "categoryId", "categoryName", "format",
+            "shelfLocation", "totalCopies", "availableCopies",
+        ];
+
+        var rows = items.Select(b => (IReadOnlyList<string?>)
+        [
+            SecureTabularExport.Cell(b.Id),
+            SecureTabularExport.Cell(b.Title),
+            SecureTabularExport.Cell(b.Subtitle),
+            SecureTabularExport.Cell(b.AuthorId),
+            SecureTabularExport.Cell(b.Author),
+            SecureTabularExport.Cell(b.Publisher),
+            SecureTabularExport.Cell(b.Isbn),
+            SecureTabularExport.Cell(b.PublishedYear),
+            SecureTabularExport.Cell(b.Language),
+            SecureTabularExport.Cell(b.CategoryId),
+            SecureTabularExport.Cell(b.CategoryName),
+            SecureTabularExport.Cell(b.Format),
+            SecureTabularExport.Cell(b.ShelfLocation),
+            SecureTabularExport.Cell(b.TotalCopies),
+            SecureTabularExport.Cell(b.AvailableCopies),
+        ]);
+
+        audit.StaffAction(User, "book.export", "Book", export.Format, new
+        {
+            export.Format,
+            Count = items.Count,
+            Cap = export.Take,
+        });
+
+        return ExportFileResult.Create(this, export.ResolvedFormat, "books", headers, rows, "books", "book");
     }
 
     /// <summary>
@@ -182,6 +242,13 @@ public class BooksController(
         logger.LogInformation("Starting CSV import. File={FileName}, Size={Size}", file.FileName, file.Length);
         await using var stream = file.OpenReadStream();
         var result = await books.ImportCsvAsync(stream, cancellationToken);
+        audit.StaffAction(User, "book.import", "Book", file.FileName, new
+        {
+            Format = "csv",
+            result.TotalRows,
+            result.ImportedCount,
+            result.SkippedCount,
+        });
         LogImportResult(file.FileName, result);
         return Ok(result);
     }
@@ -208,6 +275,13 @@ public class BooksController(
         logger.LogInformation("Starting XML import. File={FileName}, Size={Size}", file.FileName, file.Length);
         await using var stream = file.OpenReadStream();
         var result = await books.ImportXmlAsync(stream, cancellationToken);
+        audit.StaffAction(User, "book.import", "Book", file.FileName, new
+        {
+            Format = "xml",
+            result.TotalRows,
+            result.ImportedCount,
+            result.SkippedCount,
+        });
         LogImportResult(file.FileName, result);
         return Ok(result);
     }

@@ -45,6 +45,7 @@ try
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
     builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "category-service");
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
+    builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "CategoryService");
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<CategoryDbContext>("database");

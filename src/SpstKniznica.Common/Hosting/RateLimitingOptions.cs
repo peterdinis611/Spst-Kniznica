@@ -24,4 +24,8 @@ public sealed class RateLimitingOptions
 
     public int SensitiveWritePermitLimit { get; set; } = 40;
     public int SensitiveWriteWindowSeconds { get; set; } = 60;
+
+    /// <summary>Bulk CSV/XML downloads — keep low to limit mass exfiltration.</summary>
+    public int DataExportPermitLimit { get; set; } = 8;
+    public int DataExportWindowSeconds { get; set; } = 60;
 }

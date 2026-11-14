@@ -12,6 +12,7 @@ public static class RateLimitingServiceCollectionExtensions
 {
     public const string PublicReadPolicy = "public-read";
     public const string SensitiveWritePolicy = "sensitive-write";
+    public const string DataExportPolicy = "data-export";
 
     public static IServiceCollection AddSpstApiRateLimiting(
         this IServiceCollection services,
@@ -97,6 +98,13 @@ public static class RateLimitingServiceCollectionExtensions
                     "w:" + GetClientKey(httpContext),
                     settings.SensitiveWritePermitLimit,
                     TimeSpan.FromSeconds(Math.Max(1, settings.SensitiveWriteWindowSeconds))));
+
+            options.AddPolicy(DataExportPolicy, httpContext =>
+                CreatePartition(
+                    redisRef,
+                    "x:" + GetClientKey(httpContext),
+                    settings.DataExportPermitLimit,
+                    TimeSpan.FromSeconds(Math.Max(1, settings.DataExportWindowSeconds))));
         });
 
         return services;

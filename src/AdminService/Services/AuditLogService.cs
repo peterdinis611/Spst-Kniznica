@@ -3,6 +3,7 @@ using AdminService.DTOs;
 using AdminService.Models;
 using Microsoft.EntityFrameworkCore;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Export;
 using SpstKniznica.Common.Pagination;
 
 namespace AdminService.Services;
@@ -116,6 +117,60 @@ public sealed class AuditLogService(AdminDbContext db, ILogger<AuditLogService> 
     {
         var item = await db.AuditLogs.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         return item is null ? null : Map(item);
+    }
+
+    public async Task<IReadOnlyList<AuditLogDto>> ListForExportAsync(
+        AuditLogQuery query,
+        int take,
+        CancellationToken cancellationToken = default)
+    {
+        query.Normalize();
+        take = Math.Clamp(take, 1, ExportLimits.MaxTake);
+
+        var q = db.AuditLogs.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query.Action))
+        {
+            var action = query.Action.Trim();
+            q = q.Where(x => x.Action == action);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.EntityType))
+        {
+            var type = query.EntityType.Trim();
+            q = q.Where(x => x.EntityType == type);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.ActorEmail))
+        {
+            var email = query.ActorEmail.Trim().ToLowerInvariant();
+            q = q.Where(x => x.ActorEmail != null && x.ActorEmail.ToLower() == email);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.SourceService))
+        {
+            var source = query.SourceService.Trim();
+            q = q.Where(x => x.SourceService == source);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var search = query.Search;
+            q = q.Where(x =>
+                EF.Functions.Like(x.Action, $"%{search}%") ||
+                EF.Functions.Like(x.EntityType, $"%{search}%") ||
+                EF.Functions.Like(x.EntityId, $"%{search}%") ||
+                (x.ActorEmail != null && EF.Functions.Like(x.ActorEmail, $"%{search}%")) ||
+                (x.ActorName != null && EF.Functions.Like(x.ActorName, $"%{search}%")) ||
+                (x.SourceService != null && EF.Functions.Like(x.SourceService, $"%{search}%")));
+        }
+
+        var items = await q
+            .OrderByDescending(x => x.OccurredAt)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+        return items.Select(Map).ToList();
     }
 
     private static List<AuditLog> Sort(IReadOnlyList<AuditLog> items, string sortBy, bool desc)

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Export;
 using SpstKniznica.Common.Hosting;
 
 namespace BookingService.Controllers;
@@ -31,27 +32,32 @@ public class LibraryOpsController(
 
     [HttpGet("desk/daily.csv")]
     [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.DataExportPolicy)]
     [Produces("text/csv")]
     public async Task<IActionResult> DailyBoardCsv(CancellationToken cancellationToken)
     {
         var board = await lifecycle.GetDailyBoardAsync(cancellationToken);
-        var lines = new List<string>
-        {
-            "section,id,bookId,borrowerName,borrowerEmail,status,dueDate",
-        };
+        string[] headers =
+        [
+            "section", "id", "bookId", "borrowerName", "borrowerEmail", "status", "dueDate",
+        ];
+
+        var rows = new List<IReadOnlyList<string?>>();
 
         void Add(string section, IEnumerable<BookingDto> items)
         {
             foreach (var item in items)
             {
-                lines.Add(string.Join(',',
+                rows.Add(
+                [
                     section,
-                    item.Id,
-                    item.BookId,
-                    Csv(item.BorrowerName),
-                    Csv(item.BorrowerEmail),
-                    item.Status,
-                    item.DueDate.ToString("o")));
+                    SecureTabularExport.Cell(item.Id),
+                    SecureTabularExport.Cell(item.BookId),
+                    SecureTabularExport.Cell(item.BorrowerName),
+                    SecureTabularExport.Cell(item.BorrowerEmail),
+                    SecureTabularExport.Cell(item.Status),
+                    SecureTabularExport.Cell(item.DueDate),
+                ]);
             }
         }
 
@@ -59,8 +65,21 @@ public class LibraryOpsController(
         Add("dueSoon", board.DueSoon);
         Add("pickup", board.PickupReady);
 
-        var csv = string.Join('\n', lines) + '\n';
-        return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", $"desk-daily-{DateTime.UtcNow:yyyyMMdd}.csv");
+        audit.StaffAction(User, "booking.desk.export", "Booking", "daily.csv", new
+        {
+            Format = "csv",
+            Count = rows.Count,
+            ContainsPii = true,
+        });
+
+        return ExportFileResult.Create(
+            this,
+            ExportFormat.Csv,
+            "desk-daily",
+            headers,
+            rows,
+            "deskDaily",
+            "row");
     }
 
     [HttpPost("{id:guid}/cancel")]
@@ -210,6 +229,4 @@ public class LibraryOpsController(
         return NoContent();
     }
 
-    private static string Csv(string value)
-        => $"\"{value.Replace("\"", "\"\"")}\"";
 }

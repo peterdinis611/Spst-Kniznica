@@ -7,7 +7,6 @@ import {
   DeleteButton,
   Edit,
   EditButton,
-  ExportButton,
   List,
   NumberField,
   NumberInput,
@@ -34,6 +33,7 @@ import {
   SectionTitle,
   StockField,
 } from "@/components/admin/shared";
+import { ServerExportButtons } from "@/components/admin/ServerExportButtons";
 
 const authorFilters = [
   <SearchInput key="q" source="q" alwaysOn placeholder="Meno autora…" />,
@@ -48,7 +48,7 @@ const authorFilters = [
 
 const ListActions = () => (
   <TopToolbar>
-    <ExportButton />
+    <ServerExportButtons path="/api/authors/export" fileStem="authors" />
   </TopToolbar>
 );
 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Export;
 using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Pagination;
 
@@ -12,7 +13,10 @@ namespace AuthorService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class AuthorsController(IAuthorService authors, ILogger<AuthorsController> logger) : ControllerBase
+public class AuthorsController(
+    IAuthorService authors,
+    IAuditLogger audit,
+    ILogger<AuthorsController> logger) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
@@ -31,6 +35,53 @@ public class AuthorsController(IAuthorService authors, ILogger<AuthorsController
             filter.SortBy);
 
         return Ok(await authors.SearchAsync(filter, cancellationToken));
+    }
+
+    [HttpGet("export")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.DataExportPolicy)]
+    [Produces("text/csv", "application/xml")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> Export(
+        [FromQuery] AuthorQueryFilter filter,
+        [FromQuery] ExportQuery export,
+        CancellationToken cancellationToken)
+    {
+        export.Normalize();
+        var items = await ExportPaging.CollectAsync(
+            filter,
+            authors.SearchAsync,
+            export.Take,
+            cancellationToken);
+
+        string[] headers =
+        [
+            "id", "name", "biography", "nationality", "birthYear", "isActive", "createdAt", "updatedAt",
+        ];
+
+        var rows = items.Select(a => (IReadOnlyList<string?>)
+        [
+            SecureTabularExport.Cell(a.Id),
+            SecureTabularExport.Cell(a.Name),
+            SecureTabularExport.Cell(a.Biography),
+            SecureTabularExport.Cell(a.Nationality),
+            SecureTabularExport.Cell(a.BirthYear),
+            SecureTabularExport.Cell(a.IsActive),
+            SecureTabularExport.Cell(a.CreatedAt),
+            SecureTabularExport.Cell(a.UpdatedAt),
+        ]);
+
+        audit.StaffAction(User, "author.export", "Author", export.Format, new
+        {
+            export.Format,
+            Count = items.Count,
+            Cap = export.Take,
+        });
+
+        return ExportFileResult.Create(this, export.ResolvedFormat, "authors", headers, rows, "authors", "author");
     }
 
     [HttpGet("{id:guid}")]

@@ -9,7 +9,6 @@ import {
   Edit,
   EditButton,
   EmailField,
-  ExportButton,
   List,
   Pagination,
   ReferenceField,
@@ -33,6 +32,7 @@ import {
   MetaDates,
   SectionTitle,
 } from "@/components/admin/shared";
+import { ServerExportButtons } from "@/components/admin/ServerExportButtons";
 
 const bookingFilters = [
   <SearchInput key="q" source="q" alwaysOn placeholder="Meno / e-mail…" />,
@@ -51,7 +51,7 @@ const bookingFilters = [
 
 const ListActions = () => (
   <TopToolbar>
-    <ExportButton />
+    <ServerExportButtons path="/api/bookings/export" fileStem="bookings" />
   </TopToolbar>
 );
 

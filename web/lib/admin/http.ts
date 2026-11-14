@@ -53,6 +53,45 @@ export function adminQuery(path: string, query?: ApiQuery) {
   return withQuery(path, query);
 }
 
+/** Download a binary/file response (CSV/XML export). */
+export async function adminHttpDownload(
+  path: string,
+  fallbackFileName: string,
+): Promise<{ fileName: string; blob: Blob }> {
+  const response = await fetch(apiUrl(path), {
+    method: "GET",
+    headers: { Accept: "text/csv, application/xml, */*" },
+    cache: "no-store",
+    credentials: "same-origin",
+  });
+
+  if (!response.ok) {
+    let message = response.statusText || `HTTP ${response.status}`;
+    try {
+      const text = await response.text();
+      if (text) {
+        try {
+          const json = JSON.parse(text) as { detail?: string; title?: string };
+          message = json.detail || json.title || text.slice(0, 180);
+        } catch {
+          message = text.slice(0, 180);
+        }
+      }
+    } catch {
+      // keep statusText
+    }
+    throw new HttpError(message, response.status);
+  }
+
+  const disposition = response.headers.get("content-disposition") ?? "";
+  const match = /filename\*?=(?:UTF-8''|")?([^\";]+)/i.exec(disposition);
+  const fileName = match
+    ? decodeURIComponent(match[1].replace(/"/g, ""))
+    : fallbackFileName;
+
+  return { fileName, blob: await response.blob() };
+}
+
 /** Multipart upload (do not set Content-Type — browser sets boundary). */
 export async function adminHttpForm<T>(
   path: string,

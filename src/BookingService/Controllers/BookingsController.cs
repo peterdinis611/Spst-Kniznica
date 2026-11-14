@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Export;
 using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Pagination;
 
@@ -51,6 +52,76 @@ public class BookingsController(
 
         var result = await bookings.SearchAsync(filter, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Staff export of bookings (includes borrower PII). Audited + rate-limited.
+    /// </summary>
+    [HttpGet("export")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.DataExportPolicy)]
+    [Produces("text/csv", "application/xml")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> Export(
+        [FromQuery] BookingQueryFilter filter,
+        [FromQuery] ExportQuery export,
+        CancellationToken cancellationToken)
+    {
+        export.Normalize();
+        // Staff export must not inherit a reader-scoped email filter from the query string.
+        filter.BorrowerEmail = null;
+
+        var items = await ExportPaging.CollectAsync(
+            filter,
+            bookings.SearchAsync,
+            export.Take,
+            cancellationToken);
+
+        string[] headers =
+        [
+            "id", "bookId", "bookCopyId", "borrowerName", "borrowerEmail", "status",
+            "reservedAt", "borrowedAt", "dueDate", "returnedAt", "notes", "renewalCount",
+            "createdAt", "updatedAt",
+        ];
+
+        var rows = items.Select(b => (IReadOnlyList<string?>)
+        [
+            SecureTabularExport.Cell(b.Id),
+            SecureTabularExport.Cell(b.BookId),
+            SecureTabularExport.Cell(b.BookCopyId),
+            SecureTabularExport.Cell(b.BorrowerName),
+            SecureTabularExport.Cell(b.BorrowerEmail),
+            SecureTabularExport.Cell(b.Status),
+            SecureTabularExport.Cell(b.ReservedAt),
+            SecureTabularExport.Cell(b.BorrowedAt),
+            SecureTabularExport.Cell(b.DueDate),
+            SecureTabularExport.Cell(b.ReturnedAt),
+            SecureTabularExport.Cell(b.Notes),
+            SecureTabularExport.Cell(b.RenewalCount),
+            SecureTabularExport.Cell(b.CreatedAt),
+            SecureTabularExport.Cell(b.UpdatedAt),
+        ]);
+
+        audit.StaffAction(User, "booking.export", "Booking", export.Format, new
+        {
+            export.Format,
+            Count = items.Count,
+            Cap = export.Take,
+            ContainsPii = true,
+            filter.Status,
+        });
+
+        return ExportFileResult.Create(
+            this,
+            export.ResolvedFormat,
+            "bookings",
+            headers,
+            rows,
+            "bookings",
+            "booking");
     }
 
     [HttpGet("{id:guid}")]

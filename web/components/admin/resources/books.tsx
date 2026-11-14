@@ -8,7 +8,6 @@ import {
   DeleteButton,
   Edit,
   EditButton,
-  ExportButton,
   List,
   NumberField,
   NumberInput,
@@ -38,6 +37,7 @@ import {
   SectionTitle,
   StockField,
 } from "@/components/admin/shared";
+import { ServerExportButtons } from "@/components/admin/ServerExportButtons";
 
 const bookFilters = [
   <SearchInput key="q" source="q" alwaysOn placeholder="Názov, ISBN…" />,
@@ -58,7 +58,7 @@ const bookFilters = [
 
 const ListActions = () => (
   <TopToolbar>
-    <ExportButton />
+    <ServerExportButtons path="/api/books/export" fileStem="books" />
   </TopToolbar>
 );
 
