@@ -161,14 +161,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setAccount(null);
       void syncBrowserSession(null);
-      if (config?.enabled && instance) {
-        const active = instance.getActiveAccount();
-        void instance.logoutRedirect({ account: active ?? undefined });
-      }
+      // Full-page /401 is opened by api/client — avoid competing MSAL logoutRedirect.
     };
     window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
     return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
-  }, [config, instance]);
+  }, []);
 
   const getAccessToken = useCallback(async () => {
     if (!config?.enabled || !instance) return null;

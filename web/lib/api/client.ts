@@ -1,4 +1,8 @@
 import { UNAUTHORIZED_EVENT } from "@/lib/auth/session-constants";
+import {
+  redirectToStatusPage,
+  shouldRedirectToStatusPage,
+} from "@/lib/routing/navigate-status";
 
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5200"
@@ -140,6 +144,11 @@ async function apiRequest<T>(
 
   if (response.status === 401) {
     notifyUnauthorized();
+  }
+
+  // Full-page status UI for auth / gateway outages (skips auth bootstrap + health).
+  if (shouldRedirectToStatusPage(response.status, path)) {
+    redirectToStatusPage(response.status);
   }
 
   if (!response.ok) {
