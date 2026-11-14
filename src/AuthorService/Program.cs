@@ -19,6 +19,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     builder.UseSpstSerilog("AuthorService");
+    builder.UseSpstNetworkIsolation();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();

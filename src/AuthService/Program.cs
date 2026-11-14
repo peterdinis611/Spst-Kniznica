@@ -10,6 +10,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     builder.UseSpstSerilog("AuthService");
+    builder.UseSpstNetworkIsolation();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();

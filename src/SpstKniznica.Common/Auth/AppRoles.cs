@@ -14,4 +14,5 @@ public static class AuthPolicies
     public const string Authenticated = "Authenticated";
     public const string Staff = "Staff";
     public const string AdminOnly = "AdminOnly";
+    public const string InternalService = "InternalService";
 }

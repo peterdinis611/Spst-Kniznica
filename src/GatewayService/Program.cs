@@ -10,6 +10,8 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     builder.UseSpstSerilog("GatewayService");
+    // Gateway stays publicly reachable; downstream services use Network:BindLoopbackOnly.
+    builder.UseSpstNetworkIsolation();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();

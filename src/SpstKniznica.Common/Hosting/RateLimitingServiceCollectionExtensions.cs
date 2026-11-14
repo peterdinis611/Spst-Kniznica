@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace SpstKniznica.Common.Hosting;
 
@@ -19,6 +20,30 @@ public static class RateLimitingServiceCollectionExtensions
         services.Configure<RateLimitingOptions>(configuration.GetSection(RateLimitingOptions.SectionName));
         var settings = configuration.GetSection(RateLimitingOptions.SectionName).Get<RateLimitingOptions>()
             ?? new RateLimitingOptions();
+
+        IConnectionMultiplexer? redis = null;
+        if (settings.UseRedis)
+        {
+            var redisCs = settings.RedisConnectionString
+                ?? configuration["Cache:ConnectionString"]
+                ?? "localhost:6379";
+            if (!redisCs.Contains("abortConnect", StringComparison.OrdinalIgnoreCase))
+            {
+                redisCs += ",abortConnect=false,connectTimeout=2000";
+            }
+
+            try
+            {
+                redis = ConnectionMultiplexer.Connect(redisCs);
+                services.AddSingleton(redis);
+            }
+            catch
+            {
+                redis = null;
+            }
+        }
+
+        var redisRef = redis;
 
         services.AddRateLimiter(options =>
         {
@@ -51,50 +76,64 @@ public static class RateLimitingServiceCollectionExtensions
                         return RateLimitPartition.GetNoLimiter("exempt");
                     }
 
-                    return RateLimitPartition.GetFixedWindowLimiter(
-                        GetClientKey(httpContext),
-                        _ => new FixedWindowRateLimiterOptions
-                        {
-                            PermitLimit = Math.Max(1, settings.GlobalPermitLimit),
-                            Window = TimeSpan.FromSeconds(Math.Max(1, settings.GlobalWindowSeconds)),
-                            QueueLimit = 0,
-                            AutoReplenishment = true,
-                        });
+                    return CreatePartition(
+                        redisRef,
+                        "g:" + GetClientKey(httpContext),
+                        settings.GlobalPermitLimit,
+                        TimeSpan.FromSeconds(Math.Max(1, settings.GlobalWindowSeconds)));
                 });
             }
 
             options.AddPolicy(PublicReadPolicy, httpContext =>
-                RateLimitPartition.GetFixedWindowLimiter(
-                    GetClientKey(httpContext),
-                    _ => new FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = Math.Max(1, settings.PublicReadPermitLimit),
-                        Window = TimeSpan.FromSeconds(Math.Max(1, settings.PublicReadWindowSeconds)),
-                        QueueLimit = 0,
-                        AutoReplenishment = true,
-                    }));
+                CreatePartition(
+                    redisRef,
+                    "r:" + GetClientKey(httpContext),
+                    settings.PublicReadPermitLimit,
+                    TimeSpan.FromSeconds(Math.Max(1, settings.PublicReadWindowSeconds))));
 
             options.AddPolicy(SensitiveWritePolicy, httpContext =>
-                RateLimitPartition.GetFixedWindowLimiter(
-                    GetClientKey(httpContext),
-                    _ => new FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = Math.Max(1, settings.SensitiveWritePermitLimit),
-                        Window = TimeSpan.FromSeconds(Math.Max(1, settings.SensitiveWriteWindowSeconds)),
-                        QueueLimit = 0,
-                        AutoReplenishment = true,
-                    }));
+                CreatePartition(
+                    redisRef,
+                    "w:" + GetClientKey(httpContext),
+                    settings.SensitiveWritePermitLimit,
+                    TimeSpan.FromSeconds(Math.Max(1, settings.SensitiveWriteWindowSeconds))));
         });
 
         return services;
     }
 
-    /// <summary>Backward-compatible overload (default options). </summary>
     public static IServiceCollection AddSpstApiRateLimiting(this IServiceCollection services)
         => services.AddSpstApiRateLimiting(new ConfigurationBuilder().Build());
 
     public static IApplicationBuilder UseSpstRateLimiting(this IApplicationBuilder app)
         => app.UseRateLimiter();
+
+    private static RateLimitPartition<string> CreatePartition(
+        IConnectionMultiplexer? redis,
+        string key,
+        int permitLimit,
+        TimeSpan window)
+    {
+        if (redis is { IsConnected: true })
+        {
+            var mux = redis;
+            var limit = permitLimit;
+            var win = window;
+            return RateLimitPartition.Get(
+                key,
+                k => new RedisFixedWindowRateLimiter(mux, k, limit, win));
+        }
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            key,
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = Math.Max(1, permitLimit),
+                Window = window,
+                QueueLimit = 0,
+                AutoReplenishment = true,
+            });
+    }
 
     private static bool IsExemptPath(PathString path)
         => path.StartsWithSegments("/health")

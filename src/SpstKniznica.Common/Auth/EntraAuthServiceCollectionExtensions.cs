@@ -82,6 +82,10 @@ public static class EntraAuthServiceCollectionExtensions
                     _ => { });
         }
 
+        services.Configure<InternalApiOptions>(configuration.GetSection(InternalApiOptions.SectionName));
+        services.AddHttpContextAccessor();
+        services.AddSingleton<IAuthorizationHandler, InternalApiKeyAuthorizationHandler>();
+
         services.AddAuthorization(options =>
         {
             options.AddPolicy(
@@ -95,6 +99,10 @@ public static class EntraAuthServiceCollectionExtensions
             options.AddPolicy(
                 AuthPolicies.AdminOnly,
                 policy => policy.RequireRole(AppRoles.Admin));
+
+            options.AddPolicy(
+                AuthPolicies.InternalService,
+                policy => policy.AddRequirements(new InternalApiKeyRequirement()));
 
             options.FallbackPolicy = requireAuthenticatedByDefault
                 ? new AuthorizationPolicyBuilder()

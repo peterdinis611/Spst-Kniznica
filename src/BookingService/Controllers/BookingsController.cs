@@ -12,7 +12,10 @@ namespace BookingService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class BookingsController(IBookingService bookings, ILogger<BookingsController> logger) : ControllerBase
+public class BookingsController(
+    IBookingService bookings,
+    IAuditLogger audit,
+    ILogger<BookingsController> logger) : ControllerBase
 {
     [HttpGet]
     [Authorize(Policy = AuthPolicies.Authenticated)]
@@ -124,11 +127,9 @@ public class BookingsController(IBookingService bookings, ILogger<BookingsContro
         [FromBody] UpdateBookingRequest request,
         CancellationToken cancellationToken)
     {
-        logger.LogInformation(
-            "Updating booking {BookingId} by actor {ActorHash}",
-            id,
-            LogRedaction.HashForLog(User.GetObjectId() ?? User.GetEmail()));
-        return Ok(await bookings.UpdateAsync(id, request, cancellationToken));
+        var updated = await bookings.UpdateAsync(id, request, cancellationToken);
+        audit.StaffAction(User, "booking.update", "Booking", id.ToString(), new { updated.Status });
+        return Ok(updated);
     }
 
     [HttpDelete("{id:guid}")]
@@ -141,11 +142,8 @@ public class BookingsController(IBookingService bookings, ILogger<BookingsContro
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        logger.LogWarning(
-            "Deleting booking {BookingId} by actor {ActorHash}",
-            id,
-            LogRedaction.HashForLog(User.GetObjectId() ?? User.GetEmail()));
         await bookings.DeleteAsync(id, cancellationToken);
+        audit.StaffAction(User, "booking.delete", "Booking", id.ToString());
         return NoContent();
     }
 }

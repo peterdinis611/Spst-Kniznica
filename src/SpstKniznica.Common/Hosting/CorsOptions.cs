@@ -37,7 +37,8 @@ public class CorsOptions
         "X-Requested-With",
         "Accept",
         "Origin",
-        "Trace-Id"
+        "Trace-Id",
+        "X-Internal-Api-Key"
     ];
 
     public bool AllowCredentials { get; set; }

@@ -18,6 +18,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     builder.UseSpstSerilog("MessagingService");
+    builder.UseSpstNetworkIsolation();
 
     builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection(KafkaOptions.SectionName));
     builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.SectionName));

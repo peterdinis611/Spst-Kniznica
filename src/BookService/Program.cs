@@ -20,6 +20,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     builder.UseSpstSerilog("BookService");
+    builder.UseSpstNetworkIsolation();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -35,6 +36,7 @@ try
     builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
     builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
+    builder.Services.AddSpstAuditLogging();
 
     builder.Services.AddDbContext<BookDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));

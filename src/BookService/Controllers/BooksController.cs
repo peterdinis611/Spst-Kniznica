@@ -12,7 +12,10 @@ namespace BookService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class BooksController(IBooksService books, ILogger<BooksController> logger) : ControllerBase
+public class BooksController(
+    IBooksService books,
+    IAuditLogger audit,
+    ILogger<BooksController> logger) : ControllerBase
 {
     /// <summary>
     /// Search books with filtering, sorting and pagination.
@@ -77,6 +80,7 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     {
         logger.LogInformation("Creating book '{Title}' for author {AuthorId}", request.Title, request.AuthorId);
         var created = await books.CreateAsync(request, cancellationToken);
+        audit.StaffAction(User, "book.create", "Book", created.Id.ToString(), new { created.Title });
         logger.LogInformation("Book created successfully with id {BookId}", created.Id);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
@@ -100,6 +104,7 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     {
         logger.LogInformation("Updating book {BookId}", id);
         var book = await books.UpdateAsync(id, request, cancellationToken);
+        audit.StaffAction(User, "book.update", "Book", id.ToString(), new { book.Title });
         return Ok(book);
     }
 
@@ -119,6 +124,7 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     {
         logger.LogWarning("Deleting book {BookId}", id);
         await books.DeleteAsync(id, cancellationToken);
+        audit.StaffAction(User, "book.delete", "Book", id.ToString());
         return NoContent();
     }
 
@@ -144,6 +150,12 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
         logger.LogInformation("Starting bulk import. File={FileName}, Size={Size}", file.FileName, file.Length);
         await using var stream = file.OpenReadStream();
         var result = await books.ImportAsync(stream, file.FileName, cancellationToken);
+        audit.StaffAction(User, "book.import", "Book", file.FileName, new
+        {
+            result.TotalRows,
+            result.ImportedCount,
+            result.SkippedCount,
+        });
         LogImportResult(file.FileName, result);
         return Ok(result);
     }

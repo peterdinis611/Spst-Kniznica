@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
 using BookingService.Interfaces;
+using Microsoft.Extensions.Options;
+using SpstKniznica.Common.Auth;
 
 namespace BookingService.Clients;
 
@@ -12,9 +14,10 @@ public sealed class BookCatalogOptions
 
 internal sealed class BookCatalogLookupClient(
     HttpClient httpClient,
+    IOptions<InternalApiOptions> internalApi,
     ILogger<BookCatalogLookupClient> logger) : IBookCatalogLookup
 {
-    private sealed class BookDetailResponse
+    private sealed class BookAvailabilityResponse
     {
         public int TotalCopies { get; set; }
         public int AvailableCopies { get; set; }
@@ -26,14 +29,33 @@ internal sealed class BookCatalogLookupClient(
     {
         try
         {
-            using var response = await httpClient.GetAsync($"api/books/{bookId}", cancellationToken);
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"api/internal/books/{bookId}/availability");
+
+            var key = internalApi.Value.SharedKey?.Trim();
+            if (!string.IsNullOrEmpty(key))
+            {
+                request.Headers.TryAddWithoutValidation(InternalApiOptions.HeaderName, key);
+            }
+
+            using var response = await httpClient.SendAsync(request, cancellationToken);
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 return null;
             }
 
+            if (response.StatusCode is System.Net.HttpStatusCode.Unauthorized
+                or System.Net.HttpStatusCode.Forbidden)
+            {
+                logger.LogWarning(
+                    "Internal book lookup unauthorized for {BookId} — check InternalApi:SharedKey",
+                    bookId);
+                return null;
+            }
+
             response.EnsureSuccessStatusCode();
-            var body = await response.Content.ReadFromJsonAsync<BookDetailResponse>(
+            var body = await response.Content.ReadFromJsonAsync<BookAvailabilityResponse>(
                 cancellationToken: cancellationToken);
 
             if (body is null)

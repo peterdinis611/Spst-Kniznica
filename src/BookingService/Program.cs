@@ -20,6 +20,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     builder.UseSpstSerilog("BookingService");
+    builder.UseSpstNetworkIsolation();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -38,6 +39,7 @@ try
         builder.Environment,
         requireAuthenticatedByDefault: true);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
+    builder.Services.AddSpstAuditLogging();
 
     builder.Services.AddDbContext<BookingDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
