@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { ArrowRight, Search } from "lucide-react";
+import { useAbility } from "@/components/auth/AbilityProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
@@ -78,8 +79,9 @@ export function BookingsDesk({
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [deskError, setDeskError] = useState<string | null>(null);
   const { entraEnabled, user, getAccessToken } = useAuth();
+  const ability = useAbility();
   const userEmail = user?.email ?? null;
-  const canManageDesk = Boolean(user?.isStaff);
+  const canManageDesk = ability.can("manage", "BookingsDesk");
 
   if (pageBookId !== bookId) {
     setPageBookId(bookId);
@@ -113,27 +115,50 @@ export function BookingsDesk({
 
   const focusedBook = bookId ? titles.get(bookId) : undefined;
 
+  const effectiveMineOnly = canManageDesk ? mineOnly : true;
+
   const input = useMemo(
     () => ({
       search: query.trim() || undefined,
-      borrowerEmail: mineOnly && userEmail ? userEmail : undefined,
+      borrowerEmail:
+        effectiveMineOnly && userEmail ? userEmail : undefined,
       bookId: bookId || undefined,
       status: status === "all" ? undefined : status,
       page,
       pageSize: 40,
     }),
-    [query, mineOnly, userEmail, bookId, status, page],
+    [query, effectiveMineOnly, userEmail, bookId, status, page],
   );
 
   const inputKey = JSON.stringify(input);
   const executeSearch = search.execute;
 
   useEffect(() => {
+    let cancelled = false;
     const payload = JSON.parse(inputKey) as typeof input;
     filtersRef.current = payload;
-    const timer = window.setTimeout(() => executeSearch(payload), 180);
-    return () => window.clearTimeout(timer);
-  }, [inputKey, executeSearch]);
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const accessToken = await resolveActionAccessToken({
+            entraEnabled,
+            getAccessToken,
+          });
+          if (cancelled) return;
+          executeSearch({
+            ...payload,
+            accessToken: accessToken ?? undefined,
+          });
+        } catch {
+          if (!cancelled) executeSearch(payload);
+        }
+      })();
+    }, 180);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [inputKey, executeSearch, entraEnabled, getAccessToken]);
 
   const result = search.result.data;
   const items = result?.items ?? initialBookings;
@@ -228,7 +253,7 @@ export function BookingsDesk({
           />
         </label>
         <div className="flex flex-wrap items-center gap-2">
-          {userEmail ? (
+          {canManageDesk && userEmail ? (
             <Button
               type="button"
               size="sm"

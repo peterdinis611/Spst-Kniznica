@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAction } from "next-safe-action/hooks";
 import { ArrowRight, Ticket } from "lucide-react";
+import { SignInRequiredNotice } from "@/components/auth/NotAuthorizedNotice";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import { resolveUserDisplayName } from "@/lib/auth/display-name";
@@ -93,8 +94,7 @@ function readerInitials(name: string, email: string): string {
 }
 
 export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
-  const { ready, entraEnabled, user, account, login, getAccessToken } =
-    useAuth();
+  const { ready, entraEnabled, user, account, getAccessToken } = useAuth();
   const [open, setOpen] = useState(false);
   const [dueDate, setDueDate] = useState(defaultDueDate);
   const [notes, setNotes] = useState("");
@@ -193,34 +193,14 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
     if (!authenticated) {
       return (
         <SlipPanel>
-          <DialogHeader className="text-left">
-            <p className="text-eyebrow font-mono text-[11px] font-semibold tracking-[0.22em] uppercase">
-              Výpožičný lístok
-            </p>
-            <DialogTitle className="mt-2 text-[clamp(1.5rem,4vw,2rem)]">
-              Prihlásenie je povinné
-            </DialogTitle>
-            <DialogDescription className="mt-2 max-w-md leading-relaxed">
-              Rezerváciu môže vystaviť len prihlásený používateľ. Údaje (meno,
-              email) sa vezmú z tvojho účtu{entraEnabled ? " (Entra)" : ""}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button
-              type="button"
-              className="h-11 rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
-              onClick={() => void login()}
-            >
-              Prihlásiť sa
-            </Button>
-            <Button
-              variant="outline"
-              className="h-11 rounded-none border-rule hover:border-sage/50 dark:border-white/20"
-              render={<Link href="/login" />}
-            >
-              Otvoriť /login
-            </Button>
-          </div>
+          <SignInRequiredNotice
+            variant="compact"
+            className="max-w-none border-0 bg-transparent px-0 py-0 shadow-none"
+            eyebrow="Výpožičný lístok"
+            title="Prihlásenie je povinné"
+            description={`Rezerváciu môže vystaviť len prihlásený používateľ. Údaje (meno, email) sa vezmú z tvojho účtu${entraEnabled ? " (Entra)" : ""}.`}
+            hint="Zavri dialóg a prihlás sa cez „Prihlásiť“ v hornej lište."
+          />
         </SlipPanel>
       );
     }

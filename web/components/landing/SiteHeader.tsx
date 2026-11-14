@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, LogIn, Menu, X } from "lucide-react";
+import { useAbility } from "@/components/auth/AbilityProvider";
 import { AuthNavCluster } from "@/components/auth/AuthNavCluster";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -55,10 +56,15 @@ const links = [
 
 function DesktopNav({ className }: { className?: string }) {
   const pathname = usePathname();
+  const ability = useAbility();
+  const visibleLinks = links.filter(
+    (link) =>
+      link.href !== "/bookings" || ability.can("access", "BookingsPage"),
+  );
 
   return (
     <nav className={className}>
-      {links.map((link) => {
+      {visibleLinks.map((link) => {
         const active = link.isActive(pathname);
         return (
           <Link
@@ -81,6 +87,11 @@ function DesktopNav({ className }: { className?: string }) {
 
 function MobileNav({ onNavigate }: { onNavigate: () => void }) {
   const pathname = usePathname();
+  const ability = useAbility();
+  const visibleLinks = links.filter(
+    (link) =>
+      link.href !== "/bookings" || ability.can("access", "BookingsPage"),
+  );
 
   return (
     <nav className="mt-2 flex flex-1 flex-col" aria-label="Mobilné menu">
@@ -88,7 +99,7 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
         Obsah
       </p>
       <ul className="mt-4 border-y border-rule dark:border-white/10">
-        {links.map((link, index) => {
+        {visibleLinks.map((link, index) => {
           const active = link.isActive(pathname);
           const n = String(index + 1).padStart(2, "0");
           return (

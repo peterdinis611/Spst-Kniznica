@@ -53,4 +53,11 @@ public static class ClaimsPrincipalExtensions
         foreach (var claim in user.FindAll("role")) roles.Add(claim.Value);
         return roles.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
     }
+
+    public static bool IsStaff(this ClaimsPrincipal user)
+        => user.IsInRole(AppRoles.Librarian)
+           || user.IsInRole(AppRoles.Admin)
+           || GetRoles(user).Any(role =>
+               role.Equals(AppRoles.Librarian, StringComparison.OrdinalIgnoreCase)
+               || role.Equals(AppRoles.Admin, StringComparison.OrdinalIgnoreCase));
 }

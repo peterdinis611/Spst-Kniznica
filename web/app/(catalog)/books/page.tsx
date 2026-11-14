@@ -4,9 +4,11 @@ import { connection } from "next/server";
 import { BooksCatalog } from "@/components/catalog/BooksCatalog";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import {
+  searchAuthorsAction,
   searchBooksAction,
   searchCategoriesAction,
 } from "@/lib/catalog/actions";
+import { shelfZonesFromShelfCodes } from "@/lib/catalog/catalog-url";
 
 export const metadata: Metadata = {
   title: "Katalóg kníh",
@@ -23,15 +25,24 @@ export const metadata: Metadata = {
 
 async function BooksPageContent() {
   await connection();
-  const [booksResult, categoriesResult] = await Promise.all([
-    searchBooksAction({ page: 1, pageSize: 50 }),
-    searchCategoriesAction({ page: 1, pageSize: 50 }),
-  ]);
+  const [booksResult, categoriesResult, authorsResult, shelvesProbe] =
+    await Promise.all([
+      searchBooksAction({ page: 1, pageSize: 50 }),
+      searchCategoriesAction({ page: 1, pageSize: 50 }),
+      searchAuthorsAction({ page: 1, pageSize: 80 }),
+      searchBooksAction({ page: 1, pageSize: 100 }),
+    ]);
+
+  const shelfZones = shelfZonesFromShelfCodes(
+    (shelvesProbe?.data?.items ?? []).map((book) => book.shelfLocation),
+  );
 
   return (
     <BooksCatalog
       initialBooks={booksResult?.data?.items ?? []}
       initialCategories={categoriesResult?.data?.items ?? []}
+      initialAuthors={authorsResult?.data?.items ?? []}
+      shelfZones={shelfZones}
     />
   );
 }

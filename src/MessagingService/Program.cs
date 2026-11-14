@@ -32,7 +32,7 @@ try
             Description = "SPST knižnica – Kafka/RabbitMQ bridge a väzba kniha↔kategória (1:N)."
         });
     });
-    builder.Services.AddSpstCors(builder.Configuration);
+    builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
 
     builder.Services.AddDbContext<MessagingDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -76,12 +76,7 @@ try
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "MessagingService v1");
-        options.RoutePrefix = "swagger";
-    });
+    app.UseSpstSwagger("MessagingService v1");
 
     app.UseHttpsRedirection();
     app.MapControllers();

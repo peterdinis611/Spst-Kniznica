@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Hosting;
 using WorkersService.DTOs;
 using WorkersService.Jobs;
 using WorkersService.Queue;
@@ -16,8 +18,10 @@ public class OrdersController(
 {
     [HttpPost("enqueue")]
     [Authorize(Policy = AuthPolicies.Authenticated)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(typeof(EnqueueOrderResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<EnqueueOrderResponse>> Enqueue(
         [FromBody] EnqueueOrderRequest request,
         CancellationToken cancellationToken)

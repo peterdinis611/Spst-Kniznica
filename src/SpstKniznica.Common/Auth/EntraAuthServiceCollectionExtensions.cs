@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace SpstKniznica.Common.Auth;
@@ -12,7 +13,9 @@ public static class EntraAuthServiceCollectionExtensions
 {
     public static IServiceCollection AddSpstEntraAuthentication(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHostEnvironment environment,
+        bool requireAuthenticatedByDefault = false)
     {
         services.Configure<EntraOptions>(configuration.GetSection(EntraOptions.SectionName));
         var entra = configuration.GetSection(EntraOptions.SectionName).Get<EntraOptions>()
@@ -65,6 +68,13 @@ public static class EntraAuthServiceCollectionExtensions
         }
         else
         {
+            if (!environment.IsDevelopment())
+            {
+                throw new InvalidOperationException(
+                    "Entra authentication is disabled. DevelopmentAuthHandler is only allowed " +
+                    "when ASPNETCORE_ENVIRONMENT=Development. Enable Entra:Enabled for other environments.");
+            }
+
             services
                 .AddAuthentication(DevelopmentAuthHandler.SchemeName)
                 .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, DevelopmentAuthHandler>(
@@ -86,7 +96,11 @@ public static class EntraAuthServiceCollectionExtensions
                 AuthPolicies.AdminOnly,
                 policy => policy.RequireRole(AppRoles.Admin));
 
-            options.FallbackPolicy = null;
+            options.FallbackPolicy = requireAuthenticatedByDefault
+                ? new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build()
+                : null;
         });
 
         return services;

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { BookingsDesk } from "@/components/catalog/BookingsDesk";
+import { BookingsAccessGate } from "@/components/catalog/BookingsAccessGate";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
-import { searchBookingsAction } from "@/lib/bookings";
 import { searchBooksAction } from "@/lib/catalog/actions";
 
 export const metadata: Metadata = {
@@ -23,18 +22,9 @@ export const metadata: Metadata = {
   },
 };
 
-async function BookingsContent({
-  searchParams,
-}: {
-  searchParams: Promise<{ book?: string }>;
-}) {
+async function BookingsContent() {
   await connection();
-  const { book } = await searchParams;
-  const bookId = book?.trim() || undefined;
-  const [bookingsResult, booksResult] = await Promise.all([
-    searchBookingsAction({ page: 1, pageSize: 40, bookId }),
-    searchBooksAction({ page: 1, pageSize: 100 }),
-  ]);
+  const booksResult = await searchBooksAction({ page: 1, pageSize: 100 });
 
   const catalog = (booksResult?.data?.items ?? []).map((item) => ({
     id: item.id,
@@ -42,24 +32,14 @@ async function BookingsContent({
     author: item.author,
   }));
 
-  return (
-    <BookingsDesk
-      initialBookings={bookingsResult?.data?.items ?? []}
-      initialTotal={bookingsResult?.data?.totalCount ?? 0}
-      catalog={catalog}
-    />
-  );
+  return <BookingsAccessGate catalog={catalog} />;
 }
 
-export default function BookingsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ book?: string }>;
-}) {
+export default function BookingsPage() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-10">
       <Suspense fallback={<CatalogSkeleton rows={4} />}>
-        <BookingsContent searchParams={searchParams} />
+        <BookingsContent />
       </Suspense>
     </main>
   );

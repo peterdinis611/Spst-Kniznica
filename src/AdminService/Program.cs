@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.RateLimiting;
 using Serilog;
 using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
@@ -22,8 +23,12 @@ try
             Description = "SPST knižnica – admin pult (Entra role Admin/Librarian)."
         });
     });
-    builder.Services.AddSpstCors(builder.Configuration);
-    builder.Services.AddSpstEntraAuthentication(builder.Configuration);
+    builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
+    builder.Services.AddSpstEntraAuthentication(
+        builder.Configuration,
+        builder.Environment,
+        requireAuthenticatedByDefault: true);
+    builder.Services.AddSpstApiRateLimiting();
     builder.Services.AddHttpClient();
     builder.Services.AddSingleton<AdminService.Services.AdminDashboardService>();
     builder.Services.AddHealthChecks();
@@ -37,17 +42,12 @@ try
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "AdminService v1");
-        options.RoutePrefix = "swagger";
-    });
-
+    app.UseSpstSwagger("AdminService v1");
+    app.UseSpstRateLimiting();
     app.UseSpstAuthentication();
     app.UseAuthorization();
-    app.MapControllers();
-    app.MapHealthChecks("/health");
+    app.MapControllers().RequireRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy);
+    app.MapHealthChecks("/health").AllowAnonymous();
 
     await app.RunAsync();
 }

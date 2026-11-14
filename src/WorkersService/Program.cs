@@ -24,8 +24,12 @@ try
             Description = "SPST knižnica – .NET worker pre async order joby (Channel queue + BackgroundService)."
         });
     });
-    builder.Services.AddSpstCors(builder.Configuration);
-    builder.Services.AddSpstEntraAuthentication(builder.Configuration);
+    builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
+    builder.Services.AddSpstEntraAuthentication(
+        builder.Configuration,
+        builder.Environment,
+        requireAuthenticatedByDefault: true);
+    builder.Services.AddSpstApiRateLimiting();
 
     builder.Services.AddSingleton<IOrderJobQueue, ChannelOrderJobQueue>();
     builder.Services.AddHostedService<OrderProcessingHostedService>();
@@ -37,20 +41,15 @@ try
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "WorkersService v1");
-        options.RoutePrefix = "swagger";
-    });
-
+    app.UseSpstSwagger("WorkersService v1");
     app.UseHttpsRedirection();
+    app.UseSpstRateLimiting();
     app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();
-    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health").AllowAnonymous();
 
-    Log.Information("WorkersService is ready. Swagger: /swagger, Health: /health, Enqueue: POST /api/orders/enqueue");
+    Log.Information("WorkersService is ready. Health: /health, Enqueue: POST /api/orders/enqueue");
     await app.RunAsync();
 }
 catch (Exception ex)

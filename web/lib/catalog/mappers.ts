@@ -30,6 +30,7 @@ export type CatalogBook = {
   authorId?: string | null;
   categoryId?: string | null;
   categoryName?: string | null;
+  shelfLocation?: string | null;
   year?: number | null;
   description?: string | null;
   accent: string;
@@ -71,6 +72,7 @@ export function mapBookListItem(
     authorId: book.authorId,
     categoryId: book.categoryId,
     categoryName: book.categoryName,
+    shelfLocation: book.shelfLocation,
     year: book.publishedYear,
     accent: palette.accent,
     secondary: palette.secondary,

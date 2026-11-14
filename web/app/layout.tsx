@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Sora, IBM_Plex_Mono } from "next/font/google";
+import { AbilityProvider } from "@/components/auth/AbilityProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { ServerStatusBanner } from "@/components/server-status-banner";
 import { ScrollToTopLazy } from "@/components/scroll-to-top-lazy";
@@ -133,10 +134,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <ServerStatusBanner />
-            {children}
+            <AbilityProvider>
+              <ServerStatusBanner />
+              {children}
 
-            <ScrollToTopLazy />
+              <ScrollToTopLazy />
+            </AbilityProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

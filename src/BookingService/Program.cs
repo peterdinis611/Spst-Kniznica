@@ -32,8 +32,12 @@ try
             Description = "SPST knižnica – správa rezervácií a výpožičiek."
         });
     });
-    builder.Services.AddSpstCors(builder.Configuration);
-    builder.Services.AddSpstEntraAuthentication(builder.Configuration);
+    builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
+    builder.Services.AddSpstEntraAuthentication(
+        builder.Configuration,
+        builder.Environment,
+        requireAuthenticatedByDefault: true);
+    builder.Services.AddSpstApiRateLimiting();
 
     builder.Services.AddDbContext<BookingDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -73,21 +77,15 @@ try
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "BookingService v1");
-        options.RoutePrefix = "swagger";
-    });
-
+    app.UseSpstSwagger("BookingService v1");
     app.UseHttpsRedirection();
+    app.UseSpstRateLimiting();
     app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();
-    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health").AllowAnonymous();
 
-    Log.Information("BookingService is ready. Swagger: /swagger, Health: /health");
+    Log.Information("BookingService is ready. Health: /health");
     await app.RunAsync();
 }
 catch (Exception ex)

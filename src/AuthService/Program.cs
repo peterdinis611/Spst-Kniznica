@@ -22,8 +22,11 @@ try
             Description = "SPST knižnica – Entra ID profil, konfigurácia a session informácie."
         });
     });
-    builder.Services.AddSpstCors(builder.Configuration);
-    builder.Services.AddSpstEntraAuthentication(builder.Configuration);
+    builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
+    builder.Services.AddSpstEntraAuthentication(
+        builder.Configuration,
+        builder.Environment,
+        requireAuthenticatedByDefault: true);
     builder.Services.AddHealthChecks();
 
     var app = builder.Build();
@@ -35,17 +38,11 @@ try
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "AuthService v1");
-        options.RoutePrefix = "swagger";
-    });
-
+    app.UseSpstSwagger("AuthService v1");
     app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();
-    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health").AllowAnonymous();
 
     await app.RunAsync();
 }

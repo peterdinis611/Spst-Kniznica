@@ -31,7 +31,7 @@ try
             Description = "SPST knižnica – správa kníh, exemplárov a importu."
         });
     });
-    builder.Services.AddSpstCors(builder.Configuration);
+    builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
 
     builder.Services.AddDbContext<BookDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -76,13 +76,7 @@ try
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "BookService v1");
-        options.RoutePrefix = "swagger";
-    });
+    app.UseSpstSwagger("BookService v1");
 
     app.UseHttpsRedirection();
     app.UseAuthorization();

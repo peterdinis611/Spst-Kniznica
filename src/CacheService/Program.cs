@@ -22,7 +22,7 @@ try
             Description = "SPST knižnica – Redis cache admin (zdieľaná knižnica SpstKniznica.Caching)."
         });
     });
-    builder.Services.AddSpstCors(builder.Configuration);
+    builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
 
     var cacheEnabled = builder.Configuration.GetValue("Cache:Enabled", true);
@@ -42,12 +42,7 @@ try
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "CacheService v1");
-        options.RoutePrefix = "swagger";
-    });
+    app.UseSpstSwagger("CacheService v1");
 
     app.UseHttpsRedirection();
     app.MapControllers();

@@ -17,6 +17,7 @@ const optionalText = z
 const statusCode = z.number().int().min(0).max(4);
 
 const searchBookingsSchema = z.object({
+  accessToken: z.string().trim().optional(),
   search: optionalText,
   borrowerEmail: optionalText,
   bookId: optionalText,
@@ -105,8 +106,15 @@ async function runBooking<T>(task: () => Promise<T>): Promise<T> {
 export const searchBookingsAction = actionClient
   .inputSchema(searchBookingsSchema)
   .action(async ({ parsedInput }): Promise<SearchBookingsResult> => {
-    const { search, borrowerEmail, bookId, status, page, pageSize } =
-      parsedInput;
+    const {
+      accessToken,
+      search,
+      borrowerEmail,
+      bookId,
+      status,
+      page,
+      pageSize,
+    } = parsedInput;
 
     const result = await runBooking(() =>
       apiGet<PagedResult<BookingDto>>(
@@ -120,6 +128,8 @@ export const searchBookingsAction = actionClient
           sortBy: "dueDate",
           sortDir: "asc",
         }),
+        undefined,
+        accessToken,
       ),
     );
 

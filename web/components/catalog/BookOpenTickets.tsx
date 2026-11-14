@@ -1,5 +1,12 @@
+"use client";
+
+import { useEffect } from "react";
 import Link from "next/link";
+import { useAction } from "next-safe-action/hooks";
 import { ArrowRight } from "lucide-react";
+import { useAbility } from "@/components/auth/AbilityProvider";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import {
   BOOKING_STATUS,
   BOOKING_STATUS_LABEL,
@@ -24,19 +31,45 @@ function isOpenStatus(status: number): boolean {
   );
 }
 
-export async function BookOpenTickets({ bookId }: BookOpenTicketsProps) {
-  const result = await searchBookingsAction({
-    bookId,
-    page: 1,
-    pageSize: 8,
-  });
-  const items = (result?.data?.items ?? []).filter((item) =>
+export function BookOpenTickets({ bookId }: BookOpenTicketsProps) {
+  const { ready, entraEnabled, getAccessToken } = useAuth();
+  const ability = useAbility();
+  const search = useAction(searchBookingsAction);
+
+  useEffect(() => {
+    if (!ready || !ability.can("access", "BookingsPage")) return;
+
+    void (async () => {
+      try {
+        const accessToken = await resolveActionAccessToken({
+          entraEnabled,
+          getAccessToken,
+        });
+        search.execute({
+          bookId,
+          page: 1,
+          pageSize: 8,
+          accessToken: accessToken ?? undefined,
+        });
+      } catch {
+        /* ignore */
+      }
+    })();
+  }, [ready, ability, bookId, entraEnabled, getAccessToken, search]);
+
+  if (!ready || !ability.can("access", "BookingsPage")) {
+    return null;
+  }
+
+  const items = (search.result?.data?.items ?? []).filter((item) =>
     isOpenStatus(normalizeBookingStatus(item.status)),
   );
 
   if (items.length === 0) {
     return null;
   }
+
+  const canSeeNames = ability.can("manage", "BookingsDesk");
 
   return (
     <section className="mt-8 max-w-xl border border-rule dark:border-white/10">
@@ -48,7 +81,7 @@ export async function BookOpenTickets({ bookId }: BookOpenTicketsProps) {
           <p className="mt-1 font-display text-2xl text-ink">
             {items.length}{" "}
             <span className="font-sans text-sm font-normal text-muted-foreground">
-              na tomto titule
+              {canSeeNames ? "na tomto titule" : "tvoje na tomto titule"}
             </span>
           </p>
         </div>
@@ -71,12 +104,20 @@ export async function BookOpenTickets({ bookId }: BookOpenTicketsProps) {
               className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-ink">
-                  {item.borrowerName}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {item.borrowerEmail}
-                </p>
+                {canSeeNames ? (
+                  <>
+                    <p className="truncate text-sm font-medium text-ink">
+                      {item.borrowerName}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {item.borrowerEmail}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Tvoja rezervácia / výpožička
+                  </p>
+                )}
               </div>
               <div className="text-right">
                 <p

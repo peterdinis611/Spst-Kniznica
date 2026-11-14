@@ -21,6 +21,8 @@ const searchBooksSchema = z.object({
   search: optionalId,
   categoryId: optionalId,
   authorId: optionalId,
+  shelfLocation: optionalId,
+  availableOnly: z.boolean().optional(),
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(100).default(50),
 });
@@ -39,7 +41,15 @@ export type SearchBooksResult = {
 export const searchBooksAction = actionClient
   .inputSchema(searchBooksSchema)
   .action(async ({ parsedInput }): Promise<SearchBooksResult> => {
-    const { search, categoryId, authorId, page, pageSize } = parsedInput;
+    const {
+      search,
+      categoryId,
+      authorId,
+      shelfLocation,
+      availableOnly,
+      page,
+      pageSize,
+    } = parsedInput;
 
     const result = await apiGet<PagedResult<BookListItem>>(
       withQuery("/api/books", {
@@ -48,6 +58,8 @@ export const searchBooksAction = actionClient
         search: search || undefined,
         categoryId,
         authorId,
+        shelfLocation,
+        availableOnly: availableOnly ? true : undefined,
         sortBy: "title",
         sortDir: "asc",
       }),

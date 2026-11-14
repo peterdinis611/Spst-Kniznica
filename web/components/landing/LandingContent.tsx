@@ -2,7 +2,6 @@ import { connection } from "next/server";
 import { BrowseGenres } from "@/components/landing/BrowseGenres";
 import { ColorStair } from "@/components/landing/ColorStair";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { MeetupBanner } from "@/components/landing/MeetupBanner";
 import { TrendingBooks } from "@/components/landing/TrendingBooks";
 import { toCarouselBooks } from "@/lib/catalog";
 import {
@@ -27,7 +26,6 @@ export async function LandingContent() {
       <ColorStair />
       <TrendingBooks books={carouselBooks} />
       <BrowseGenres categories={categories} books={catalogBooks} />
-      <MeetupBanner />
     </>
   );
 }

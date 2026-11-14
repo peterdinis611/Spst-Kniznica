@@ -30,7 +30,7 @@ try
             Description = "SPST knižnica – správa kategórií."
         });
     });
-    builder.Services.AddSpstCors(builder.Configuration);
+    builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
 
     builder.Services.AddDbContext<CategoryDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -60,13 +60,7 @@ try
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "CategoryService v1");
-        options.RoutePrefix = "swagger";
-    });
+    app.UseSpstSwagger("CategoryService v1");
 
     app.UseHttpsRedirection();
     app.UseAuthorization();

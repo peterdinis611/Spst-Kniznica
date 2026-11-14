@@ -1,4 +1,5 @@
 using Serilog;
+using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
 
 Log.Logger = new LoggerConfiguration()
@@ -21,7 +22,8 @@ try
             Description = "SPST knižnica – API Gateway (YARP) pre Book, Category, Author, Booking, Workers, Messaging, Cache, Auth a Admin."
         });
     });
-    builder.Services.AddSpstCors(builder.Configuration);
+    builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
+    builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
 
     builder.Services
         .AddReverseProxy()
@@ -31,29 +33,44 @@ try
 
     var app = builder.Build();
 
-    Log.Information("Starting GatewayService");
+    Log.Information("Starting GatewayService in {Environment}", app.Environment.EnvironmentName);
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "GatewayService v1");
-        options.SwaggerEndpoint("/books/swagger/v1/swagger.json", "BookService");
-        options.SwaggerEndpoint("/categories/swagger/v1/swagger.json", "CategoryService");
-        options.SwaggerEndpoint("/authors/swagger/v1/swagger.json", "AuthorService");
-        options.SwaggerEndpoint("/bookings/swagger/v1/swagger.json", "BookingService");
-        options.SwaggerEndpoint("/workers/swagger/v1/swagger.json", "WorkersService");
-        options.SwaggerEndpoint("/messaging/swagger/v1/swagger.json", "MessagingService");
-        options.SwaggerEndpoint("/cache/swagger/v1/swagger.json", "CacheService");
-        options.SwaggerEndpoint("/auth/swagger/v1/swagger.json", "AuthService");
-        options.SwaggerEndpoint("/admin/swagger/v1/swagger.json", "AdminService");
-        options.RoutePrefix = "swagger";
-    });
 
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "GatewayService v1");
+            options.SwaggerEndpoint("/books/swagger/v1/swagger.json", "BookService");
+            options.SwaggerEndpoint("/categories/swagger/v1/swagger.json", "CategoryService");
+            options.SwaggerEndpoint("/authors/swagger/v1/swagger.json", "AuthorService");
+            options.SwaggerEndpoint("/bookings/swagger/v1/swagger.json", "BookingService");
+            options.SwaggerEndpoint("/workers/swagger/v1/swagger.json", "WorkersService");
+            options.SwaggerEndpoint("/messaging/swagger/v1/swagger.json", "MessagingService");
+            options.SwaggerEndpoint("/cache/swagger/v1/swagger.json", "CacheService");
+            options.SwaggerEndpoint("/auth/swagger/v1/swagger.json", "AuthService");
+            options.SwaggerEndpoint("/admin/swagger/v1/swagger.json", "AdminService");
+            options.RoutePrefix = "swagger";
+        });
+    }
+
+    app.UseSpstAuthentication();
+    app.UseAuthorization();
     app.MapControllers();
-    app.MapHealthChecks("/health");
-    app.MapGet("/", () => Results.Redirect("/swagger"));
+    app.MapHealthChecks("/health").AllowAnonymous();
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapGet("/", () => Results.Redirect("/swagger")).AllowAnonymous();
+    }
+    else
+    {
+        app.MapGet("/", () => Results.Ok(new { service = "GatewayService", health = "/health" }))
+            .AllowAnonymous();
+    }
+
     app.MapReverseProxy();
 
     await app.RunAsync();

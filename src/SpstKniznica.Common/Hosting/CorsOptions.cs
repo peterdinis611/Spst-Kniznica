@@ -6,9 +6,9 @@ public class CorsOptions
     public const string PolicyName = "SpstCors";
 
     /// <summary>
-    /// When true, allows any origin (useful for local development).
+    /// When true, allows any origin. Honoured only in Development — ignored elsewhere.
     /// </summary>
-    public bool AllowAnyOrigin { get; set; } = true;
+    public bool AllowAnyOrigin { get; set; }
 
     public string[] AllowedOrigins { get; set; } =
     [
