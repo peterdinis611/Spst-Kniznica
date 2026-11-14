@@ -60,7 +60,15 @@ try
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-    app.UseSpstSwagger("CategoryService v1");
+    if (app.Environment.ShouldExposeSwagger())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "CategoryService v1");
+            options.RoutePrefix = "swagger";
+        });
+    }
 
     app.UseHttpsRedirection();
     app.UseAuthorization();

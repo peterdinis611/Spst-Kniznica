@@ -42,7 +42,15 @@ try
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-    app.UseSpstSwagger("AdminService v1");
+    if (app.Environment.ShouldExposeSwagger())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "AdminService v1");
+            options.RoutePrefix = "swagger";
+        });
+    }
     app.UseSpstRateLimiting();
     app.UseSpstAuthentication();
     app.UseAuthorization();

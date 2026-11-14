@@ -38,7 +38,7 @@ try
     app.UseSpstRequestLogging();
     app.UseSpstCors();
 
-    if (app.Environment.IsDevelopment())
+    if (app.Environment.ShouldExposeSwagger())
     {
         app.UseSwagger();
         app.UseSwaggerUI(options =>
@@ -61,7 +61,7 @@ try
     app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health").AllowAnonymous();
-    if (app.Environment.IsDevelopment())
+    if (app.Environment.ShouldExposeSwagger())
     {
         app.MapGet("/", () => Results.Redirect("/swagger")).AllowAnonymous();
     }

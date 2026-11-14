@@ -42,7 +42,15 @@ try
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();
-    app.UseSpstSwagger("CacheService v1");
+    if (app.Environment.ShouldExposeSwagger())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "CacheService v1");
+            options.RoutePrefix = "swagger";
+        });
+    }
 
     app.UseHttpsRedirection();
     app.MapControllers();
