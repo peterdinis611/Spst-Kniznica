@@ -11,6 +11,7 @@ export type BookListItem = {
   categoryId?: string | null;
   categoryName?: string | null;
   format?: number | string;
+  coverUrl?: string | null;
   shelfLocation?: string | null;
   totalCopies: number;
   availableCopies: number;
@@ -36,6 +37,9 @@ export type AuthorDto = {
   biography?: string | null;
   nationality?: string | null;
   birthYear?: number | null;
+  wikidataId?: string | null;
+  viafId?: string | null;
+  profileUrl?: string | null;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;

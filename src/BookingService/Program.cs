@@ -11,6 +11,7 @@ using Serilog;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
+using SpstKniznica.Common.Integrations;
 using SpstKniznica.Common.Messaging;
 
 Log.Logger = new LoggerConfiguration()
@@ -41,6 +42,7 @@ try
         requireAuthenticatedByDefault: true);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "BookingService");
+    builder.Services.AddSpstIntegrations(builder.Configuration);
 
     builder.Services.AddDbContext<BookingDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -61,6 +63,7 @@ try
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<WaitlistService>();
     builder.Services.AddScoped<FavoritesService>();
+    builder.Services.AddScoped<SchoolCalendarService>();
     builder.Services.AddScoped<LoanLifecycleService>();
     builder.Services.AddScoped<IBookingService, BookingAppService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();

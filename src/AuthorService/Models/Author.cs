@@ -7,6 +7,9 @@ public class Author
     public string? Biography { get; set; }
     public string? Nationality { get; set; }
     public int? BirthYear { get; set; }
+    public string? WikidataId { get; set; }
+    public string? ViafId { get; set; }
+    public string? ProfileUrl { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }

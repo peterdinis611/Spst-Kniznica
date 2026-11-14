@@ -24,4 +24,10 @@ public sealed class LoanPolicyOptions
 
     /// <summary>Days before due date to emit a reminder.</summary>
     public int ReminderDaysBeforeDue { get; set; } = 3;
+
+    /// <summary>Skip weekends + SK public holidays (Nager.Date) when clamping due dates.</summary>
+    public bool SkipNonSchoolDays { get; set; } = true;
+
+    /// <summary>ISO country code for Nager.Date (default SK).</summary>
+    public string HolidayCountryCode { get; set; } = "SK";
 }

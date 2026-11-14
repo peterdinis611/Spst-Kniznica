@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Export;
 using SpstKniznica.Common.Hosting;
+using SpstKniznica.Common.Integrations;
 using SpstKniznica.Common.Pagination;
 
 namespace AuthorService.Controllers;
@@ -15,6 +16,7 @@ namespace AuthorService.Controllers;
 [Produces("application/json")]
 public class AuthorsController(
     IAuthorService authors,
+    WikidataClient wikidata,
     IAuditLogger audit,
     ILogger<AuthorsController> logger) : ControllerBase
 {
@@ -35,6 +37,24 @@ public class AuthorsController(
             filter.SortBy);
 
         return Ok(await authors.SearchAsync(filter, cancellationToken));
+    }
+
+    [HttpGet("enrich")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
+    [ProducesResponseType(typeof(AuthorEnrichmentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AuthorEnrichmentResult>> Enrich(
+        [FromQuery] string q,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(q))
+        {
+            return BadRequest(new { detail = "Query q is required." });
+        }
+
+        var result = await wikidata.EnrichAuthorAsync(q, cancellationToken);
+        return result is null ? NotFound() : Ok(result);
     }
 
     [HttpGet("export")]

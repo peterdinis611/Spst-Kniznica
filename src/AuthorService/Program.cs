@@ -9,6 +9,7 @@ using Serilog;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
+using SpstKniznica.Common.Integrations;
 using SpstKniznica.Common.Messaging;
 
 Log.Logger = new LoggerConfiguration()
@@ -46,6 +47,7 @@ try
     builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "author-service");
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "AuthorService");
+    builder.Services.AddSpstIntegrations(builder.Configuration);
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<AuthorDbContext>("database");
@@ -58,6 +60,7 @@ try
     {
         var db = scope.ServiceProvider.GetRequiredService<AuthorDbContext>();
         await db.Database.MigrateAsync();
+        await AuthorIntegrationsSchema.EnsureAsync(db);
         await AuthorSeed.EnsureSeededAsync(db);
         Log.Information("Database migrations applied; seed checked");
     }

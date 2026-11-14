@@ -5,6 +5,9 @@ export const siteConfig = {
     "Školský katalóg Strednej priemyselnej školy — knihy, autori, kategórie a výpožičný pult na jednom mieste.",
   locale: "sk_SK",
   language: "sk",
+  address:
+    process.env.NEXT_PUBLIC_LIBRARY_ADDRESS?.trim() ||
+    "Stredná priemyselná škola, Slovensko",
   keywords: [
     "SPST",
     "knižnica",

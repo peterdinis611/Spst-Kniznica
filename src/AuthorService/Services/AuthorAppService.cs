@@ -63,6 +63,9 @@ public class AuthorAppService(
             Biography = StringNormalize.Optional(request.Biography),
             Nationality = StringNormalize.Optional(request.Nationality),
             BirthYear = request.BirthYear,
+            WikidataId = StringNormalize.Optional(request.WikidataId),
+            ViafId = StringNormalize.Optional(request.ViafId),
+            ProfileUrl = StringNormalize.Optional(request.ProfileUrl),
             IsActive = request.IsActive,
             CreatedAt = now,
             UpdatedAt = now
@@ -99,6 +102,9 @@ public class AuthorAppService(
         author.Biography = StringNormalize.Optional(request.Biography);
         author.Nationality = StringNormalize.Optional(request.Nationality);
         author.BirthYear = request.BirthYear;
+        author.WikidataId = StringNormalize.Optional(request.WikidataId);
+        author.ViafId = StringNormalize.Optional(request.ViafId);
+        author.ProfileUrl = StringNormalize.Optional(request.ProfileUrl);
         author.IsActive = request.IsActive;
         author.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -160,6 +166,9 @@ public class AuthorAppService(
         Biography = author.Biography,
         Nationality = author.Nationality,
         BirthYear = author.BirthYear,
+        WikidataId = author.WikidataId,
+        ViafId = author.ViafId,
+        ProfileUrl = author.ProfileUrl,
         IsActive = author.IsActive,
         CreatedAt = author.CreatedAt,
         UpdatedAt = author.UpdatedAt

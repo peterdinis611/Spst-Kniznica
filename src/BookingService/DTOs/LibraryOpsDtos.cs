@@ -11,6 +11,8 @@ public sealed class LoanPolicyDto
     public bool FreezeNewLoans { get; init; }
     public DateTimeOffset? SchoolYearEndUtc { get; init; }
     public int ReminderDaysBeforeDue { get; init; }
+    public bool SkipNonSchoolDays { get; init; }
+    public string HolidayCountryCode { get; init; } = "SK";
 }
 
 public sealed class WaitlistEntryDto
@@ -53,6 +55,8 @@ public sealed class DeskDailyDto
     public int DueSoonCount { get; init; }
     public int ReservedCount { get; init; }
     public int ActiveCount { get; init; }
+    public bool IsNonSchoolDay { get; init; }
+    public IReadOnlyList<string> UpcomingHolidays { get; init; } = [];
     public IReadOnlyList<BookingDto> Overdue { get; init; } = [];
     public IReadOnlyList<BookingDto> DueSoon { get; init; } = [];
     public IReadOnlyList<BookingDto> PickupReady { get; init; } = [];

@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, BookOpen, Library, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import {
+  isTurnstileConfigured,
+  TurnstileWidget,
+} from "@/components/security/TurnstileWidget";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { resolveUserDisplayName } from "@/lib/auth/display-name";
@@ -36,6 +40,11 @@ export function LoginPanel() {
   const searchParams = useSearchParams();
   const { ready, entraEnabled, user, account, login, logout, error } =
     useAuth();
+  const turnstileRequired = isTurnstileConfigured();
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const onTurnstile = useCallback((token: string | null) => {
+    setTurnstileToken(token);
+  }, []);
 
   useEffect(() => {
     if (!ready || !user?.isAuthenticated) return;
@@ -133,8 +142,11 @@ export function LoginPanel() {
         </p>
       ) : null}
 
+      <TurnstileWidget onToken={onTurnstile} />
+
       <Button
         className="mt-6 h-11 w-full rounded-none bg-accent text-accent-foreground hover:bg-accent-deep"
+        disabled={turnstileRequired && !turnstileToken}
         onClick={() => void login()}
       >
         {entraEnabled ? "Prihlásiť cez Entra" : "Pokračovať ako Dev Admin"}

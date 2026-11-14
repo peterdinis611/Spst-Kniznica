@@ -15,6 +15,9 @@ public class AuthorDbContext(DbContextOptions<AuthorDbContext> options) : DbCont
             entity.Property(a => a.Name).HasMaxLength(200).IsRequired();
             entity.Property(a => a.Biography).HasMaxLength(4000);
             entity.Property(a => a.Nationality).HasMaxLength(100);
+            entity.Property(a => a.WikidataId).HasMaxLength(32);
+            entity.Property(a => a.ViafId).HasMaxLength(64);
+            entity.Property(a => a.ProfileUrl).HasMaxLength(500);
             entity.HasIndex(a => a.Name).IsUnique();
             entity.HasIndex(a => a.IsActive);
             entity.HasIndex(a => a.Nationality);

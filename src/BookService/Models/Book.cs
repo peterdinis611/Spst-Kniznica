@@ -14,6 +14,8 @@ public class Book
     public Guid? CategoryId { get; set; }
     public string? CategoryName { get; set; }
     public string? Description { get; set; }
+    /// <summary>Cover image URL (Open Library or override).</summary>
+    public string? CoverUrl { get; set; }
     public int? PageCount { get; set; }
     public BookFormat Format { get; set; } = BookFormat.Paperback;
     public string? ShelfLocation { get; set; }

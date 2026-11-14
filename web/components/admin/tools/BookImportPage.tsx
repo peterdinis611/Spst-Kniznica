@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useNotify } from "react-admin";
 import Button from "@mui/material/Button";
+import {
+  isTurnstileConfigured,
+  TurnstileWidget,
+} from "@/components/security/TurnstileWidget";
 import { adminHttpForm } from "@/lib/admin/http";
 import { ToolCard, ToolShell } from "@/components/admin/tools/ToolShell";
 
@@ -18,10 +22,19 @@ export function BookImportPage() {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
+  const turnstileRequired = isTurnstileConfigured();
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const onTurnstile = useCallback((token: string | null) => {
+    setTurnstileToken(token);
+  }, []);
 
   async function onImport() {
     if (!file) {
       notify("Vyber súbor .csv, .xml alebo .xlsx", { type: "warning" });
+      return;
+    }
+    if (turnstileRequired && !turnstileToken) {
+      notify("Dokonči Turnstile overenie", { type: "warning" });
       return;
     }
     setBusy(true);
@@ -29,6 +42,7 @@ export function BookImportPage() {
     try {
       const body = new FormData();
       body.append("file", file);
+      if (turnstileToken) body.append("turnstileToken", turnstileToken);
       const data = await adminHttpForm<ImportResult>("/api/books/import", body);
       setResult(data);
       notify(
@@ -48,7 +62,7 @@ export function BookImportPage() {
     <ToolShell
       title="Import kníh"
       eyebrow="BookService · bulk"
-      lead="Nahraj CSV, XML alebo Excel (.xlsx). Súbor max. ~20 MB. Vyžaduje staff rolu."
+      lead="Nahraj CSV, XML alebo Excel (.xlsx). Súbor max. ~20 MB. Vyžaduje staff rolu. Turnstile sa vynúti, keď je nastavený kľúč."
     >
       <ToolCard title="Súbor">
         <input
@@ -62,10 +76,11 @@ export function BookImportPage() {
             {file.name} · {(file.size / 1024).toFixed(1)} KB
           </p>
         ) : null}
+        <TurnstileWidget onToken={onTurnstile} />
         <Button
           variant="contained"
           color="secondary"
-          disabled={busy || !file}
+          disabled={busy || !file || (turnstileRequired && !turnstileToken)}
           onClick={() => void onImport()}
           sx={{ mt: 2, borderRadius: 0 }}
         >

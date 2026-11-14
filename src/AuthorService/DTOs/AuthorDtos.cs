@@ -9,6 +9,9 @@ public class AuthorDto
     public string? Biography { get; set; }
     public string? Nationality { get; set; }
     public int? BirthYear { get; set; }
+    public string? WikidataId { get; set; }
+    public string? ViafId { get; set; }
+    public string? ProfileUrl { get; set; }
     public bool IsActive { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
@@ -20,6 +23,9 @@ public interface IAuthorRequest
     string? Biography { get; }
     string? Nationality { get; }
     int? BirthYear { get; }
+    string? WikidataId { get; }
+    string? ViafId { get; }
+    string? ProfileUrl { get; }
     bool IsActive { get; }
 }
 
@@ -29,6 +35,9 @@ public class CreateAuthorRequest : IAuthorRequest
     public string? Biography { get; set; }
     public string? Nationality { get; set; }
     public int? BirthYear { get; set; }
+    public string? WikidataId { get; set; }
+    public string? ViafId { get; set; }
+    public string? ProfileUrl { get; set; }
     public bool IsActive { get; set; } = true;
 }
 
@@ -38,6 +47,9 @@ public class UpdateAuthorRequest : IAuthorRequest
     public string? Biography { get; set; }
     public string? Nationality { get; set; }
     public int? BirthYear { get; set; }
+    public string? WikidataId { get; set; }
+    public string? ViafId { get; set; }
+    public string? ProfileUrl { get; set; }
     public bool IsActive { get; set; } = true;
 }
 

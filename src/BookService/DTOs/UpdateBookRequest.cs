@@ -14,6 +14,7 @@ public class UpdateBookRequest : IBookRequest
     public string? Language { get; set; }
     public Guid? CategoryId { get; set; }
     public string? Description { get; set; }
+    public string? CoverUrl { get; set; }
     public int? PageCount { get; set; }
     public BookFormat Format { get; set; } = BookFormat.Paperback;
     public string? ShelfLocation { get; set; }

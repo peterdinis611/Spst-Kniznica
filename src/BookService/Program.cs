@@ -10,6 +10,7 @@ using Serilog;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
+using SpstKniznica.Common.Integrations;
 using SpstKniznica.Common.Messaging;
 
 Log.Logger = new LoggerConfiguration()
@@ -37,6 +38,7 @@ try
     builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "BookService");
+    builder.Services.AddSpstIntegrations(builder.Configuration);
 
     builder.Services.AddDbContext<BookDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -75,6 +77,7 @@ try
     {
         var db = scope.ServiceProvider.GetRequiredService<BookDbContext>();
         await db.Database.MigrateAsync();
+        await BookIntegrationsSchema.EnsureAsync(db);
         await BookSeed.EnsureSeededAsync(db);
         Log.Information("Database migrations applied; seed checked");
     }

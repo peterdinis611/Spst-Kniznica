@@ -22,6 +22,7 @@ public class BookDbContext(DbContextOptions<BookDbContext> options) : DbContext(
             entity.Property(b => b.Language).HasMaxLength(50);
             entity.Property(b => b.CategoryName).HasMaxLength(100);
             entity.Property(b => b.Description).HasMaxLength(4000);
+            entity.Property(b => b.CoverUrl).HasMaxLength(500);
             entity.Property(b => b.ShelfLocation).HasMaxLength(50);
             entity.Property(b => b.Format).HasConversion<string>().HasMaxLength(20);
 

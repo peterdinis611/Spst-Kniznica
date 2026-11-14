@@ -21,6 +21,7 @@ public class BookingAppService(
     IValidator<UpdateBookingRequest> updateValidator,
     IOptions<LoanPolicyOptions> policyOptions,
     LoanLifecycleService lifecycle,
+    SchoolCalendarService schoolCalendar,
     ILogger<BookingAppService> logger) : IBookingService
 {
     public async Task<PagedResult<BookingDto>> SearchAsync(
@@ -61,7 +62,7 @@ public class BookingAppService(
 
         var borrowerEmail = NormalizeEmail(request.BorrowerEmail);
         await EnsureReaderUnderLoanLimitAsync(borrowerEmail, excludeBookingId: null, cancellationToken);
-        request.DueDate = ClampDueDate(request.DueDate);
+        request.DueDate = await schoolCalendar.AdjustDueDateAsync(request.DueDate, cancellationToken);
 
         await using var transaction =
             await unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -150,7 +151,7 @@ public class BookingAppService(
         booking.BorrowerName = StringNormalize.Required(request.BorrowerName);
         booking.BorrowerEmail = NormalizeEmail(request.BorrowerEmail);
         booking.Status = request.Status;
-        booking.DueDate = ClampDueDate(request.DueDate);
+        booking.DueDate = await schoolCalendar.AdjustDueDateAsync(request.DueDate, cancellationToken);
         booking.Notes = StringNormalize.Optional(request.Notes);
         booking.UpdatedAt = now;
 
@@ -238,7 +239,7 @@ public class BookingAppService(
         }
 
         var days = extraDays is > 0 ? extraDays.Value : policy.RenewExtraDays;
-        var nextDue = ClampDueDate(booking.DueDate.AddDays(days));
+        var nextDue = await schoolCalendar.AdjustDueDateAsync(booking.DueDate.AddDays(days), cancellationToken);
         if (nextDue <= booking.DueDate)
         {
             throw new AppValidationException(new Dictionary<string, string[]>
@@ -395,17 +396,6 @@ public class BookingAppService(
                 ["Status"] = ["Nové rezervácie sú dočasne pozastavené (koniec školského obdobia)."]
             });
         }
-    }
-
-    private DateTimeOffset ClampDueDate(DateTimeOffset due)
-    {
-        var yearEnd = policyOptions.Value.SchoolYearEndUtc;
-        if (yearEnd is { } end && due > end)
-        {
-            return end;
-        }
-
-        return due;
     }
 
     private static void ApplyStatusTimestamps(

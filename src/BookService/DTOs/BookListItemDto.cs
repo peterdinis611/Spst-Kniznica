@@ -16,6 +16,7 @@ public class BookListItemDto
     public Guid? CategoryId { get; set; }
     public string? CategoryName { get; set; }
     public BookFormat Format { get; set; }
+    public string? CoverUrl { get; set; }
     public string? ShelfLocation { get; set; }
     public int TotalCopies { get; set; }
     public int AvailableCopies { get; set; }

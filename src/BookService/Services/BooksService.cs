@@ -11,6 +11,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using FluentValidation;
 using SpstKniznica.Caching;
+using SpstKniznica.Common.Integrations;
 using SpstKniznica.Common.Messaging;
 using SpstKniznica.Common.Pagination;
 
@@ -141,6 +142,7 @@ public class BooksService(
         book.PublishedYear = updated.PublishedYear;
         book.Language = updated.Language;
         book.Description = updated.Description;
+        book.CoverUrl = updated.CoverUrl;
         book.PageCount = updated.PageCount;
         book.Format = updated.Format;
         book.ShelfLocation = updated.ShelfLocation;
@@ -578,6 +580,11 @@ public class BooksService(
         }
     }
 
+    private static string? ResolveCoverUrl(Book book)
+        => string.IsNullOrWhiteSpace(book.CoverUrl)
+            ? OpenLibraryCovers.ForIsbn(book.Isbn)
+            : book.CoverUrl;
+
     private static BookDetailDto MapDetail(Book book) => new()
     {
         Id = book.Id,
@@ -592,6 +599,7 @@ public class BooksService(
         CategoryId = book.CategoryId,
         CategoryName = book.CategoryName,
         Description = book.Description,
+        CoverUrl = ResolveCoverUrl(book),
         PageCount = book.PageCount,
         Format = book.Format,
         ShelfLocation = book.ShelfLocation,

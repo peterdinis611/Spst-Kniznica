@@ -13,6 +13,7 @@ public interface IBookRequest
     string? Language { get; }
     Guid? CategoryId { get; }
     string? Description { get; }
+    string? CoverUrl { get; }
     int? PageCount { get; }
     BookFormat Format { get; }
     string? ShelfLocation { get; }

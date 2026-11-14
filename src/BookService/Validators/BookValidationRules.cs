@@ -109,6 +109,7 @@ public static class BookValidationRules
             CategoryId = request.CategoryId,
             CategoryName = null,
             Description = NormalizeOptional(request.Description),
+            CoverUrl = NormalizeOptional(request.CoverUrl),
             PageCount = request.PageCount,
             Format = request.Format,
             ShelfLocation = NormalizeOptional(request.ShelfLocation),

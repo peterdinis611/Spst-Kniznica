@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Export;
 using SpstKniznica.Common.Hosting;
+using SpstKniznica.Common.Integrations;
 using SpstKniznica.Common.Pagination;
 
 namespace BookService.Controllers;
@@ -15,6 +16,8 @@ namespace BookService.Controllers;
 [Produces("application/json")]
 public class BooksController(
     IBooksService books,
+    IsbnCatalogLookup isbnLookup,
+    TurnstileVerifier turnstile,
     IAuditLogger audit,
     ILogger<BooksController> logger) : ControllerBase
 {
@@ -47,6 +50,22 @@ public class BooksController(
             result.Page);
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// ISBN metadata lookup via Open Library (WorldCat fallback when configured).
+    /// </summary>
+    [HttpGet("lookup/isbn/{isbn}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
+    [ProducesResponseType(typeof(IsbnLookupResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IsbnLookupResult>> LookupIsbn(
+        string isbn,
+        CancellationToken cancellationToken)
+    {
+        var result = await isbnLookup.LookupAsync(isbn, cancellationToken);
+        return result is null ? NotFound() : Ok(result);
     }
 
     /// <summary>
@@ -200,11 +219,22 @@ public class BooksController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<ActionResult<BulkImportResult>> Import(IFormFile file, CancellationToken cancellationToken)
+    public async Task<ActionResult<BulkImportResult>> Import(
+        IFormFile file,
+        [FromForm] string? turnstileToken,
+        CancellationToken cancellationToken)
     {
         if (!IsValidUpload(file))
         {
             return InvalidFile(".csv, .xml or .xlsx");
+        }
+
+        if (!await turnstile.VerifyAsync(turnstileToken, HttpContext.Connection.RemoteIpAddress?.ToString(), cancellationToken))
+        {
+            return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
+            {
+                ["turnstileToken"] = ["Cloudflare Turnstile overenie zlyhalo."]
+            }));
         }
 
         logger.LogInformation("Starting bulk import. File={FileName}, Size={Size}", file.FileName, file.Length);

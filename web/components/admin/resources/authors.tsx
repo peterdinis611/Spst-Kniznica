@@ -33,6 +33,7 @@ import {
   SectionTitle,
   StockField,
 } from "@/components/admin/shared";
+import { AuthorEnrichButton } from "@/components/admin/AuthorEnrichButton";
 import { ServerExportButtons } from "@/components/admin/ServerExportButtons";
 
 const authorFilters = [
@@ -81,9 +82,13 @@ const AuthorForm = () => (
   <SimpleForm>
     <SectionTitle>Profil</SectionTitle>
     <TextInput source="name" validate={required()} fullWidth />
+    <AuthorEnrichButton />
     <TextInput source="nationality" label="Národnosť" />
     <NumberInput source="birthYear" label="Rok narodenia" min={1000} max={2100} />
     <BooleanInput source="isActive" label="Aktívny v katalógu" defaultValue />
+    <TextInput source="wikidataId" label="Wikidata ID" helperText="napr. Q42" />
+    <TextInput source="viafId" label="VIAF ID" />
+    <TextInput source="profileUrl" label="Profil URL" fullWidth />
 
     <SectionTitle>Biografia</SectionTitle>
     <TextInput
@@ -110,6 +115,9 @@ export const AuthorShow = () => (
       <TextField source="nationality" label="Národnosť" emptyText="—" />
       <NumberField source="birthYear" label="Narodenie" emptyText="—" />
       <ActiveChipField />
+      <TextField source="wikidataId" label="Wikidata" emptyText="—" />
+      <TextField source="viafId" label="VIAF" emptyText="—" />
+      <TextField source="profileUrl" label="Profil" emptyText="—" />
       <TextField source="biography" label="Biografia" emptyText="—" />
       <Divider sx={{ my: 2 }} />
       <Typography variant="overline" color="text.secondary">

@@ -25,6 +25,7 @@ public class BookDetailDto
     public Guid? CategoryId { get; set; }
     public string? CategoryName { get; set; }
     public string? Description { get; set; }
+    public string? CoverUrl { get; set; }
     public int? PageCount { get; set; }
     public BookFormat Format { get; set; }
     public string? ShelfLocation { get; set; }

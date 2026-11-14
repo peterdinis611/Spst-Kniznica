@@ -15,6 +15,7 @@ public sealed class LoanLifecycleService(
     IOptions<LoanPolicyOptions> policyOptions,
     WaitlistService waitlist,
     IBookCatalogLookup bookCatalog,
+    SchoolCalendarService schoolCalendar,
     ILogger<LoanLifecycleService> logger)
 {
     public LoanPolicyDto GetPolicy()
@@ -29,6 +30,8 @@ public sealed class LoanLifecycleService(
             FreezeNewLoans = p.FreezeNewLoans,
             SchoolYearEndUtc = p.SchoolYearEndUtc,
             ReminderDaysBeforeDue = p.ReminderDaysBeforeDue,
+            SkipNonSchoolDays = p.SkipNonSchoolDays,
+            HolidayCountryCode = p.HolidayCountryCode,
         };
     }
 
@@ -127,11 +130,9 @@ public sealed class LoanLifecycleService(
         var next = await waitlist.DequeueNextAsync(bookId, cancellationToken);
         if (next is null) return;
 
-        var due = DateTimeOffset.UtcNow.AddDays(policyOptions.Value.DefaultLoanDays);
-        if (policyOptions.Value.SchoolYearEndUtc is { } yearEnd && due > yearEnd)
-        {
-            due = yearEnd;
-        }
+        var due = await schoolCalendar.AdjustDueDateAsync(
+            DateTimeOffset.UtcNow.AddDays(policyOptions.Value.DefaultLoanDays),
+            cancellationToken);
 
         var now = DateTimeOffset.UtcNow;
         var booking = new Booking
@@ -193,6 +194,12 @@ public sealed class LoanLifecycleService(
             .Take(40)
             .ToList();
 
+        var today = DateOnly.FromDateTime(now.UtcDateTime);
+        var holidays = await schoolCalendar.GetHolidaysAroundAsync(
+            today,
+            today.AddDays(30),
+            cancellationToken);
+
         return new DeskDailyDto
         {
             GeneratedAt = now.ToString("O"),
@@ -200,6 +207,11 @@ public sealed class LoanLifecycleService(
             DueSoonCount = dueSoon.Count,
             ReservedCount = reserved.TotalCount,
             ActiveCount = active.TotalCount,
+            IsNonSchoolDay = await schoolCalendar.IsNonSchoolDayAsync(today, cancellationToken),
+            UpcomingHolidays = holidays
+                .Select(h => $"{h.Date:yyyy-MM-dd} · {h.LocalName}")
+                .Take(8)
+                .ToList(),
             Overdue = overdueDtos,
             DueSoon = dueSoon.Take(40).Select(Map).ToList(),
             PickupReady = reserved.Items.Select(Map).Take(40).ToList(),

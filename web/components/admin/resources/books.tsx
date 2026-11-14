@@ -37,6 +37,7 @@ import {
   SectionTitle,
   StockField,
 } from "@/components/admin/shared";
+import { IsbnLookupButton } from "@/components/admin/IsbnLookupButton";
 import { ServerExportButtons } from "@/components/admin/ServerExportButtons";
 
 const bookFilters = [
@@ -105,10 +106,17 @@ const BookForm = () => (
     <SectionTitle>Vydanie</SectionTitle>
     <TextInput source="publisher" />
     <TextInput source="isbn" helperText="ISBN-10 alebo ISBN-13" />
+    <IsbnLookupButton />
     <NumberInput source="publishedYear" label="Rok vydania" />
     <TextInput source="language" defaultValue="sk" />
     <SelectInput source="format" choices={FORMAT_CHOICES} defaultValue={0} />
     <NumberInput source="pageCount" label="Počet strán" min={0} />
+    <TextInput
+      source="coverUrl"
+      label="Cover URL"
+      fullWidth
+      helperText="Open Library cover alebo vlastný URL"
+    />
 
     <SectionTitle>Fond a umiestnenie</SectionTitle>
     <TextInput source="shelfLocation" label="Polica / trakt" />
@@ -153,6 +161,7 @@ export const BookShow = () => (
       <SelectField source="format" choices={FORMAT_CHOICES} label="Formát" />
       <TextField source="publisher" emptyText="—" />
       <TextField source="isbn" emptyText="—" />
+      <TextField source="coverUrl" label="Cover" emptyText="—" />
       <NumberField source="publishedYear" label="Rok" emptyText="—" />
       <TextField source="language" emptyText="—" />
       <NumberField source="pageCount" label="Strany" emptyText="—" />

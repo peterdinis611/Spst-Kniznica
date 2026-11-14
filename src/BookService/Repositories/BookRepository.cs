@@ -55,12 +55,19 @@ public class BookRepository(BookDbContext db) : IBookRepository
             CategoryId = b.CategoryId,
             CategoryName = b.CategoryName,
             Format = b.Format,
+            CoverUrl = b.CoverUrl,
             ShelfLocation = b.ShelfLocation,
             TotalCopies = b.TotalCopies,
             AvailableCopies = b.AvailableCopies
         });
 
-        return await projected.ToPagedResultAsync(filter, cancellationToken);
+        var page = await projected.ToPagedResultAsync(filter, cancellationToken);
+        foreach (var item in page.Items)
+        {
+            item.CoverUrl ??= SpstKniznica.Common.Integrations.OpenLibraryCovers.ForIsbn(item.Isbn);
+        }
+
+        return page;
     }
 
     public Task<Book?> GetByIdAsync(Guid id, bool includeCopies = false, CancellationToken cancellationToken = default)
