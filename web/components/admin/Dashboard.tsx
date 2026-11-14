@@ -1,14 +1,141 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Title, useGetIdentity } from "react-admin";
+import { Title, useGetIdentity, useGetList } from "react-admin";
+import { Link as RaLink } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Link from "next/link";
 import { AdminHealthChart } from "@/components/auth/AdminHealthChart";
 import { fetchAdminDashboard } from "@/lib/auth/client";
+import { BOOKING_STATUS } from "@/lib/bookings/status";
 import { cn } from "@/lib/utils";
 
+const TOOL_LINKS = [
+  { to: "/tools/import", label: "Import" },
+  { to: "/tools/gateway", label: "Gateway" },
+  { to: "/tools/health", label: "Health" },
+  { to: "/tools/cache", label: "Cache" },
+  { to: "/tools/messaging", label: "Messaging" },
+  { to: "/tools/relations", label: "Relácie" },
+  { to: "/tools/orders", label: "Workers" },
+  { to: "/tools/links", label: "Odkazy" },
+  { to: "/tools/account", label: "Účet" },
+] as const;
+
 type Dashboard = Awaited<ReturnType<typeof fetchAdminDashboard>>;
+
+function CatalogWidgets() {
+  const books = useGetList("books", {
+    pagination: { page: 1, perPage: 1 },
+    sort: { field: "id", order: "ASC" },
+  });
+  const authors = useGetList("authors", {
+    pagination: { page: 1, perPage: 1 },
+    sort: { field: "id", order: "ASC" },
+  });
+  const categories = useGetList("categories", {
+    pagination: { page: 1, perPage: 1 },
+    sort: { field: "id", order: "ASC" },
+  });
+  const bookings = useGetList("bookings", {
+    pagination: { page: 1, perPage: 1 },
+    sort: { field: "id", order: "ASC" },
+  });
+  const overdue = useGetList("bookings", {
+    pagination: { page: 1, perPage: 1 },
+    sort: { field: "dueDate", order: "ASC" },
+    filter: { status: BOOKING_STATUS.overdue },
+  });
+  const active = useGetList("bookings", {
+    pagination: { page: 1, perPage: 1 },
+    sort: { field: "dueDate", order: "ASC" },
+    filter: { status: BOOKING_STATUS.active },
+  });
+
+  const tiles = [
+    {
+      to: "/books",
+      label: "Knihy",
+      total: books.total,
+      loading: books.isLoading,
+    },
+    {
+      to: "/authors",
+      label: "Autori",
+      total: authors.total,
+      loading: authors.isLoading,
+    },
+    {
+      to: "/categories",
+      label: "Kategórie",
+      total: categories.total,
+      loading: categories.isLoading,
+    },
+    {
+      to: "/bookings",
+      label: "Rezervácie",
+      total: bookings.total,
+      loading: bookings.isLoading,
+    },
+    {
+      to: "/bookings?filter=%7B%22status%22%3A1%7D",
+      label: "Požičané",
+      total: active.total,
+      loading: active.isLoading,
+      tone: "sage" as const,
+    },
+    {
+      to: "/bookings?filter=%7B%22status%22%3A4%7D",
+      label: "Po termíne",
+      total: overdue.total,
+      loading: overdue.isLoading,
+      tone: "warn" as const,
+    },
+  ];
+
+  return (
+    <section>
+      <p className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+        Katalóg · výpožičky
+      </p>
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {tiles.map((tile) => (
+          <li key={tile.label}>
+            <Button
+              component={RaLink}
+              to={tile.to}
+              fullWidth
+              sx={{
+                borderRadius: 0,
+                justifyContent: "flex-start",
+                px: 2.5,
+                py: 2,
+                border: "1px solid",
+                borderColor: "divider",
+                textAlign: "left",
+                display: "block",
+              }}
+            >
+              <span className="block font-mono text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
+                {tile.label}
+              </span>
+              <span
+                className={cn(
+                  "mt-1 block font-display text-3xl tabular-nums tracking-tight",
+                  tile.tone === "warn" && "text-stair-2",
+                  tile.tone === "sage" && "text-sage",
+                  !tile.tone && "text-ink",
+                )}
+              >
+                {tile.loading ? "…" : (tile.total ?? "—")}
+              </span>
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 
 export function AdminRaDashboard() {
   const { data: identity } = useGetIdentity();
@@ -56,7 +183,9 @@ export function AdminRaDashboard() {
                 <span
                   className={cn(
                     "tabular-nums",
-                    data.unhealthyCount > 0 ? "text-stair-2" : "text-muted-foreground",
+                    data.unhealthyCount > 0
+                      ? "text-stair-2"
+                      : "text-muted-foreground",
                   )}
                 >
                   {data.unhealthyCount} down
@@ -87,6 +216,23 @@ export function AdminRaDashboard() {
         </div>
       </header>
 
+      <nav className="flex flex-wrap gap-2" aria-label="Admin nástroje">
+        {TOOL_LINKS.map((item) => (
+          <Button
+            key={item.to}
+            component={RaLink}
+            to={item.to}
+            variant="outlined"
+            size="small"
+            sx={{ borderRadius: 0 }}
+          >
+            {item.label}
+          </Button>
+        ))}
+      </nav>
+
+      <CatalogWidgets />
+
       {error ? (
         <p
           className="border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300"
@@ -115,9 +261,7 @@ export function AdminRaDashboard() {
                   className={cn(
                     "relative border border-rule bg-card/70 px-4 py-4 dark:border-white/10 dark:bg-paper-deep/70",
                     "before:absolute before:inset-y-0 before:left-0 before:w-[3px]",
-                    service.healthy
-                      ? "before:bg-sage"
-                      : "before:bg-stair-2",
+                    service.healthy ? "before:bg-sage" : "before:bg-stair-2",
                   )}
                 >
                   <div className="flex items-start justify-between gap-3 pl-1">

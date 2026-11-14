@@ -53,19 +53,21 @@ function listQuery(resource: string, params: GetListParams) {
   if (resource === "books") {
     if (filter.authorId) query.authorId = String(filter.authorId);
     if (filter.categoryId) query.categoryId = String(filter.categoryId);
-    if (filter.availableOnly) query.availableOnly = true;
+    if (filter.availableOnly === true || filter.availableOnly === "true") {
+      query.availableOnly = true;
+    }
   }
 
   if (resource === "authors") {
     if (filter.nationality) query.nationality = String(filter.nationality);
-    if (filter.isActive !== undefined && filter.isActive !== null) {
-      query.isActive = Boolean(filter.isActive);
+    if (filter.isActive !== undefined && filter.isActive !== null && filter.isActive !== "") {
+      query.isActive = filter.isActive === true || filter.isActive === "true";
     }
   }
 
   if (resource === "categories") {
-    if (filter.isActive !== undefined && filter.isActive !== null) {
-      query.isActive = Boolean(filter.isActive);
+    if (filter.isActive !== undefined && filter.isActive !== null && filter.isActive !== "") {
+      query.isActive = filter.isActive === true || filter.isActive === "true";
     }
   }
 

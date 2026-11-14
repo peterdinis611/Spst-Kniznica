@@ -1,6 +1,7 @@
 "use client";
 
-import { Admin, Resource } from "react-admin";
+import { Admin, CustomRoutes, Resource } from "react-admin";
+import { Route } from "react-router-dom";
 import BookIcon from "@mui/icons-material/MenuBook";
 import PersonIcon from "@mui/icons-material/Person";
 import CategoryIcon from "@mui/icons-material/Category";
@@ -16,22 +17,35 @@ import {
   AuthorCreate,
   AuthorEdit,
   AuthorList,
+  AuthorShow,
 } from "@/components/admin/resources/authors";
 import {
   BookCreate,
   BookEdit,
   BookList,
+  BookShow,
 } from "@/components/admin/resources/books";
 import {
   BookingCreate,
   BookingEdit,
   BookingList,
+  BookingShow,
 } from "@/components/admin/resources/bookings";
 import {
   CategoryCreate,
   CategoryEdit,
   CategoryList,
+  CategoryShow,
 } from "@/components/admin/resources/categories";
+import { AccountPage } from "@/components/admin/tools/AccountPage";
+import { BookImportPage } from "@/components/admin/tools/BookImportPage";
+import { CacheToolsPage } from "@/components/admin/tools/CacheToolsPage";
+import { GatewayToolsPage } from "@/components/admin/tools/GatewayToolsPage";
+import { HealthToolsPage } from "@/components/admin/tools/HealthToolsPage";
+import { LinksToolsPage } from "@/components/admin/tools/LinksToolsPage";
+import { MessagingToolsPage } from "@/components/admin/tools/MessagingToolsPage";
+import { OrdersToolsPage } from "@/components/admin/tools/OrdersToolsPage";
+import { RelationsPage } from "@/components/admin/tools/RelationsPage";
 
 export default function ReactAdminApp() {
   return (
@@ -51,6 +65,7 @@ export default function ReactAdminApp() {
       <Resource
         name="books"
         list={BookList}
+        show={BookShow}
         edit={BookEdit}
         create={BookCreate}
         icon={BookIcon}
@@ -59,6 +74,7 @@ export default function ReactAdminApp() {
       <Resource
         name="authors"
         list={AuthorList}
+        show={AuthorShow}
         edit={AuthorEdit}
         create={AuthorCreate}
         icon={PersonIcon}
@@ -67,6 +83,7 @@ export default function ReactAdminApp() {
       <Resource
         name="categories"
         list={CategoryList}
+        show={CategoryShow}
         edit={CategoryEdit}
         create={CategoryCreate}
         icon={CategoryIcon}
@@ -75,10 +92,22 @@ export default function ReactAdminApp() {
       <Resource
         name="bookings"
         list={BookingList}
+        show={BookingShow}
         edit={BookingEdit}
         create={BookingCreate}
         icon={AssignmentIcon}
       />
+      <CustomRoutes>
+        <Route path="/tools/import" element={<BookImportPage />} />
+        <Route path="/tools/gateway" element={<GatewayToolsPage />} />
+        <Route path="/tools/health" element={<HealthToolsPage />} />
+        <Route path="/tools/cache" element={<CacheToolsPage />} />
+        <Route path="/tools/messaging" element={<MessagingToolsPage />} />
+        <Route path="/tools/relations" element={<RelationsPage />} />
+        <Route path="/tools/orders" element={<OrdersToolsPage />} />
+        <Route path="/tools/links" element={<LinksToolsPage />} />
+        <Route path="/tools/account" element={<AccountPage />} />
+      </CustomRoutes>
     </Admin>
   );
 }
