@@ -1,4 +1,7 @@
+using AdminService.Data;
+using AdminService.Services;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
@@ -36,10 +39,21 @@ try
         client.Timeout = TimeSpan.FromSeconds(3);
         client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
     });
+
+    builder.Services.AddDbContext<AdminDbContext>(options =>
+        options.UseSqlite(
+            builder.Configuration.GetConnectionString("DefaultConnection")
+            ?? "Data Source=admin.db"));
+
+    builder.Services.AddScoped<AuditLogService>();
+    builder.Services.AddScoped<IAuditSink>(sp => sp.GetRequiredService<AuditLogService>());
+    builder.Services.AddSpstAuditLogging();
+
     builder.Services.AddSingleton<AdminService.Services.AdminDownstreamClient>();
     builder.Services.AddSingleton<AdminService.Services.AdminDashboardService>();
     builder.Services.AddSingleton<AdminService.Services.AdminOverviewService>();
-    builder.Services.AddHealthChecks();
+    builder.Services.AddHealthChecks()
+        .AddDbContextCheck<AdminDbContext>("database");
 
     var app = builder.Build();
 
@@ -47,6 +61,13 @@ try
         "Starting AdminService in {Environment}; Entra enabled={Enabled}",
         app.Environment.EnvironmentName,
         app.Configuration.GetValue("Entra:Enabled", false));
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+        await db.Database.EnsureCreatedAsync();
+        Log.Information("Admin database ready (audit logs)");
+    }
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();

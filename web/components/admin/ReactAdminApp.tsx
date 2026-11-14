@@ -6,6 +6,7 @@ import BookIcon from "@mui/icons-material/MenuBook";
 import PersonIcon from "@mui/icons-material/Person";
 import CategoryIcon from "@mui/icons-material/Category";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import HistoryIcon from "@mui/icons-material/History";
 import { adminAuthProvider } from "@/lib/admin/auth-provider";
 import { adminDataProvider } from "@/lib/admin/data-provider";
 import { adminI18nProvider } from "@/lib/admin/i18n";
@@ -19,6 +20,10 @@ import {
   AuthorList,
   AuthorShow,
 } from "@/components/admin/resources/authors";
+import {
+  AuditLogList,
+  AuditLogShow,
+} from "@/components/admin/resources/audit-logs";
 import {
   BookCreate,
   BookEdit,
@@ -97,6 +102,13 @@ export default function ReactAdminApp() {
         edit={BookingEdit}
         create={BookingCreate}
         icon={AssignmentIcon}
+      />
+      <Resource
+        name="audit-logs"
+        list={AuditLogList}
+        show={AuditLogShow}
+        icon={HistoryIcon}
+        options={{ label: "Audit logy" }}
       />
       <CustomRoutes>
         <Route path="/tools/import" element={<BookImportPage />} />

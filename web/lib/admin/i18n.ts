@@ -116,6 +116,21 @@ const skMessages = {
         notes: "Poznámka",
       },
     },
+    "audit-logs": {
+      name: "Audit log |||| Audit logy",
+      fields: {
+        occurredAt: "Čas",
+        action: "Akcia",
+        entityType: "Entita",
+        entityId: "ID entity",
+        actorName: "Aktér",
+        actorEmail: "E-mail",
+        actorIdHash: "Actor hash",
+        roles: "Role",
+        sourceService: "Služba",
+        detailsJson: "Detaily",
+      },
+    },
   },
 } as TranslationMessages;
 

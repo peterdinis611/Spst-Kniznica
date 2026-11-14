@@ -36,7 +36,7 @@ try
     builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
     builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
-    builder.Services.AddSpstAuditLogging();
+    builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "BookService");
 
     builder.Services.AddDbContext<BookDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));

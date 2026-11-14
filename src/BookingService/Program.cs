@@ -40,7 +40,7 @@ try
         builder.Environment,
         requireAuthenticatedByDefault: true);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
-    builder.Services.AddSpstAuditLogging();
+    builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "BookingService");
 
     builder.Services.AddDbContext<BookingDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));

@@ -20,6 +20,7 @@ const RESOURCE_PATH: Record<string, string> = {
   authors: "/api/authors",
   categories: "/api/categories",
   bookings: "/api/bookings",
+  "audit-logs": "/api/admin/audit-logs",
 };
 
 function resourcePath(resource: string): string {
@@ -83,6 +84,13 @@ function listQuery(resource: string, params: GetListParams) {
     }
   }
 
+  if (resource === "audit-logs") {
+    if (filter.action) query.action = String(filter.action);
+    if (filter.entityType) query.entityType = String(filter.entityType);
+    if (filter.actorEmail) query.actorEmail = String(filter.actorEmail);
+    if (filter.sourceService) query.sourceService = String(filter.sourceService);
+  }
+
   return query;
 }
 
@@ -119,6 +127,9 @@ async function getOne(resource: string, params: GetOneParams) {
 }
 
 async function create(resource: string, params: CreateParams) {
+  if (resource === "audit-logs") {
+    throw new Error("Audit logy sú len na čítanie.");
+  }
   const created = await adminHttp<RaRecord>(
     resourcePath(resource),
     { method: "POST" },
@@ -128,6 +139,9 @@ async function create(resource: string, params: CreateParams) {
 }
 
 async function update(resource: string, params: UpdateParams) {
+  if (resource === "audit-logs") {
+    throw new Error("Audit logy sú len na čítanie.");
+  }
   const updated = await adminHttp<RaRecord>(
     `${resourcePath(resource)}/${params.id}`,
     { method: "PUT" },
@@ -137,6 +151,9 @@ async function update(resource: string, params: UpdateParams) {
 }
 
 async function deleteOne(resource: string, params: DeleteParams) {
+  if (resource === "audit-logs") {
+    throw new Error("Audit logy sú len na čítanie.");
+  }
   await adminHttp<void>(`${resourcePath(resource)}/${params.id}`, {
     method: "DELETE",
   });

@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const TOOL_LINKS = [
+  { to: "/audit-logs", label: "Audit" },
   { to: "/tools/import", label: "Import" },
   { to: "/tools/gateway", label: "Gateway" },
   { to: "/tools/health", label: "Health" },
