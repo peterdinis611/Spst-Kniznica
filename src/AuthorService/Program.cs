@@ -7,6 +7,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Caching;
+using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Messaging;
 
@@ -31,6 +32,8 @@ try
         });
     });
     builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
+    builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
+    builder.Services.AddSpstApiRateLimiting(builder.Configuration);
 
     builder.Services.AddDbContext<AuthorDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -71,11 +74,13 @@ try
     }
 
     app.UseHttpsRedirection();
+    app.UseSpstRateLimiting();
+    app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();
-    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health").AllowAnonymous();
 
-    Log.Information("AuthorService is ready. Swagger: /swagger, Health: /health");
+    Log.Information("AuthorService is ready. Health: /health");
     await app.RunAsync();
 }
 catch (Exception ex)

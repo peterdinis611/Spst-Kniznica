@@ -1,6 +1,10 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SpstKniznica.Caching;
+using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Hosting;
 
 namespace CacheService.Controllers;
 
@@ -10,6 +14,8 @@ namespace CacheService.Controllers;
 public class CacheController(IAppCache cache) : ControllerBase
 {
     [HttpGet("status")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     public ActionResult<object> Status([FromServices] IConfiguration configuration)
     {
         return Ok(new
@@ -23,6 +29,8 @@ public class CacheController(IAppCache cache) : ControllerBase
     }
 
     [HttpGet("keys")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     public async Task<ActionResult<IReadOnlyList<string>>> ListKeys(
         [FromQuery] string? pattern,
         CancellationToken cancellationToken)
@@ -31,6 +39,8 @@ public class CacheController(IAppCache cache) : ControllerBase
     }
 
     [HttpGet("{*key}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     public async Task<IActionResult> Get(string key, CancellationToken cancellationToken)
     {
         var value = await cache.GetAsync<JsonElement?>(key, cancellationToken);
@@ -43,6 +53,9 @@ public class CacheController(IAppCache cache) : ControllerBase
     }
 
     [HttpPut("{*key}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Set(
         string key,
         [FromBody] SetCacheRequest request,
@@ -57,6 +70,9 @@ public class CacheController(IAppCache cache) : ControllerBase
     }
 
     [HttpDelete("{*key}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Remove(string key, CancellationToken cancellationToken)
     {
         await cache.RemoveAsync(key, cancellationToken);
@@ -64,6 +80,9 @@ public class CacheController(IAppCache cache) : ControllerBase
     }
 
     [HttpDelete]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RemoveByPrefix(
         [FromQuery] string prefix,
         CancellationToken cancellationToken)

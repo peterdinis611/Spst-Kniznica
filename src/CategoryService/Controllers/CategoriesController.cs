@@ -1,6 +1,10 @@
 using CategoryService.DTOs;
 using CategoryService.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Pagination;
 
 namespace CategoryService.Controllers;
@@ -11,6 +15,8 @@ namespace CategoryService.Controllers;
 public class CategoriesController(ICategoryService categories, ILogger<CategoriesController> logger) : ControllerBase
 {
     [HttpGet]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(PagedResult<CategoryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<CategoryDto>>> Get(
@@ -29,6 +35,8 @@ public class CategoriesController(ICategoryService categories, ILogger<Categorie
     }
 
     [HttpGet("{id:guid}")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CategoryDto>> GetById(Guid id, CancellationToken cancellationToken)
@@ -37,8 +45,13 @@ public class CategoriesController(ICategoryService categories, ILogger<Categorie
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<CategoryDto>> Create(
         [FromBody] CreateCategoryRequest request,
         CancellationToken cancellationToken)
@@ -49,9 +62,14 @@ public class CategoriesController(ICategoryService categories, ILogger<Categorie
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<CategoryDto>> Update(
         Guid id,
         [FromBody] UpdateCategoryRequest request,
@@ -62,8 +80,13 @@ public class CategoriesController(ICategoryService categories, ILogger<Categorie
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         logger.LogWarning("Deleting category {CategoryId}", id);

@@ -2,7 +2,11 @@ using MessagingService.DTOs;
 using MessagingService.Interfaces;
 using MessagingService.Messaging.Kafka;
 using MessagingService.Messaging.RabbitMq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Messaging;
 
 namespace MessagingService.Controllers;
@@ -18,8 +22,13 @@ public class MessagingController(
     /// Publish a ping event to Kafka, RabbitMQ, or both.
     /// </summary>
     [HttpPost("publish")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Publish(
         [FromBody] PublishMessageRequest request,
         CancellationToken cancellationToken)
@@ -47,10 +56,9 @@ public class MessagingController(
         {
             await publisher.PublishAsync(ping, cancellationToken);
             logger.LogInformation(
-                "Ping published via {Transport}. Source={Source}, Message={Message}",
+                "Ping published via {Transport}. Source={Source}",
                 publisher.TransportName,
-                ping.Source,
-                ping.Message);
+                ping.Source);
         }
 
         return Accepted(new
@@ -62,6 +70,8 @@ public class MessagingController(
     }
 
     [HttpGet("status")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     public ActionResult<object> Status([FromServices] IConfiguration configuration)
     {
         return Ok(new

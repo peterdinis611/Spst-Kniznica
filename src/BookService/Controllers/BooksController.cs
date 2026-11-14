@@ -1,6 +1,10 @@
 using BookService.DTOs;
 using BookService.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Pagination;
 
 namespace BookService.Controllers;
@@ -14,6 +18,8 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     /// Search books with filtering, sorting and pagination.
     /// </summary>
     [HttpGet]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(PagedResult<BookListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<BookListItemDto>>> Get(
@@ -43,6 +49,8 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     /// Get a book including all physical copies (barcode / inventory number).
     /// </summary>
     [HttpGet("{id:guid}")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(BookDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BookDetailDto>> GetById(Guid id, CancellationToken cancellationToken)
@@ -56,8 +64,13 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     /// Create a book and generate inventory copies.
     /// </summary>
     [HttpPost]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(typeof(BookDetailDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<BookDetailDto>> Create(
         [FromBody] CreateBookRequest request,
         CancellationToken cancellationToken)
@@ -72,9 +85,14 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     /// Update a book and adjust copy count when needed.
     /// </summary>
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(typeof(BookDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<BookDetailDto>> Update(
         Guid id,
         [FromBody] UpdateBookRequest request,
@@ -89,9 +107,14 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     /// Delete a book when no copies are borrowed/reserved.
     /// </summary>
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         logger.LogWarning("Deleting book {BookId}", id);
@@ -103,9 +126,14 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     /// Bulk import books from CSV, XML or Excel (.xlsx) based on file extension.
     /// </summary>
     [HttpPost("import")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [RequestSizeLimit(20_000_000)]
     [ProducesResponseType(typeof(BulkImportResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<BulkImportResult>> Import(IFormFile file, CancellationToken cancellationToken)
     {
         if (!IsValidUpload(file))
@@ -124,9 +152,14 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     /// Bulk import books from a CSV file.
     /// </summary>
     [HttpPost("import/csv")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [RequestSizeLimit(20_000_000)]
     [ProducesResponseType(typeof(BulkImportResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<BulkImportResult>> ImportCsv(IFormFile file, CancellationToken cancellationToken)
     {
         if (!IsValidUpload(file))
@@ -145,9 +178,14 @@ public class BooksController(IBooksService books, ILogger<BooksController> logge
     /// Bulk import books from an XML file.
     /// </summary>
     [HttpPost("import/xml")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [RequestSizeLimit(20_000_000)]
     [ProducesResponseType(typeof(BulkImportResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<BulkImportResult>> ImportXml(IFormFile file, CancellationToken cancellationToken)
     {
         if (!IsValidUpload(file))

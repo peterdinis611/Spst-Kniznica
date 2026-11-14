@@ -1,12 +1,17 @@
 using MessagingService.DTOs;
 using MessagingService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using SpstKniznica.Common.Hosting;
 
 namespace MessagingService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[AllowAnonymous]
+[EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
 public class RelationsController(ILibraryRelationService relations) : ControllerBase
 {
     [HttpGet("categories/{categoryId:guid}")]

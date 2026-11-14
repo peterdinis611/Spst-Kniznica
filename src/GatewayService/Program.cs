@@ -24,6 +24,7 @@ try
     });
     builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
     builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
+    builder.Services.AddSpstApiRateLimiting(builder.Configuration);
 
     builder.Services
         .AddReverseProxy()
@@ -57,6 +58,7 @@ try
         });
     }
 
+    app.UseSpstRateLimiting();
     app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();

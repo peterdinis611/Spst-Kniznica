@@ -1,6 +1,10 @@
 using AuthorService.DTOs;
 using AuthorService.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Pagination;
 
 namespace AuthorService.Controllers;
@@ -11,6 +15,8 @@ namespace AuthorService.Controllers;
 public class AuthorsController(IAuthorService authors, ILogger<AuthorsController> logger) : ControllerBase
 {
     [HttpGet]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(PagedResult<AuthorDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<AuthorDto>>> Get(
@@ -28,6 +34,8 @@ public class AuthorsController(IAuthorService authors, ILogger<AuthorsController
     }
 
     [HttpGet("{id:guid}")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AuthorDto>> GetById(Guid id, CancellationToken cancellationToken)
@@ -36,8 +44,13 @@ public class AuthorsController(IAuthorService authors, ILogger<AuthorsController
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<AuthorDto>> Create(
         [FromBody] CreateAuthorRequest request,
         CancellationToken cancellationToken)
@@ -48,9 +61,14 @@ public class AuthorsController(IAuthorService authors, ILogger<AuthorsController
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<AuthorDto>> Update(
         Guid id,
         [FromBody] UpdateAuthorRequest request,
@@ -61,8 +79,13 @@ public class AuthorsController(IAuthorService authors, ILogger<AuthorsController
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         logger.LogWarning("Deleting author {AuthorId}", id);

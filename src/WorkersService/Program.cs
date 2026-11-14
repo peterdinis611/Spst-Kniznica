@@ -29,7 +29,7 @@ try
         builder.Configuration,
         builder.Environment,
         requireAuthenticatedByDefault: true);
-    builder.Services.AddSpstApiRateLimiting();
+    builder.Services.AddSpstApiRateLimiting(builder.Configuration);
 
     builder.Services.AddSingleton<IOrderJobQueue, ChannelOrderJobQueue>();
     builder.Services.AddHostedService<OrderProcessingHostedService>();

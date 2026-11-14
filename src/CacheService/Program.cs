@@ -1,5 +1,6 @@
 using Serilog;
 using SpstKniznica.Caching;
+using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
 
 Log.Logger = new LoggerConfiguration()
@@ -23,6 +24,8 @@ try
         });
     });
     builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
+    builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
+    builder.Services.AddSpstApiRateLimiting(builder.Configuration);
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
 
     var cacheEnabled = builder.Configuration.GetValue("Cache:Enabled", true);
@@ -53,8 +56,11 @@ try
     }
 
     app.UseHttpsRedirection();
+    app.UseSpstRateLimiting();
+    app.UseSpstAuthentication();
+    app.UseAuthorization();
     app.MapControllers();
-    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health").AllowAnonymous();
 
     await app.RunAsync();
 }
