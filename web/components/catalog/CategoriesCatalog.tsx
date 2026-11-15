@@ -84,7 +84,7 @@ export function CategoriesCatalog({
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              Register
+              Evidencia
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               Tematické rady

@@ -225,7 +225,9 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
           <Section title="Pripravené na vyzdvihnutie" items={board.pickupReady} />
         </>
       ) : (
-        <p className="mt-6 text-sm text-muted-foreground">Kontrolujem BookingService…</p>
+        <p className="mt-6 text-sm text-muted-foreground">
+          Kontrolujem službu výpožičiek…
+        </p>
       )}
     </>
   );

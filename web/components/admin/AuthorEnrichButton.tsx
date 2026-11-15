@@ -54,9 +54,10 @@ export function AuthorEnrichButton() {
       }
       notify(`Doplnené z ${data.source ?? "Wikidata"}`, { type: "success" });
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Enrichment zlyhal", {
-        type: "error",
-      });
+      notify(
+        err instanceof Error ? err.message : "Obohatenie záznamu zlyhalo",
+        { type: "error" },
+      );
     } finally {
       setBusy(false);
     }

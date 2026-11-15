@@ -35,7 +35,7 @@ export function CacheToolsPage() {
     try {
       setStatus(await adminHttp<CacheStatus>("/api/cache/status"));
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Status zlyhal", {
+      notify(err instanceof Error ? err.message : "Stav zlyhal", {
         type: "error",
       });
     }
@@ -49,7 +49,7 @@ export function CacheToolsPage() {
       );
       setKeys(list ?? []);
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Keys zlyhali", {
+      notify(err instanceof Error ? err.message : "Načítanie kľúčov zlyhalo", {
         type: "error",
       });
     } finally {
@@ -99,10 +99,10 @@ export function CacheToolsPage() {
       await adminHttp(adminQuery("/api/cache", { prefix }), {
         method: "DELETE",
       });
-      notify(`Prefix ${prefix} vyčistený`, { type: "info" });
+      notify(`Prefix „${prefix}“ vyčistený`, { type: "info" });
       await loadKeys();
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Flush zlyhal", {
+      notify(err instanceof Error ? err.message : "Vyprázdnenie zlyhalo", {
         type: "error",
       });
     }
@@ -110,22 +110,22 @@ export function CacheToolsPage() {
 
   return (
     <ToolShell
-      title="Cache"
+      title="Vyrovnávacia pamäť"
       eyebrow="CacheService · Redis"
-      lead="Prehliadanie kľúčov, detail hodnoty a mazanie podľa prefixu. Staff only."
+      lead="Prehliadanie kľúčov, detail hodnoty a mazanie podľa prefixu. Len pre personál."
     >
       <div className="grid gap-4 md:grid-cols-2">
         <ToolCard title="Stav">
           {status ? (
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between gap-2">
-                <dt className="text-muted-foreground">Enabled</dt>
+                <dt className="text-muted-foreground">Zapnuté</dt>
                 <dd className={status.enabled ? "text-sage" : "text-stair-2"}>
                   {status.enabled ? "áno" : "nie"}
                 </dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="text-muted-foreground">Instance</dt>
+                <dt className="text-muted-foreground">Inštancia</dt>
                 <dd className="font-mono text-xs">{status.instanceName ?? "—"}</dd>
               </div>
               <div className="flex justify-between gap-2">
@@ -148,11 +148,11 @@ export function CacheToolsPage() {
           </Button>
         </ToolCard>
 
-        <ToolCard title="Flush podľa prefixu">
+        <ToolCard title="Vyprázdniť podľa prefixu">
           <TextField
             size="small"
             fullWidth
-            label="Prefix"
+            label="Prefix kľúčov"
             value={prefix}
             onChange={(e) => setPrefix(e.target.value)}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 0 } }}
@@ -173,7 +173,7 @@ export function CacheToolsPage() {
           <TextField
             size="small"
             fullWidth
-            label="Pattern"
+            label="Vzor"
             value={pattern}
             onChange={(e) => setPattern(e.target.value)}
             helperText="napr. * alebo books:*"

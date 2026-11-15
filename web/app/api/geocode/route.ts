@@ -29,14 +29,17 @@ export async function GET(request: Request) {
 
     if (!upstream.ok) {
       return NextResponse.json(
-        { title: "Geocode failed", status: upstream.status },
+        { title: "Geokódovanie zlyhalo", status: upstream.status },
         { status: 502 },
       );
     }
 
     const hits = (await upstream.json()) as NominatimHit[];
     if (!hits.length) {
-      return NextResponse.json({ title: "Not found", status: 404 }, { status: 404 });
+      return NextResponse.json(
+        { title: "Adresa sa nenašla", status: 404 },
+        { status: 404 },
+      );
     }
 
     const hit = hits[0]!;
@@ -53,7 +56,7 @@ export async function GET(request: Request) {
     });
   } catch {
     return NextResponse.json(
-      { title: "Geocode unreachable", status: 502 },
+      { title: "Geokódovanie nedostupné", status: 502 },
       { status: 502 },
     );
   }

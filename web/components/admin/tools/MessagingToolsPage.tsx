@@ -26,7 +26,7 @@ export function MessagingToolsPage() {
   const notify = useNotify();
   const [status, setStatus] = useState<MessagingStatus | null>(null);
   const [target, setTarget] = useState("all");
-  const [message, setMessage] = useState("Admin ping zo SPST pultu");
+  const [message, setMessage] = useState("Testovací ping zo SPST pultu");
   const [source, setSource] = useState("spst-admin");
   const [last, setLast] = useState<PublishResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -35,7 +35,7 @@ export function MessagingToolsPage() {
     try {
       setStatus(await adminHttp<MessagingStatus>("/api/messaging/status"));
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Status zlyhal", {
+      notify(err instanceof Error ? err.message : "Stav zlyhal", {
         type: "error",
       });
     }
@@ -58,7 +58,7 @@ export function MessagingToolsPage() {
         type: "success",
       });
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Publish zlyhal", {
+      notify(err instanceof Error ? err.message : "Publikovanie zlyhalo", {
         type: "error",
       });
     } finally {
@@ -68,9 +68,9 @@ export function MessagingToolsPage() {
 
   return (
     <ToolShell
-      title="Messaging"
+      title="Správy"
       eyebrow="Kafka · RabbitMQ"
-      lead="Stav brokerov a manuálny ping event pre diagnostiku fronty."
+      lead="Stav brokerov a manuálna testovacia správa pre diagnostiku fronty."
     >
       <ToolCard title="Stav">
         {status ? (
@@ -78,7 +78,7 @@ export function MessagingToolsPage() {
             <div>
               <dt className="text-muted-foreground">Kafka</dt>
               <dd className={status.kafkaEnabled ? "text-sage" : "text-stair-2"}>
-                {status.kafkaEnabled ? "enabled" : "off"} ·{" "}
+                {status.kafkaEnabled ? "zapnuté" : "vypnuté"} ·{" "}
                 <span className="font-mono text-xs">
                   {status.kafkaBootstrap ?? "—"}
                 </span>
@@ -91,7 +91,7 @@ export function MessagingToolsPage() {
                   status.rabbitMqEnabled ? "text-sage" : "text-stair-2"
                 }
               >
-                {status.rabbitMqEnabled ? "enabled" : "off"} ·{" "}
+                {status.rabbitMqEnabled ? "zapnuté" : "vypnuté"} ·{" "}
                 <span className="font-mono text-xs">
                   {status.rabbitHost ?? "—"}
                 </span>
@@ -103,30 +103,30 @@ export function MessagingToolsPage() {
         )}
       </ToolCard>
 
-      <ToolCard title="Publish ping">
+      <ToolCard title="Odoslať testovací ping">
         <div className="grid gap-3 sm:grid-cols-2">
           <TextField
             select
             size="small"
-            label="Target"
+            label="Cieľ"
             value={target}
             onChange={(e) => setTarget(e.target.value)}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 0 } }}
           >
-            <MenuItem value="all">all</MenuItem>
+            <MenuItem value="all">všetko</MenuItem>
             <MenuItem value="kafka">kafka</MenuItem>
             <MenuItem value="rabbitmq">rabbitmq</MenuItem>
           </TextField>
           <TextField
             size="small"
-            label="Source"
+            label="Zdroj"
             value={source}
             onChange={(e) => setSource(e.target.value)}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 0 } }}
           />
           <TextField
             size="small"
-            label="Message"
+            label="Správa"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             fullWidth
@@ -142,13 +142,13 @@ export function MessagingToolsPage() {
           onClick={() => void publish()}
           sx={{ mt: 2, borderRadius: 0 }}
         >
-          {busy ? "Posielam…" : "Publish"}
+          {busy ? "Posielam…" : "Publikovať"}
         </Button>
         {last ? (
           <p className="mt-3 font-mono text-xs text-muted-foreground">
             {last.eventType} · {last.eventId}
             <br />
-            transports: {last.transports.join(", ")}
+            prenosy: {last.transports.join(", ")}
           </p>
         ) : null}
       </ToolCard>

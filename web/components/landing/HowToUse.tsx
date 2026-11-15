@@ -19,7 +19,7 @@ const steps: ReadonlyArray<{
   {
     n: "01",
     title: "Prehliadaj karusel",
-    body: "Na landingu ťahaj 3D knižný rad. Stredná kniha je aktívna — bočné klikni, aby sa dostali dopredu.",
+    body: "Na úvodnej stránke ťahaj 3D knižný rad. Stredná kniha je aktívna — bočné klikni, aby sa dostali dopredu.",
     Icon: MoveHorizontal,
   },
   {
@@ -31,7 +31,7 @@ const steps: ReadonlyArray<{
   {
     n: "03",
     title: "Choď do katalógu",
-    body: "Sekcie Knihy, Autori a Kategórie vedú cez Gateway. Jedna kniha = jeden autor a jedna kategória.",
+    body: "Sekcie Knihy, Autori a Kategórie vedú cez API bránu. Jedna kniha = jeden autor a jedna kategória.",
     Icon: LibraryBig,
   },
   {
@@ -58,7 +58,7 @@ export function HowToUse() {
             id="how-to-use-heading"
             className="mt-3 font-display text-[clamp(1.85rem,5vw,3rem)] text-ink"
           >
-            Od landingu po katalóg v štyroch krokoch
+            Od úvodnej stránky po katalóg v štyroch krokoch
           </h2>
           <p className="mt-4 text-muted-foreground">
             SPST Knižnica je jednoduchá: nájdi titul, pozri detail a vystav
@@ -115,7 +115,7 @@ export function HowToUse() {
               />
             }
           >
-            Gateway Swagger
+            Dokumentácia API
             <ExternalLink className="size-3.5" strokeWidth={1.8} aria-hidden />
           </Button>
         </div>

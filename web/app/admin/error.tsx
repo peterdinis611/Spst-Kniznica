@@ -13,7 +13,7 @@ export default function AdminError({
     <RouteError
       error={error}
       reset={reset}
-      title="Admin panel nedostupný"
+      title="Správcovský panel nedostupný"
       description="Administráciu sa nepodarilo načítať. Over prihlásenie a skús to znova."
       homeHref="/admin"
     />

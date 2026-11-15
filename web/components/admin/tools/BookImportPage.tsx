@@ -46,7 +46,7 @@ export function BookImportPage() {
       const data = await adminHttpForm<ImportResult>("/api/books/import", body);
       setResult(data);
       notify(
-        `Import: ${data.importedCount} OK, ${data.skippedCount} preskočených`,
+        `Import: ${data.importedCount} v poriadku, ${data.skippedCount} preskočených`,
         { type: data.skippedCount ? "warning" : "success" },
       );
     } catch (err) {
@@ -61,8 +61,8 @@ export function BookImportPage() {
   return (
     <ToolShell
       title="Import kníh"
-      eyebrow="BookService · bulk"
-      lead="Nahraj CSV, XML alebo Excel (.xlsx). Súbor max. ~20 MB. Vyžaduje staff rolu. Turnstile sa vynúti, keď je nastavený kľúč."
+      eyebrow="Služba kníh · hromadný import"
+      lead="Nahraj CSV, XML alebo Excel (.xlsx). Súbor max. ~20 MB. Vyžaduje rolu personálu. Turnstile sa vynúti, keď je nastavený kľúč."
     >
       <ToolCard title="Súbor">
         <input

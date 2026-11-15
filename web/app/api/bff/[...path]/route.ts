@@ -68,8 +68,8 @@ async function proxy(request: Request, pathParts: string[]) {
   } catch {
     return NextResponse.json(
       {
-        title: "Bad Gateway",
-        detail: "Upstream API is unreachable.",
+        title: "Zlá brána",
+        detail: "Upstream API je nedostupné.",
         status: 502,
       },
       { status: 502 },

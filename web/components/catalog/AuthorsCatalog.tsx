@@ -90,7 +90,7 @@ export function AuthorsCatalog({
 
       <CatalogTopBar
         title="Autori fondu"
-        lead="Register mien zo školského fondu. Klikni na meno — otvorí sa profil a tituly."
+        lead="Evidencia mien zo školského fondu. Klikni na meno — otvorí sa profil a tituly."
         searchAction="/authors"
         defaultQuery={urlQuery}
         placeholder="Meno autora…"
@@ -105,7 +105,7 @@ export function AuthorsCatalog({
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              Index
+              Abecedný index
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {letter

@@ -30,7 +30,7 @@ export function LibraryMap({
         const res = await fetch(`/api/geocode?${params.toString()}`, {
           cache: "force-cache",
         });
-        if (!res.ok) throw new Error("Geocode zlyhal");
+        if (!res.ok) throw new Error("Geokódovanie zlyhalo");
         const json = (await res.json()) as Geocode;
         if (!cancelled) setData(json);
       } catch (err) {

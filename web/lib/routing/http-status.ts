@@ -51,9 +51,9 @@ export const HTTP_STATUS_COPY: Record<HttpStatusCode, HttpStatusCopy> = {
   502: {
     code: 502,
     eyebrow: "502 · zlá brána",
-    title: "Gateway neodpovedá",
+    title: "API brána neodpovedá",
     description:
-      "Frontend sa nedokázal spojiť s API bránou. Skontroluj, či beží gateway (port 5200), a skús to znova.",
+      "Aplikácia sa nedokázala spojiť s API bránou. Skontroluj, či beží brána (port 5200), a skús to znova.",
     actions: [
       { href: "/", label: "Domov", primary: true },
       { href: "/503", label: "Stav služby" },

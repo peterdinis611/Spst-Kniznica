@@ -194,7 +194,7 @@ export function BookCarousel({ books }: BookCarouselProps) {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-[8%] overflow-hidden px-2 text-center font-display text-[clamp(2rem,11vw,7.5rem)] leading-none tracking-[0.04em] text-watermark/90 select-none"
       >
-        AUTHOR&apos;S TRACE
+        STOPA AUTORA
       </p>
 
       <div

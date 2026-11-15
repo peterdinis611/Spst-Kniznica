@@ -17,7 +17,7 @@ export function HealthToolsPage() {
     try {
       setData(await fetchAdminProbe());
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Probe zlyhal", {
+      notify(err instanceof Error ? err.message : "Kontrola zlyhala", {
         type: "error",
       });
     } finally {
@@ -34,14 +34,14 @@ export function HealthToolsPage() {
 
   return (
     <ToolShell
-      title="Health probe"
+      title="Kontrola zdravia služieb"
       eyebrow="AdminService · /api/admin/probe"
       lead="Paralelné overenie /health všetkých služieb zo servera AdminService (s latenciou)."
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="font-mono text-xs text-muted-foreground">
           {probes.length
-            ? `${okCount}/${probes.length} OK`
+            ? `${okCount}/${probes.length} v poriadku`
             : "Čakám na výsledky…"}
         </p>
         <Button
@@ -81,7 +81,7 @@ export function HealthToolsPage() {
                       probe.healthy ? "text-sage" : "text-stair-2",
                     )}
                   >
-                    {probe.healthy ? "ok" : "fail"} · {probe.status}
+                    {probe.healthy ? "v poriadku" : "zlyhalo"} · {probe.status}
                   </span>
                 </div>
               </li>

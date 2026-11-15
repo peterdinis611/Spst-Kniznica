@@ -44,7 +44,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       size="icon"
       data-tour="theme"
       className={cn(toggleClassName, className)}
-      aria-label={isDark ? "Zapnúť light mode" : "Zapnúť dark mode"}
+      aria-label={isDark ? "Prepnúť na svetlý režim" : "Prepnúť na tmavý režim"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
       {isDark ? (

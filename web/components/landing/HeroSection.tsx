@@ -10,14 +10,14 @@ type HeroSectionProps = {
 export function HeroSection({ books }: HeroSectionProps) {
   const left = books[0] ?? {
     id: "fallback-1",
-    title: "Psychology of Money",
+    title: "Psychológia peňazí",
     author: "Morgan Housel",
     accent: "#8FA888",
     secondary: "#E8F0E6",
   };
   const right = books[1] ?? {
     id: "fallback-2",
-    title: "How Innovation Works",
+    title: "Ako funguje inovácia",
     author: "Matt Ridley",
     accent: "#1F4E8C",
     secondary: "#D8E8F0",

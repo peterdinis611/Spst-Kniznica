@@ -25,7 +25,7 @@ const links = [
   {
     href: "/",
     label: "Domov",
-    note: "Landing a fond",
+    note: "Úvod a fond",
     isActive: (pathname: string) => pathname === "/",
   },
   {

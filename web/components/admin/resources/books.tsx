@@ -113,9 +113,9 @@ const BookForm = () => (
     <NumberInput source="pageCount" label="Počet strán" min={0} />
     <TextInput
       source="coverUrl"
-      label="Cover URL"
+      label="URL obálky"
       fullWidth
-      helperText="Open Library cover alebo vlastný URL"
+      helperText="Obálka z Open Library alebo vlastná URL"
     />
 
     <SectionTitle>Fond a umiestnenie</SectionTitle>
@@ -161,7 +161,7 @@ export const BookShow = () => (
       <SelectField source="format" choices={FORMAT_CHOICES} label="Formát" />
       <TextField source="publisher" emptyText="—" />
       <TextField source="isbn" emptyText="—" />
-      <TextField source="coverUrl" label="Cover" emptyText="—" />
+      <TextField source="coverUrl" label="Obálka" emptyText="—" />
       <NumberField source="publishedYear" label="Rok" emptyText="—" />
       <TextField source="language" emptyText="—" />
       <NumberField source="pageCount" label="Strany" emptyText="—" />

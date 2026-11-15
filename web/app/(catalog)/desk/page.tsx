@@ -7,7 +7,8 @@ import { searchBooksAction } from "@/lib/catalog/actions";
 
 export const metadata: Metadata = {
   title: "Denná tabuľa",
-  description: "Overdue, due soon a rezervácie na vyzdvihnutie — pult knihovníka.",
+  description:
+    "Po termíne, blížiace sa termíny a rezervácie na vyzdvihnutie — pult knihovníka.",
   alternates: { canonical: "/desk" },
   robots: { index: false, follow: false },
 };

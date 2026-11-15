@@ -20,8 +20,9 @@ export function ReadingIntro() {
             Pripravení na ďalšiu knihu?
           </h2>
           <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Landing ťa navedie ku konkrétnemu titulu. Katalóg drží autorov,
-            kategórie a dostupnosť exemplárov — všetko cez školský gateway.
+            Úvodná stránka ťa navedie ku konkrétnemu titulu. Katalóg drží
+            autorov, kategórie a dostupnosť exemplárov — všetko cez školskú API
+            bránu.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button
@@ -60,8 +61,8 @@ export function ReadingIntro() {
                   Katalóg, ktorý drží tempo s triedou
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  Jedna kniha, jeden autor, jedna kategória. Messaging a cache
-                  držia väzby aktuálne.
+                  Jedna kniha, jeden autor, jedna kategória. Fronta správ a
+                  vyrovnávacia pamäť držia väzby aktuálne.
                 </p>
               </div>
               <div className="bg-[#ebe2d4] p-5 md:p-6">
@@ -73,7 +74,7 @@ export function ReadingIntro() {
                   <li className="flex items-center justify-between border-b border-rule/60 pb-2">
                     <span>Knihy</span>
                     <span className="font-semibold text-accent-deep dark:text-accent">
-                      live
+                      aktívne
                     </span>
                   </li>
                   <li className="flex items-center justify-between border-b border-rule/60 pb-2">
@@ -83,7 +84,7 @@ export function ReadingIntro() {
                     </span>
                   </li>
                   <li className="flex items-center justify-between">
-                    <span>Gateway</span>
+                    <span>API brána</span>
                     <span className="font-semibold text-accent-deep dark:text-accent">
                       5200
                     </span>

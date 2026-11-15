@@ -11,10 +11,10 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 export const FORMAT_CHOICES = [
-  { id: 0, name: "Paperback" },
-  { id: 1, name: "Hardcover" },
-  { id: 2, name: "Ebook" },
-  { id: 3, name: "Other" },
+  { id: 0, name: "Brožovaná" },
+  { id: 1, name: "Viazaná" },
+  { id: 2, name: "E-kniha" },
+  { id: 3, name: "Iné" },
 ];
 
 export const COPY_STATUS_CHOICES = [

@@ -91,7 +91,7 @@ export const AuditLogList = () => (
     filters={auditFilters}
     actions={<ListActions />}
     pagination={<Pagination rowsPerPageOptions={[10, 25, 50, 100]} />}
-    title="Audit logy"
+    title="Záznamy auditu"
   >
     <Datagrid rowClick="show" bulkActionButtons={false}>
       <DateField source="occurredAt" label="Čas" showTime />
@@ -158,10 +158,10 @@ export const AuditLogShow = () => (
       <DateField source="occurredAt" label="Čas" showTime />
       <TextField source="action" label="Akcia" />
       <TextField source="entityType" label="Entita" />
-      <TextField source="entityId" label="Entity ID" />
+      <TextField source="entityId" label="ID entity" />
       <TextField source="actorName" label="Aktér" emptyText="—" />
       <TextField source="actorEmail" label="E-mail" emptyText="—" />
-      <TextField source="actorIdHash" label="Actor hash" emptyText="—" />
+      <TextField source="actorIdHash" label="Hash aktéra" emptyText="—" />
       <TextField source="roles" label="Role" emptyText="—" />
       <TextField source="sourceService" label="Zdrojová služba" emptyText="—" />
       <Typography variant="overline" color="text.secondary" sx={{ mt: 2 }}>

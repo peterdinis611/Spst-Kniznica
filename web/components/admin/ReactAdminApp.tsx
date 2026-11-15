@@ -67,7 +67,7 @@ export default function ReactAdminApp() {
       layout={AdminLayout}
       loginPage={AdminLoginPage}
       requireAuth
-      title="SPST Admin"
+      title="SPST správa"
     >
       <Resource
         name="books"
@@ -109,7 +109,7 @@ export default function ReactAdminApp() {
         list={AuditLogList}
         show={AuditLogShow}
         icon={HistoryIcon}
-        options={{ label: "Audit logy" }}
+        options={{ label: "Záznamy auditu" }}
       />
       <CustomRoutes>
         <Route path="/tools/import" element={<BookImportPage />} />

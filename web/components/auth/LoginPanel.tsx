@@ -96,10 +96,11 @@ export function LoginPanel() {
 
         {wantsAdmin && !user.isStaff ? (
           <p className="mt-4 border border-stair-1/35 bg-stair-1/10 px-3 py-2 text-sm text-ink">
-            Účet ešte nemá rolu Admin/Librarian. Po reštarte služieb s{" "}
+            Účet ešte nemá rolu administrátora alebo knižníka. Po reštarte
+            služieb s{" "}
             <code className="font-mono text-xs">GrantStaffInDevelopment</code>{" "}
             by mal stačiť odhlásiť → prihlásiť. V Azure: App roles → priraď{" "}
-            <strong>Admin</strong>.
+            <strong>Admin</strong> (administrátor).
           </p>
         ) : null}
 
@@ -107,9 +108,13 @@ export function LoginPanel() {
           <QuickLink href="/books" icon={BookOpen} label="Katalóg kníh" />
           <QuickLink href="/bookings" icon={Library} label="Moje výpožičky" />
           {user.isStaff ? (
-            <QuickLink href="/admin" icon={Shield} label="Admin pult" />
+            <QuickLink href="/admin" icon={Shield} label="Správcovský pult" />
           ) : (
-            <QuickLink href="/admin" icon={Shield} label="Admin pult (vyžaduje staff)" />
+            <QuickLink
+              href="/admin"
+              icon={Shield}
+              label="Správcovský pult (vyžaduje personál)"
+            />
           )}
         </nav>
 
@@ -128,13 +133,13 @@ export function LoginPanel() {
   return (
     <PanelShell accentBar>
       <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
-        {entraEnabled ? "Microsoft Entra" : "Development"}
+        {entraEnabled ? "Microsoft Entra" : "Vývojové prostredie"}
       </p>
       <h2
         id="login-panel-heading"
         className="mt-2 font-display text-2xl tracking-tight text-ink"
       >
-        {entraEnabled ? "Prihlás sa" : "Dev režim"}
+        {entraEnabled ? "Prihlás sa" : "Vývojový režim"}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         {entraEnabled
@@ -158,7 +163,9 @@ export function LoginPanel() {
         disabled={turnstileRequired && !turnstileToken}
         onClick={() => void login()}
       >
-        {entraEnabled ? "Prihlásiť cez Entra" : "Pokračovať ako Dev Admin"}
+        {entraEnabled
+          ? "Prihlásiť cez Entra"
+          : "Pokračovať ako vývojový administrátor"}
         <ArrowRight className="size-4" strokeWidth={1.8} aria-hidden />
       </Button>
 

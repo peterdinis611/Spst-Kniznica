@@ -332,7 +332,7 @@ export function BookingsDesk({
       <div
         className="mt-4 flex gap-2 overflow-x-auto pb-1"
         role="group"
-        aria-label="Filter stavu lístka"
+        aria-label="Filtrovať podľa stavu lístka"
       >
         {FILTERS.map((filter) => {
           const active = status === filter.id;
@@ -396,7 +396,7 @@ export function BookingsDesk({
           title={search.isPending ? "Hľadám lístky" : "Pult je prázdny"}
           description={
             search.isPending
-              ? "BookingService ešte vracia výber."
+              ? "Služba výpožičiek ešte vracia výber."
               : "Žiadny lístok nezodpovedá filtru. Rezerváciu vystavíš na detaile knihy."
           }
           resetHref="/books"

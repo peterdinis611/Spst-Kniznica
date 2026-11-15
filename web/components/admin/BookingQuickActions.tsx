@@ -33,7 +33,7 @@ export function BookingQuickActions() {
           refresh();
         },
         onError: (err) => {
-          notify(err instanceof Error ? err.message : "Update zlyhal", {
+          notify(err instanceof Error ? err.message : "Aktualizácia zlyhala", {
             type: "error",
           });
         },

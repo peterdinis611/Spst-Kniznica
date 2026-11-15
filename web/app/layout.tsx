@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   creator: siteConfig.name,
   publisher: siteConfig.name,
   category: "education",
-  classification: "Library Catalog",
+  classification: "Školský katalóg kníh",
   referrer: "origin-when-cross-origin",
   alternates: {
     canonical: "/",

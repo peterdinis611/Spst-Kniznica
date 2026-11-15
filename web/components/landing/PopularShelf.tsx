@@ -20,7 +20,7 @@ export function PopularShelf({ books }: PopularShelfProps) {
         <div className="grid items-end gap-6 md:grid-cols-[1.2fr_0.8fr] md:gap-8">
           <div>
             <p className="text-[11px] tracking-[0.22em] text-accent uppercase">
-              Popular now
+              Práve populárne
             </p>
             <h2
               id="popular-shelf-heading"

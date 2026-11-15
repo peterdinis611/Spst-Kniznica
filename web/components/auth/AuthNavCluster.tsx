@@ -33,7 +33,7 @@ export function AuthNavCluster() {
             className="hidden h-10 rounded-full border-rule px-4 sm:inline-flex dark:border-white/25"
             render={<Link href="/admin" />}
           >
-            Admin
+            Správa
           </Button>
         ) : null}
         <Button

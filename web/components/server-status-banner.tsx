@@ -81,7 +81,7 @@ export function ServerStatusBanner() {
         <p className="min-w-0 text-[12px] leading-snug sm:text-[13px]">
           <span className="mr-2 inline-flex items-center gap-1.5 font-mono text-[10px] font-semibold tracking-[0.18em] text-accent uppercase">
             <WifiOff className="size-3.5" strokeWidth={2} aria-hidden />
-            Offline
+            Odpojené
           </span>
           <span className="text-paper/85">
             Server nie je dostupný ({API_BASE}). Katalóg a výpožičky môžu

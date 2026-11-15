@@ -3,7 +3,7 @@ import { MainContent } from "@/components/a11y/MainContent";
 import { ReactAdminMount } from "@/components/admin/ReactAdminMount";
 
 export const metadata: Metadata = {
-  title: "Admin",
+  title: "Správa knižnice",
   description: "Prevádzkový pult SPST Knižnice (react-admin).",
   robots: { index: false, follow: false },
 };

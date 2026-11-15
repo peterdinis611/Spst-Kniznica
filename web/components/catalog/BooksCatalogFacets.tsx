@@ -100,8 +100,8 @@ export function BooksCatalogFacets({
           aria-pressed={Boolean(filters.available)}
           aria-label={
             filters.available
-              ? "Filter: len dostupné tituly (aktívny)"
-              : "Filter: len dostupné tituly"
+              ? "Filtrovať: len dostupné tituly (aktívny)"
+              : "Filtrovať: len dostupné tituly"
           }
         >
           <span

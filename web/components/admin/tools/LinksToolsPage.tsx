@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ToolCard, ToolShell } from "@/components/admin/tools/ToolShell";
 
 const FRONTEND = [
-  { href: "/", label: "Landing" },
+  { href: "/", label: "Úvodná stránka" },
   { href: "/books", label: "Katalóg kníh" },
   { href: "/authors", label: "Autori" },
   { href: "/categories", label: "Kategórie" },
@@ -13,27 +13,27 @@ const FRONTEND = [
 ] as const;
 
 const SWAGGER = [
-  { href: "http://localhost:5200/swagger", label: "Gateway" },
-  { href: "http://localhost:5203/swagger", label: "BookService" },
-  { href: "http://localhost:5204/swagger", label: "CategoryService" },
-  { href: "http://localhost:5207/swagger", label: "AuthorService" },
-  { href: "http://localhost:5208/swagger", label: "BookingService" },
-  { href: "http://localhost:5209/swagger", label: "WorkersService" },
-  { href: "http://localhost:5205/swagger", label: "MessagingService" },
-  { href: "http://localhost:5206/swagger", label: "CacheService" },
-  { href: "http://localhost:5210/swagger", label: "AuthService" },
-  { href: "http://localhost:5211/swagger", label: "AdminService" },
+  { href: "http://localhost:5200/swagger", label: "API brána" },
+  { href: "http://localhost:5203/swagger", label: "Služba kníh" },
+  { href: "http://localhost:5204/swagger", label: "Služba kategórií" },
+  { href: "http://localhost:5207/swagger", label: "Služba autorov" },
+  { href: "http://localhost:5208/swagger", label: "Služba výpožičiek" },
+  { href: "http://localhost:5209/swagger", label: "Služba fronty" },
+  { href: "http://localhost:5205/swagger", label: "Služba správ" },
+  { href: "http://localhost:5206/swagger", label: "Služba cache" },
+  { href: "http://localhost:5210/swagger", label: "Služba autentifikácie" },
+  { href: "http://localhost:5211/swagger", label: "Služba správy" },
 ] as const;
 
 export function LinksToolsPage() {
   return (
     <ToolShell
       title="Odkazy"
-      eyebrow="Navigácia · Swagger"
-      lead="Rýchle skoky do frontendu a Development Swagger UI služieb."
+      eyebrow="Navigácia · dokumentácia API"
+      lead="Rýchle skoky do webovej aplikácie a vývojového Swagger UI služieb."
     >
       <div className="grid gap-4 md:grid-cols-2">
-        <ToolCard title="Frontend">
+        <ToolCard title="Webová aplikácia">
           <ul className="space-y-1">
             {FRONTEND.map((item) => (
               <li key={item.href}>
@@ -51,7 +51,7 @@ export function LinksToolsPage() {
           </ul>
         </ToolCard>
 
-        <ToolCard title="Swagger (local)">
+        <ToolCard title="Swagger (lokálne)">
           <ul className="space-y-1">
             {SWAGGER.map((item) => (
               <li key={item.href}>

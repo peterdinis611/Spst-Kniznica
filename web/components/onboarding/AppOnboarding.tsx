@@ -18,7 +18,7 @@ const steps = [
   {
     n: "01",
     title: "Nájdi titul",
-    body: "V katalógu filtruj knihy, autorov alebo kategórie. Všetko ide cez školský gateway.",
+    body: "V katalógu filtruj knihy, autorov alebo kategórie. Všetko ide cez školskú API bránu.",
     href: "/books",
     label: "Katalóg",
     Icon: Search,
@@ -180,7 +180,7 @@ export function AppOnboarding({ className }: { className?: string }) {
           </p>
         </div>
         <p className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground/80 uppercase">
-          4 kroky · výpožičky cez gateway
+          4 kroky · výpožičky cez API bránu
         </p>
       </div>
     </section>

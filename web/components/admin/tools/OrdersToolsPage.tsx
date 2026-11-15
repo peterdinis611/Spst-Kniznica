@@ -36,7 +36,7 @@ export function OrdersToolsPage() {
       setLast(result);
       notify(`Job ${result.jobId} zaradený`, { type: "success" });
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Enqueue zlyhal", {
+      notify(err instanceof Error ? err.message : "Zaradenie do fronty zlyhalo", {
         type: "error",
       });
     } finally {
@@ -46,15 +46,15 @@ export function OrdersToolsPage() {
 
   return (
     <ToolShell
-      title="Workers / Orders"
-      eyebrow="WorkersService · queue"
-      lead="Zaradenie testovacej úlohy do order fronty (diagnostika workerov)."
+      title="Fronta úloh / objednávky"
+      eyebrow="WorkersService · fronta"
+      lead="Zaradenie testovacej úlohy do fronty objednávok (diagnostika workerov)."
     >
-      <ToolCard title="Enqueue">
+      <ToolCard title="Zaradiť do fronty">
         <TextField
           size="small"
           fullWidth
-          label="Order ID"
+          label="ID objednávky"
           value={orderId}
           onChange={(e) => setOrderId(e.target.value)}
           sx={{ "& .MuiOutlinedInput-root": { borderRadius: 0 } }}

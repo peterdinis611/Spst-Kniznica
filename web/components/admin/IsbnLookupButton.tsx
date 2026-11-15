@@ -53,7 +53,7 @@ export function IsbnLookupButton() {
       if (data.isbn) setValue("isbn", data.isbn, { shouldDirty: true });
       notify(`Načítané z ${data.source ?? "Open Library"}`, { type: "success" });
     } catch (err) {
-      notify(err instanceof Error ? err.message : "ISBN lookup zlyhal", {
+      notify(err instanceof Error ? err.message : "Vyhľadanie ISBN zlyhalo", {
         type: "error",
       });
     } finally {

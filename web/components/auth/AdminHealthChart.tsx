@@ -46,8 +46,8 @@ export function AdminHealthChart({
 
   const summary = useMemo(
     () => [
-      { label: "Healthy", count: healthyCount },
-      { label: "Down", count: unhealthyCount },
+      { label: "V poriadku", count: healthyCount },
+      { label: "Nefunguje", count: unhealthyCount },
     ],
     [healthyCount, unhealthyCount],
   );
@@ -95,7 +95,7 @@ export function AdminHealthChart({
           barY(summary, {
             x: "label",
             y: "count",
-            fill: (d) => (d.label === "Healthy" ? ok : down),
+            fill: (d) => (d.label === "V poriadku" ? ok : down),
           }),
         ],
         scales: {
@@ -138,16 +138,16 @@ export function AdminHealthChart({
           <Chart
             definition={summaryChart}
             height={200}
-            ariaLabel="Počet healthy a down služieb"
+            ariaLabel="Počet služieb v poriadku a mimo prevádzky"
           />
         </div>
         <dl className="mt-2 flex gap-4 font-mono text-[11px] tracking-wide text-muted-foreground">
           <div>
-            <dt className="uppercase opacity-70">OK</dt>
+            <dt className="uppercase opacity-70">V poriadku</dt>
             <dd className="text-lg text-sage tabular-nums">{healthyCount}</dd>
           </div>
           <div>
-            <dt className="uppercase opacity-70">Down</dt>
+            <dt className="uppercase opacity-70">Nefunguje</dt>
             <dd className="text-lg text-stair-2 tabular-nums">{unhealthyCount}</dd>
           </div>
         </dl>

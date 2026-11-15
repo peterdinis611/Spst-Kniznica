@@ -51,13 +51,13 @@ export function AccountPage() {
         "/api/admin/ping",
       );
       setPing(result);
-      notify("Admin ping OK", { type: "success" });
+      notify("Test administrátora v poriadku", { type: "success" });
     } catch (err) {
       setPing(null);
       notify(
         err instanceof Error
           ? err.message
-          : "Ping zlyhal (vyžaduje rolu Admin)",
+          : "Test zlyhal (vyžaduje rolu administrátora)",
         { type: "warning" },
       );
     }
@@ -67,10 +67,10 @@ export function AccountPage() {
     <ToolShell
       title="Účet"
       eyebrow="Auth · AdminService"
-      lead="Identita zo session a staff/admin overenie."
+      lead="Identita zo session a overenie personálu/administrátora."
     >
       <div className="grid gap-4 md:grid-cols-2">
-        <ToolCard title="Auth /me">
+        <ToolCard title="Prihlásený používateľ">
           {me ? (
             <dl className="space-y-2 text-sm">
               <div>
@@ -82,17 +82,17 @@ export function AccountPage() {
                 <dd className="break-all">{me.email ?? "—"}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Role</dt>
+                <dt className="text-muted-foreground">Roly</dt>
                 <dd className="font-mono text-xs">
                   {(me.roles ?? []).join(", ") || "—"}
                 </dd>
               </div>
               <div className="flex gap-3 pt-1 font-mono text-[11px] tracking-wide uppercase">
                 <span className={me.isStaff ? "text-sage" : "text-stair-2"}>
-                  staff {me.isStaff ? "yes" : "no"}
+                  personál {me.isStaff ? "áno" : "nie"}
                 </span>
                 <span className={me.isAdmin ? "text-sage" : "text-muted-foreground"}>
-                  admin {me.isAdmin ? "yes" : "no"}
+                  administrátor {me.isAdmin ? "áno" : "nie"}
                 </span>
               </div>
             </dl>
@@ -101,7 +101,7 @@ export function AccountPage() {
           )}
         </ToolCard>
 
-        <ToolCard title="Admin whoami">
+        <ToolCard title="Identita administrátora">
           {whoami ? (
             <dl className="space-y-2 text-sm">
               <div>
@@ -113,7 +113,7 @@ export function AccountPage() {
                 <dd>{whoami.name ?? "—"}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Role</dt>
+                <dt className="text-muted-foreground">Roly</dt>
                 <dd className="font-mono text-xs">
                   {(whoami.roles ?? []).join(", ") || "—"}
                 </dd>
@@ -124,14 +124,14 @@ export function AccountPage() {
                     whoami.isStaff ? "text-sage" : "text-stair-2"
                   }
                 >
-                  staff {whoami.isStaff ? "yes" : "no"}
+                  personál {whoami.isStaff ? "áno" : "nie"}
                 </span>
                 <span
                   className={
                     whoami.isAdmin ? "text-sage" : "text-muted-foreground"
                   }
                 >
-                  admin {whoami.isAdmin ? "yes" : "no"}
+                  administrátor {whoami.isAdmin ? "áno" : "nie"}
                 </span>
               </div>
             </dl>
@@ -151,7 +151,7 @@ export function AccountPage() {
             onClick={() => void adminPing()}
             sx={{ mt: 2, borderRadius: 0 }}
           >
-            Admin ping
+            Test administrátora
           </Button>
           {ping ? (
             <p className="mt-3 font-mono text-xs text-sage">

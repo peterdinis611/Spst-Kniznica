@@ -24,7 +24,7 @@ export function RelationsPage() {
     try {
       setSummary(await adminHttp<RelationSummary>("/api/relations/summary"));
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Summary zlyhalo", {
+      notify(err instanceof Error ? err.message : "Súhrn zlyhal", {
         type: "error",
       });
     } finally {
@@ -49,7 +49,7 @@ export function RelationsPage() {
   return (
     <ToolShell
       title="Relácie fondu"
-      eyebrow="MessagingService · graph"
+      eyebrow="MessagingService · graf"
       lead="Súhrn väzieb kníh ↔ autori ↔ kategórie (cache ~1 min)."
     >
       <div className="flex justify-end">

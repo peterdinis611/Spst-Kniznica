@@ -24,12 +24,12 @@ export function AdminMenu() {
       />
       <Menu.Item
         to="/tools/gateway"
-        primaryText="Gateway"
+        primaryText="API brána"
         leftIcon={<RouterIcon />}
       />
       <Menu.Item
         to="/tools/health"
-        primaryText="Health probe"
+        primaryText="Kontrola zdravia"
         leftIcon={<MonitorHeartIcon />}
       />
       <Menu.Item
@@ -39,12 +39,12 @@ export function AdminMenu() {
       />
       <Menu.Item
         to="/tools/cache"
-        primaryText="Cache"
+        primaryText="Vyrovnávacia pamäť"
         leftIcon={<StorageIcon />}
       />
       <Menu.Item
         to="/tools/messaging"
-        primaryText="Messaging"
+        primaryText="Správy"
         leftIcon={<HubIcon />}
       />
       <Menu.Item
@@ -54,7 +54,7 @@ export function AdminMenu() {
       />
       <Menu.Item
         to="/tools/orders"
-        primaryText="Workers"
+        primaryText="Fronta úloh"
         leftIcon={<QueueIcon />}
       />
       <Menu.Item

@@ -26,7 +26,7 @@ export function GatewayToolsPage() {
     try {
       setData(await adminHttp<GatewayStatus>("/api/gateway/status"));
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Gateway status zlyhal", {
+      notify(err instanceof Error ? err.message : "Stav brány zlyhal", {
         type: "error",
       });
     } finally {
@@ -40,9 +40,9 @@ export function GatewayToolsPage() {
 
   return (
     <ToolShell
-      title="Gateway"
-      eyebrow="YARP · routing"
-      lead="Aktívne routes, clustre a upstream adresy mikroslužieb."
+      title="Brána"
+      eyebrow="YARP · smerovanie"
+      lead="Aktívne trasy, clustre a adresy upstream mikroslužieb."
     >
       <div className="flex justify-end">
         <Button
@@ -57,7 +57,7 @@ export function GatewayToolsPage() {
 
       {data ? (
         <>
-          <ToolCard title="Upstream služby">
+          <ToolCard title="Cieľové služby">
             <ul className="divide-y divide-rule dark:divide-white/10">
               {Object.entries(data.services ?? {}).map(([name, url]) => (
                 <li
@@ -73,13 +73,13 @@ export function GatewayToolsPage() {
             </ul>
           </ToolCard>
 
-          <ToolCard title={`Routes (${data.routes?.length ?? 0})`}>
+          <ToolCard title={`Trasy (${data.routes?.length ?? 0})`}>
             <div className="max-h-80 overflow-auto">
               <table className="w-full text-left text-sm">
                 <thead className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
                   <tr>
-                    <th className="py-1 pr-3">Route</th>
-                    <th className="py-1 pr-3">Path</th>
+                    <th className="py-1 pr-3">Trasa</th>
+                    <th className="py-1 pr-3">Cesta</th>
                     <th className="py-1">Cluster</th>
                   </tr>
                 </thead>
@@ -105,7 +105,7 @@ export function GatewayToolsPage() {
             </div>
           </ToolCard>
 
-          <ToolCard title={`Clusters (${data.clusters?.length ?? 0})`}>
+          <ToolCard title={`Clustre (${data.clusters?.length ?? 0})`}>
             <ul className="space-y-3">
               {(data.clusters ?? []).map((cluster) => (
                 <li key={cluster.clusterId}>

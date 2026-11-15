@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setError(
         formatAuthError(
-          err instanceof Error ? err.message : "Auth refresh failed",
+          err instanceof Error ? err.message : "Obnova prihlásenia zlyhala",
         ),
       );
     }
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setError(
             formatAuthError(
-              err instanceof Error ? err.message : "Auth bootstrap failed",
+              err instanceof Error ? err.message : "Spustenie prihlásenia zlyhalo",
             ),
           );
         }

@@ -19,7 +19,7 @@ export function ServicesRegistryPage() {
     try {
       setData(await fetchAdminServices());
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Registry zlyhal", {
+      notify(err instanceof Error ? err.message : "Register služieb zlyhal", {
         type: "error",
       });
     } finally {
@@ -35,7 +35,7 @@ export function ServicesRegistryPage() {
     <ToolShell
       title="Služby"
       eyebrow="AdminService · registry"
-      lead="Konfigurované base URL sibling mikroslužieb z AdminService."
+      lead="Nakonfigurované základné URL súvisiacich mikroslužieb z AdminService."
     >
       <div className="flex justify-end">
         <Button
@@ -75,7 +75,7 @@ export function ServicesRegistryPage() {
       </ToolCard>
       {data ? (
         <p className="font-mono text-[10px] text-muted-foreground">
-          generated · {new Date(data.generatedAt).toLocaleString("sk-SK")}
+          vygenerované · {new Date(data.generatedAt).toLocaleString("sk-SK")}
         </p>
       ) : null}
     </ToolShell>

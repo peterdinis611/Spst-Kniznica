@@ -18,16 +18,16 @@ import {
 import { cn } from "@/lib/utils";
 
 const TOOL_LINKS = [
-  { to: "/audit-logs", label: "Audit" },
-  { to: "/tools/export", label: "Export" },
-  { to: "/tools/import", label: "Import" },
-  { to: "/tools/gateway", label: "Gateway" },
-  { to: "/tools/health", label: "Health" },
+  { to: "/audit-logs", label: "Denník" },
+  { to: "/tools/export", label: "Exportovať" },
+  { to: "/tools/import", label: "Importovať" },
+  { to: "/tools/gateway", label: "API brána" },
+  { to: "/tools/health", label: "Zdravie" },
   { to: "/tools/services", label: "Služby" },
-  { to: "/tools/cache", label: "Cache" },
-  { to: "/tools/messaging", label: "Messaging" },
+  { to: "/tools/cache", label: "Vyrovnávacia pamäť" },
+  { to: "/tools/messaging", label: "Správy" },
   { to: "/tools/relations", label: "Relácie" },
-  { to: "/tools/orders", label: "Workers" },
+  { to: "/tools/orders", label: "Fronta úloh" },
   { to: "/tools/links", label: "Odkazy" },
   { to: "/tools/account", label: "Účet" },
 ] as const;
@@ -159,7 +159,7 @@ function AttentionList({ data }: { data: AdminOverview }) {
         id="admin-attention-heading"
         className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
       >
-        Pozornosť · overdue / due soon
+        Pozornosť · po termíne / blížiace sa termíny
       </p>
       <ul
         className="divide-y divide-rule border border-rule dark:divide-white/10 dark:border-white/10"
@@ -240,7 +240,7 @@ export function AdminRaDashboard() {
       <header className="flex flex-col gap-5 border-b border-rule pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-white/10">
         <div className="min-w-0">
           <p className="font-mono text-[10px] tracking-[0.22em] text-sage uppercase">
-            AdminService · overview
+            AdminService · prehľad
           </p>
           <h1 className="mt-2 font-display text-[clamp(1.9rem,4vw,2.75rem)] leading-none tracking-tight text-ink">
             Prevádzkový pult
@@ -251,7 +251,7 @@ export function AdminRaDashboard() {
               <>
                 {" · "}
                 <span className="text-sage tabular-nums">
-                  {data.healthyCount} healthy
+                  {data.healthyCount} v poriadku
                 </span>
                 {" / "}
                 <span
@@ -262,7 +262,7 @@ export function AdminRaDashboard() {
                       : "text-muted-foreground",
                   )}
                 >
-                  {data.unhealthyCount} down
+                  {data.unhealthyCount} mimo prevádzky
                 </span>
               </>
             ) : null}
@@ -290,7 +290,7 @@ export function AdminRaDashboard() {
         </div>
       </header>
 
-      <nav className="flex flex-wrap gap-2" aria-label="Admin nástroje">
+      <nav className="flex flex-wrap gap-2" aria-label="Nástroje správy">
         {TOOL_LINKS.map((item) => (
           <Button
             key={item.to}
@@ -349,7 +349,8 @@ export function AdminRaDashboard() {
                     <h2 className="font-display text-xl leading-tight tracking-tight text-ink">
                       {service.name.replace(/Service$/i, "")}
                       <span className="font-sans text-sm font-normal text-muted-foreground">
-                        Service
+                        {" "}
+                        služba
                       </span>
                     </h2>
                     <span
@@ -358,7 +359,7 @@ export function AdminRaDashboard() {
                         service.healthy ? "text-sage" : "text-stair-2",
                       )}
                     >
-                      {service.healthy ? "healthy" : service.status}
+                      {service.healthy ? "v poriadku" : service.status}
                     </span>
                   </div>
                   <p className="mt-2 truncate pl-1 font-mono text-[11px] text-muted-foreground">

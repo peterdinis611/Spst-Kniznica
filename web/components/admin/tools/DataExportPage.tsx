@@ -22,37 +22,37 @@ const TARGETS: ExportTarget[] = [
     id: "books",
     label: "Knihy",
     path: "/api/books/export",
-    note: "Katalóg (max 5000 riadkov). Staff.",
+    note: "Katalóg (max 5000 riadkov). Personál.",
   },
   {
     id: "authors",
     label: "Autori",
     path: "/api/authors/export",
-    note: "Autori. Staff.",
+    note: "Autori. Personál.",
   },
   {
     id: "categories",
     label: "Kategórie",
     path: "/api/categories/export",
-    note: "Kategórie. Staff.",
+    note: "Kategórie. Personál.",
   },
   {
     id: "bookings",
     label: "Rezervácie / výpožičky",
     path: "/api/bookings/export",
-    note: "Obsahuje PII (meno, email). Staff · auditované.",
+    note: "Obsahuje osobné údaje (meno, e-mail). Personál · auditované.",
   },
   {
     id: "desk",
     label: "Denný pult",
     path: "/api/bookings/desk/daily.csv",
-    note: "Overdue / due soon / pickup. Len CSV. Staff · PII.",
+    note: "Po termíne / blížiace sa / na vyzdvihnutie. Len CSV. Personál · osobné údaje.",
   },
   {
     id: "audit",
-    label: "Audit logy",
+    label: "Záznamy auditu",
     path: "/api/admin/audit-logs/export",
-    note: "Len Admin (nie Librarian). Auditované.",
+    note: "Len administrátor (nie knižník). Auditované.",
     adminOnly: true,
   },
 ];
@@ -101,8 +101,8 @@ export function DataExportPage() {
   return (
     <ToolShell
       title="Export dát"
-      eyebrow="CSV · XML · pen-test ready"
-      lead="Serverové exporty so Staff/Admin oprávnením, rate limitom (data-export), audit logom a ochranou proti CSV formula injection. Max 5000 riadkov na request."
+      eyebrow="CSV · XML · pripravené na penetračné testy"
+      lead="Serverové exporty s oprávnením personálu/administrátora, obmedzením frekvencie (data-export), denníkom auditu a ochranou proti CSV formula injection. Max 5000 riadkov na požiadavku."
     >
       <ToolCard title="Formát">
         <div className="flex flex-wrap gap-3">
@@ -128,12 +128,12 @@ export function DataExportPage() {
           />
         </div>
         <p className="mt-3 font-mono text-[11px] text-muted-foreground">
-          Denný pult je vždy CSV. Audit export vyžaduje AdminOnly. Cache-Control:
-          no-store.
+          Denný pult je vždy CSV. Export auditu vyžaduje len administrátora.
+          Odpoveď: Cache-Control: no-store.
         </p>
       </ToolCard>
 
-      <ToolCard title="Dataset">
+      <ToolCard title="Dátová sada">
         <ul className="space-y-3">
           {TARGETS.map((target) => (
             <li
