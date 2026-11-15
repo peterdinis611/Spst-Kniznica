@@ -37,7 +37,8 @@ try
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
 
     builder.Services.AddDbContext<CategoryDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -54,13 +55,9 @@ try
 
     Log.Information("Starting CategoryService in {Environment} environment", app.Environment.EnvironmentName);
 
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<CategoryDbContext>();
-        await db.Database.MigrateAsync();
-        await CategorySeed.EnsureSeededAsync(db);
-        Log.Information("Database migrations applied; seed checked");
-    }
+    await app.Services.MigrateSpstDatabaseAsync<CategoryDbContext>(
+        "CategoryService",
+        async (db, _) => await CategorySeed.EnsureSeededAsync(db));
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();

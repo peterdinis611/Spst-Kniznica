@@ -39,7 +39,8 @@ try
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
 
     builder.Services.AddDbContext<MessagingDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<ILibraryRelationService, LibraryRelationService>();
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
@@ -71,12 +72,7 @@ try
         kafkaEnabled,
         rabbitEnabled);
 
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<MessagingDbContext>();
-        await db.Database.MigrateAsync();
-        Log.Information("Messaging projection database migrations applied");
-    }
+    await app.Services.MigrateSpstDatabaseAsync<MessagingDbContext>("MessagingService");
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();

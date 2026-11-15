@@ -41,7 +41,8 @@ try
     builder.Services.AddSpstIntegrations(builder.Configuration);
 
     builder.Services.AddDbContext<BookDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<IBookRepository, BookRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -73,14 +74,13 @@ try
 
     Log.Information("Starting BookService in {Environment} environment", app.Environment.EnvironmentName);
 
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<BookDbContext>();
-        await db.Database.MigrateAsync();
-        await BookIntegrationsSchema.EnsureAsync(db);
-        await BookSeed.EnsureSeededAsync(db);
-        Log.Information("Database migrations applied; seed checked");
-    }
+    await app.Services.MigrateSpstDatabaseAsync<BookDbContext>(
+        "BookService",
+        async (db, ct) =>
+        {
+            await BookIntegrationsSchema.EnsureAsync(db, ct);
+            await BookSeed.EnsureSeededAsync(db);
+        });
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();

@@ -45,7 +45,8 @@ try
     builder.Services.AddSpstIntegrations(builder.Configuration);
 
     builder.Services.AddDbContext<BookingDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .ConfigureSpstMigrations());
 
     builder.Services.Configure<BookCatalogOptions>(
         builder.Configuration.GetSection(BookCatalogOptions.SectionName));
@@ -77,14 +78,13 @@ try
 
     Log.Information("Starting BookingService in {Environment} environment", app.Environment.EnvironmentName);
 
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
-        await db.Database.MigrateAsync();
-        await LibraryOpsSchema.EnsureAsync(db);
-        await BookingSeed.EnsureSeededAsync(db);
-        Log.Information("Database migrations applied; library ops schema + seed checked");
-    }
+    await app.Services.MigrateSpstDatabaseAsync<BookingDbContext>(
+        "BookingService",
+        async (db, ct) =>
+        {
+            await LibraryOpsSchema.EnsureAsync(db, ct);
+            await BookingSeed.EnsureSeededAsync(db);
+        });
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();

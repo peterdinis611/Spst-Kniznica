@@ -42,8 +42,9 @@ try
 
     builder.Services.AddDbContext<AdminDbContext>(options =>
         options.UseSqlite(
-            builder.Configuration.GetConnectionString("DefaultConnection")
-            ?? "Data Source=admin.db"));
+                builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? "Data Source=admin.db")
+            .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<AuditLogService>();
     builder.Services.AddScoped<IAuditSink>(sp => sp.GetRequiredService<AuditLogService>());
@@ -62,12 +63,7 @@ try
         app.Environment.EnvironmentName,
         app.Configuration.GetValue("Entra:Enabled", false));
 
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
-        await db.Database.EnsureCreatedAsync();
-        Log.Information("Admin database ready (audit logs)");
-    }
+    await app.Services.MigrateSpstDatabaseAsync<AdminDbContext>("AdminService");
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();

@@ -38,7 +38,8 @@ try
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
 
     builder.Services.AddDbContext<AuthorDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -56,14 +57,13 @@ try
 
     Log.Information("Starting AuthorService in {Environment} environment", app.Environment.EnvironmentName);
 
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AuthorDbContext>();
-        await db.Database.MigrateAsync();
-        await AuthorIntegrationsSchema.EnsureAsync(db);
-        await AuthorSeed.EnsureSeededAsync(db);
-        Log.Information("Database migrations applied; seed checked");
-    }
+    await app.Services.MigrateSpstDatabaseAsync<AuthorDbContext>(
+        "AuthorService",
+        async (db, ct) =>
+        {
+            await AuthorIntegrationsSchema.EnsureAsync(db, ct);
+            await AuthorSeed.EnsureSeededAsync(db);
+        });
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();
