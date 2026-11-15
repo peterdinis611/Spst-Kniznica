@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 type ShelfZone = { id: string; label: string };
@@ -45,6 +46,7 @@ function FilterOption({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
         "rounded-sm border px-3 py-2 text-left text-sm transition",
         active
@@ -128,12 +130,18 @@ export function BooksCatalogFiltersDialog({
             <legend className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
               Autor
             </legend>
-            <Input
-              value={authorQuery}
-              onChange={(e) => setAuthorQuery(e.target.value)}
-              placeholder="Hľadať meno autora…"
-              className="h-10 rounded-none border-rule bg-paper dark:border-white/15 dark:bg-paper-deep"
-            />
+            <div>
+              <Label htmlFor="filters-author-q" className="sr-only">
+                Hľadať autora
+              </Label>
+              <Input
+                id="filters-author-q"
+                value={authorQuery}
+                onChange={(e) => setAuthorQuery(e.target.value)}
+                placeholder="Hľadať meno autora…"
+                className="h-10 rounded-none border-rule bg-paper dark:border-white/15 dark:bg-paper-deep"
+              />
+            </div>
             <div className="max-h-44 space-y-1 overflow-y-auto pr-1">
               <FilterOption
                 active={!draft.author}

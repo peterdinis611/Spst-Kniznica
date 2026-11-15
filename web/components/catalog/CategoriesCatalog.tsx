@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
+import { ResultsStatus } from "@/components/a11y/ResultsStatus";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
@@ -52,6 +53,14 @@ export function CategoriesCatalog({
 
   return (
     <>
+      <ResultsStatus
+        count={results.length}
+        labelSingular="kategória"
+        labelPlural="kategórií"
+        pending={isPending}
+        query={liveQuery}
+      />
+
       <CatalogBreadcrumb
         items={[{ label: "Katalóg", href: "/books" }, { label: "Kategórie" }]}
       />

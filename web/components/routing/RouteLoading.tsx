@@ -20,14 +20,16 @@ export function RouteLoading({
         )}
         aria-busy
         aria-live="polite"
+        role="status"
       >
-        <div className="space-y-5">
+        <span className="sr-only">Načítavam stránku…</span>
+        <div className="space-y-5" aria-hidden>
           <Skeleton className="h-3 w-28" />
           <Skeleton className="h-16 w-full max-w-md sm:h-20" />
           <Skeleton className="h-4 w-full max-w-sm" />
           <Skeleton className="h-12 w-48" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4" aria-hidden>
           <Skeleton className="aspect-[3/4] w-full" />
           <Skeleton className="mt-10 aspect-[3/4] w-full" />
         </div>
@@ -37,62 +39,74 @@ export function RouteLoading({
 
   if (variant === "detail") {
     return (
-      <main
+      <div
         className={cn(
           "mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-10",
           className,
         )}
         aria-busy
+        role="status"
       >
-        <Skeleton className="h-3 w-40" />
-        <div className="mt-8 grid gap-8 border-t border-rule pt-8 md:grid-cols-[240px_1fr] dark:border-white/10">
-          <Skeleton className="mx-auto aspect-[3/4] w-44 sm:w-full" />
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <Skeleton className="h-7 w-24 rounded-full" />
-              <Skeleton className="h-7 w-28 rounded-full" />
+        <span className="sr-only">Načítavam detail…</span>
+        <div aria-hidden>
+          <Skeleton className="h-3 w-40" />
+          <div className="mt-8 grid gap-8 border-t border-rule pt-8 md:grid-cols-[240px_1fr] dark:border-white/10">
+            <Skeleton className="mx-auto aspect-[3/4] w-44 sm:w-full" />
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Skeleton className="h-7 w-24 rounded-full" />
+                <Skeleton className="h-7 w-28 rounded-full" />
+              </div>
+              <Skeleton className="h-14 w-full max-w-xl" />
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="mt-6 h-28 w-full max-w-xl" />
             </div>
-            <Skeleton className="h-14 w-full max-w-xl" />
-            <Skeleton className="h-5 w-48" />
-            <Skeleton className="mt-6 h-28 w-full max-w-xl" />
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (variant === "auth" || variant === "admin") {
     return (
-      <main
+      <div
         className={cn(
           "mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10 sm:px-6 md:px-8",
           className,
         )}
         aria-busy
+        role="status"
       >
-        <Skeleton className="h-3 w-24" />
-        <Skeleton className="mt-3 h-12 w-72 max-w-full" />
-        <Skeleton className="mt-3 h-4 w-full max-w-md" />
-        <Skeleton
-          className={cn(
-            "mt-8 w-full",
-            variant === "admin" ? "h-64" : "h-56 max-w-md",
-          )}
-        />
-      </main>
+        <span className="sr-only">Načítavam…</span>
+        <div aria-hidden>
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="mt-3 h-12 w-72 max-w-full" />
+          <Skeleton className="mt-3 h-4 w-full max-w-md" />
+          <Skeleton
+            className={cn(
+              "mt-8 w-full",
+              variant === "admin" ? "h-64" : "h-56 max-w-md",
+            )}
+          />
+        </div>
+      </div>
     );
   }
 
   return (
-    <main
+    <div
       className={cn(
         "mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-10",
         className,
       )}
       aria-busy
       aria-live="polite"
+      role="status"
     >
-      <CatalogSkeleton rows={4} />
-    </main>
+      <span className="sr-only">Načítavam katalóg…</span>
+      <div aria-hidden>
+        <CatalogSkeleton rows={4} />
+      </div>
+    </div>
   );
 }

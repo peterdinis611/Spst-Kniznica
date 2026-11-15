@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { MainContent } from "@/components/a11y/MainContent";
 import { LandingContent } from "@/components/landing/LandingContent";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/landing/SiteHeader";
@@ -20,12 +21,14 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <main className="relative flex min-h-full flex-1 flex-col overflow-x-hidden bg-paper">
+    <div className="relative flex min-h-full flex-1 flex-col overflow-x-hidden bg-paper">
       <SiteHeader />
 
-      <Suspense fallback={<RouteLoading variant="landing" />}>
-        <LandingContent />
-      </Suspense>
+      <MainContent className="relative z-10 flex min-w-0 flex-1 flex-col">
+        <Suspense fallback={<RouteLoading variant="landing" />}>
+          <LandingContent />
+        </Suspense>
+      </MainContent>
 
       <Suspense
         fallback={
@@ -36,6 +39,6 @@ export default function HomePage() {
       >
         <SiteFooter />
       </Suspense>
-    </main>
+    </div>
   );
 }

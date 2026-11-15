@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Sora, IBM_Plex_Mono } from "next/font/google";
+import { LiveAnnouncerProvider } from "@/components/a11y/LiveAnnouncer";
+import { SkipToContent } from "@/components/a11y/SkipToContent";
 import { AbilityProvider } from "@/components/auth/AbilityProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -125,6 +127,7 @@ export default function RootLayout({
         className="flex min-h-full flex-col overflow-x-hidden bg-paper text-ink"
         suppressHydrationWarning
       >
+        <SkipToContent />
         <JsonLd data={[libraryJsonLd(), websiteJsonLd()]} />
         <ThemeProvider
           attribute="class"
@@ -134,10 +137,11 @@ export default function RootLayout({
         >
           <AuthProvider>
             <AbilityProvider>
-              <ServerStatusBanner />
-              {children}
-
-              <ScrollToTopLazy />
+              <LiveAnnouncerProvider>
+                <ServerStatusBanner />
+                {children}
+                <ScrollToTopLazy />
+              </LiveAnnouncerProvider>
             </AbilityProvider>
           </AuthProvider>
         </ThemeProvider>

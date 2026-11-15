@@ -44,6 +44,12 @@ export function FavoriteToggle({ bookId }: { bookId: string }) {
       type="button"
       variant="outline"
       disabled={busy}
+      aria-pressed={active}
+      aria-label={
+        active
+          ? "Odstrániť z obľúbených"
+          : "Pridať do obľúbených"
+      }
       className={cn(
         "h-11 rounded-none border-rule",
         active && "border-stair-2 text-stair-2",

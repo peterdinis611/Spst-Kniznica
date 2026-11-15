@@ -63,7 +63,9 @@ export async function AuthorMoreBooks({
 
       <ul className="mt-8 grid grid-cols-2 gap-3 pb-4 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 md:gap-5">
         {books.map((book, index) => (
-          <BookCard key={book.id} book={book} index={index} />
+          <li key={book.id}>
+            <BookCard book={book} index={index} />
+          </li>
         ))}
       </ul>
     </section>

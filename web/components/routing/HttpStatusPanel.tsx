@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { MainContent } from "@/components/a11y/MainContent";
 import {
   HTTP_STATUS_COPY,
   type HttpStatusCode,
@@ -295,8 +296,8 @@ export function HttpStatusPageShell({
   children: ReactNode;
 }) {
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 py-14 sm:px-6 md:px-8 md:py-20">
+    <MainContent className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 py-14 sm:px-6 md:px-8 md:py-20">
       {children}
-    </main>
+    </MainContent>
   );
 }

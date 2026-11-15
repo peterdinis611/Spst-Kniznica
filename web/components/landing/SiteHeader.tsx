@@ -80,6 +80,7 @@ function DesktopNav({ className }: { className?: string }) {
           <Link
             key={link.href}
             href={link.href}
+            aria-current={active ? "page" : undefined}
             className={cn(
               "relative text-sm font-medium tracking-wide transition",
               active
@@ -119,6 +120,7 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
               <Link
                 href={link.href}
                 onClick={onNavigate}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "group relative flex items-baseline gap-4 px-5 py-4 transition",
                   "border-b border-rule last:border-b-0 dark:border-white/10",
@@ -214,7 +216,7 @@ export function SiteHeader() {
               />
             }
           >
-            <Menu className="size-4" />
+            <Menu className="size-4" aria-hidden />
           </SheetTrigger>
           <SheetContent
             side="right"
@@ -253,7 +255,7 @@ export function SiteHeader() {
                     />
                   }
                 >
-                  <X className="size-4" strokeWidth={1.8} />
+                  <X className="size-4" strokeWidth={1.8} aria-hidden />
                 </SheetClose>
               </div>
             </SheetHeader>

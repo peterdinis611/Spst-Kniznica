@@ -222,16 +222,51 @@
     scroll-behavior: smooth;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
   body {
     min-height: 100vh;
     font-family: var(--font-body-family), ui-sans-serif, sans-serif;
     @apply bg-background text-foreground antialiased;
   }
 
+  :focus-visible {
+    outline: 2px solid var(--sage);
+    outline-offset: 3px;
+  }
+
   ::selection {
     background: color-mix(in srgb, var(--accent-brand) 55%, transparent);
     color: var(--ink);
   }
+}
+
+/* First Tab stop — visible only when focused */
+.skip-to-content {
+  position: absolute;
+  z-index: 100;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.65rem 1rem;
+  transform: translateY(-160%);
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 120ms ease;
+}
+
+.skip-to-content:focus,
+.skip-to-content:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--sage);
+  outline-offset: 3px;
 }
 
 @layer utilities {

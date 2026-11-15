@@ -225,7 +225,9 @@ async function AuthorDetailContent({
         ) : (
           <ul className="mt-8 grid grid-cols-2 gap-3 pb-16 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 md:gap-5">
             {books.map((book, index) => (
-              <BookCard key={book.id} book={book} index={index} />
+              <li key={book.id}>
+                <BookCard book={book} index={index} />
+              </li>
             ))}
           </ul>
         )}
@@ -236,10 +238,10 @@ async function AuthorDetailContent({
 
 export default function AuthorDetailPage({ params }: AuthorDetailPageProps) {
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-10">
       <Suspense fallback={<CatalogSkeleton rows={2} />}>
         <AuthorDetailContent params={params} />
       </Suspense>
-    </main>
+    </div>
   );
 }

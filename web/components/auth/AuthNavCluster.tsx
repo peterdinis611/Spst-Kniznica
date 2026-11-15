@@ -51,7 +51,7 @@ export function AuthNavCluster() {
           aria-label="Účet"
           render={<Link href="/login" />}
         >
-          <LogIn className="size-4" strokeWidth={1.8} />
+          <LogIn className="size-4" strokeWidth={1.8} aria-hidden />
         </Button>
       </span>
     );
@@ -74,7 +74,7 @@ export function AuthNavCluster() {
         aria-label="Prihlásiť sa"
         render={<Link href="/login" />}
       >
-        <LogIn className="size-4" strokeWidth={1.8} />
+        <LogIn className="size-4" strokeWidth={1.8} aria-hidden />
       </Button>
     </span>
   );

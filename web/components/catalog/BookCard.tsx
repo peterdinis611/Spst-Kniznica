@@ -42,7 +42,7 @@ export function BookCard({ book, index = 0 }: BookCardProps) {
       : `${book.availableCopies} z ${book.totalCopies} exemplárov je voľných`;
 
   return (
-    <li
+    <article
       className="reveal h-full"
       style={{ animationDelay: `${(index % 8) * 0.04}s` }}
     >
@@ -50,9 +50,16 @@ export function BookCard({ book, index = 0 }: BookCardProps) {
         size="sm"
         className="relative h-full gap-0 rounded-none bg-paper-deep/40 py-0 ring-rule transition duration-300 hover:-translate-y-1 hover:ring-ink/40 dark:bg-paper-deep/20 dark:ring-white/10 dark:hover:ring-white/25"
       >
-        <Link href={`/books/${book.id}`} className="group flex h-full flex-col">
+        <Link
+          href={`/books/${book.id}`}
+          className="group flex h-full flex-col"
+          aria-label={`${book.title}, ${book.author}. ${stockHint}.`}
+        >
           <div className="overflow-hidden bg-black/5 p-4 sm:p-5 dark:bg-white/5">
-            <div className="mx-auto w-[78%] max-w-[10.5rem] transition duration-300 group-hover:scale-[1.02]">
+            <div
+              className="mx-auto w-[78%] max-w-[10.5rem] transition duration-300 group-hover:scale-[1.02]"
+              aria-hidden
+            >
               <FlatCover
                 title={book.title}
                 author={book.author}
@@ -80,14 +87,11 @@ export function BookCard({ book, index = 0 }: BookCardProps) {
           </CardFooter>
         </Link>
 
-        <div className="absolute top-3 right-3 z-10">
+        <div className="absolute top-3 right-3 z-10" aria-hidden>
           <Tooltip>
             <TooltipTrigger
               render={
-                <button
-                  type="button"
-                  className="inline-flex rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
+                <span className="inline-flex rounded-full" />
               }
             >
               <Badge
@@ -100,6 +104,6 @@ export function BookCard({ book, index = 0 }: BookCardProps) {
           </Tooltip>
         </div>
       </Card>
-    </li>
+    </article>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useAction } from "next-safe-action/hooks";
 import { ArrowRight, Ticket } from "lucide-react";
+import { useAnnounce } from "@/components/a11y/LiveAnnouncer";
 import { SignInRequiredNotice } from "@/components/auth/NotAuthorizedNotice";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";
@@ -98,6 +99,7 @@ function readerInitials(name: string, email: string): string {
 
 export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
   const { ready, entraEnabled, user, account, getAccessToken } = useAuth();
+  const announce = useAnnounce();
   const [open, setOpen] = useState(false);
   const [loanDays, setLoanDays] = useState(14);
   const [dueDate, setDueDate] = useState(() => defaultDueDate(14));
@@ -116,8 +118,10 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
   const authenticated = Boolean(user?.isAuthenticated);
   const displayName = user ? resolveUserDisplayName(user, account) : "";
   const displayEmail = user?.email ?? "";
-  const dueDateId = `due-date-${bookId}`;
-  const notesId = `notes-${bookId}`;
+  const formIds = useId();
+  const dueDateId = `${formIds}-due-date`;
+  const notesId = `${formIds}-notes`;
+  const errorId = `${formIds}-error`;
 
   useEffect(() => {
     setClientError(null);
@@ -148,6 +152,27 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
   useEffect(() => {
     if (issued) setOpen(true);
   }, [issued]);
+
+  const error =
+    clientError ??
+    result.serverError ??
+    firstValidationMessage(result.validationErrors);
+
+  useEffect(() => {
+    if (error) announce(error, "assertive");
+  }, [error, announce]);
+
+  useEffect(() => {
+    if (issued) {
+      announce(`Výpožičný lístok pre ${title} bol vystavený.`, "polite");
+    }
+  }, [issued, title, announce]);
+
+  useEffect(() => {
+    if (waitlistJoined) {
+      announce(`Bol si zaradený do čakacieho zoznamu pre ${title}.`, "polite");
+    }
+  }, [waitlistJoined, title, announce]);
 
   const existingOpen = (lookupMineResult?.data?.items ?? []).find((item) => {
     const status = normalizeBookingStatus(item.status);
@@ -184,11 +209,6 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
       setClientError(err instanceof Error ? err.message : "Prihlásenie zlyhalo.");
     }
   }
-
-  const error =
-    clientError ??
-    result.serverError ??
-    firstValidationMessage(result.validationErrors);
 
   const triggerLabel = !ready
     ? "Načítavam…"
@@ -359,6 +379,8 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
                 onChange={(event) => setDueDate(event.target.value)}
                 required
                 disabled={!available || isPending}
+                aria-invalid={Boolean(error) || undefined}
+                aria-describedby={error ? errorId : undefined}
                 className="h-11 rounded-none border-rule bg-paper focus-visible:border-sage focus-visible:ring-sage/30 dark:border-white/15 dark:bg-paper-deep"
               />
             </div>
@@ -373,6 +395,7 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
                 onChange={(event) => setNotes(event.target.value)}
                 disabled={!available || isPending}
                 placeholder="Študentská výpožička"
+                aria-invalid={Boolean(error) || undefined}
                 className="h-11 rounded-none border-rule bg-paper focus-visible:border-sage focus-visible:ring-sage/30 dark:border-white/15 dark:bg-paper-deep"
               />
             </div>
@@ -380,6 +403,7 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
 
           {error ? (
             <p
+              id={errorId}
               className="border border-stair-2/30 bg-stair-2/10 px-3 py-2 text-sm text-stair-2"
               role="alert"
             >

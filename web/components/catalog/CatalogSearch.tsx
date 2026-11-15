@@ -110,6 +110,7 @@ export function CatalogSearch({
       onSubmit={handleSubmit}
       className="flex w-full flex-col gap-3 sm:flex-row sm:items-stretch"
       role="search"
+      aria-label="Vyhľadávanie v katalógu"
       data-tour="catalog-search"
     >
       <div className="min-w-0 flex-1">

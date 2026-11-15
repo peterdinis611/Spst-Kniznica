@@ -37,10 +37,10 @@ async function LibraryContent() {
 
 export default function LibraryPage() {
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-10">
       <Suspense fallback={<CatalogSkeleton />}>
         <LibraryContent />
       </Suspense>
-    </main>
+    </div>
   );
 }

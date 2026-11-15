@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { X } from "lucide-react";
+import { ResultsStatus } from "@/components/a11y/ResultsStatus";
 import { BookCard } from "@/components/catalog/BookCard";
 import { BooksCatalogFacets } from "@/components/catalog/BooksCatalogFacets";
 import { BooksCatalogFiltersDialog } from "@/components/catalog/BooksCatalogFiltersDialog";
@@ -138,6 +139,14 @@ export function BooksCatalog({
 
   return (
     <>
+      <ResultsStatus
+        count={results.length}
+        labelSingular="titul"
+        labelPlural="titulov"
+        pending={isPending}
+        query={liveQuery}
+      />
+
       <CatalogBreadcrumb
         items={[{ label: "Katalóg", href: "/books" }, { label: "Knihy" }]}
       />
@@ -248,6 +257,8 @@ export function BooksCatalog({
           ref={gridRef}
           className="relative mt-8 pb-16"
           style={{ height: virtualizer.getTotalSize() }}
+          aria-busy={isPending || undefined}
+          aria-label="Výsledky kníh"
         >
           {virtualizer.getVirtualItems().map((virtualItem) => {
             const book = results[virtualItem.index];

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
+import { MainContent } from "@/components/a11y/MainContent";
 import { BrandLogo } from "@/components/brand-logo";
 import { LoginPanel } from "@/components/auth/LoginPanel";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
@@ -23,10 +24,10 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <main className="relative flex min-h-full flex-1 flex-col bg-paper bg-[radial-gradient(ellipse_80%_50%_at_100%_-10%,color-mix(in_oklch,var(--mint),transparent_55%),transparent),radial-gradient(ellipse_60%_40%_at_0%_100%,color-mix(in_oklch,var(--accent-soft),transparent_40%),transparent)]">
+    <div className="relative flex min-h-full flex-1 flex-col bg-paper bg-[radial-gradient(ellipse_80%_50%_at_100%_-10%,color-mix(in_oklch,var(--mint),transparent_55%),transparent),radial-gradient(ellipse_60%_40%_at_0%_100%,color-mix(in_oklch,var(--accent-soft),transparent_40%),transparent)]">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6 md:px-8">
         <BrandLogo />
-        <div className="flex items-center gap-3">
+        <nav className="flex items-center gap-3" aria-label="Prihlásenie">
           <Link
             href="/books"
             className="hidden text-sm text-muted-foreground transition hover:text-ink sm:inline"
@@ -40,10 +41,10 @@ export default function LoginPage() {
             Domov
           </Link>
           <ThemeToggle />
-        </div>
+        </nav>
       </header>
 
-      <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-10 sm:px-6 md:px-8 md:pb-14">
+      <MainContent className="mx-auto w-full max-w-6xl flex-1 px-4 pb-10 sm:px-6 md:px-8 md:pb-14">
         <p className="text-eyebrow font-mono text-[11px] font-semibold tracking-[0.22em] uppercase">
           Účet & sprievodca
         </p>
@@ -59,7 +60,7 @@ export default function LoginPage() {
           </div>
           <AppOnboarding />
         </div>
-      </div>
+      </MainContent>
 
       <footer className="mt-auto border-t border-rule/80 bg-paper-deep/40 px-4 py-6 sm:px-6 md:px-8">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
@@ -72,6 +73,6 @@ export default function LoginPage() {
           </Link>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
