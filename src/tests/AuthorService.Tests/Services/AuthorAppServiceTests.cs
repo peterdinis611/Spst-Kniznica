@@ -16,6 +16,8 @@ public class AuthorAppServiceTests
 {
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly IAuthorRepository _authors = Substitute.For<IAuthorRepository>();
+    private readonly IRelationBookCountLookup _relationBookCount =
+        Substitute.For<IRelationBookCountLookup>();
     private readonly RecordingEventPublisher _events = new();
     private readonly AuthorAppService _sut;
 
@@ -26,6 +28,7 @@ public class AuthorAppServiceTests
             _unitOfWork,
             new NullAppCache(),
             _events,
+            _relationBookCount,
             new CreateAuthorRequestValidator(),
             new UpdateAuthorRequestValidator(),
             NullLogger<AuthorAppService>.Instance);
