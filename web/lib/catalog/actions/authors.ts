@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { apiGet, withQuery } from "@/lib/api";
 import { actionClient } from "@/lib/shared";
-import type { PagedResult } from "@/lib/shared";
+import type { CursorPage, PagedResult } from "@/lib/shared";
 import { mapAuthor, type CatalogAuthor } from "../mappers";
 import type { AuthorDto } from "../types";
 
@@ -23,6 +23,26 @@ const searchAuthorsSchema = z.object({
   pageSize: z.number().int().min(1).max(100).default(50),
 });
 
+const searchAuthorsCursorSchema = z.object({
+  search: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value : undefined)),
+  letter: z
+    .string()
+    .trim()
+    .max(1)
+    .optional()
+    .transform((value) => (value ? value.toUpperCase() : undefined)),
+  cursor: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value : undefined)),
+  limit: z.number().int().min(1).max(100).default(40),
+});
+
 const getAuthorSchema = z.object({
   id: z.string().trim().min(1),
 });
@@ -32,6 +52,13 @@ export type SearchAuthorsResult = {
   page: number;
   pageSize: number;
   totalCount: number;
+};
+
+export type SearchAuthorsCursorResult = {
+  items: CatalogAuthor[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  limit: number;
 };
 
 export type GetAuthorResult = {
@@ -65,6 +92,36 @@ export const searchAuthorsAction = actionClient
       page: result.page,
       pageSize: result.pageSize,
       totalCount: letter ? items.length : result.totalCount,
+    };
+  });
+
+export const searchAuthorsCursorAction = actionClient
+  .inputSchema(searchAuthorsCursorSchema)
+  .action(async ({ parsedInput }): Promise<SearchAuthorsCursorResult> => {
+    const { search, letter, cursor, limit } = parsedInput;
+
+    const result = await apiGet<CursorPage<AuthorDto>>(
+      withQuery("/api/authors/cursor", {
+        limit,
+        cursor,
+        search: search || undefined,
+        sortBy: "name",
+        sortDir: "asc",
+      }),
+    );
+
+    let items = (result.items ?? []).map(mapAuthor);
+    if (letter) {
+      items = items.filter(
+        (author) => author.name.charAt(0).toUpperCase() === letter,
+      );
+    }
+
+    return {
+      items,
+      nextCursor: result.nextCursor ?? null,
+      hasMore: Boolean(result.hasMore),
+      limit: result.limit ?? limit,
     };
   });
 

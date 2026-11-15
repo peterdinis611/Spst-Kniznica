@@ -10,12 +10,9 @@ import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
-import { useDebouncedCatalogAction } from "@/hooks/use-debounced-catalog-action";
+import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
-import {
-  searchAuthorsAction,
-  type SearchAuthorsResult,
-} from "@/lib/catalog/actions";
+import { searchAuthorsCursorAction } from "@/lib/catalog/actions";
 import type { CatalogAuthor } from "@/lib/catalog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -53,18 +50,14 @@ export function AuthorsCatalog({
     () => ({
       search: liveQuery.trim() || undefined,
       letter: letter || undefined,
-      page: 1,
-      pageSize: 100,
+      limit: 40,
     }),
     [liveQuery, letter],
   );
 
-  const { data, isPending } = useDebouncedCatalogAction<
-    typeof input,
-    SearchAuthorsResult
-  >(searchAuthorsAction, input);
+  const { items: results, isPending, hasMore, loadingMore, loadMore } =
+    useCursorCatalog(searchAuthorsCursorAction, input, initialAuthors);
 
-  const results = data?.items ?? initialAuthors;
   const listRef = useRef<HTMLOListElement>(null);
   const scrollMargin = useWindowScrollMargin(listRef, [results.length, letter, liveQuery]);
   const virtualizer = useWindowVirtualizer({
@@ -73,6 +66,14 @@ export function AuthorsCatalog({
     overscan: 12,
     scrollMargin,
   });
+  const virtualRows = virtualizer.getVirtualItems();
+  useEffect(() => {
+    const last = virtualRows.at(-1);
+    if (!last) return;
+    if (last.index >= results.length - 6) {
+      void loadMore();
+    }
+  }, [virtualRows, results.length, loadMore]);
 
   return (
     <>
@@ -185,7 +186,7 @@ export function AuthorsCatalog({
           className="relative mt-4 border-y border-rule pb-20 dark:border-white/10"
           style={{ height: virtualizer.getTotalSize() }}
         >
-          {virtualizer.getVirtualItems().map((virtualRow) => {
+          {virtualRows.map((virtualRow) => {
             const author = results[virtualRow.index];
             if (!author) return null;
             const index = virtualRow.index;
@@ -259,6 +260,12 @@ export function AuthorsCatalog({
           })}
         </ol>
       )}
+
+      {loadingMore || (hasMore && results.length > 0) ? (
+        <p className="pb-10 text-center text-xs text-muted-foreground" aria-live="polite">
+          {loadingMore ? "Načítavam ďalších autorov…" : null}
+        </p>
+      ) : null}
     </>
   );
 }

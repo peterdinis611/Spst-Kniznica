@@ -7,6 +7,7 @@ namespace CategoryService.Interfaces;
 public interface ICategoryRepository
 {
     Task<PagedResult<Category>> FindAsync(CategoryQueryFilter filter, CancellationToken cancellationToken = default);
+    Task<CursorPage<Category>> FindByCursorAsync(CategoryCursorFilter filter, CancellationToken cancellationToken = default);
     Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Category?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task AddAsync(Category category, CancellationToken cancellationToken = default);

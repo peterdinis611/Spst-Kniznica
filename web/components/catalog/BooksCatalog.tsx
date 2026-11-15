@@ -13,17 +13,14 @@ import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useCatalogColumnCount } from "@/hooks/use-catalog-column-count";
-import { useDebouncedCatalogAction } from "@/hooks/use-debounced-catalog-action";
+import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import {
   buildBooksCatalogHref,
   parseBooksCatalogFilters,
   type BooksCatalogFilters,
 } from "@/lib/catalog/catalog-url";
-import {
-  searchBooksAction,
-  type SearchBooksResult,
-} from "@/lib/catalog/actions";
+import { searchBooksCursorAction } from "@/lib/catalog/actions";
 import type { CatalogAuthor, CatalogBook, CatalogCategory } from "@/lib/catalog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -79,18 +76,14 @@ export function BooksCatalog({
         ? `${activeFilters.shelf}-`
         : undefined,
       availableOnly: activeFilters.available,
-      page: 1,
-      pageSize: 100,
+      limit: 40,
     }),
     [activeFilters],
   );
 
-  const { data, isPending } = useDebouncedCatalogAction<
-    typeof input,
-    SearchBooksResult
-  >(searchBooksAction, input);
+  const { items: results, isPending, hasMore, loadingMore, loadMore } =
+    useCursorCatalog(searchBooksCursorAction, input, initialBooks);
 
-  const results = data?.items ?? initialBooks;
   const columns = useCatalogColumnCount();
   const gridRef = useRef<HTMLUListElement>(null);
   const scrollMargin = useWindowScrollMargin(gridRef, [
@@ -109,6 +102,15 @@ export function BooksCatalog({
     lanes: columns,
     scrollMargin,
   });
+
+  const virtualItems = virtualizer.getVirtualItems();
+  useEffect(() => {
+    const last = virtualItems.at(-1);
+    if (!last) return;
+    if (last.index >= results.length - 8) {
+      void loadMore();
+    }
+  }, [virtualItems, results.length, loadMore]);
   const activeAuthor = initialAuthors.find(
     (item) => item.id === filters.author,
   );
@@ -261,7 +263,7 @@ export function BooksCatalog({
           aria-busy={isPending || undefined}
           aria-label="Výsledky kníh"
         >
-          {virtualizer.getVirtualItems().map((virtualItem) => {
+          {virtualItems.map((virtualItem) => {
             const book = results[virtualItem.index];
             if (!book) return null;
             return (
@@ -282,6 +284,12 @@ export function BooksCatalog({
           })}
         </ul>
       )}
+
+      {loadingMore || (hasMore && results.length > 0) ? (
+        <p className="pb-10 text-center text-xs text-muted-foreground" aria-live="polite">
+          {loadingMore ? "Načítavam ďalšie tituly…" : null}
+        </p>
+      ) : null}
     </>
   );
 }

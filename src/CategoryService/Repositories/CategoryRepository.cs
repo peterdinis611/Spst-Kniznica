@@ -35,29 +35,54 @@ public class CategoryRepository(CategoryDbContext db) : ICategoryRepository
 
         filter.Normalize();
 
-        var query = db.Categories.AsNoTracking().AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(filter.Name))
-        {
-            var name = filter.Name.Trim();
-            query = query.Where(c => EF.Functions.Like(c.Name, $"%{name}%"));
-        }
-
-        if (filter.IsActive.HasValue)
-        {
-            query = query.Where(c => c.IsActive == filter.IsActive.Value);
-        }
-
-        if (!string.IsNullOrWhiteSpace(filter.Search))
-        {
-            var search = filter.Search;
-            query = query.Where(c =>
-                EF.Functions.Like(c.Name, $"%{search}%") ||
-                (c.Description != null && EF.Functions.Like(c.Description, $"%{search}%")));
-        }
-
+        var query = ApplyCategoryFilters(db.Categories.AsNoTracking(), filter);
         query = query.OrderByProperty(filter.SortBy, filter.IsDescending, SortMap, c => c.Name);
         return await query.ToPagedResultAsync(filter, cancellationToken);
+    }
+
+    public async Task<CursorPage<Category>> FindByCursorAsync(
+        CategoryCursorFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        var pagingErrors = filter.Validate();
+        if (pagingErrors.Count > 0)
+        {
+            throw new AppValidationException(
+                pagingErrors.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase));
+        }
+
+        filter.Normalize();
+        filter.Cursor = string.IsNullOrWhiteSpace(filter.Cursor) ? null : filter.Cursor.Trim();
+        if (filter.Cursor is not null && !CursorCodec.TryDecode(filter.Cursor, out _))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Cursor"] = ["Cursor is invalid."]
+            });
+        }
+
+        var query = ApplyCategoryFilters(db.Categories.AsNoTracking(), filter);
+
+        if (filter.Cursor is not null && CursorCodec.TryDecode(filter.Cursor, out var cursorId))
+        {
+            var pivot = await db.Categories.AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id.ToString() == cursorId.ToString(), cancellationToken);
+            if (pivot is not null)
+            {
+                query = ApplyCategoryKeyset(query, pivot, filter.SortBy, filter.IsDescending);
+            }
+        }
+
+        query = query.OrderByPropertyThenById(
+            filter.SortBy,
+            filter.IsDescending,
+            SortMap,
+            c => c.Name,
+            c => c.Id);
+
+        return await query.ToCursorPageAsync(filter.Limit, c => c.Id, cancellationToken);
     }
 
     public Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -113,6 +138,70 @@ public class CategoryRepository(CategoryDbContext db) : ICategoryRepository
         }
 
         return query.AnyAsync(cancellationToken);
+    }
+
+    private static IQueryable<Category> ApplyCategoryFilters(
+        IQueryable<Category> query,
+        CategoryQueryFilter filter)
+    {
+        if (!string.IsNullOrWhiteSpace(filter.Name))
+        {
+            var name = filter.Name.Trim();
+            query = query.Where(c => EF.Functions.Like(c.Name, $"%{name}%"));
+        }
+
+        if (filter.IsActive.HasValue)
+        {
+            query = query.Where(c => c.IsActive == filter.IsActive.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var search = filter.Search;
+            query = query.Where(c =>
+                EF.Functions.Like(c.Name, $"%{search}%") ||
+                (c.Description != null && EF.Functions.Like(c.Description, $"%{search}%")));
+        }
+
+        return query;
+    }
+
+    private static IQueryable<Category> ApplyCategoryKeyset(
+        IQueryable<Category> query,
+        Category pivot,
+        string sortBy,
+        bool descending)
+    {
+        var pivotId = pivot.Id.ToString();
+        var key = string.IsNullOrWhiteSpace(sortBy) ? "name" : sortBy.Trim().ToLowerInvariant();
+
+        return key switch
+        {
+            "createdat" => descending
+                ? query.Where(c =>
+                    c.CreatedAt < pivot.CreatedAt ||
+                    (c.CreatedAt == pivot.CreatedAt && c.Id.ToString().CompareTo(pivotId) < 0))
+                : query.Where(c =>
+                    c.CreatedAt > pivot.CreatedAt ||
+                    (c.CreatedAt == pivot.CreatedAt && c.Id.ToString().CompareTo(pivotId) > 0)),
+            "updatedat" => descending
+                ? query.Where(c =>
+                    c.UpdatedAt < pivot.UpdatedAt ||
+                    (c.UpdatedAt == pivot.UpdatedAt && c.Id.ToString().CompareTo(pivotId) < 0))
+                : query.Where(c =>
+                    c.UpdatedAt > pivot.UpdatedAt ||
+                    (c.UpdatedAt == pivot.UpdatedAt && c.Id.ToString().CompareTo(pivotId) > 0)),
+            "id" => descending
+                ? query.Where(c => c.Id.ToString().CompareTo(pivotId) < 0)
+                : query.Where(c => c.Id.ToString().CompareTo(pivotId) > 0),
+            _ => descending
+                ? query.Where(c =>
+                    c.Name.CompareTo(pivot.Name) < 0 ||
+                    (c.Name == pivot.Name && c.Id.ToString().CompareTo(pivotId) < 0))
+                : query.Where(c =>
+                    c.Name.CompareTo(pivot.Name) > 0 ||
+                    (c.Name == pivot.Name && c.Id.ToString().CompareTo(pivotId) > 0)),
+        };
     }
 
     private static void EnsureValidId(Guid id)

@@ -53,6 +53,29 @@ public class BooksController(
     }
 
     /// <summary>
+    /// Search books with keyset (cursor) pagination — stable for infinite scroll.
+    /// </summary>
+    [HttpGet("cursor")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
+    [ProducesResponseType(typeof(CursorPage<BookListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CursorPage<BookListItemDto>>> GetByCursor(
+        [FromQuery] BookCursorFilter filter,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation(
+            "Cursor-searching books. Limit={Limit}, Cursor={Cursor}, SortBy={SortBy}, Search={Search}",
+            filter.Limit,
+            filter.Cursor,
+            filter.SortBy,
+            filter.Search);
+
+        var result = await books.SearchByCursorAsync(filter, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// ISBN metadata lookup via Open Library (WorldCat fallback when configured).
     /// </summary>
     [HttpGet("lookup/isbn/{isbn}")]

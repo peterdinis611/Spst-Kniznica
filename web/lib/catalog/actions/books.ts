@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { apiGet, withQuery } from "@/lib/api";
 import { actionClient } from "@/lib/shared";
-import type { PagedResult } from "@/lib/shared";
+import type { CursorPage, PagedResult } from "@/lib/shared";
 import {
   mapBookDetail,
   mapBookListItem,
@@ -27,6 +27,20 @@ const searchBooksSchema = z.object({
   pageSize: z.number().int().min(1).max(100).default(50),
 });
 
+const searchBooksCursorSchema = z.object({
+  search: optionalId,
+  categoryId: optionalId,
+  authorId: optionalId,
+  shelfLocation: optionalId,
+  availableOnly: z.boolean().optional(),
+  cursor: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value : undefined)),
+  limit: z.number().int().min(1).max(100).default(40),
+});
+
 const getBookSchema = z.object({
   id: z.string().trim().min(1),
 });
@@ -36,6 +50,13 @@ export type SearchBooksResult = {
   page: number;
   pageSize: number;
   totalCount: number;
+};
+
+export type SearchBooksCursorResult = {
+  items: CatalogBook[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  limit: number;
 };
 
 export const searchBooksAction = actionClient
@@ -70,6 +91,41 @@ export const searchBooksAction = actionClient
       page: result.page,
       pageSize: result.pageSize,
       totalCount: result.totalCount,
+    };
+  });
+
+export const searchBooksCursorAction = actionClient
+  .inputSchema(searchBooksCursorSchema)
+  .action(async ({ parsedInput }): Promise<SearchBooksCursorResult> => {
+    const {
+      search,
+      categoryId,
+      authorId,
+      shelfLocation,
+      availableOnly,
+      cursor,
+      limit,
+    } = parsedInput;
+
+    const result = await apiGet<CursorPage<BookListItem>>(
+      withQuery("/api/books/cursor", {
+        limit,
+        cursor,
+        search: search || undefined,
+        categoryId,
+        authorId,
+        shelfLocation,
+        availableOnly: availableOnly ? true : undefined,
+        sortBy: "title",
+        sortDir: "asc",
+      }),
+    );
+
+    return {
+      items: (result.items ?? []).map(mapBookListItem),
+      nextCursor: result.nextCursor ?? null,
+      hasMore: Boolean(result.hasMore),
+      limit: result.limit ?? limit,
     };
   });
 

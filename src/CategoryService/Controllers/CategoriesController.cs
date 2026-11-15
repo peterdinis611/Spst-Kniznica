@@ -38,6 +38,25 @@ public class CategoriesController(
         return Ok(result);
     }
 
+    [HttpGet("cursor")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
+    [ProducesResponseType(typeof(CursorPage<CategoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CursorPage<CategoryDto>>> GetByCursor(
+        [FromQuery] CategoryCursorFilter filter,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation(
+            "Cursor-searching categories. Limit={Limit}, Cursor={Cursor}, Search={Search}, SortBy={SortBy}",
+            filter.Limit,
+            filter.Cursor,
+            filter.Search,
+            filter.SortBy);
+
+        return Ok(await categories.SearchByCursorAsync(filter, cancellationToken));
+    }
+
     [HttpGet("export")]
     [Authorize(Policy = AuthPolicies.Staff)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.DataExportPolicy)]

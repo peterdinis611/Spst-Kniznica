@@ -39,6 +39,25 @@ public class AuthorsController(
         return Ok(await authors.SearchAsync(filter, cancellationToken));
     }
 
+    [HttpGet("cursor")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
+    [ProducesResponseType(typeof(CursorPage<AuthorDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CursorPage<AuthorDto>>> GetByCursor(
+        [FromQuery] AuthorCursorFilter filter,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation(
+            "Cursor-searching authors. Limit={Limit}, Cursor={Cursor}, Search={Search}, SortBy={SortBy}",
+            filter.Limit,
+            filter.Cursor,
+            filter.Search,
+            filter.SortBy);
+
+        return Ok(await authors.SearchByCursorAsync(filter, cancellationToken));
+    }
+
     [HttpGet("enrich")]
     [Authorize(Policy = AuthPolicies.Staff)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]

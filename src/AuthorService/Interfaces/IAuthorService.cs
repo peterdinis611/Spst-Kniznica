@@ -6,6 +6,7 @@ namespace AuthorService.Interfaces;
 public interface IAuthorService
 {
     Task<PagedResult<AuthorDto>> SearchAsync(AuthorQueryFilter filter, CancellationToken cancellationToken = default);
+    Task<CursorPage<AuthorDto>> SearchByCursorAsync(AuthorCursorFilter filter, CancellationToken cancellationToken = default);
     Task<AuthorDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<AuthorDto> CreateAsync(CreateAuthorRequest request, CancellationToken cancellationToken = default);
     Task<AuthorDto> UpdateAsync(Guid id, UpdateAuthorRequest request, CancellationToken cancellationToken = default);

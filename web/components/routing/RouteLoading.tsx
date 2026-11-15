@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 type RouteLoadingProps = {
-  variant?: "landing" | "catalog" | "detail" | "auth" | "admin";
+  variant?: "landing" | "catalog" | "detail" | "auth" | "admin" | "status";
   className?: string;
 };
 
@@ -11,6 +11,38 @@ export function RouteLoading({
   variant = "catalog",
   className,
 }: RouteLoadingProps) {
+  if (variant === "status") {
+    return (
+      <div
+        className={cn(
+          "mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 py-14 sm:px-6 md:px-8 md:py-20",
+          className,
+        )}
+        aria-busy
+        aria-live="polite"
+        role="status"
+      >
+        <span className="sr-only">Načítavam stránku…</span>
+        <div
+          className="relative w-full max-w-2xl overflow-hidden border border-rule bg-card/55 px-7 py-16 sm:px-11 sm:py-[4.75rem] dark:border-white/12 dark:bg-surface-3/45"
+          aria-hidden
+        >
+          <div className="mx-auto mb-7 flex justify-center">
+            <Skeleton className="h-14 w-14 rounded-full" />
+          </div>
+          <Skeleton className="mx-auto h-3 w-28" />
+          <Skeleton className="mx-auto mt-5 h-12 w-64 max-w-full sm:h-14 sm:w-80" />
+          <Skeleton className="mx-auto mt-4 h-4 w-full max-w-md" />
+          <Skeleton className="mx-auto mt-2 h-4 w-3/4 max-w-sm" />
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <Skeleton className="h-11 w-36" />
+            <Skeleton className="h-11 w-28" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (variant === "landing") {
     return (
       <div

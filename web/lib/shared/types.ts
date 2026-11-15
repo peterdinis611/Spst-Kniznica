@@ -7,3 +7,10 @@ export type PagedResult<T> = {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
 };
+
+export type CursorPage<T> = {
+  items: T[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  limit: number;
+};

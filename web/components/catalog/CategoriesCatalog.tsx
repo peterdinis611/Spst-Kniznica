@@ -11,12 +11,9 @@ import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useCatalogLaneCount } from "@/hooks/use-catalog-lane-count";
-import { useDebouncedCatalogAction } from "@/hooks/use-debounced-catalog-action";
+import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
-import {
-  searchCategoriesAction,
-  type SearchCategoriesResult,
-} from "@/lib/catalog/actions";
+import { searchCategoriesCursorAction } from "@/lib/catalog/actions";
 import type { CatalogCategory } from "@/lib/catalog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -40,18 +37,14 @@ export function CategoriesCatalog({
   const input = useMemo(
     () => ({
       search: liveQuery.trim() || undefined,
-      page: 1,
-      pageSize: 100,
+      limit: 40,
     }),
     [liveQuery],
   );
 
-  const { data, isPending } = useDebouncedCatalogAction<
-    typeof input,
-    SearchCategoriesResult
-  >(searchCategoriesAction, input);
+  const { items: results, isPending, hasMore, loadingMore, loadMore } =
+    useCursorCatalog(searchCategoriesCursorAction, input, initialCategories);
 
-  const results = data?.items ?? initialCategories;
   const chips = results.length > 0 ? results : initialCategories;
   const lanes = useCatalogLaneCount();
   const gridRef = useRef<HTMLUListElement>(null);
@@ -67,6 +60,14 @@ export function CategoriesCatalog({
     lanes,
     scrollMargin,
   });
+  const virtualItems = virtualizer.getVirtualItems();
+  useEffect(() => {
+    const last = virtualItems.at(-1);
+    if (!last) return;
+    if (last.index >= results.length - 4) {
+      void loadMore();
+    }
+  }, [virtualItems, results.length, loadMore]);
 
   return (
     <>
@@ -153,7 +154,7 @@ export function CategoriesCatalog({
           aria-busy={isPending || undefined}
           aria-label="Zoznam kategórií"
         >
-          {virtualizer.getVirtualItems().map((virtualItem) => {
+          {virtualItems.map((virtualItem) => {
             const category = results[virtualItem.index];
             if (!category) return null;
             const index = virtualItem.index;
@@ -226,6 +227,12 @@ export function CategoriesCatalog({
           })}
         </ul>
       )}
+
+      {loadingMore || (hasMore && results.length > 0) ? (
+        <p className="pb-10 text-center text-xs text-muted-foreground" aria-live="polite">
+          {loadingMore ? "Načítavam ďalšie kategórie…" : null}
+        </p>
+      ) : null}
     </>
   );
 }

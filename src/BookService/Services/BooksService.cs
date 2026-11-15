@@ -48,6 +48,26 @@ public class BooksService(
         return result;
     }
 
+    public async Task<CursorPage<BookListItemDto>> SearchByCursorAsync(
+        BookCursorFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogDebug(
+            "Cursor-searching books. Limit={Limit}, Cursor={Cursor}, Search={Search}",
+            filter.Limit,
+            filter.Cursor,
+            filter.Search);
+
+        var result = await unitOfWork.Books.FindByCursorAsync(filter, cancellationToken);
+
+        logger.LogDebug(
+            "Books cursor search finished. Items={Count}, HasMore={HasMore}",
+            result.Items.Count,
+            result.HasMore);
+
+        return result;
+    }
+
     public async Task<BookDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await cache.GetOrSetAsync(

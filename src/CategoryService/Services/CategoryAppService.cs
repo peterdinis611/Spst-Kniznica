@@ -34,6 +34,20 @@ public class CategoryAppService(
         return result.Map(Map);
     }
 
+    public async Task<CursorPage<CategoryDto>> SearchByCursorAsync(
+        CategoryCursorFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogDebug(
+            "Cursor-searching categories. Limit={Limit}, Cursor={Cursor}, Search={Search}",
+            filter.Limit,
+            filter.Cursor,
+            filter.Search);
+
+        var result = await unitOfWork.Categories.FindByCursorAsync(filter, cancellationToken);
+        return result.Map(Map);
+    }
+
     public async Task<CategoryDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var dto = await cache.GetOrSetAsync(

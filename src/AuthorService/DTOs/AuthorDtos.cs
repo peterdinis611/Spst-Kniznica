@@ -66,3 +66,17 @@ public class AuthorQueryFilter : PagedQuery
     public string? Nationality { get; set; }
     public bool? IsActive { get; set; }
 }
+
+/// <summary>
+/// Cursor (keyset) pagination over the same author filters.
+/// </summary>
+public class AuthorCursorFilter : AuthorQueryFilter
+{
+    public string? Cursor { get; set; }
+
+    public int Limit
+    {
+        get => PageSize;
+        set => PageSize = value;
+    }
+}

@@ -27,3 +27,18 @@ public class BookQueryFilter : PagedQuery
     public string? InventoryNumber { get; set; }
     public string? Barcode { get; set; }
 }
+
+/// <summary>
+/// Cursor (keyset) pagination over the same book filters.
+/// Use <see cref="Limit"/> (aliases <see cref="PagedQuery.PageSize"/>).
+/// </summary>
+public class BookCursorFilter : BookQueryFilter
+{
+    public string? Cursor { get; set; }
+
+    public int Limit
+    {
+        get => PageSize;
+        set => PageSize = value;
+    }
+}

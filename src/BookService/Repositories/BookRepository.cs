@@ -71,6 +71,72 @@ public class BookRepository(BookDbContext db) : IBookRepository
         return page;
     }
 
+    public async Task<CursorPage<BookListItemDto>> FindByCursorAsync(
+        BookCursorFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        ValidateFilter(filter);
+        filter.Normalize();
+        filter.Cursor = string.IsNullOrWhiteSpace(filter.Cursor) ? null : filter.Cursor.Trim();
+
+        if (filter.Cursor is not null && !CursorCodec.TryDecode(filter.Cursor, out _))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Cursor"] = ["Cursor is invalid."]
+            });
+        }
+
+        var query = ApplyFilters(db.Books.AsNoTracking(), filter);
+
+        if (filter.Cursor is not null && CursorCodec.TryDecode(filter.Cursor, out var cursorId))
+        {
+            var pivot = await db.Books.AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id.ToString() == cursorId.ToString(), cancellationToken);
+            if (pivot is not null)
+            {
+                query = ApplyBookKeyset(query, pivot, filter.SortBy, filter.IsDescending);
+            }
+        }
+
+        query = query.OrderByPropertyThenById(
+            filter.SortBy,
+            filter.IsDescending,
+            SortMap,
+            b => b.Title,
+            b => b.Id);
+
+        var projected = query.Select(b => new BookListItemDto
+        {
+            Id = b.Id,
+            Title = b.Title,
+            Subtitle = b.Subtitle,
+            AuthorId = b.AuthorId,
+            Author = b.Author,
+            Publisher = b.Publisher,
+            Isbn = b.Isbn,
+            PublishedYear = b.PublishedYear,
+            Language = b.Language,
+            CategoryId = b.CategoryId,
+            CategoryName = b.CategoryName,
+            Format = b.Format,
+            CoverUrl = b.CoverUrl,
+            ShelfLocation = b.ShelfLocation,
+            TotalCopies = b.TotalCopies,
+            AvailableCopies = b.AvailableCopies,
+            UpdatedAt = b.UpdatedAt
+        });
+
+        var page = await projected.ToCursorPageAsync(filter.Limit, item => item.Id, cancellationToken);
+        foreach (var item in page.Items)
+        {
+            item.CoverUrl ??= SpstKniznica.Common.Integrations.OpenLibraryCovers.ForIsbn(item.Isbn);
+        }
+
+        return page;
+    }
+
     public Task<Book?> GetByIdAsync(Guid id, bool includeCopies = false, CancellationToken cancellationToken = default)
     {
         EnsureValidId(id);
@@ -320,6 +386,58 @@ public class BookRepository(BookDbContext db) : IBookRepository
             throw new AppValidationException(
                 errors.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray(), StringComparer.OrdinalIgnoreCase));
         }
+    }
+
+    private static IQueryable<Book> ApplyBookKeyset(
+        IQueryable<Book> query,
+        Book pivot,
+        string sortBy,
+        bool descending)
+    {
+        var pivotId = pivot.Id.ToString();
+        var key = string.IsNullOrWhiteSpace(sortBy) ? "title" : sortBy.Trim().ToLowerInvariant();
+
+        return key switch
+        {
+            "author" => descending
+                ? query.Where(b =>
+                    b.Author.CompareTo(pivot.Author) < 0 ||
+                    (b.Author == pivot.Author && b.Id.ToString().CompareTo(pivotId) < 0))
+                : query.Where(b =>
+                    b.Author.CompareTo(pivot.Author) > 0 ||
+                    (b.Author == pivot.Author && b.Id.ToString().CompareTo(pivotId) > 0)),
+            "createdat" => descending
+                ? query.Where(b =>
+                    b.CreatedAt < pivot.CreatedAt ||
+                    (b.CreatedAt == pivot.CreatedAt && b.Id.ToString().CompareTo(pivotId) < 0))
+                : query.Where(b =>
+                    b.CreatedAt > pivot.CreatedAt ||
+                    (b.CreatedAt == pivot.CreatedAt && b.Id.ToString().CompareTo(pivotId) > 0)),
+            "updatedat" => descending
+                ? query.Where(b =>
+                    b.UpdatedAt < pivot.UpdatedAt ||
+                    (b.UpdatedAt == pivot.UpdatedAt && b.Id.ToString().CompareTo(pivotId) < 0))
+                : query.Where(b =>
+                    b.UpdatedAt > pivot.UpdatedAt ||
+                    (b.UpdatedAt == pivot.UpdatedAt && b.Id.ToString().CompareTo(pivotId) > 0)),
+            "id" => descending
+                ? query.Where(b => b.Id.ToString().CompareTo(pivotId) < 0)
+                : query.Where(b => b.Id.ToString().CompareTo(pivotId) > 0),
+            "availablecopies" => descending
+                ? query.Where(b =>
+                    b.AvailableCopies < pivot.AvailableCopies ||
+                    (b.AvailableCopies == pivot.AvailableCopies && b.Id.ToString().CompareTo(pivotId) < 0))
+                : query.Where(b =>
+                    b.AvailableCopies > pivot.AvailableCopies ||
+                    (b.AvailableCopies == pivot.AvailableCopies && b.Id.ToString().CompareTo(pivotId) > 0)),
+            _ => descending
+                ? query.Where(b =>
+                    b.Title.CompareTo(pivot.Title) < 0 ||
+                    (b.Title == pivot.Title && b.Id.ToString().CompareTo(pivotId) < 0))
+                : query.Where(b =>
+                    b.Title.CompareTo(pivot.Title) > 0 ||
+                    (b.Title == pivot.Title && b.Id.ToString().CompareTo(pivotId) > 0)),
+        };
     }
 
     private static void EnsureValidId(Guid id)

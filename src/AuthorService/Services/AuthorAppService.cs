@@ -34,6 +34,20 @@ public class AuthorAppService(
         return result.Map(Map);
     }
 
+    public async Task<CursorPage<AuthorDto>> SearchByCursorAsync(
+        AuthorCursorFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogDebug(
+            "Cursor-searching authors. Limit={Limit}, Cursor={Cursor}, Search={Search}",
+            filter.Limit,
+            filter.Cursor,
+            filter.Search);
+
+        var result = await unitOfWork.Authors.FindByCursorAsync(filter, cancellationToken);
+        return result.Map(Map);
+    }
+
     public async Task<AuthorDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var dto = await cache.GetOrSetAsync(

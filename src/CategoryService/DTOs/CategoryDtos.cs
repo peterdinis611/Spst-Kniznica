@@ -49,3 +49,17 @@ public class CategoryQueryFilter : PagedQuery
     public string? Name { get; set; }
     public bool? IsActive { get; set; }
 }
+
+/// <summary>
+/// Cursor (keyset) pagination over the same category filters.
+/// </summary>
+public class CategoryCursorFilter : CategoryQueryFilter
+{
+    public string? Cursor { get; set; }
+
+    public int Limit
+    {
+        get => PageSize;
+        set => PageSize = value;
+    }
+}
