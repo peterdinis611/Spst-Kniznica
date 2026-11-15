@@ -171,6 +171,7 @@ export function BooksCatalog({
             categories={initialCategories}
             filterCount={advancedCount}
             onOpenAdvanced={() => setFiltersOpen(true)}
+            filtersOpen={filtersOpen}
             isPending={isPending}
           />
 

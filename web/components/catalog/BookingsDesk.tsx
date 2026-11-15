@@ -254,7 +254,11 @@ export function BookingsDesk({
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div
+        className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+        role="search"
+        aria-label="Filtrovanie lístkov"
+      >
         <label className="relative block w-full max-w-xl">
           <span className="sr-only">Hľadať lístok</span>
           <Search
@@ -268,6 +272,7 @@ export function BookingsDesk({
               setPage(1);
             }}
             placeholder="Meno, email alebo poznámka"
+            aria-label="Hľadať lístok podľa mena, emailu alebo poznámky"
             className="h-12 rounded-full border-rule bg-paper-deep pr-4 pl-11 dark:border-white/15"
           />
         </label>
@@ -294,6 +299,7 @@ export function BookingsDesk({
                   ? "bg-ink text-paper hover:bg-ink/90"
                   : "border-rule bg-paper-deep text-muted-foreground dark:border-white/10",
               )}
+              aria-pressed={mineOnly}
               onClick={() => {
                 setMineOnly((value) => !value);
                 setPage(1);
@@ -303,7 +309,13 @@ export function BookingsDesk({
             </Button>
           ) : null}
           {search.isPending ? (
-            <span className="text-xs text-muted-foreground">hľadám…</span>
+            <span
+              className="text-xs text-muted-foreground"
+              role="status"
+              aria-live="polite"
+            >
+              hľadám…
+            </span>
           ) : null}
           <Badge
             variant="secondary"
@@ -317,7 +329,11 @@ export function BookingsDesk({
         </div>
       </div>
 
-      <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+      <div
+        className="mt-4 flex gap-2 overflow-x-auto pb-1"
+        role="group"
+        aria-label="Filter stavu lístka"
+      >
         {FILTERS.map((filter) => {
           const active = status === filter.id;
           return (
@@ -326,6 +342,7 @@ export function BookingsDesk({
               type="button"
               size="sm"
               variant={active ? "default" : "outline"}
+              aria-pressed={active}
               className={cn(
                 "rounded-full",
                 active
@@ -390,6 +407,8 @@ export function BookingsDesk({
           ref={listRef}
           className="relative mt-2"
           style={{ height: virtualizer.getTotalSize() }}
+          aria-label="Zoznam výpožičných lístkov"
+          aria-busy={search.isPending || undefined}
         >
           {virtualizer.getVirtualItems().map((virtualRow) => {
             const booking = items[virtualRow.index];
@@ -572,17 +591,25 @@ export function BookingsDesk({
       )}
 
       {totalPages > 1 ? (
-        <div className="mt-8 flex items-center justify-between gap-3">
+        <nav
+          className="mt-8 flex items-center justify-between gap-3"
+          aria-label="Stránkovanie lístkov"
+        >
           <Button
             type="button"
             variant="outline"
             className="rounded-none border-ink"
             disabled={page <= 1 || search.isPending}
+            aria-label="Predošlá stránka"
             onClick={() => setPage((value) => Math.max(1, value - 1))}
           >
             Predošlé
           </Button>
-          <p className="font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase">
+          <p
+            className="font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase"
+            aria-live="polite"
+          >
+            <span className="sr-only">Stránka </span>
             {page} / {totalPages}
           </p>
           <Button
@@ -590,11 +617,12 @@ export function BookingsDesk({
             variant="outline"
             className="rounded-none border-ink"
             disabled={page >= totalPages || search.isPending}
+            aria-label="Ďalšia stránka"
             onClick={() => setPage((value) => value + 1)}
           >
             Ďalšie
           </Button>
-        </div>
+        </nav>
       ) : null}
     </>
   );

@@ -19,6 +19,7 @@ export function CatalogFilterChip({
     <Button
       size="sm"
       variant={active ? "default" : "outline"}
+      aria-current={active ? "true" : undefined}
       className={cn(
         "shrink-0 rounded-full",
         active

@@ -4,13 +4,19 @@ import { Button } from "@/components/ui/button";
 
 export function ReadingIntro() {
   return (
-    <section className="relative z-10 border-t border-rule/70 bg-paper">
+    <section
+      className="relative z-10 border-t border-rule/70 bg-paper"
+      aria-labelledby="reading-intro-heading"
+    >
       <div className="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 py-12 sm:px-5 sm:py-16 md:grid-cols-[1.1fr_0.9fr] md:gap-10 md:px-8 md:py-20">
         <div>
           <p className="text-[11px] tracking-[0.22em] text-accent uppercase">
             Čitateľský priestor
           </p>
-          <h2 className="mt-3 font-display text-[clamp(2rem,6vw,4rem)] leading-[1.05] text-ink">
+          <h2
+            id="reading-intro-heading"
+            className="mt-3 font-display text-[clamp(2rem,6vw,4rem)] leading-[1.05] text-ink"
+          >
             Pripravení na ďalšiu knihu?
           </h2>
           <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">

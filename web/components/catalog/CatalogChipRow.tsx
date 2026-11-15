@@ -19,7 +19,7 @@ export function CatalogChipRow({
       )}
     >
       <div
-        role="tablist"
+        role="group"
         aria-label={label}
         className="flex w-max max-w-none gap-2 pb-1"
       >

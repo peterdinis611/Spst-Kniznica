@@ -11,16 +11,23 @@ export function TrendingBooks({ books }: TrendingBooksProps) {
   const items = books.slice(0, 8);
 
   return (
-    <section className="relative z-10 border-t border-rule bg-paper px-4 py-14 sm:px-6 md:px-8 md:py-20">
+    <section
+      className="relative z-10 border-t border-rule bg-paper px-4 py-14 sm:px-6 md:px-8 md:py-20"
+      aria-labelledby="trending-books-heading"
+    >
       <div className="mx-auto w-full max-w-6xl">
         <TrendingBooksControls>
-          <h2 className="flex-1 text-center font-display text-[clamp(1.8rem,4vw,2.75rem)] tracking-tight text-ink uppercase">
+          <h2
+            id="trending-books-heading"
+            className="flex-1 text-center font-display text-[clamp(1.8rem,4vw,2.75rem)] tracking-tight text-ink uppercase"
+          >
             Top trending books
           </h2>
         </TrendingBooksControls>
 
         <ul
           data-trending-scroller
+          aria-label="Populárne knihy"
           className="mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-5 [&::-webkit-scrollbar]:hidden"
         >
           {items.map((book, index) => {

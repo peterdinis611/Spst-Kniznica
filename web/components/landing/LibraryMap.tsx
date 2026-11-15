@@ -33,13 +33,20 @@ export function LibraryMap() {
 
   if (error) {
     return (
-      <p className="font-mono text-[11px] text-muted-foreground">{error}</p>
+      <p className="font-mono text-[11px] text-muted-foreground" role="status">
+        {error}
+      </p>
     );
   }
 
   if (!data) {
     return (
-      <p className="font-mono text-[11px] text-muted-foreground">
+      <p
+        className="font-mono text-[11px] text-muted-foreground"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
         Načítavam mapu…
       </p>
     );
@@ -49,7 +56,7 @@ export function LibraryMap() {
     <div className="space-y-2">
       <p className="text-xs text-muted-foreground">{data.displayName}</p>
       <iframe
-        title="Poloha knižnice"
+        title={`Mapa: ${data.displayName}`}
         src={data.osmEmbedUrl}
         className="h-40 w-full border border-rule dark:border-white/10"
         loading="lazy"
@@ -62,6 +69,7 @@ export function LibraryMap() {
         className="font-mono text-[11px] text-sage underline-offset-2 hover:underline"
       >
         Otvoriť v OpenStreetMap
+        <span className="sr-only"> (nové okno)</span>
       </a>
     </div>
   );

@@ -82,7 +82,10 @@ export function LoginPanel() {
           </span>
         </div>
 
-        <h2 className="mt-6 font-display text-2xl tracking-tight text-ink">
+        <h2
+          id="login-panel-heading"
+          className="mt-6 font-display text-2xl tracking-tight text-ink"
+        >
           {fullName}
         </h2>
         <p className="mt-1 break-all text-sm text-muted-foreground">
@@ -127,7 +130,10 @@ export function LoginPanel() {
       <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
         {entraEnabled ? "Microsoft Entra" : "Development"}
       </p>
-      <h2 className="mt-2 font-display text-2xl tracking-tight text-ink">
+      <h2
+        id="login-panel-heading"
+        className="mt-2 font-display text-2xl tracking-tight text-ink"
+      >
         {entraEnabled ? "Prihlás sa" : "Dev režim"}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -137,7 +143,10 @@ export function LoginPanel() {
       </p>
 
       {error ? (
-        <p className="mt-4 whitespace-pre-wrap border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-800 dark:text-red-300">
+        <p
+          className="mt-4 whitespace-pre-wrap border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-800 dark:text-red-300"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
@@ -168,7 +177,10 @@ function PanelShell({
   accentBar?: boolean;
 }) {
   return (
-    <div className="relative border border-rule/90 bg-card/90 p-6 shadow-[0_18px_40px_-28px_rgba(14,26,36,0.35)] backdrop-blur-[2px] sm:p-7 dark:border-white/10 dark:bg-paper-deep/50 dark:shadow-none">
+    <section
+      aria-label="Prihlásenie"
+      className="relative border border-rule/90 bg-card/90 p-6 shadow-[0_18px_40px_-28px_rgba(14,26,36,0.35)] backdrop-blur-[2px] sm:p-7 dark:border-white/10 dark:bg-paper-deep/50 dark:shadow-none"
+    >
       {accentBar ? (
         <div
           aria-hidden
@@ -176,17 +188,17 @@ function PanelShell({
         />
       ) : null}
       <div className={accentBar ? "pl-2" : undefined}>{children}</div>
-    </div>
+    </section>
   );
 }
 
 function LoadingState() {
   return (
-    <>
-      <div className="h-3 w-20 animate-pulse bg-rule dark:bg-white/10" />
-      <div className="mt-5 h-10 w-40 animate-pulse bg-rule dark:bg-white/10" />
+    <div role="status" aria-live="polite" aria-busy="true">
+      <div className="h-3 w-20 animate-pulse bg-rule dark:bg-white/10" aria-hidden />
+      <div className="mt-5 h-10 w-40 animate-pulse bg-rule dark:bg-white/10" aria-hidden />
       <p className="mt-4 text-sm text-muted-foreground">Načítavam…</p>
-    </>
+    </div>
   );
 }
 
@@ -198,7 +210,7 @@ function RoleBadges({
   roles: string[];
 }) {
   return (
-    <div className="mt-4 flex flex-wrap gap-2">
+    <div className="mt-4 flex flex-wrap gap-2" aria-label="Role účtu">
       <Badge className="rounded-none border border-sage/20 bg-mint/80 px-2.5 text-xs text-sage dark:border-transparent dark:bg-accent dark:text-accent-foreground">
         {primaryRole}
       </Badge>

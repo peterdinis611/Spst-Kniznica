@@ -52,7 +52,7 @@ const securityHeaders = [
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       `connect-src ${connectSrc.join(" ")}`,
-      "frame-src 'self' https://login.microsoftonline.com",
+      "frame-src 'self' https://login.microsoftonline.com https://www.openstreetmap.org https://challenges.cloudflare.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

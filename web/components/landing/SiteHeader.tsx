@@ -180,7 +180,10 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="reveal relative z-20 mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5 sm:gap-4 sm:px-6 md:px-8 md:py-7">
+    <header
+      role="banner"
+      className="reveal relative z-20 mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5 sm:gap-4 sm:px-6 md:px-8 md:py-7"
+    >
       <BrandLogo />
 
       <Suspense
@@ -212,13 +215,16 @@ export function SiteHeader() {
                 variant="outline"
                 size="icon"
                 className="size-10 rounded-full border-rule dark:border-white/25 dark:text-white lg:hidden"
-                aria-label="Otvoriť menu"
+                aria-label={open ? "Zavrieť menu" : "Otvoriť menu"}
+                aria-expanded={open}
+                aria-controls="mobile-nav-sheet"
               />
             }
           >
             <Menu className="size-4" aria-hidden />
           </SheetTrigger>
           <SheetContent
+            id="mobile-nav-sheet"
             side="right"
             showCloseButton={false}
             className="w-[min(100%,22rem)] gap-0 border-l border-rule bg-paper p-0 shadow-[-18px_0_40px_rgba(0,0,0,0.18)] dark:border-white/10 dark:shadow-[-18px_0_40px_rgba(0,0,0,0.55)]"

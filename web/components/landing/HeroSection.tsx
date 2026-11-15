@@ -24,12 +24,18 @@ export function HeroSection({ books }: HeroSectionProps) {
   };
 
   return (
-    <section className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pb-6 pt-2 sm:px-6 md:grid-cols-[1.05fr_0.95fr] md:gap-8 md:px-8 md:pb-4 md:pt-2">
+    <section
+      className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pb-6 pt-2 sm:px-6 md:grid-cols-[1.05fr_0.95fr] md:gap-8 md:px-8 md:pb-4 md:pt-2"
+      aria-labelledby="hero-heading"
+    >
       <div className="max-w-xl">
         <p className="reveal text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
           Školský katalóg
         </p>
-        <h1 className="reveal reveal-delay-1 mt-4 font-display text-[clamp(2.4rem,7.2vw,4.6rem)] leading-[1.02] font-medium tracking-[-0.02em] text-ink">
+        <h1
+          id="hero-heading"
+          className="reveal reveal-delay-1 mt-4 font-display text-[clamp(2.4rem,7.2vw,4.6rem)] leading-[1.02] font-medium tracking-[-0.02em] text-ink"
+        >
           Akú knihu{" "}
           <em className="not-italic text-ink">hľadáte?</em>
         </h1>

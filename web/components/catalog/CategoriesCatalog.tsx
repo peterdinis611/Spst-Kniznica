@@ -129,7 +129,10 @@ export function CategoriesCatalog({
           resetLabel="Resetovať"
         />
       ) : (
-        <ul className="mt-6 grid grid-cols-1 gap-0 border-t border-rule pb-20 dark:border-white/10 sm:grid-cols-2">
+        <ul
+          className="mt-6 grid grid-cols-1 gap-0 border-t border-rule pb-20 dark:border-white/10 sm:grid-cols-2"
+          aria-label="Zoznam kategórií"
+        >
           {results.map((category, index) => {
             const featured = index === 0;
             return (

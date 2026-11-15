@@ -47,13 +47,17 @@ export function HowToUse() {
     <section
       id="ako-pouzivat"
       className="relative z-10 border-t border-rule/70 bg-paper-deep/55"
+      aria-labelledby="how-to-use-heading"
     >
       <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-5 sm:py-16 md:px-8 md:py-20">
         <div className="max-w-2xl">
           <p className="text-[11px] tracking-[0.22em] text-accent uppercase">
             Ako to používať
           </p>
-          <h2 className="mt-3 font-display text-[clamp(1.85rem,5vw,3rem)] text-ink">
+          <h2
+            id="how-to-use-heading"
+            className="mt-3 font-display text-[clamp(1.85rem,5vw,3rem)] text-ink"
+          >
             Od landingu po katalóg v štyroch krokoch
           </h2>
           <p className="mt-4 text-muted-foreground">

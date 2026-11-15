@@ -80,9 +80,12 @@ function CatalogWidgets({ data }: { data: AdminOverview }) {
   ];
 
   return (
-    <section>
+    <section aria-labelledby="admin-catalog-heading">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+        <p
+          id="admin-catalog-heading"
+          className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+        >
           Katalóg · výpožičky
         </p>
         {data.catalog.partial || data.bookings.partial ? (
@@ -91,7 +94,10 @@ function CatalogWidgets({ data }: { data: AdminOverview }) {
           </p>
         ) : null}
       </div>
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ul
+        className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        aria-label="Štatistiky katalógu a výpožičiek"
+      >
         {tiles.map((tile) => (
           <li key={tile.label}>
             <Button
@@ -133,8 +139,11 @@ function CatalogWidgets({ data }: { data: AdminOverview }) {
 function AttentionList({ data }: { data: AdminOverview }) {
   if (data.attention.length === 0) {
     return (
-      <section>
-        <p className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+      <section aria-labelledby="admin-attention-heading">
+        <p
+          id="admin-attention-heading"
+          className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+        >
           Pozornosť
         </p>
         <p className="text-sm text-muted-foreground">
@@ -145,11 +154,17 @@ function AttentionList({ data }: { data: AdminOverview }) {
   }
 
   return (
-    <section>
-      <p className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+    <section aria-labelledby="admin-attention-heading">
+      <p
+        id="admin-attention-heading"
+        className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+      >
         Pozornosť · overdue / due soon
       </p>
-      <ul className="divide-y divide-rule border border-rule dark:divide-white/10 dark:border-white/10">
+      <ul
+        className="divide-y divide-rule border border-rule dark:divide-white/10 dark:border-white/10"
+        aria-label="Položky vyžadujúce pozornosť"
+      >
         {data.attention.map((item) => {
           const status = normalizeBookingStatus(item.status) as BookingStatusCode;
           return (
@@ -310,11 +325,17 @@ export function AdminRaDashboard() {
             unhealthyCount={data.unhealthyCount}
           />
 
-          <section>
-            <p className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+          <section aria-labelledby="admin-services-heading">
+            <p
+              id="admin-services-heading"
+              className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+            >
               Mikroslužby
             </p>
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <ul
+              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+              aria-label="Stav mikroslužieb"
+            >
               {data.services.map((service) => (
                 <li
                   key={service.name}

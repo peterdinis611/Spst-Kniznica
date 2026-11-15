@@ -117,7 +117,11 @@ export function AuthorsCatalog({
                   · „<span className="text-ink">{liveQuery.trim()}</span>“
                 </>
               ) : null}
-              {isPending ? <span className="ml-2 text-xs">· hľadám…</span> : null}
+              {isPending ? (
+                <span className="ml-2 text-xs" role="status" aria-live="polite">
+                  · hľadám…
+                </span>
+              ) : null}
             </p>
           </div>
           <Badge
@@ -176,6 +180,8 @@ export function AuthorsCatalog({
       ) : (
         <ol
           ref={listRef}
+          aria-label="Zoznam autorov"
+          aria-busy={isPending || undefined}
           className="relative mt-4 border-y border-rule pb-20 dark:border-white/10"
           style={{ height: virtualizer.getTotalSize() }}
         >

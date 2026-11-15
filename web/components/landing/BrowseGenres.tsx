@@ -22,22 +22,40 @@ export function BrowseGenres({ categories, books }: BrowseGenresProps) {
     return null;
   }
 
+  const panelId = "browse-genres-panel";
+
   return (
-    <section className="relative z-10 border-t border-rule bg-paper px-4 py-14 sm:px-6 md:px-8 md:py-20">
+    <section
+      className="relative z-10 border-t border-rule bg-paper px-4 py-14 sm:px-6 md:px-8 md:py-20"
+      aria-labelledby="browse-genres-heading"
+    >
       <div className="mx-auto grid w-full max-w-6xl gap-10 md:grid-cols-[14rem_1fr] md:gap-12">
         <div>
-          <h2 className="font-display text-3xl tracking-tight text-ink md:text-4xl">
+          <h2
+            id="browse-genres-heading"
+            className="font-display text-3xl tracking-tight text-ink md:text-4xl"
+          >
             Prehliadať
             <br />
             žánre
           </h2>
-          <ul className="mt-8 space-y-1">
+          <ul
+            className="mt-8 space-y-1"
+            role="tablist"
+            aria-label="Žánre"
+            aria-orientation="vertical"
+          >
             {categories.map((category) => {
               const selected = category.id === active;
               return (
-                <li key={category.id}>
+                <li key={category.id} role="presentation">
                   <button
                     type="button"
+                    role="tab"
+                    id={`genre-tab-${category.id}`}
+                    aria-selected={selected}
+                    aria-controls={panelId}
+                    tabIndex={selected ? 0 : -1}
                     onClick={() => setActive(category.id)}
                     className={`w-full px-3 py-2.5 text-left text-sm transition ${
                       selected
@@ -71,11 +89,23 @@ export function BrowseGenres({ categories, books }: BrowseGenresProps) {
           </div>
         </div>
 
-        <ul className="grid grid-cols-2 gap-5 sm:gap-6 lg:gap-8">
+        <ul
+          id={panelId}
+          role="tabpanel"
+          aria-labelledby={active ? `genre-tab-${active}` : undefined}
+          className="grid grid-cols-2 gap-5 sm:gap-6 lg:gap-8"
+        >
           {grid.map((book) => (
             <li key={book.id}>
-              <Link href={`/books/${book.id}`} className="group block">
-                <div className="mx-auto w-[78%] max-w-[11rem] transition duration-300 group-hover:-translate-y-1 sm:w-[70%]">
+              <Link
+                href={`/books/${book.id}`}
+                className="group block"
+                aria-label={`${book.title}, ${book.author}. ${book.availableCopies} z ${book.totalCopies} exemplárov.`}
+              >
+                <div
+                  className="mx-auto w-[78%] max-w-[11rem] transition duration-300 group-hover:-translate-y-1 sm:w-[70%]"
+                  aria-hidden
+                >
                   <FlatCover
                     title={book.title}
                     author={book.author}

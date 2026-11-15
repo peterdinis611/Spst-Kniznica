@@ -12,14 +12,20 @@ export function PopularShelf({ books }: PopularShelfProps) {
   const items = books.slice(0, 4);
 
   return (
-    <section className="relative z-10 border-t border-rule/70 bg-paper">
+    <section
+      className="relative z-10 border-t border-rule/70 bg-paper"
+      aria-labelledby="popular-shelf-heading"
+    >
       <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-5 sm:py-16 md:px-8 md:py-20">
         <div className="grid items-end gap-6 md:grid-cols-[1.2fr_0.8fr] md:gap-8">
           <div>
             <p className="text-[11px] tracking-[0.22em] text-accent uppercase">
               Popular now
             </p>
-            <h2 className="mt-3 max-w-xl font-display text-[clamp(1.85rem,5vw,3rem)] leading-tight text-ink">
+            <h2
+              id="popular-shelf-heading"
+              className="mt-3 max-w-xl font-display text-[clamp(1.85rem,5vw,3rem)] leading-tight text-ink"
+            >
               Šťastné čítanie v školskom katalógu
             </h2>
             <p className="mt-4 max-w-lg text-muted-foreground">
@@ -31,6 +37,8 @@ export function PopularShelf({ books }: PopularShelfProps) {
           <form
             action="/books"
             className="relative flex items-center"
+            role="search"
+            aria-label="Hľadať v katalógu"
           >
             <Search
               className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -40,6 +48,7 @@ export function PopularShelf({ books }: PopularShelfProps) {
             <Input
               name="q"
               placeholder="Hľadaj názov, autora, vydanie…"
+              aria-label="Hľadať názov, autora alebo vydanie"
               className="h-11 rounded-full bg-paper-deep/60 pl-9"
             />
           </form>
@@ -59,7 +68,10 @@ export function PopularShelf({ books }: PopularShelfProps) {
           </Button>
         </div>
 
-        <ul className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5 md:gap-7">
+        <ul
+          className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5 md:gap-7"
+          aria-label="Obľúbené tituly"
+        >
           {items.map((book, index) => (
             <li key={book.id} className={`reveal reveal-delay-${(index % 4) + 1}`}>
               <Link href={`/books/${book.id}`} className="group block">

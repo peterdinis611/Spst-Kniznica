@@ -8,8 +8,18 @@ const BookCarousel = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[360px] items-center justify-center sm:h-[420px] md:h-[460px]">
-        <div className="h-10 w-10 animate-pulse rounded-full border border-accent/40" />
+      <div
+        className="flex h-[360px] items-center justify-center sm:h-[420px] md:h-[460px]"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        aria-label="Načítavam karusel kníh"
+      >
+        <span className="sr-only">Načítavam karusel kníh…</span>
+        <div
+          className="h-10 w-10 animate-pulse rounded-full border border-accent/40"
+          aria-hidden
+        />
       </div>
     ),
   },

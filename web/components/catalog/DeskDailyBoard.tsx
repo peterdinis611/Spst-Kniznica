@@ -100,12 +100,19 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
     title: string;
     items: DeskBooking[];
   }) {
+    const headingId = `desk-section-${title.toLowerCase().replace(/\s+/g, "-")}`;
     return (
-      <section className="mt-8">
-        <h2 className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+      <section className="mt-8" aria-labelledby={headingId}>
+        <h2
+          id={headingId}
+          className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+        >
           {title} · {items.length}
         </h2>
-        <ul className="mt-3 divide-y divide-rule border border-rule dark:divide-white/10 dark:border-white/10">
+        <ul
+          className="mt-3 divide-y divide-rule border border-rule dark:divide-white/10 dark:border-white/10"
+          aria-label={title}
+        >
           {items.length === 0 ? (
             <li className="px-4 py-3 text-sm text-muted-foreground">Prázdne</li>
           ) : (

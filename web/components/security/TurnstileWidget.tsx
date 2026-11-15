@@ -85,5 +85,12 @@ export function TurnstileWidget({
 
   if (!SITE_KEY) return null;
 
-  return <div ref={ref} className="mt-4" />;
+  return (
+    <div
+      ref={ref}
+      className="mt-4"
+      role="group"
+      aria-label="Overenie, že nie si robot"
+    />
+  );
 }

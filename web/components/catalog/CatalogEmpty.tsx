@@ -24,12 +24,22 @@ export function CatalogEmpty({
   resetLabel = "Resetovať filtre",
 }: CatalogEmptyProps) {
   return (
-    <Empty className="mt-10 border border-dashed border-rule py-16 dark:border-white/15">
+    <Empty
+      role="status"
+      aria-live="polite"
+      className="mt-10 border border-dashed border-rule py-16 dark:border-white/15"
+    >
       <EmptyHeader>
-        <EmptyMedia variant="icon" className="bg-paper-deep text-ink">
-          <SearchX strokeWidth={1.7} />
+        <EmptyMedia
+          variant="icon"
+          className="bg-paper-deep text-ink"
+          aria-hidden
+        >
+          <SearchX strokeWidth={1.7} aria-hidden />
         </EmptyMedia>
-        <EmptyTitle className="font-display text-2xl text-ink">{title}</EmptyTitle>
+        <EmptyTitle className="font-display text-2xl text-ink">
+          {title}
+        </EmptyTitle>
         <EmptyDescription>{description}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>

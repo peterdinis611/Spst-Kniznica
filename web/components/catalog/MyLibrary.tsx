@@ -114,7 +114,11 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
   }
 
   if (!ready) {
-    return <p className="text-sm text-muted-foreground">Načítavam účet…</p>;
+    return (
+      <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+        Načítavam účet…
+      </p>
+    );
   }
 
   if (!user?.isAuthenticated) {
@@ -151,11 +155,17 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
         </p>
       ) : null}
 
-      <section className="mt-8">
-        <h2 className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+      <section className="mt-8" aria-labelledby="library-open-heading">
+        <h2
+          id="library-open-heading"
+          className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+        >
           Otvorené · {open.length}
         </h2>
-        <ul className="mt-3 divide-y divide-rule dark:divide-white/10">
+        <ul
+          className="mt-3 divide-y divide-rule dark:divide-white/10"
+          aria-label="Otvorené výpožičky"
+        >
           {open.length === 0 ? (
             <li className="py-6 text-sm text-muted-foreground">
               Žiadne otvorené výpožičky.{" "}
@@ -220,11 +230,14 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
         </ul>
       </section>
 
-      <section className="mt-10">
-        <h2 className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+      <section className="mt-10" aria-labelledby="library-waitlist-heading">
+        <h2
+          id="library-waitlist-heading"
+          className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+        >
           Čakací zoznam · {waitlist.length}
         </h2>
-        <ul className="mt-3 space-y-3">
+        <ul className="mt-3 space-y-3" aria-label="Čakací zoznam">
           {waitlist.length === 0 ? (
             <li className="text-sm text-muted-foreground">Nie si v žiadnom poradovníku.</li>
           ) : (
@@ -263,11 +276,14 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
         </ul>
       </section>
 
-      <section className="mt-10">
-        <h2 className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+      <section className="mt-10" aria-labelledby="library-favorites-heading">
+        <h2
+          id="library-favorites-heading"
+          className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+        >
           Obľúbené · {favorites.length}
         </h2>
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2" aria-label="Obľúbené knihy">
           {favorites.length === 0 ? (
             <li className="text-sm text-muted-foreground">Zatiaľ prázdne — pridaj z detailu knihy.</li>
           ) : (
@@ -291,11 +307,17 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
         </ul>
       </section>
 
-      <section className="mt-10">
-        <h2 className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+      <section className="mt-10" aria-labelledby="library-history-heading">
+        <h2
+          id="library-history-heading"
+          className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+        >
           História · {history.length}
         </h2>
-        <ul className="mt-3 divide-y divide-rule dark:divide-white/10">
+        <ul
+          className="mt-3 divide-y divide-rule dark:divide-white/10"
+          aria-label="História výpožičiek"
+        >
           {history.slice(0, 20).map((booking) => {
             const book = titles.get(booking.bookId);
             return (

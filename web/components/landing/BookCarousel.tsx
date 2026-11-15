@@ -183,7 +183,13 @@ export function BookCarousel({ books }: BookCarouselProps) {
   }
 
   return (
-    <div className="relative w-full">
+    <div
+      className="relative w-full"
+      role="region"
+      aria-roledescription="karusel"
+      aria-label="3D karusel kníh"
+      aria-describedby="book-carousel-hint"
+    >
       <p
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-[8%] overflow-hidden px-2 text-center font-display text-[clamp(2rem,11vw,7.5rem)] leading-none tracking-[0.04em] text-watermark/90 select-none"
@@ -196,6 +202,7 @@ export function BookCarousel({ books }: BookCarouselProps) {
           dragging ? "cursor-grabbing" : "cursor-grab"
         }`}
         onPointerDown={onPointerDown}
+        aria-hidden
       >
         <Canvas
           shadows
@@ -216,12 +223,19 @@ export function BookCarousel({ books }: BookCarouselProps) {
         </Canvas>
       </div>
 
-      <div className="mx-auto -mt-1 flex max-w-md flex-col items-center gap-1 text-center">
+      <div
+        className="mx-auto -mt-1 flex max-w-md flex-col items-center gap-1 text-center"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         <p className="font-display text-xl text-ink md:text-2xl">
           {activeBook?.title}
         </p>
         <p className="text-sm text-muted-foreground">{activeBook?.author}</p>
-        <p className="mt-1 text-xs tracking-[0.16em] text-muted-foreground/80 uppercase">
+        <p
+          id="book-carousel-hint"
+          className="mt-1 text-xs tracking-[0.16em] text-muted-foreground/80 uppercase"
+        >
           Ťahaj · klikni pre detail
         </p>
       </div>
@@ -233,6 +247,8 @@ export function BookCarousel({ books }: BookCarouselProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            role="status"
+            aria-live="polite"
           >
             <motion.div
               initial={{ scale: 0.86, opacity: 0, y: 24 }}

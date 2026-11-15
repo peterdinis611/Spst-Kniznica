@@ -26,66 +26,97 @@ export async function SiteFooter() {
   const latest = booksResult?.data?.items ?? [];
 
   return (
-    <footer className="relative z-10 mt-auto border-t border-rule bg-paper">
+    <footer
+      className="relative z-10 mt-auto border-t border-rule bg-paper"
+      role="contentinfo"
+      aria-label="Pätička SPST Knižnice"
+    >
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.1fr_1fr_0.9fr] md:gap-8 md:px-8 md:py-16">
         <div>
           <p className="text-lg font-semibold tracking-tight">
-            SPST Knižnica<span className="text-accent">.</span>
+            SPST Knižnica<span className="text-accent" aria-hidden>.</span>
           </p>
-          <ul className="mt-6 space-y-2">
-            {nav.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="text-sm text-muted-foreground transition hover:text-ink"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <nav aria-label="Pätičková navigácia">
+            <ul className="mt-6 space-y-2">
+              {nav.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-muted-foreground transition hover:text-ink"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
           <p className="mt-8 text-xs text-muted-foreground">
             © {year} SPST Knižnica
           </p>
         </div>
 
-        <div>
-          <p className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+        <section aria-labelledby="footer-latest-heading">
+          <h2
+            id="footer-latest-heading"
+            className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase"
+          >
             Novinky z fondu
-          </p>
+          </h2>
           <ul className="mt-5 space-y-4">
-            {latest.map((book) => (
-              <li key={book.id} className="flex gap-3">
-                <span
-                  className="mt-0.5 size-10 shrink-0"
-                  style={{ background: book.accent }}
-                  aria-hidden
-                />
-                <Link href={`/books/${book.id}`} className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink">
-                    {book.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{book.author}</p>
-                </Link>
+            {latest.length === 0 ? (
+              <li className="text-sm text-muted-foreground">
+                Momentálne bez tipov z fondu.
               </li>
-            ))}
+            ) : (
+              latest.map((book) => (
+                <li key={book.id} className="flex gap-3">
+                  <span
+                    className="mt-0.5 size-10 shrink-0"
+                    style={{ background: book.accent }}
+                    aria-hidden
+                  />
+                  <Link
+                    href={`/books/${book.id}`}
+                    className="min-w-0"
+                    aria-label={`${book.title}, ${book.author}`}
+                  >
+                    <p className="truncate text-sm font-medium text-ink">
+                      {book.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{book.author}</p>
+                  </Link>
+                </li>
+              ))
+            )}
           </ul>
-        </div>
+        </section>
 
         <div className="space-y-6 md:self-start">
-          <div className="border border-rule p-4 dark:border-white/10">
-            <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
+          <section
+            className="border border-rule p-4 dark:border-white/10"
+            aria-labelledby="footer-map-heading"
+          >
+            <h2
+              id="footer-map-heading"
+              className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase"
+            >
               Kde nás nájdeš · OSM
-            </p>
+            </h2>
             <p className="mt-2 text-sm text-ink">{siteConfig.address}</p>
             <div className="mt-3">
               <LibraryMap />
             </div>
-          </div>
-          <div className="on-accent bg-accent p-6 text-accent-foreground">
-            <p className="font-display text-2xl leading-tight text-accent-foreground">
+          </section>
+          <section
+            className="on-accent bg-accent p-6 text-accent-foreground"
+            aria-labelledby="footer-cta-heading"
+          >
+            <h2
+              id="footer-cta-heading"
+              className="font-display text-2xl leading-tight text-accent-foreground"
+            >
               Pripravení na ďalšiu knihu?
-            </p>
+            </h2>
             <p className="mt-3 text-sm text-accent-foreground/75">
               Otvor fond, alebo choď rovno na výpožičný pult.
             </p>
@@ -103,7 +134,7 @@ export async function SiteFooter() {
                 Na pult
               </Link>
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </footer>

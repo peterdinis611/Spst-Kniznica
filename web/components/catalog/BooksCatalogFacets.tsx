@@ -17,6 +17,7 @@ type BooksCatalogFacetsProps = {
   categories: CatalogCategory[];
   filterCount: number;
   onOpenAdvanced: () => void;
+  filtersOpen?: boolean;
   isPending?: boolean;
 };
 
@@ -26,6 +27,7 @@ export function BooksCatalogFacets({
   categories,
   filterCount,
   onOpenAdvanced,
+  filtersOpen = false,
   isPending,
 }: BooksCatalogFacetsProps) {
   const q = liveQuery.trim() || undefined;
@@ -95,7 +97,12 @@ export function BooksCatalogFacets({
               ? "border-sage/45 bg-mint/40 font-medium text-ink dark:bg-paper-deep"
               : "border-rule bg-paper-deep/50 text-muted-foreground hover:border-sage/35 hover:text-ink dark:border-white/12",
           )}
-          aria-pressed={filters.available}
+          aria-pressed={Boolean(filters.available)}
+          aria-label={
+            filters.available
+              ? "Filter: len dostupné tituly (aktívny)"
+              : "Filter: len dostupné tituly"
+          }
         >
           <span
             className={cn(
@@ -114,6 +121,13 @@ export function BooksCatalogFacets({
         <Button
           type="button"
           variant="outline"
+          aria-haspopup="dialog"
+          aria-expanded={filtersOpen}
+          aria-label={
+            filterCount > 0
+              ? `Ďalšie filtre, autor a trakt (${filterCount} aktívnych)`
+              : "Ďalšie filtre: autor a trakt"
+          }
           className={cn(
             "h-10 rounded-none border-rule bg-paper-deep/60 dark:border-white/15",
             filterCount > 0 && "border-sage/40",

@@ -13,6 +13,7 @@ type CatalogTopBarProps = {
   categories?: Array<{ id: string; name: string }>;
   hiddenFields?: Record<string, string>;
   onQueryChange?: (query: string) => void;
+  headingId?: string;
 };
 
 export function CatalogTopBar({
@@ -28,13 +29,17 @@ export function CatalogTopBar({
   categories,
   hiddenFields,
   onQueryChange,
+  headingId = "catalog-heading",
 }: CatalogTopBarProps) {
   return (
-    <div className="pb-2">
+    <header className="pb-2" aria-labelledby={headingId}>
       <p className="text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
         {eyebrow}
       </p>
-      <h1 className="mt-3 max-w-3xl font-display text-[clamp(2.2rem,7vw,3.75rem)] leading-[1.02] tracking-tight text-ink">
+      <h1
+        id={headingId}
+        className="mt-3 max-w-3xl font-display text-[clamp(2.2rem,7vw,3.75rem)] leading-[1.02] tracking-tight text-ink"
+      >
         {title}
       </h1>
       {lead ? (
@@ -56,6 +61,6 @@ export function CatalogTopBar({
           />
         </div>
       ) : null}
-    </div>
+    </header>
   );
 }
