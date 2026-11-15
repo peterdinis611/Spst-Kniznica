@@ -9,4 +9,7 @@ export {
   gatewayUrl,
   withQuery,
   type ApiQuery,
+  type ApiRequestOptions,
 } from "./client";
+export { ApiHttpError, isApiHttpError } from "./errors";
+

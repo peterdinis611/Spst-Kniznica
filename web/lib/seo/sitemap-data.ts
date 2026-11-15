@@ -21,6 +21,9 @@ async function fetchAllIds(path: string): Promise<SitemapEntity[]> {
           sortBy: "updatedAt",
           sortDir: "desc",
         }),
+        undefined,
+        undefined,
+        { skipStatusRedirect: true },
       );
 
       const batch = result.items ?? [];
