@@ -21,7 +21,7 @@ export function TrendingBooks({ books }: TrendingBooksProps) {
             id="trending-books-heading"
             className="flex-1 text-center font-display text-[clamp(1.8rem,4vw,2.75rem)] tracking-tight text-ink uppercase"
           >
-            Top trending books
+            Populárne tituly
           </h2>
         </TrendingBooksControls>
 

@@ -23,9 +23,9 @@ async function BooksPageContent() {
   await connection();
   const [booksResult, categoriesResult, authorsResult, shelvesProbe] =
     await Promise.all([
-      searchBooksAction({ page: 1, pageSize: 50 }),
-      searchCategoriesAction({ page: 1, pageSize: 50 }),
-      searchAuthorsAction({ page: 1, pageSize: 80 }),
+      searchBooksAction({ page: 1, pageSize: 100 }),
+      searchCategoriesAction({ page: 1, pageSize: 100 }),
+      searchAuthorsAction({ page: 1, pageSize: 100 }),
       searchBooksAction({ page: 1, pageSize: 100 }),
     ]);
 

@@ -54,7 +54,7 @@ export function AuthorsCatalog({
       search: liveQuery.trim() || undefined,
       letter: letter || undefined,
       page: 1,
-      pageSize: 50,
+      pageSize: 100,
     }),
     [liveQuery, letter],
   );
@@ -70,7 +70,7 @@ export function AuthorsCatalog({
   const virtualizer = useWindowVirtualizer({
     count: results.length,
     estimateSize: () => 148,
-    overscan: 8,
+    overscan: 12,
     scrollMargin,
   });
 

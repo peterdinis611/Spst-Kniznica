@@ -80,7 +80,7 @@ export function BooksCatalog({
         : undefined,
       availableOnly: activeFilters.available,
       page: 1,
-      pageSize: 50,
+      pageSize: 100,
     }),
     [activeFilters],
   );
@@ -105,7 +105,7 @@ export function BooksCatalog({
   const virtualizer = useWindowVirtualizer({
     count: results.length,
     estimateSize: () => 360,
-    overscan: 10,
+    overscan: 14,
     lanes: columns,
     scrollMargin,
   });

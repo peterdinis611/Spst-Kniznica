@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { ArrowUpRight } from "lucide-react";
 import { ResultsStatus } from "@/components/a11y/ResultsStatus";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
+import { useCatalogLaneCount } from "@/hooks/use-catalog-lane-count";
 import { useDebouncedCatalogAction } from "@/hooks/use-debounced-catalog-action";
+import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import {
   searchCategoriesAction,
   type SearchCategoriesResult,
@@ -38,7 +41,7 @@ export function CategoriesCatalog({
     () => ({
       search: liveQuery.trim() || undefined,
       page: 1,
-      pageSize: 50,
+      pageSize: 100,
     }),
     [liveQuery],
   );
@@ -50,6 +53,20 @@ export function CategoriesCatalog({
 
   const results = data?.items ?? initialCategories;
   const chips = results.length > 0 ? results : initialCategories;
+  const lanes = useCatalogLaneCount();
+  const gridRef = useRef<HTMLUListElement>(null);
+  const scrollMargin = useWindowScrollMargin(gridRef, [
+    results.length,
+    lanes,
+    liveQuery,
+  ]);
+  const virtualizer = useWindowVirtualizer({
+    count: results.length,
+    estimateSize: () => 220,
+    overscan: 8,
+    lanes,
+    scrollMargin,
+  });
 
   return (
     <>
@@ -130,30 +147,39 @@ export function CategoriesCatalog({
         />
       ) : (
         <ul
-          className="mt-6 grid grid-cols-1 gap-0 border-t border-rule pb-20 dark:border-white/10 sm:grid-cols-2"
+          ref={gridRef}
+          className="relative mt-6 border-t border-rule pb-20 dark:border-white/10"
+          style={{ height: virtualizer.getTotalSize() }}
+          aria-busy={isPending || undefined}
           aria-label="Zoznam kategórií"
         >
-          {results.map((category, index) => {
+          {virtualizer.getVirtualItems().map((virtualItem) => {
+            const category = results[virtualItem.index];
+            if (!category) return null;
+            const index = virtualItem.index;
             const featured = index === 0;
             return (
               <li
                 key={category.id}
                 id={category.id}
-                className={cn(
-                  "reveal border-b border-rule dark:border-white/10",
-                  featured && "sm:col-span-2",
-                )}
-                style={{ animationDelay: `${(index % 6) * 0.05}s` }}
+                data-index={virtualItem.index}
+                ref={virtualizer.measureElement}
+                className="absolute top-0 border-b border-rule dark:border-white/10"
+                style={{
+                  width: `${100 / lanes}%`,
+                  left: `${(virtualItem.lane * 100) / lanes}%`,
+                  transform: `translateY(${virtualItem.start - scrollMargin}px)`,
+                }}
               >
                 <Link
                   href={`/categories/${category.id}`}
                   className={cn(
-                    "group relative flex gap-5 overflow-hidden px-1 py-8 transition sm:gap-8 sm:py-10",
-                    featured ? "flex-col sm:flex-row sm:items-end" : "flex-col",
+                    "group relative flex h-full flex-col gap-5 overflow-hidden px-3 py-8 transition sm:gap-6 sm:px-4 sm:py-10",
+                    featured && "sm:flex-row sm:items-end",
                   )}
                 >
                   <span
-                    className="pointer-events-none absolute top-6 right-0 font-display text-[clamp(4rem,14vw,7rem)] leading-none text-ink/[0.04] tabular-nums select-none dark:text-white/[0.05]"
+                    className="pointer-events-none absolute top-6 right-3 font-display text-[clamp(3.5rem,12vw,6rem)] leading-none text-ink/[0.04] tabular-nums select-none dark:text-white/[0.05]"
                     aria-hidden
                   >
                     {String(index + 1).padStart(2, "0")}
@@ -162,7 +188,7 @@ export function CategoriesCatalog({
                   <div
                     className={cn(
                       "relative shrink-0",
-                      featured ? "h-2 w-24 sm:h-28 sm:w-2" : "h-1.5 w-16",
+                      featured ? "h-2 w-24 sm:h-24 sm:w-2" : "h-1.5 w-16",
                     )}
                     style={{ background: category.accent }}
                     aria-hidden
@@ -176,18 +202,13 @@ export function CategoriesCatalog({
                       className={cn(
                         "mt-2 font-display leading-[0.98] tracking-tight text-ink transition group-hover:text-sage",
                         featured
-                          ? "text-[clamp(2.4rem,6vw,4rem)]"
-                          : "text-[clamp(1.75rem,4vw,2.5rem)]",
+                          ? "text-[clamp(2rem,5vw,3.25rem)]"
+                          : "text-[clamp(1.6rem,3.5vw,2.25rem)]",
                       )}
                     >
                       {category.name}
                     </h2>
-                    <p
-                      className={cn(
-                        "mt-3 text-sm leading-relaxed text-muted-foreground sm:text-[15px]",
-                        featured ? "max-w-lg" : "max-w-sm",
-                      )}
-                    >
+                    <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
                       {category.description}
                     </p>
 

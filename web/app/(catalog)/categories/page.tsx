@@ -16,7 +16,7 @@ export const metadata: Metadata = buildPageMetadata({
 
 async function CategoriesPageContent() {
   await connection();
-  const result = await searchCategoriesAction({ page: 1, pageSize: 50 });
+  const result = await searchCategoriesAction({ page: 1, pageSize: 100 });
 
   return (
     <CategoriesCatalog initialCategories={result?.data?.items ?? []} />

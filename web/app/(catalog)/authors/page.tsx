@@ -16,7 +16,7 @@ export const metadata: Metadata = buildPageMetadata({
 
 async function AuthorsPageContent() {
   await connection();
-  const result = await searchAuthorsAction({ page: 1, pageSize: 50 });
+  const result = await searchAuthorsAction({ page: 1, pageSize: 100 });
   const authors = result?.data?.items ?? [];
   const initials = [
     ...new Set(authors.map((author) => author.name.charAt(0).toUpperCase())),
