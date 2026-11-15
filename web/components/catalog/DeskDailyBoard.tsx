@@ -21,6 +21,65 @@ import { Button } from "@/components/ui/button";
 
 type CatalogRef = { id: string; title: string; author: string };
 
+function DeskSection({
+  title,
+  items,
+  titles,
+}: {
+  title: string;
+  items: DeskBooking[];
+  titles: Map<string, CatalogRef>;
+}) {
+  const headingId = `desk-section-${title.toLowerCase().replace(/\s+/g, "-")}`;
+  return (
+    <section className="mt-8" aria-labelledby={headingId}>
+      <h2
+        id={headingId}
+        className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+      >
+        {title} · {items.length}
+      </h2>
+      <ul
+        className="mt-3 divide-y divide-rule border border-rule dark:divide-white/10 dark:border-white/10"
+        aria-label={title}
+      >
+        {items.length === 0 ? (
+          <li className="px-4 py-3 text-sm text-muted-foreground">Prázdne</li>
+        ) : (
+          items.map((item) => {
+            const book = titles.get(item.bookId);
+            return (
+              <li
+                key={item.id}
+                className="flex flex-wrap items-baseline justify-between gap-3 px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="font-display text-lg text-ink">
+                    {book ? (
+                      <Link href={`/books/${book.id}`}>{book.title}</Link>
+                    ) : (
+                      item.bookId
+                    )}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {item.borrowerName} · {item.borrowerEmail}
+                  </p>
+                </div>
+                <div className="text-right font-mono text-xs">
+                  <p>{BOOKING_STATUS_LABEL[item.status as 0 | 1 | 2 | 3 | 4]}</p>
+                  <p className="text-muted-foreground">
+                    {formatDeskDate(item.dueDate)}
+                  </p>
+                </div>
+              </li>
+            );
+          })
+        )}
+      </ul>
+    </section>
+  );
+}
+
 export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
   const { user, getAccessToken, ready, entraEnabled } = useAuth();
   const ability = useAbility();
@@ -93,63 +152,6 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
     URL.revokeObjectURL(url);
   }
 
-  function Section({
-    title,
-    items,
-  }: {
-    title: string;
-    items: DeskBooking[];
-  }) {
-    const headingId = `desk-section-${title.toLowerCase().replace(/\s+/g, "-")}`;
-    return (
-      <section className="mt-8" aria-labelledby={headingId}>
-        <h2
-          id={headingId}
-          className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
-        >
-          {title} · {items.length}
-        </h2>
-        <ul
-          className="mt-3 divide-y divide-rule border border-rule dark:divide-white/10 dark:border-white/10"
-          aria-label={title}
-        >
-          {items.length === 0 ? (
-            <li className="px-4 py-3 text-sm text-muted-foreground">Prázdne</li>
-          ) : (
-            items.map((item) => {
-              const book = titles.get(item.bookId);
-              return (
-                <li
-                  key={item.id}
-                  className="flex flex-wrap items-baseline justify-between gap-3 px-4 py-3"
-                >
-                  <div className="min-w-0">
-                    <p className="font-display text-lg text-ink">
-                      {book ? (
-                        <Link href={`/books/${book.id}`}>{book.title}</Link>
-                      ) : (
-                        item.bookId
-                      )}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {item.borrowerName} · {item.borrowerEmail}
-                    </p>
-                  </div>
-                  <div className="text-right font-mono text-xs">
-                    <p>{BOOKING_STATUS_LABEL[item.status as 0 | 1 | 2 | 3 | 4]}</p>
-                    <p className="text-muted-foreground">
-                      {formatDeskDate(item.dueDate)}
-                    </p>
-                  </div>
-                </li>
-              );
-            })
-          )}
-        </ul>
-      </section>
-    );
-  }
-
   return (
     <>
       <CatalogBreadcrumb
@@ -220,9 +222,13 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
               </div>
             ))}
           </div>
-          <Section title="Po termíne" items={board.overdue} />
-          <Section title="Blíži sa termín" items={board.dueSoon} />
-          <Section title="Pripravené na vyzdvihnutie" items={board.pickupReady} />
+          <DeskSection title="Po termíne" items={board.overdue} titles={titles} />
+          <DeskSection title="Blíži sa termín" items={board.dueSoon} titles={titles} />
+          <DeskSection
+            title="Pripravené na vyzdvihnutie"
+            items={board.pickupReady}
+            titles={titles}
+          />
         </>
       ) : (
         <p className="mt-6 text-sm text-muted-foreground">

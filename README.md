@@ -1,0 +1,147 @@
+# SPST Knižnica
+
+Školský knižničný katalóg **Strednej priemyselnej školy technickej** v Bardejove — knihy, autori, kategórie, výpožičný pult a správcovský panel.
+
+## Stack
+
+| Vrstva | Technológie |
+| --- | --- |
+| Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind, react-admin, TanStack Virtual |
+| API | ASP.NET Core (.NET 10), YARP gateway, mikroslužby |
+| Dáta | SQLite (dev), Redis, Kafka, RabbitMQ (voliteľná Docker infra) |
+| Auth | Microsoft Entra ID (MSAL) · CASL oprávnenia |
+
+## Štruktúra
+
+```
+├── web/                 # Next.js frontend (+ BFF proxy)
+├── src/                 # .NET solution (mikroslužby + Common)
+│   ├── GatewayService/
+│   ├── BookService / AuthorService / CategoryService /
+│   ├── BookingService / AuthService / AdminService / …
+│   └── tests/
+├── scripts/             # start-all / stop-all / status
+├── docker-compose.yml   # Redis · Kafka · RabbitMQ (localhost)
+├── start.sh / stop.sh
+└── .github/workflows/ci.yml
+```
+
+## Požiadavky
+
+- [.NET SDK 10](https://dotnet.microsoft.com/download)
+- [Node.js 22+](https://nodejs.org/) + npm
+- Docker Desktop (voliteľné — Redis/Kafka/RabbitMQ; bez neho stack beží s vypnutými brokerami)
+
+## Rýchly štart
+
+```bash
+./start.sh
+```
+
+Otvor [http://localhost:3000](http://localhost:3000).
+
+Zastavenie:
+
+```bash
+./stop.sh
+```
+
+Užitočné voľby:
+
+```bash
+./start.sh --detach       # na pozadí
+./start.sh --skip-docker  # bez Docker Compose
+./start.sh --skip-build   # bez dotnet build
+./scripts/status.sh       # stav procesov
+```
+
+### Seed dát
+
+Pri štarte služieb sa do **prázdnych** (alebo chýbajúcich) záznamov doplní seed:
+
+- ~12 kategórií
+- ~39 autorov
+- ~54 kníh (+ exempláre)
+
+Seed pridáva len chýbajúce GUID — netreba mazať DB pri rozšírení katalógu.
+
+## Porty (lokálne)
+
+| Služba | URL |
+| --- | --- |
+| Frontend | http://localhost:3000 |
+| Gateway (YARP + Swagger) | http://localhost:5200 |
+| BookService | http://localhost:5203 |
+| CategoryService | http://localhost:5204 |
+| MessagingService | http://localhost:5205 |
+| CacheService | http://localhost:5206 |
+| AuthorService | http://localhost:5207 |
+| BookingService | http://localhost:5208 |
+| WorkersService | http://localhost:5209 |
+| AuthService | http://localhost:5210 |
+| AdminService | http://localhost:5211 |
+| Redis | `127.0.0.1:6379` |
+| Kafka | `127.0.0.1:9092` |
+| RabbitMQ UI | http://127.0.0.1:15672 (`guest` / `guest`) |
+
+Health: `GET /health` na každej .NET službe.
+
+## API stránkovanie
+
+Offset (page):
+
+```http
+GET /api/books?page=1&pageSize=40
+GET /api/authors?page=1&pageSize=40
+GET /api/categories?page=1&pageSize=40
+```
+
+Cursor (keyset — infinite scroll):
+
+```http
+GET /api/books/cursor?limit=40&cursor=…
+GET /api/authors/cursor?limit=40&cursor=…
+GET /api/categories/cursor?limit=40&cursor=…
+```
+
+Odpoveď cursoru: `{ items, nextCursor, hasMore, limit }`.
+
+## Správa
+
+- Verejný katalóg: `/books`, `/authors`, `/categories`
+- Výpožičný pult: `/bookings`, denná tabuľa `/desk`
+- Admin (personál): `/admin` — CRUD, import kníh, export, health, cache, messaging
+
+Import kníh (CSV / XML / XLSX) a ISBN lookup (Open Library) vyžadujú rolu personálu / admina. Autori sa dajú obohatiť z Wikidata.
+
+## Vývoj frontend
+
+```bash
+cd web
+npm ci
+npm run dev        # http://127.0.0.1:3000
+npm run typecheck
+npm run lint
+npm test
+```
+
+## Vývoj backend
+
+```bash
+cd src
+dotnet build SpstKniznica.sln
+dotnet test SpstKniznica.sln
+```
+
+Ak `dotnet build` hlási `FAILED` s **0 chýbami**, ide typicky o zamknuté DLL (bežiace služby) — najprv `./stop.sh`.
+
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) na `push` / PR:
+
+- **Backend** — restore, build, test (.NET 10)
+- **Frontend** — `npm ci`, typecheck, lint, vitest
+
+## Licencia / škola
+
+Interný školský projekt SPST Bardejov (Komenského 5). Nie je určený na produkčné nasadenie bez hardeningu (Entra, Turnstile, secrets, HTTPS).

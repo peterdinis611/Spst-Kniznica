@@ -9,6 +9,7 @@ import { ResultsStatus } from "@/components/a11y/ResultsStatus";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
+import { CatalogLoadMore } from "@/components/catalog/CatalogLoadMore";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
@@ -261,11 +262,15 @@ export function AuthorsCatalog({
         </ol>
       )}
 
-      {loadingMore || (hasMore && results.length > 0) ? (
-        <p className="pb-10 text-center text-xs text-muted-foreground" aria-live="polite">
-          {loadingMore ? "Načítavam ďalších autorov…" : null}
-        </p>
-      ) : null}
+      <CatalogLoadMore
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        loadedCount={results.length}
+        onLoadMore={() => void loadMore()}
+        itemLabel="autorov"
+        loadingLabel="Načítavam ďalších autorov…"
+        ariaLabel="Načítať ďalších autorov"
+      />
     </>
   );
 }

@@ -26,6 +26,19 @@ describe("withQuery", () => {
       }),
     ).toBe("/api/books?search=motor&page=1");
   });
+
+  it("builds cursor endpoint query", () => {
+    expect(
+      withQuery("/api/books/cursor", {
+        limit: 40,
+        cursor: "abc",
+        availableOnly: true,
+        sortBy: "title",
+      }),
+    ).toBe(
+      "/api/books/cursor?limit=40&cursor=abc&availableOnly=true&sortBy=title",
+    );
+  });
 });
 
 describe("apiGet", () => {

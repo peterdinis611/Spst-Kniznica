@@ -96,4 +96,20 @@ public class BookValidationRulesTests
         book.Isbn.Should().Be("9780131103627");
         book.CoverUrl.Should().Be("https://covers.openlibrary.org/b/isbn/9780131103627-L.jpg");
     }
+
+    [Fact]
+    public async Task CreateBookRequestValidator_rejects_empty_title()
+    {
+        var books = Substitute.For<IBookRepository>();
+        var validator = new CreateBookRequestValidator(books);
+
+        var result = await validator.ValidateAsync(new CreateBookRequest
+        {
+            Title = "   ",
+            AuthorId = Guid.NewGuid(),
+        });
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "Title");
+    }
 }

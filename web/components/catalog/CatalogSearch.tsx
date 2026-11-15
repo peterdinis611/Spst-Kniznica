@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useEffectEvent, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { Search } from "lucide-react";
@@ -53,7 +53,7 @@ export function CatalogSearch({
     setCategory(defaultCategory);
   }, [defaultCategory]);
 
-  const syncUrl = useEffectEvent(
+  const syncUrl = useCallback(
     (nextQuery: string, nextCategory: string, replace: boolean) => {
       const params = new URLSearchParams(searchParams.toString());
 
@@ -80,11 +80,8 @@ export function CatalogSearch({
         else router.push(href, { scroll: false });
       });
     },
+    [basePath, hiddenFields, router, searchParams, showCategory, startTransition],
   );
-
-  const emitQuery = useEffectEvent((value: string) => {
-    onQueryChange?.(value);
-  });
 
   const debouncedSync = useDebouncedCallback(
     (value: string, nextCategory: string) => {
@@ -95,13 +92,13 @@ export function CatalogSearch({
 
   const handleQueryChange = (value: string) => {
     setQuery(value);
-    emitQuery(value);
+    onQueryChange?.(value);
     debouncedSync(value, category);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    emitQuery(query);
+    onQueryChange?.(query);
     syncUrl(query, category, false);
   };
 

@@ -33,4 +33,29 @@ public class CursorQueryTests
         var errors = query.Validate();
         errors.Should().ContainKey("Cursor");
     }
+
+    [Fact]
+    public void Normalize_uses_default_limit_when_zero_or_negative()
+    {
+        var query = new CursorQuery { Limit = 0 };
+        query.Normalize();
+        query.Limit.Should().Be(CursorQuery.DefaultLimit);
+
+        query = new CursorQuery { Limit = -5 };
+        query.Normalize();
+        query.Limit.Should().Be(CursorQuery.DefaultLimit);
+    }
+
+    [Fact]
+    public void Validate_accepts_encoded_cursor()
+    {
+        var id = Guid.Parse("c3333333-3333-4333-8333-333333333013");
+        var query = new CursorQuery
+        {
+            Limit = 20,
+            Cursor = CursorCodec.Encode(id),
+        };
+
+        query.Validate().Should().BeEmpty();
+    }
 }

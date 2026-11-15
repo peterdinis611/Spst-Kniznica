@@ -11,6 +11,7 @@ import { BooksCatalogFacets } from "@/components/catalog/BooksCatalogFacets";
 import { BooksCatalogFiltersDialog } from "@/components/catalog/BooksCatalogFiltersDialog";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
+import { CatalogLoadMore } from "@/components/catalog/CatalogLoadMore";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useCatalogColumnCount } from "@/hooks/use-catalog-column-count";
 import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
@@ -285,11 +286,15 @@ export function BooksCatalog({
         </ul>
       )}
 
-      {loadingMore || (hasMore && results.length > 0) ? (
-        <p className="pb-10 text-center text-xs text-muted-foreground" aria-live="polite">
-          {loadingMore ? "Načítavam ďalšie tituly…" : null}
-        </p>
-      ) : null}
+      <CatalogLoadMore
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        loadedCount={results.length}
+        onLoadMore={() => void loadMore()}
+        itemLabel="titulov"
+        loadingLabel="Načítavam ďalšie tituly…"
+        ariaLabel="Načítať ďalšie tituly"
+      />
     </>
   );
 }

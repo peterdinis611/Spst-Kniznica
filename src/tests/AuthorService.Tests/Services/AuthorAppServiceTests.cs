@@ -90,6 +90,49 @@ public class AuthorAppServiceTests
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
+    [Fact]
+    public async Task GetByIdAsync_attaches_fresh_book_count()
+    {
+        var id = Guid.Parse("b2222222-2222-4222-8222-222222222006");
+        _authors.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(new Author
+        {
+            Id = id,
+            Name = "Morgan Housel",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+        _relationBookCount.GetAuthorBookCountAsync(id, Arg.Any<CancellationToken>())
+            .Returns(7);
+
+        var dto = await _sut.GetByIdAsync(id);
+
+        dto.Id.Should().Be(id);
+        dto.Name.Should().Be("Morgan Housel");
+        dto.BookCount.Should().Be(7);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_keeps_zero_when_relation_lookup_returns_null()
+    {
+        var id = Guid.NewGuid();
+        _authors.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(new Author
+        {
+            Id = id,
+            Name = "Neznámy",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+        _relationBookCount.GetAuthorBookCountAsync(id, Arg.Any<CancellationToken>())
+            .Returns((int?)null);
+
+        var dto = await _sut.GetByIdAsync(id);
+
+        dto.BookCount.Should().Be(0);
+    }
+
+
     private sealed class RecordingEventPublisher : IIntegrationEventPublisher
     {
         public List<object> Events { get; } = [];

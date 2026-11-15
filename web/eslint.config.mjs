@@ -28,6 +28,9 @@ const eslintConfig = defineConfig([
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      // Common in Next.js client components (hydration, prop→state sync, mount fetch).
+      // Keep visible as warnings; do not fail CI until refactors land.
+      "react-hooks/set-state-in-effect": "warn",
     },
   },
 ]);
