@@ -9,6 +9,7 @@ import { ResultsStatus } from "@/components/a11y/ResultsStatus";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
+import { CatalogLoadMore } from "@/components/catalog/CatalogLoadMore";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useCatalogLaneCount } from "@/hooks/use-catalog-lane-count";
 import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
@@ -228,11 +229,15 @@ export function CategoriesCatalog({
         </ul>
       )}
 
-      {loadingMore || (hasMore && results.length > 0) ? (
-        <p className="pb-10 text-center text-xs text-muted-foreground" aria-live="polite">
-          {loadingMore ? "Načítavam ďalšie kategórie…" : null}
-        </p>
-      ) : null}
+      <CatalogLoadMore
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        loadedCount={results.length}
+        onLoadMore={() => void loadMore()}
+        itemLabel="kategórií"
+        loadingLabel="Načítavam ďalšie kategórie…"
+        ariaLabel="Načítať ďalšie kategórie"
+      />
     </>
   );
 }
