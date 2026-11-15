@@ -4,16 +4,18 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { FlatCover } from "@/components/landing/FlatCover";
+import { BookBiblioFacts } from "@/components/catalog/BookBiblioFacts";
+import { BookDetailCover } from "@/components/catalog/BookDetailCover";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
+import { AuthorMoreBooks } from "@/components/catalog/AuthorMoreBooks";
+import { BookOpenTickets } from "@/components/catalog/BookOpenTickets";
+import { CategoryMoreBooks } from "@/components/catalog/CategoryMoreBooks";
+import { ReserveSlip } from "@/components/catalog/ReserveSlip";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { AuthorMoreBooks } from "@/components/catalog/AuthorMoreBooks";
-import { BookOpenTickets } from "@/components/catalog/BookOpenTickets";
-import { ReserveSlip } from "@/components/catalog/ReserveSlip";
 import { getBookAction } from "@/lib/catalog/actions";
 import { bookJsonLd, breadcrumbJsonLd } from "@/lib/seo/json-ld";
 import { buildBookMetadata } from "@/lib/seo/metadata";
@@ -53,6 +55,7 @@ export async function generateMetadata({
       book.author,
       book.categoryName ?? "",
       book.isbn ?? "",
+      book.publisher ?? "",
     ].filter(Boolean),
   });
 }
@@ -104,12 +107,14 @@ async function BookDetailContent({
 
       <div className="mt-2 grid gap-10 border-t border-rule pt-8 sm:mt-4 sm:pt-10 lg:grid-cols-[minmax(10rem,13.5rem)_1fr] lg:items-start lg:gap-14">
         <div className="lg:sticky lg:top-8">
-          <FlatCover
+          <BookDetailCover
             title={book.title}
             author={book.author}
             accent={book.accent}
             secondary={book.secondary}
-            className="mx-auto w-48 max-w-full shadow-[0_32px_64px_-44px_rgba(14,26,36,0.45)] sm:w-52 lg:mx-0"
+            coverUrl={book.coverUrl}
+            isbn={book.isbn}
+            className="mx-auto w-48 max-w-full sm:w-52 lg:mx-0"
           />
         </div>
 
@@ -133,11 +138,24 @@ async function BookDetailContent({
             >
               {available ? "Dostupné" : "Nedostupné"}
             </Badge>
+            {book.formatLabel ? (
+              <Badge
+                variant="outline"
+                className="rounded-none px-3 py-1 font-mono text-[10px] tracking-[0.12em] uppercase"
+              >
+                {book.formatLabel}
+              </Badge>
+            ) : null}
           </div>
 
           <h1 className="mt-5 font-display text-[clamp(2rem,6vw,3.4rem)] leading-[1.05] tracking-tight text-ink">
             {book.title}
           </h1>
+          {book.subtitle ? (
+            <p className="mt-2 text-base text-muted-foreground sm:text-lg">
+              {book.subtitle}
+            </p>
+          ) : null}
           <p className="mt-2 font-display text-lg text-sage sm:text-xl">
             {book.authorId ? (
               <Link
@@ -151,31 +169,14 @@ async function BookDetailContent({
             )}
           </p>
 
-          <dl className="mt-8 flex max-w-xl flex-wrap gap-x-10 gap-y-4 border-y border-rule py-5 dark:border-white/10">
-            {book.year ? (
-              <div>
-                <dt className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
-                  Rok
-                </dt>
-                <dd className="mt-1 font-display text-2xl tabular-nums text-ink">
-                  {book.year}
-                </dd>
-              </div>
-            ) : null}
-            <div>
-              <dt className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
-                Exempláre
-              </dt>
-              <dd className="mt-1 font-display text-2xl tabular-nums text-ink">
-                <span className="text-sage">{book.availableCopies}</span>
-                <span className="text-muted-foreground"> / {book.totalCopies}</span>
-              </dd>
-            </div>
-          </dl>
+          <BookBiblioFacts book={book} />
 
           {book.description ? (
             <div className="mt-8 max-w-2xl border-l-2 border-sage/50 pl-5">
-              <p className="text-sm leading-relaxed text-muted-foreground sm:text-base sm:leading-7">
+              <h2 className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
+                Anotácia
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base sm:leading-7">
                 {book.description}
               </p>
             </div>
@@ -205,20 +206,40 @@ async function BookDetailContent({
                 <ArrowRight className="size-4" aria-hidden />
               </span>
             </Button>
-            <Button
-              variant="outline"
-              className="rounded-full border-ink"
-              render={<Link href="/authors" />}
-            >
-              Autori
-            </Button>
-            <Button
-              variant="outline"
-              className="rounded-full border-ink"
-              render={<Link href="/categories" />}
-            >
-              Kategórie
-            </Button>
+            {book.authorId ? (
+              <Button
+                variant="outline"
+                className="rounded-full border-ink"
+                render={<Link href={`/authors/${book.authorId}`} />}
+              >
+                Profil autora
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                className="rounded-full border-ink"
+                render={<Link href="/authors" />}
+              >
+                Autori
+              </Button>
+            )}
+            {book.categoryId ? (
+              <Button
+                variant="outline"
+                className="rounded-full border-ink"
+                render={<Link href={`/categories/${book.categoryId}`} />}
+              >
+                Kategória
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                className="rounded-full border-ink"
+                render={<Link href="/categories" />}
+              >
+                Kategórie
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -227,6 +248,14 @@ async function BookDetailContent({
         <AuthorMoreBooks
           authorId={book.authorId}
           authorName={book.author}
+          excludeBookId={book.id}
+        />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <CategoryMoreBooks
+          categoryId={book.categoryId}
+          categoryName={book.categoryName ?? "kategórie"}
           excludeBookId={book.id}
         />
       </Suspense>

@@ -585,29 +585,9 @@ public class BooksService(
             ? OpenLibraryCovers.ForIsbn(book.Isbn)
             : book.CoverUrl;
 
-    private static BookDetailDto MapDetail(Book book) => new()
+    private static BookDetailDto MapDetail(Book book)
     {
-        Id = book.Id,
-        Title = book.Title,
-        Subtitle = book.Subtitle,
-        AuthorId = book.AuthorId,
-        Author = book.Author,
-        Publisher = book.Publisher,
-        Isbn = book.Isbn,
-        PublishedYear = book.PublishedYear,
-        Language = book.Language,
-        CategoryId = book.CategoryId,
-        CategoryName = book.CategoryName,
-        Description = book.Description,
-        CoverUrl = ResolveCoverUrl(book),
-        PageCount = book.PageCount,
-        Format = book.Format,
-        ShelfLocation = book.ShelfLocation,
-        TotalCopies = book.TotalCopies,
-        AvailableCopies = book.AvailableCopies,
-        CreatedAt = book.CreatedAt,
-        UpdatedAt = book.UpdatedAt,
-        Copies = book.Copies
+        var copies = book.Copies
             .OrderBy(c => c.InventoryNumber)
             .Select(c => new BookCopyDto
             {
@@ -617,7 +597,49 @@ public class BooksService(
                 Status = c.Status,
                 ShelfLocation = c.ShelfLocation
             })
-            .ToList()
+            .ToList();
+
+        return new BookDetailDto
+        {
+            Id = book.Id,
+            Title = book.Title,
+            Subtitle = book.Subtitle,
+            AuthorId = book.AuthorId,
+            Author = book.Author,
+            Publisher = book.Publisher,
+            Isbn = book.Isbn,
+            PublishedYear = book.PublishedYear,
+            Language = book.Language,
+            CategoryId = book.CategoryId,
+            CategoryName = book.CategoryName,
+            Description = book.Description,
+            CoverUrl = ResolveCoverUrl(book),
+            PageCount = book.PageCount,
+            Format = book.Format,
+            FormatLabel = FormatLabel(book.Format),
+            ShelfLocation = book.ShelfLocation,
+            TotalCopies = book.TotalCopies,
+            AvailableCopies = book.AvailableCopies,
+            CopySummary = new BookCopyStatusSummaryDto
+            {
+                Available = copies.Count(c => c.Status == BookCopyStatus.Available),
+                Borrowed = copies.Count(c => c.Status == BookCopyStatus.Borrowed),
+                Reserved = copies.Count(c => c.Status == BookCopyStatus.Reserved),
+                Lost = copies.Count(c => c.Status == BookCopyStatus.Lost),
+                Maintenance = copies.Count(c => c.Status == BookCopyStatus.Maintenance)
+            },
+            CreatedAt = book.CreatedAt,
+            UpdatedAt = book.UpdatedAt,
+            Copies = copies
+        };
+    }
+
+    private static string FormatLabel(BookFormat format) => format switch
+    {
+        BookFormat.Paperback => "Brožovaná",
+        BookFormat.Hardcover => "Viazaná",
+        BookFormat.Ebook => "E-kniha",
+        _ => "Iné"
     };
 
     private static CreateBookRequest MapImportRow(ImportRow row)

@@ -44,6 +44,12 @@ try
     builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IAuthorService, AuthorAppService>();
+    builder.Services.AddHttpClient<IRelationBookCountLookup, RelationBookCountLookup>(client =>
+    {
+        var baseUrl = builder.Configuration["MessagingService:BaseUrl"] ?? "http://localhost:5205";
+        client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+        client.Timeout = TimeSpan.FromSeconds(5);
+    });
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
     builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "author-service");
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");

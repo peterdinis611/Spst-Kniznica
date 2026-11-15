@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ToolCard, ToolShell } from "@/components/admin/tools/ToolShell";
 
 const FRONTEND = [
@@ -36,7 +37,7 @@ export function LinksToolsPage() {
           <ul className="space-y-1">
             {FRONTEND.map((item) => (
               <li key={item.href}>
-                <a
+                <Link
                   href={item.href}
                   className="block border border-transparent px-2 py-2 text-sm text-ink transition hover:border-rule hover:bg-mint/20 dark:hover:border-white/10"
                 >
@@ -44,7 +45,7 @@ export function LinksToolsPage() {
                   <span className="ml-2 font-mono text-[11px] text-muted-foreground">
                     {item.href}
                   </span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -54,7 +55,7 @@ export function LinksToolsPage() {
           <ul className="space-y-1">
             {SWAGGER.map((item) => (
               <li key={item.href}>
-                <a
+                <Link
                   href={item.href}
                   target="_blank"
                   rel="noreferrer"
@@ -64,7 +65,7 @@ export function LinksToolsPage() {
                   <span className="ml-2 font-mono text-[11px] text-muted-foreground">
                     :{new URL(item.href).port}
                   </span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

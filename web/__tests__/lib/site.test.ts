@@ -5,6 +5,8 @@ describe("siteConfig", () => {
   it("exposes library branding defaults", () => {
     expect(siteConfig.name).toContain("SPST");
     expect(siteConfig.locale).toBe("sk_SK");
+    expect(siteConfig.city).toBe("Bardejov");
+    expect(siteConfig.address).toContain("Bardejov");
     expect(siteConfig.address.length).toBeGreaterThan(3);
   });
 });

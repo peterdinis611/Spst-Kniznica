@@ -18,18 +18,32 @@ export type BookListItem = {
   updatedAt?: string;
 };
 
+export type BookCopyStatus = 0 | 1 | 2 | 3 | 4 | string;
+
+export type BookCopy = {
+  id: string;
+  inventoryNumber: string;
+  barcode?: string | null;
+  status: BookCopyStatus;
+  shelfLocation?: string | null;
+};
+
+export type BookCopyStatusSummary = {
+  available: number;
+  borrowed: number;
+  reserved: number;
+  lost: number;
+  maintenance: number;
+};
+
 export type BookDetail = BookListItem & {
   description?: string | null;
   pageCount?: number | null;
+  formatLabel?: string | null;
+  copySummary?: BookCopyStatusSummary | null;
   createdAt?: string;
   updatedAt?: string;
-  copies?: Array<{
-    id: string;
-    inventoryNumber: string;
-    barcode?: string | null;
-    status: number | string;
-    shelfLocation?: string | null;
-  }>;
+  copies?: BookCopy[];
 };
 
 export type AuthorDto = {
@@ -42,6 +56,7 @@ export type AuthorDto = {
   viafId?: string | null;
   profileUrl?: string | null;
   isActive: boolean;
+  bookCount?: number;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -52,6 +67,7 @@ export type CategoryDto = {
   description?: string | null;
   color?: string | null;
   isActive: boolean;
+  bookCount?: number;
   createdAt?: string;
   updatedAt?: string;
 };

@@ -8,11 +8,17 @@ export default function manifest(): MetadataRoute.Manifest {
     description: siteConfig.description,
     start_url: "/",
     display: "standalone",
-    background_color: "#f4f1ea",
+    background_color: "#f7f3ea",
     theme_color: "#0e1a24",
     lang: siteConfig.language,
     categories: ["education", "books"],
     icons: [
+      {
+        src: "/icon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+        purpose: "any",
+      },
       {
         src: "/icon",
         sizes: "192x192",

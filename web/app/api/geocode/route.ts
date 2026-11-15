@@ -10,8 +10,9 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q =
     searchParams.get("q")?.trim() ||
+    process.env.NEXT_PUBLIC_LIBRARY_GEOCODE_QUERY?.trim() ||
     process.env.NEXT_PUBLIC_LIBRARY_ADDRESS?.trim() ||
-    "Stredná priemyselná škola, Slovensko";
+    "Stredná priemyselná škola technická, Bardejov";
 
   try {
     const url =

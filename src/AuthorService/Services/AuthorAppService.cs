@@ -14,6 +14,7 @@ public class AuthorAppService(
     IUnitOfWork unitOfWork,
     IAppCache cache,
     IIntegrationEventPublisher eventPublisher,
+    IRelationBookCountLookup relationBookCount,
     IValidator<CreateAuthorRequest> createValidator,
     IValidator<UpdateAuthorRequest> updateValidator,
     ILogger<AuthorAppService> logger) : IAuthorService
@@ -35,7 +36,7 @@ public class AuthorAppService(
 
     public async Task<AuthorDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await cache.GetOrSetAsync(
+        var dto = await cache.GetOrSetAsync(
             CacheKeys.Author(id),
             async ct =>
             {
@@ -44,6 +45,10 @@ public class AuthorAppService(
             },
             TimeSpan.FromMinutes(10),
             cancellationToken);
+
+        // Fresh count — do not mutate the cached AuthorDto instance.
+        var bookCount = await relationBookCount.GetAuthorBookCountAsync(id, cancellationToken);
+        return CloneWithBookCount(dto, bookCount ?? dto.BookCount);
     }
 
     public async Task<AuthorDto> CreateAsync(
@@ -172,6 +177,22 @@ public class AuthorAppService(
         IsActive = author.IsActive,
         CreatedAt = author.CreatedAt,
         UpdatedAt = author.UpdatedAt
+    };
+
+    private static AuthorDto CloneWithBookCount(AuthorDto source, int bookCount) => new()
+    {
+        Id = source.Id,
+        Name = source.Name,
+        Biography = source.Biography,
+        Nationality = source.Nationality,
+        BirthYear = source.BirthYear,
+        WikidataId = source.WikidataId,
+        ViafId = source.ViafId,
+        ProfileUrl = source.ProfileUrl,
+        IsActive = source.IsActive,
+        BookCount = bookCount,
+        CreatedAt = source.CreatedAt,
+        UpdatedAt = source.UpdatedAt
     };
 
     private static void EnsureValid(FluentValidation.Results.ValidationResult validation)

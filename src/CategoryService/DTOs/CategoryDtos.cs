@@ -9,6 +9,8 @@ public class CategoryDto
     public string? Description { get; set; }
     public string? Color { get; set; }
     public bool IsActive { get; set; }
+    /// <summary>Titles in the fond (from Messaging relations when available).</summary>
+    public int BookCount { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }

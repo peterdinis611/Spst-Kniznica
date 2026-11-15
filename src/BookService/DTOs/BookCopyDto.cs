@@ -11,6 +11,16 @@ public class BookCopyDto
     public string? ShelfLocation { get; set; }
 }
 
+/// <summary>Aggregated copy statuses for catalog detail UIs.</summary>
+public class BookCopyStatusSummaryDto
+{
+    public int Available { get; set; }
+    public int Borrowed { get; set; }
+    public int Reserved { get; set; }
+    public int Lost { get; set; }
+    public int Maintenance { get; set; }
+}
+
 public class BookDetailDto
 {
     public Guid Id { get; set; }
@@ -28,9 +38,11 @@ public class BookDetailDto
     public string? CoverUrl { get; set; }
     public int? PageCount { get; set; }
     public BookFormat Format { get; set; }
+    public string FormatLabel { get; set; } = string.Empty;
     public string? ShelfLocation { get; set; }
     public int TotalCopies { get; set; }
     public int AvailableCopies { get; set; }
+    public BookCopyStatusSummaryDto CopySummary { get; set; } = new();
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
     public IReadOnlyList<BookCopyDto> Copies { get; set; } = [];

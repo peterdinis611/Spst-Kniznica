@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { siteConfig } from "@/lib/site";
 
 type Geocode = {
   displayName: string;
@@ -8,15 +10,26 @@ type Geocode = {
   osmUrl: string;
 };
 
-export function LibraryMap() {
+type LibraryMapProps = {
+  query?: string;
+  className?: string;
+};
+
+export function LibraryMap({
+  query = siteConfig.geocodeQuery,
+  className,
+}: LibraryMapProps) {
   const [data, setData] = useState<Geocode | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    const params = new URLSearchParams({ q: query });
     (async () => {
       try {
-        const res = await fetch("/api/geocode", { cache: "force-cache" });
+        const res = await fetch(`/api/geocode?${params.toString()}`, {
+          cache: "force-cache",
+        });
         if (!res.ok) throw new Error("Geocode zlyhal");
         const json = (await res.json()) as Geocode;
         if (!cancelled) setData(json);
@@ -29,7 +42,7 @@ export function LibraryMap() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [query]);
 
   if (error) {
     return (
@@ -53,24 +66,26 @@ export function LibraryMap() {
   }
 
   return (
-    <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">{data.displayName}</p>
+    <div className={className ? `space-y-2 ${className}` : "space-y-2"}>
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        {data.displayName}
+      </p>
       <iframe
-        title={`Mapa: ${data.displayName}`}
+        title={`Mapa školy: ${siteConfig.addressShort}`}
         src={data.osmEmbedUrl}
-        className="h-40 w-full border border-rule dark:border-white/10"
+        className="h-44 w-full border border-rule bg-paper-deep dark:border-white/10 sm:h-52"
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
       />
-      <a
+      <Link
         href={data.osmUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-mono text-[11px] text-sage underline-offset-2 hover:underline"
+        className="inline-flex font-mono text-[11px] tracking-wide text-sage underline-offset-2 hover:underline"
       >
         Otvoriť v OpenStreetMap
         <span className="sr-only"> (nové okno)</span>
-      </a>
+      </Link>
     </div>
   );
 }

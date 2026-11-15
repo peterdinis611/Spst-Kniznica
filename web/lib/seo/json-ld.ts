@@ -15,8 +15,13 @@ export function libraryJsonLd(): JsonLd {
     address: {
       "@type": "PostalAddress",
       addressCountry: "SK",
-      streetAddress: siteConfig.address,
+      addressLocality: siteConfig.city,
+      streetAddress: siteConfig.addressShort,
+      postalCode: "085 42",
     },
+    telephone: siteConfig.phone,
+    email: siteConfig.email,
+    sameAs: [siteConfig.schoolUrl],
     isAccessibleForFree: true,
     potentialAction: {
       "@type": "SearchAction",

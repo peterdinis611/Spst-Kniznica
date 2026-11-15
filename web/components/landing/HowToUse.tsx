@@ -108,7 +108,7 @@ export function HowToUse() {
             size="lg"
             className="rounded-full"
             render={
-              <a
+              <Link
                 href="http://localhost:5200/swagger"
                 target="_blank"
                 rel="noreferrer"

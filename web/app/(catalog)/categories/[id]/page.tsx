@@ -69,6 +69,10 @@ async function CategoryDetailContent({
   }
 
   const books = booksResult?.data?.items ?? [];
+  const totalInFond =
+    category.bookCount > 0
+      ? category.bookCount
+      : (booksResult?.data?.totalCount ?? books.length);
   const booksHref = buildBooksCatalogHref({ category: category.id });
 
   return (
@@ -105,6 +109,14 @@ async function CategoryDetailContent({
           <Badge className="rounded-none border border-sage/30 bg-mint/50 px-3 py-1 font-mono text-[10px] tracking-[0.12em] text-sage uppercase hover:bg-mint/50 dark:border-sage/35 dark:bg-paper-deep">
             Kategória
           </Badge>
+          {!category.isActive ? (
+            <Badge
+              variant="outline"
+              className="rounded-none border-stair-2/40 px-3 py-1 font-mono text-[10px] tracking-[0.12em] text-stair-2 uppercase"
+            >
+              Neaktívna
+            </Badge>
+          ) : null}
         </div>
 
         <h1 className="mt-5 max-w-3xl font-display text-[clamp(2.2rem,7vw,3.75rem)] leading-[1.02] tracking-tight text-ink">
@@ -117,7 +129,7 @@ async function CategoryDetailContent({
               Tituly vo fonde
             </dt>
             <dd className="mt-1 font-display text-2xl tabular-nums text-ink">
-              <span className="text-sage">{books.length}</span>
+              <span className="text-sage">{totalInFond}</span>
             </dd>
           </div>
         </dl>
@@ -170,9 +182,9 @@ async function CategoryDetailContent({
             variant="secondary"
             className="h-auto rounded-full bg-paper-deep px-3 py-1 font-display text-sm tabular-nums text-ink ring-1 ring-rule dark:ring-white/10"
           >
-            {books.length}{" "}
+            {totalInFond}{" "}
             <span className="font-sans font-normal text-muted-foreground">
-              {books.length === 1 ? "titul" : "titulov"}
+              {totalInFond === 1 ? "titul" : "titulov"}
             </span>
           </Badge>
         </div>
@@ -185,13 +197,28 @@ async function CategoryDetailContent({
             resetLabel="Do katalógu"
           />
         ) : (
-          <ul className="mt-8 grid grid-cols-2 gap-3 pb-16 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 md:gap-5">
-            {books.map((book, index) => (
-              <li key={book.id}>
-                <BookCard book={book} index={index} />
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="mt-8 grid grid-cols-2 gap-3 pb-6 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 md:gap-5">
+              {books.map((book, index) => (
+                <li key={book.id}>
+                  <BookCard book={book} index={index} />
+                </li>
+              ))}
+            </ul>
+            {totalInFond > books.length ? (
+              <p className="pb-16 text-sm text-muted-foreground">
+                Zobrazených {books.length} z {totalInFond}.{" "}
+                <Link
+                  href={booksHref}
+                  className="font-semibold text-sage underline-offset-4 hover:text-ink hover:underline"
+                >
+                  Otvoriť celý katalóg kategórie
+                </Link>
+              </p>
+            ) : (
+              <div className="pb-16" />
+            )}
+          </>
         )}
       </section>
     </>

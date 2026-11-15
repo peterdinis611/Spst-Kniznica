@@ -14,6 +14,7 @@ public class CategoryAppService(
     IUnitOfWork unitOfWork,
     IAppCache cache,
     IIntegrationEventPublisher eventPublisher,
+    IRelationBookCountLookup relationBookCount,
     IValidator<CreateCategoryRequest> createValidator,
     IValidator<UpdateCategoryRequest> updateValidator,
     ILogger<CategoryAppService> logger) : ICategoryService
@@ -35,7 +36,7 @@ public class CategoryAppService(
 
     public async Task<CategoryDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await cache.GetOrSetAsync(
+        var dto = await cache.GetOrSetAsync(
             CacheKeys.Category(id),
             async ct =>
             {
@@ -44,6 +45,9 @@ public class CategoryAppService(
             },
             TimeSpan.FromMinutes(10),
             cancellationToken);
+
+        var bookCount = await relationBookCount.GetCategoryBookCountAsync(id, cancellationToken);
+        return CloneWithBookCount(dto, bookCount ?? dto.BookCount);
     }
 
     public async Task<CategoryDto> CreateAsync(
@@ -160,6 +164,18 @@ public class CategoryAppService(
         IsActive = category.IsActive,
         CreatedAt = category.CreatedAt,
         UpdatedAt = category.UpdatedAt
+    };
+
+    private static CategoryDto CloneWithBookCount(CategoryDto source, int bookCount) => new()
+    {
+        Id = source.Id,
+        Name = source.Name,
+        Description = source.Description,
+        Color = source.Color,
+        IsActive = source.IsActive,
+        BookCount = bookCount,
+        CreatedAt = source.CreatedAt,
+        UpdatedAt = source.UpdatedAt
     };
 
     private static void EnsureValid(FluentValidation.Results.ValidationResult validation)

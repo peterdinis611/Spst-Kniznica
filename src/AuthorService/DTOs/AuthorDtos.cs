@@ -13,6 +13,8 @@ public class AuthorDto
     public string? ViafId { get; set; }
     public string? ProfileUrl { get; set; }
     public bool IsActive { get; set; }
+    /// <summary>Titles in the fond (from Messaging relations when available).</summary>
+    public int BookCount { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
