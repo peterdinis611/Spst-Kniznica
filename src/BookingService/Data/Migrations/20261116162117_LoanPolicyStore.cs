@@ -15,8 +15,7 @@ namespace BookingService.Data.Migrations
                 name: "LoanPolicyStore",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false),
                     DefaultLoanDays = table.Column<int>(type: "INTEGER", nullable: false),
                     MaxActiveLoansPerReader = table.Column<int>(type: "INTEGER", nullable: false),
                     RenewExtraDays = table.Column<int>(type: "INTEGER", nullable: false),

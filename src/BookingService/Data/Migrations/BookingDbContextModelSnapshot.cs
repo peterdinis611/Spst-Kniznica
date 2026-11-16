@@ -124,7 +124,6 @@ namespace BookingService.Data.Migrations
             modelBuilder.Entity("BookingService.Models.LoanPolicyStore", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("DefaultLoanDays")

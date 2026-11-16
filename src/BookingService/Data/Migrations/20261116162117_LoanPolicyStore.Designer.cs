@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookingService.Data.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
-    [Migration("20261116160506_LoanPolicyStore")]
+    [Migration("20261116162117_LoanPolicyStore")]
     partial class LoanPolicyStore
     {
         /// <inheritdoc />
@@ -127,7 +127,6 @@ namespace BookingService.Data.Migrations
             modelBuilder.Entity("BookingService.Models.LoanPolicyStore", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("DefaultLoanDays")

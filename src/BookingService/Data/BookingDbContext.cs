@@ -49,7 +49,9 @@ public class BookingDbContext(DbContextOptions<BookingDbContext> options) : DbCo
 
         modelBuilder.Entity<LoanPolicyStore>(entity =>
         {
+            // Singleton row (Id = 1) — never autoincrement.
             entity.HasKey(s => s.Id);
+            entity.Property(s => s.Id).ValueGeneratedNever();
         });
     }
 }
