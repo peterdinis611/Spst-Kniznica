@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { DeskDailyBoard } from "@/components/catalog/DeskDailyBoard";
-import { searchBooksAction } from "@/lib/catalog/actions";
+import { loadCatalogRefs } from "@/lib/catalog/load-catalog-refs";
 
 export const metadata: Metadata = {
   title: "Denná tabuľa",
@@ -15,12 +15,7 @@ export const metadata: Metadata = {
 
 async function DeskContent() {
   await connection();
-  const booksResult = await searchBooksAction({ page: 1, pageSize: 100 });
-  const catalog = (booksResult?.data?.items ?? []).map((item) => ({
-    id: item.id,
-    title: item.title,
-    author: item.author,
-  }));
+  const catalog = await loadCatalogRefs();
   return <DeskDailyBoard catalog={catalog} />;
 }
 

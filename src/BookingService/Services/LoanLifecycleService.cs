@@ -1,8 +1,6 @@
 using BookingService.DTOs;
 using BookingService.Interfaces;
 using BookingService.Models;
-using BookingService.Options;
-using Microsoft.Extensions.Options;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Messaging;
 
@@ -12,28 +10,14 @@ public sealed class LoanLifecycleService(
     IUnitOfWork unitOfWork,
     IAppCache cache,
     IIntegrationEventPublisher eventPublisher,
-    IOptions<LoanPolicyOptions> policyOptions,
+    ILoanPolicyProvider loanPolicy,
     WaitlistService waitlist,
     IBookCatalogLookup bookCatalog,
     SchoolCalendarService schoolCalendar,
     ILogger<LoanLifecycleService> logger)
 {
-    public LoanPolicyDto GetPolicy()
-    {
-        var p = policyOptions.Value;
-        return new LoanPolicyDto
-        {
-            DefaultLoanDays = p.DefaultLoanDays,
-            MaxActiveLoansPerReader = p.MaxActiveLoansPerReader,
-            RenewExtraDays = p.RenewExtraDays,
-            MaxRenewals = p.MaxRenewals,
-            FreezeNewLoans = p.FreezeNewLoans,
-            SchoolYearEndUtc = p.SchoolYearEndUtc,
-            ReminderDaysBeforeDue = p.ReminderDaysBeforeDue,
-            SkipNonSchoolDays = p.SkipNonSchoolDays,
-            HolidayCountryCode = p.HolidayCountryCode,
-        };
-    }
+    public Task<LoanPolicyDto> GetPolicyAsync(CancellationToken cancellationToken = default)
+        => loanPolicy.GetPolicyDtoAsync(cancellationToken);
 
     public async Task<LifecycleBatchResult> MarkOverdueAsync(CancellationToken cancellationToken = default)
     {
@@ -76,7 +60,7 @@ public sealed class LoanLifecycleService(
 
     public async Task<LifecycleBatchResult> QueueDueRemindersAsync(CancellationToken cancellationToken = default)
     {
-        var policy = policyOptions.Value;
+        var policy = await loanPolicy.GetEffectiveAsync(cancellationToken);
         var now = DateTimeOffset.UtcNow;
         var windowEnd = now.AddDays(policy.ReminderDaysBeforeDue);
         var dueSoon = await unitOfWork.Bookings.ListDueSoonAsync(now, windowEnd, cancellationToken);
@@ -130,8 +114,9 @@ public sealed class LoanLifecycleService(
         var next = await waitlist.DequeueNextAsync(bookId, cancellationToken);
         if (next is null) return;
 
+        var policy = await loanPolicy.GetEffectiveAsync(cancellationToken);
         var due = await schoolCalendar.AdjustDueDateAsync(
-            DateTimeOffset.UtcNow.AddDays(policyOptions.Value.DefaultLoanDays),
+            DateTimeOffset.UtcNow.AddDays(policy.DefaultLoanDays),
             cancellationToken);
 
         var now = DateTimeOffset.UtcNow;
@@ -172,7 +157,8 @@ public sealed class LoanLifecycleService(
     public async Task<DeskDailyDto> GetDailyBoardAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow;
-        var soonEnd = now.AddDays(policyOptions.Value.ReminderDaysBeforeDue);
+        var policy = await loanPolicy.GetEffectiveAsync(cancellationToken);
+        var soonEnd = now.AddDays(policy.ReminderDaysBeforeDue);
 
         var pastDueActive = await unitOfWork.Bookings.ListActivePastDueAsync(now, cancellationToken);
         var overduePage = await unitOfWork.Bookings.FindAsync(

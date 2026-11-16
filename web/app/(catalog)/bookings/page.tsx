@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { BookingsAccessGate } from "@/components/catalog/BookingsAccessGate";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
-import { searchBooksAction } from "@/lib/catalog/actions";
+import { loadCatalogRefs } from "@/lib/catalog/load-catalog-refs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -16,13 +16,7 @@ export const metadata: Metadata = buildPageMetadata({
 
 async function BookingsContent() {
   await connection();
-  const booksResult = await searchBooksAction({ page: 1, pageSize: 100 });
-
-  const catalog = (booksResult?.data?.items ?? []).map((item) => ({
-    id: item.id,
-    title: item.title,
-    author: item.author,
-  }));
+  const catalog = await loadCatalogRefs();
 
   return <BookingsAccessGate catalog={catalog} />;
 }

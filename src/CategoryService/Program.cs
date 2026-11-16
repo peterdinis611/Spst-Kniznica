@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Data;
 using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Messaging;
 
@@ -38,6 +39,7 @@ try
 
     builder.Services.AddDbContext<CategoryDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .AddInterceptors(new SqliteFoldConnectionInterceptor())
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

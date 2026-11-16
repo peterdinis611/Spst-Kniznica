@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAction } from "next-safe-action/hooks";
-import { Download } from "lucide-react";
+import { Download, ScanLine } from "lucide-react";
 import { useAbility } from "@/components/auth/AbilityProvider";
 import { SignInRequiredNotice } from "@/components/auth/NotAuthorizedNotice";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -18,6 +18,7 @@ import {
 } from "@/lib/bookings";
 import { apiUrl } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
+import { WaitlistBoard } from "@/components/catalog/WaitlistBoard";
 
 type CatalogRef = { id: string; title: string; author: string };
 
@@ -200,6 +201,21 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
         </p>
       ) : null}
 
+      <div className="mt-6 flex flex-col gap-3 border border-ink bg-paper-deep px-4 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/15">
+        <div className="flex items-center gap-3">
+          <ScanLine className="size-5 shrink-0 text-accent" aria-hidden />
+          <p className="text-sm text-muted-foreground">
+            Naskenuj inventárne číslo alebo čiarový kód pri výdaji a vrátení.
+          </p>
+        </div>
+        <Button
+          render={<Link href="/bookings?scan=1" />}
+          className="h-10 shrink-0 rounded-none bg-ink text-paper hover:bg-ink/90"
+        >
+          Otvoriť pult so skenerom
+        </Button>
+      </div>
+
       {board ? (
         <>
           <div className="mt-6 grid gap-3 sm:grid-cols-4">
@@ -228,6 +244,11 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
             title="Pripravené na vyzdvihnutie"
             items={board.pickupReady}
             titles={titles}
+          />
+          <WaitlistBoard
+            titles={titles}
+            getAccessToken={getAccessToken}
+            entraEnabled={entraEnabled}
           />
         </>
       ) : (

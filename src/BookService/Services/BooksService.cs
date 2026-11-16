@@ -88,6 +88,45 @@ public class BooksService(
             cancellationToken);
     }
 
+    public async Task<BookCopyLookupDto> LookupCopyByCodeAsync(
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["code"] = ["Kód výtlačku je povinný."]
+            });
+        }
+
+        var copy = await unitOfWork.Books.FindCopyByCodeAsync(code, cancellationToken);
+        if (copy is null)
+        {
+            logger.LogInformation("Book copy lookup missed for code {Code}", code.Trim());
+            throw new NotFoundException($"Book copy with code '{code.Trim()}' was not found.");
+        }
+
+        var book = copy.Book
+            ?? await unitOfWork.Books.GetByIdAsync(copy.BookId, includeCopies: false, cancellationToken);
+
+        if (book is null)
+        {
+            throw new NotFoundException($"Book copy with code '{code.Trim()}' was not found.");
+        }
+
+        return new BookCopyLookupDto
+        {
+            CopyId = copy.Id,
+            BookId = copy.BookId,
+            InventoryNumber = copy.InventoryNumber,
+            Barcode = copy.Barcode,
+            Status = copy.Status,
+            BookTitle = book.Title,
+            BookAuthor = book.Author,
+        };
+    }
+
     public async Task<BookDetailDto> CreateAsync(CreateBookRequest request, CancellationToken cancellationToken = default)
     {
         var validation = await createValidator.ValidateAsync(request, cancellationToken);

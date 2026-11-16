@@ -5,7 +5,9 @@ using AuthorService.Exceptions;
 using AuthorService.Interfaces;
 using AuthorService.Models;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Data;
 using SpstKniznica.Common.Pagination;
+using SpstKniznica.Common.Text;
 
 namespace AuthorService.Repositories;
 
@@ -163,11 +165,11 @@ public class AuthorRepository(AuthorDbContext db) : IAuthorRepository
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
-            var search = filter.Search;
+            var folded = TextFold.Fold(filter.Search.Trim());
             query = query.Where(a =>
-                EF.Functions.Like(a.Name, $"%{search}%") ||
-                (a.Biography != null && EF.Functions.Like(a.Biography, $"%{search}%")) ||
-                (a.Nationality != null && EF.Functions.Like(a.Nationality, $"%{search}%")));
+                EF.Functions.Like(SpstDbFunctions.Fold(a.Name), $"%{folded}%") ||
+                (a.Biography != null && EF.Functions.Like(SpstDbFunctions.Fold(a.Biography), $"%{folded}%")) ||
+                (a.Nationality != null && EF.Functions.Like(SpstDbFunctions.Fold(a.Nationality), $"%{folded}%")));
         }
 
         return query;

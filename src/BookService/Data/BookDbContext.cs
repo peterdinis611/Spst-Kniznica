@@ -1,5 +1,6 @@
 using BookService.Models;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Data;
 
 namespace BookService.Data;
 
@@ -10,6 +11,8 @@ public class BookDbContext(DbContextOptions<BookDbContext> options) : DbContext(
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ConfigureSpstDbFunctions();
+
         modelBuilder.Entity<Book>(entity =>
         {
             entity.HasKey(b => b.Id);

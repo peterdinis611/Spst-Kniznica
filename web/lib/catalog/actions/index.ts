@@ -21,3 +21,7 @@ export {
   type SearchCategoriesCursorResult,
   type SearchCategoriesResult,
 } from "./categories";
+export {
+  lookupBookCopyAction,
+  type BookCopyLookup,
+} from "./copies";

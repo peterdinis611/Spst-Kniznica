@@ -4,7 +4,6 @@ using BookingService.Interfaces;
 using BookingService.Models;
 using BookingService.Options;
 using FluentValidation;
-using Microsoft.Extensions.Options;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Messaging;
 using SpstKniznica.Common.Pagination;
@@ -19,7 +18,7 @@ public class BookingAppService(
     IIntegrationEventPublisher eventPublisher,
     IValidator<CreateBookingRequest> createValidator,
     IValidator<UpdateBookingRequest> updateValidator,
-    IOptions<LoanPolicyOptions> policyOptions,
+    ILoanPolicyProvider loanPolicy,
     LoanLifecycleService lifecycle,
     SchoolCalendarService schoolCalendar,
     ILogger<BookingAppService> logger) : IBookingService
@@ -58,7 +57,7 @@ public class BookingAppService(
         CancellationToken cancellationToken = default)
     {
         EnsureValid(await createValidator.ValidateAsync(request, cancellationToken));
-        EnsureNotFrozen();
+        await EnsureNotFrozenAsync(cancellationToken);
 
         var borrowerEmail = NormalizeEmail(request.BorrowerEmail);
         await EnsureReaderUnderLoanLimitAsync(borrowerEmail, excludeBookingId: null, cancellationToken);
@@ -219,7 +218,7 @@ public class BookingAppService(
         int? extraDays = null,
         CancellationToken cancellationToken = default)
     {
-        var policy = policyOptions.Value;
+        var policy = await loanPolicy.GetEffectiveAsync(cancellationToken);
         var booking = await GetRequiredAsync(id, tracked: true, cancellationToken);
 
         if (booking.Status is not (BookingStatus.Active or BookingStatus.Overdue))
@@ -368,7 +367,8 @@ public class BookingAppService(
         Guid? excludeBookingId,
         CancellationToken cancellationToken)
     {
-        var max = policyOptions.Value.MaxActiveLoansPerReader;
+        var policy = await loanPolicy.GetEffectiveAsync(cancellationToken);
+        var max = policy.MaxActiveLoansPerReader;
         if (max <= 0) return;
 
         var open = await unitOfWork.Bookings.CountOpenBookingsForBorrowerAsync(
@@ -387,9 +387,10 @@ public class BookingAppService(
         }
     }
 
-    private void EnsureNotFrozen()
+    private async Task EnsureNotFrozenAsync(CancellationToken cancellationToken)
     {
-        if (policyOptions.Value.FreezeNewLoans)
+        var policy = await loanPolicy.GetEffectiveAsync(cancellationToken);
+        if (policy.FreezeNewLoans)
         {
             throw new AppValidationException(new Dictionary<string, string[]>
             {

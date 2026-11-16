@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { apiDelete, apiGet, apiPost, withQuery } from "@/lib/api";
+import { apiDelete, apiGet, apiPost, apiPut, withQuery } from "@/lib/api";
 import { readSessionAccessToken } from "@/lib/auth/session";
 import { actionClient } from "@/lib/shared";
 import { explainBookingError } from "./errors";
@@ -46,6 +46,19 @@ export type LoanPolicy = {
   freezeNewLoans: boolean;
   schoolYearEndUtc?: string | null;
   reminderDaysBeforeDue: number;
+  skipNonSchoolDays: boolean;
+  holidayCountryCode?: string;
+};
+
+export type UpdateLoanPolicyInput = {
+  defaultLoanDays: number;
+  maxActiveLoansPerReader: number;
+  renewExtraDays: number;
+  maxRenewals: number;
+  freezeNewLoans: boolean;
+  schoolYearEndUtc?: string | null;
+  reminderDaysBeforeDue: number;
+  skipNonSchoolDays: boolean;
 };
 
 export type WaitlistEntry = {
@@ -84,6 +97,44 @@ export const getLoanPolicyAction = actionClient
   .inputSchema(tokenSchema)
   .action(async (): Promise<LoanPolicy> => {
     return runOps(() => apiGet<LoanPolicy>("/api/bookings/policy"));
+  });
+
+const loanPolicyUpdateSchema = tokenSchema.extend({
+  defaultLoanDays: z.number().int().min(1).max(365),
+  maxActiveLoansPerReader: z.number().int().min(0).max(50),
+  renewExtraDays: z.number().int().min(1).max(365),
+  maxRenewals: z.number().int().min(0).max(20),
+  freezeNewLoans: z.boolean(),
+  schoolYearEndUtc: z.string().trim().nullable().optional(),
+  reminderDaysBeforeDue: z.number().int().min(0).max(60),
+  skipNonSchoolDays: z.boolean(),
+});
+
+export const updateLoanPolicyAction = actionClient
+  .inputSchema(loanPolicyUpdateSchema)
+  .action(async ({ parsedInput }): Promise<LoanPolicy> => {
+    const token = await resolveServerToken(parsedInput.accessToken);
+    const schoolYearEndUtc =
+      parsedInput.schoolYearEndUtc?.trim() ?
+        parsedInput.schoolYearEndUtc.trim()
+      : null;
+    return runOps(() =>
+      apiPut<LoanPolicy>(
+        "/api/bookings/policy",
+        {
+          defaultLoanDays: parsedInput.defaultLoanDays,
+          maxActiveLoansPerReader: parsedInput.maxActiveLoansPerReader,
+          renewExtraDays: parsedInput.renewExtraDays,
+          maxRenewals: parsedInput.maxRenewals,
+          freezeNewLoans: parsedInput.freezeNewLoans,
+          schoolYearEndUtc,
+          reminderDaysBeforeDue: parsedInput.reminderDaysBeforeDue,
+          skipNonSchoolDays: parsedInput.skipNonSchoolDays,
+        },
+        undefined,
+        token,
+      ),
+    );
   });
 
 export const cancelBookingAction = actionClient
@@ -144,6 +195,42 @@ export const joinWaitlistAction = actionClient
           borrowerEmail: "ignored@server",
           notes: parsedInput.notes,
         },
+        undefined,
+        token,
+      ),
+    );
+  });
+
+export const listStaffWaitlistAction = actionClient
+  .inputSchema(
+    tokenSchema.extend({
+      limit: z.number().int().min(1).max(500).optional(),
+    }),
+  )
+  .action(async ({ parsedInput }): Promise<WaitlistEntry[]> => {
+    const token = await resolveServerToken(parsedInput.accessToken);
+    return runOps(() =>
+      apiGet<WaitlistEntry[]>(
+        withQuery("/api/bookings/waitlist", {
+          limit: parsedInput.limit,
+        }),
+        undefined,
+        token,
+      ),
+    );
+  });
+
+export const listWaitlistForBookAction = actionClient
+  .inputSchema(
+    tokenSchema.extend({
+      bookId: z.string().trim().min(1),
+    }),
+  )
+  .action(async ({ parsedInput }): Promise<WaitlistEntry[]> => {
+    const token = await resolveServerToken(parsedInput.accessToken);
+    return runOps(() =>
+      apiGet<WaitlistEntry[]>(
+        `/api/bookings/waitlist/book/${parsedInput.bookId}`,
         undefined,
         token,
       ),

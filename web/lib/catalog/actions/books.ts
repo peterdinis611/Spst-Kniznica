@@ -17,12 +17,27 @@ const optionalId = z
   .optional()
   .transform((value) => (value ? value : undefined));
 
+const optionalLanguage = z
+  .string()
+  .trim()
+  .optional()
+  .transform((value) => (value ? value : undefined));
+
+const optionalYear = z
+  .number()
+  .int()
+  .min(1000)
+  .max(2100)
+  .optional();
+
 const searchBooksSchema = z.object({
   search: optionalId,
   categoryId: optionalId,
   authorId: optionalId,
   shelfLocation: optionalId,
   availableOnly: z.boolean().optional(),
+  language: optionalLanguage,
+  year: optionalYear,
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(100).default(50),
 });
@@ -33,6 +48,8 @@ const searchBooksCursorSchema = z.object({
   authorId: optionalId,
   shelfLocation: optionalId,
   availableOnly: z.boolean().optional(),
+  language: optionalLanguage,
+  year: optionalYear,
   cursor: z
     .string()
     .trim()
@@ -68,6 +85,8 @@ export const searchBooksAction = actionClient
       authorId,
       shelfLocation,
       availableOnly,
+      language,
+      year,
       page,
       pageSize,
     } = parsedInput;
@@ -81,6 +100,8 @@ export const searchBooksAction = actionClient
         authorId,
         shelfLocation,
         availableOnly: availableOnly ? true : undefined,
+        language,
+        publishedYear: year,
         sortBy: "title",
         sortDir: "asc",
       }),
@@ -103,6 +124,8 @@ export const searchBooksCursorAction = actionClient
       authorId,
       shelfLocation,
       availableOnly,
+      language,
+      year,
       cursor,
       limit,
     } = parsedInput;
@@ -116,6 +139,8 @@ export const searchBooksCursorAction = actionClient
         authorId,
         shelfLocation,
         availableOnly: availableOnly ? true : undefined,
+        language,
+        publishedYear: year,
         sortBy: "title",
         sortDir: "asc",
       }),

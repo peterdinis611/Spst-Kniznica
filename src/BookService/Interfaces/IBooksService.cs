@@ -14,4 +14,5 @@ public interface IBooksService
     Task<BulkImportResult> ImportAsync(Stream fileStream, string fileName, CancellationToken cancellationToken = default);
     Task<BulkImportResult> ImportCsvAsync(Stream fileStream, CancellationToken cancellationToken = default);
     Task<BulkImportResult> ImportXmlAsync(Stream fileStream, CancellationToken cancellationToken = default);
+    Task<BookCopyLookupDto> LookupCopyByCodeAsync(string code, CancellationToken cancellationToken = default);
 }

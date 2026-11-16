@@ -14,6 +14,7 @@ namespace BookingService.Controllers;
 [Produces("application/json")]
 public class LibraryOpsController(
     LoanLifecycleService lifecycle,
+    ILoanPolicyProvider loanPolicy,
     WaitlistService waitlist,
     FavoritesService favorites,
     Interfaces.IBookingService bookings,
@@ -22,7 +23,26 @@ public class LibraryOpsController(
     [HttpGet("policy")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(LoanPolicyDto), StatusCodes.Status200OK)]
-    public ActionResult<LoanPolicyDto> GetPolicy() => Ok(lifecycle.GetPolicy());
+    public async Task<ActionResult<LoanPolicyDto>> GetPolicy(CancellationToken cancellationToken)
+        => Ok(await lifecycle.GetPolicyAsync(cancellationToken));
+
+    [HttpPut("policy")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(typeof(LoanPolicyDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<LoanPolicyDto>> UpdatePolicy(
+        [FromBody] UpdateLoanPolicyRequest request,
+        CancellationToken cancellationToken)
+    {
+        var updated = await loanPolicy.SaveOverridesAsync(request, cancellationToken);
+        audit.StaffAction(User, "booking.policy.update", "LoanPolicy", "singleton", new
+        {
+            updated.DefaultLoanDays,
+            updated.MaxActiveLoansPerReader,
+            updated.FreezeNewLoans,
+        });
+        return Ok(updated);
+    }
 
     [HttpGet("desk/daily")]
     [Authorize(Policy = AuthPolicies.Staff)]
@@ -146,6 +166,14 @@ public class LibraryOpsController(
         var entry = await waitlist.JoinAsync(request, cancellationToken);
         return Created($"/api/bookings/waitlist/{entry.Id}", entry);
     }
+
+    [HttpGet("waitlist")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [ProducesResponseType(typeof(IReadOnlyList<WaitlistEntryDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<WaitlistEntryDto>>> StaffWaitlist(
+        [FromQuery] int? limit,
+        CancellationToken cancellationToken)
+        => Ok(await waitlist.ListAllForStaffAsync(limit ?? 200, cancellationToken));
 
     [HttpGet("waitlist/mine")]
     [Authorize(Policy = AuthPolicies.Authenticated)]

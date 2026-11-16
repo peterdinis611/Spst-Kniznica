@@ -11,6 +11,7 @@ import { useAbility } from "@/components/auth/AbilityProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
+import { DeskScanPanel } from "@/components/catalog/DeskScanPanel";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import { Badge } from "@/components/ui/badge";
@@ -76,6 +77,8 @@ export function BookingsDesk({
 }: BookingsDeskProps) {
   const searchParams = useSearchParams();
   const bookId = searchParams.get("book") ?? "";
+  const scanFocus =
+    searchParams.get("scan") === "1" || searchParams.has("code");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | BookingStatusCode>("all");
   const [page, setPage] = useState(1);
@@ -253,6 +256,12 @@ export function BookingsDesk({
           </div>
         </div>
       </div>
+
+      <DeskScanPanel
+        deskBookings={items}
+        scanFocus={scanFocus}
+        onBookingsChanged={() => runDebouncedSearch(filtersRef.current)}
+      />
 
       <div
         className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"

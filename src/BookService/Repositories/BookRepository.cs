@@ -5,7 +5,9 @@ using BookService.Exceptions;
 using BookService.Interfaces;
 using BookService.Models;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Data;
 using SpstKniznica.Common.Pagination;
+using SpstKniznica.Common.Text;
 
 namespace BookService.Repositories;
 
@@ -225,12 +227,33 @@ public class BookRepository(BookDbContext db) : IBookRepository
             .AnyAsync(c => c.Barcode == barcode.Trim(), cancellationToken);
     }
 
+    public async Task<BookCopy?> FindCopyByCodeAsync(
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["code"] = ["Kód výtlačku je povinný."]
+            });
+        }
+
+        var trimmed = code.Trim();
+        return await db.BookCopies
+            .AsNoTracking()
+            .Include(c => c.Book)
+            .FirstOrDefaultAsync(
+                c => c.InventoryNumber == trimmed || c.Barcode == trimmed,
+                cancellationToken);
+    }
+
     private static IQueryable<Book> ApplyFilters(IQueryable<Book> query, BookQueryFilter filter)
     {
         if (!string.IsNullOrWhiteSpace(filter.Title))
         {
-            var title = filter.Title.Trim();
-            query = query.Where(b => EF.Functions.Like(b.Title, $"%{title}%"));
+            var title = TextFold.Fold(filter.Title.Trim());
+            query = query.Where(b => EF.Functions.Like(SpstDbFunctions.Fold(b.Title), $"%{title}%"));
         }
 
         if (filter.AuthorId.HasValue)
@@ -243,8 +266,8 @@ public class BookRepository(BookDbContext db) : IBookRepository
 
         if (!string.IsNullOrWhiteSpace(filter.Author))
         {
-            var author = filter.Author.Trim();
-            query = query.Where(b => EF.Functions.Like(b.Author, $"%{author}%"));
+            var author = TextFold.Fold(filter.Author.Trim());
+            query = query.Where(b => EF.Functions.Like(SpstDbFunctions.Fold(b.Author), $"%{author}%"));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Publisher))
@@ -275,8 +298,10 @@ public class BookRepository(BookDbContext db) : IBookRepository
 
         if (!string.IsNullOrWhiteSpace(filter.CategoryName))
         {
-            var categoryName = filter.CategoryName.Trim();
-            query = query.Where(b => b.CategoryName != null && EF.Functions.Like(b.CategoryName, $"%{categoryName}%"));
+            var categoryName = TextFold.Fold(filter.CategoryName.Trim());
+            query = query.Where(b =>
+                b.CategoryName != null &&
+                EF.Functions.Like(SpstDbFunctions.Fold(b.CategoryName), $"%{categoryName}%"));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.ShelfLocation))
@@ -325,15 +350,17 @@ public class BookRepository(BookDbContext db) : IBookRepository
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
             var search = filter.Search.Trim();
+            var folded = TextFold.Fold(search);
             var normalizedSearchIsbn = NormalizeIsbn(search);
             query = query.Where(b =>
-                EF.Functions.Like(b.Title, $"%{search}%") ||
-                EF.Functions.Like(b.Author, $"%{search}%") ||
-                (b.Subtitle != null && EF.Functions.Like(b.Subtitle, $"%{search}%")) ||
+                EF.Functions.Like(SpstDbFunctions.Fold(b.Title), $"%{folded}%") ||
+                EF.Functions.Like(SpstDbFunctions.Fold(b.Author), $"%{folded}%") ||
+                (b.Subtitle != null && EF.Functions.Like(SpstDbFunctions.Fold(b.Subtitle), $"%{folded}%")) ||
                 (b.Isbn != null && (
                     EF.Functions.Like(b.Isbn, $"%{search}%") ||
                     (normalizedSearchIsbn != null && b.Isbn == normalizedSearchIsbn))) ||
-                (b.CategoryName != null && EF.Functions.Like(b.CategoryName, $"%{search}%")) ||
+                (b.CategoryName != null &&
+                    EF.Functions.Like(SpstDbFunctions.Fold(b.CategoryName), $"%{folded}%")) ||
                 b.Copies.Any(c =>
                     EF.Functions.Like(c.InventoryNumber, $"%{search}%") ||
                     (c.Barcode != null && EF.Functions.Like(c.Barcode, $"%{search}%"))));

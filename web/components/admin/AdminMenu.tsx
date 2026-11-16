@@ -11,6 +11,8 @@ import RouterIcon from "@mui/icons-material/Router";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
 import DnsIcon from "@mui/icons-material/Dns";
 import LinkIcon from "@mui/icons-material/Link";
+import PolicyIcon from "@mui/icons-material/Policy";
+import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 
 export function AdminMenu() {
   return (
@@ -56,6 +58,16 @@ export function AdminMenu() {
         to="/tools/orders"
         primaryText="Fronta úloh"
         leftIcon={<QueueIcon />}
+      />
+      <Menu.Item
+        to="/tools/waitlist"
+        primaryText="Čakací zoznam"
+        leftIcon={<HourglassTopIcon />}
+      />
+      <Menu.Item
+        to="/tools/loan-policy"
+        primaryText="Pravidlá výpožičiek"
+        leftIcon={<PolicyIcon />}
       />
       <Menu.Item
         to="/tools/links"

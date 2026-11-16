@@ -151,6 +151,25 @@ public class BooksController(
     }
 
     /// <summary>
+    /// Look up a physical copy by inventory number or barcode (exact match, trimmed).
+    /// </summary>
+    [HttpGet("copies/lookup")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
+    [ProducesResponseType(typeof(BookCopyLookupDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<BookCopyLookupDto>> LookupCopy(
+        [FromQuery] string code,
+        CancellationToken cancellationToken)
+    {
+        var result = await books.LookupCopyByCodeAsync(code, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Get a book including all physical copies (barcode / inventory number).
     /// </summary>
     [HttpGet("{id:guid}")]

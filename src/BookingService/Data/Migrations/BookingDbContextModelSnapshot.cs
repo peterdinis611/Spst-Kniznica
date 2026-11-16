@@ -121,6 +121,44 @@ namespace BookingService.Data.Migrations
                     b.ToTable("Favorites");
                 });
 
+            modelBuilder.Entity("BookingService.Models.LoanPolicyStore", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DefaultLoanDays")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("FreezeNewLoans")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxActiveLoansPerReader")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxRenewals")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ReminderDaysBeforeDue")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RenewExtraDays")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("SchoolYearEndUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("SkipNonSchoolDays")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LoanPolicyStore");
+                });
+
             modelBuilder.Entity("BookingService.Models.WaitlistEntry", b =>
                 {
                     b.Property<Guid>("Id")

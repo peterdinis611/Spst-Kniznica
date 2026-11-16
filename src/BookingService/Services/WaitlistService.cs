@@ -56,6 +56,37 @@ public sealed class WaitlistService(
         return await ToDtoAsync(entry, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<WaitlistEntryDto>> ListAllForStaffAsync(
+        int limit = 200,
+        CancellationToken cancellationToken = default)
+    {
+        var capped = Math.Clamp(limit, 1, 500);
+        var items = await db.Waitlist.AsNoTracking()
+            .OrderBy(w => w.CreatedAt)
+            .Take(capped)
+            .ToListAsync(cancellationToken);
+
+        var byBook = items
+            .GroupBy(w => w.BookId)
+            .ToDictionary(g => g.Key, g => g.OrderBy(w => w.CreatedAt).Select(w => w.Id).ToList());
+
+        return items.Select(w =>
+        {
+            var order = byBook[w.BookId];
+            var position = order.IndexOf(w.Id) + 1;
+            return new WaitlistEntryDto
+            {
+                Id = w.Id,
+                BookId = w.BookId,
+                BorrowerName = w.BorrowerName,
+                BorrowerEmail = w.BorrowerEmail,
+                CreatedAt = w.CreatedAt,
+                Position = Math.Max(position, 1),
+                Notes = w.Notes,
+            };
+        }).ToList();
+    }
+
     public async Task<IReadOnlyList<WaitlistEntryDto>> ListForBookAsync(
         Guid bookId,
         CancellationToken cancellationToken = default)

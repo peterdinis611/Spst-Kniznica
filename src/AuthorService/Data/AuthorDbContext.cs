@@ -1,5 +1,6 @@
 using AuthorService.Models;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Data;
 
 namespace AuthorService.Data;
 
@@ -9,6 +10,8 @@ public class AuthorDbContext(DbContextOptions<AuthorDbContext> options) : DbCont
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ConfigureSpstDbFunctions();
+
         modelBuilder.Entity<Author>(entity =>
         {
             entity.HasKey(a => a.Id);

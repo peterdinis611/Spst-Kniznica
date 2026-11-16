@@ -72,13 +72,14 @@ public class BookingAppServiceTests : IAsyncLifetime
             new HttpClient(new EmptyJsonHandler()),
             new MemoryCache(new MemoryCacheOptions()),
             NullLogger<NagerDateClient>.Instance);
-        var calendar = new SchoolCalendarService(nager, _policy);
+        var loanPolicy = new LoanPolicyProvider(_db, _policy);
+        var calendar = new SchoolCalendarService(nager, loanPolicy);
         var waitlist = new WaitlistService(_db, NullLogger<WaitlistService>.Instance);
         var lifecycle = new LoanLifecycleService(
             _unitOfWork,
             new NullAppCache(),
             _events,
-            _policy,
+            loanPolicy,
             waitlist,
             _bookCatalog,
             calendar,
@@ -91,7 +92,7 @@ public class BookingAppServiceTests : IAsyncLifetime
             _events,
             new CreateBookingRequestValidator(),
             new UpdateBookingRequestValidator(),
-            _policy,
+            loanPolicy,
             lifecycle,
             calendar,
             NullLogger<BookingAppService>.Instance);
@@ -319,6 +320,160 @@ public class BookingAppServiceTests : IAsyncLifetime
         });
 
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task RenewAsync_extends_due_date_and_increments_renewal_count()
+    {
+        var id = Guid.NewGuid();
+        var due = DateTimeOffset.UtcNow.AddDays(4);
+        var booking = new Booking
+        {
+            Id = id,
+            BookId = Guid.NewGuid(),
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            Status = BookingStatus.Active,
+            ReservedAt = DateTimeOffset.UtcNow.AddDays(-5),
+            BorrowedAt = DateTimeOffset.UtcNow.AddDays(-5),
+            DueDate = due,
+            RenewalCount = 0,
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-5),
+            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-5),
+        };
+
+        _bookings.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(booking);
+
+        var result = await _sut.RenewAsync(id);
+
+        result.RenewalCount.Should().Be(1);
+        result.DueDate.Should().BeAfter(due);
+        booking.RenewalCount.Should().Be(1);
+        booking.Status.Should().Be(BookingStatus.Active);
+        _events.Events.Should().ContainSingle(e => e is BookingUpdatedEvent);
+    }
+
+    [Fact]
+    public async Task RenewAsync_rejects_when_max_renewals_reached()
+    {
+        var id = Guid.NewGuid();
+        var booking = new Booking
+        {
+            Id = id,
+            BookId = Guid.NewGuid(),
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            Status = BookingStatus.Active,
+            ReservedAt = DateTimeOffset.UtcNow.AddDays(-5),
+            BorrowedAt = DateTimeOffset.UtcNow.AddDays(-5),
+            DueDate = DateTimeOffset.UtcNow.AddDays(2),
+            RenewalCount = 1,
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-5),
+            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-5),
+        };
+
+        _bookings.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(booking);
+
+        var act = async () => await _sut.RenewAsync(id);
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("RenewalCount"));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_rejects_activating_copy_when_another_loan_uses_it()
+    {
+        var id = Guid.NewGuid();
+        var copyId = Guid.NewGuid();
+        var booking = new Booking
+        {
+            Id = id,
+            BookId = Guid.NewGuid(),
+            BookCopyId = copyId,
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            Status = BookingStatus.Reserved,
+            ReservedAt = DateTimeOffset.UtcNow,
+            DueDate = DateTimeOffset.UtcNow.AddDays(7),
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+
+        _bookings.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(booking);
+        _bookings.HasActiveBookingForCopyAsync(copyId, id, Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        var act = async () => await _sut.UpdateAsync(id, new UpdateBookingRequest
+        {
+            BookId = booking.BookId,
+            BookCopyId = copyId,
+            BorrowerName = booking.BorrowerName,
+            BorrowerEmail = booking.BorrowerEmail,
+            Status = BookingStatus.Active,
+            DueDate = booking.DueDate,
+        });
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("BookCopyId"));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_to_returned_promotes_waitlist_when_slot_available()
+    {
+        var bookId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var booking = new Booking
+        {
+            Id = id,
+            BookId = bookId,
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            Status = BookingStatus.Active,
+            ReservedAt = DateTimeOffset.UtcNow.AddDays(-3),
+            BorrowedAt = DateTimeOffset.UtcNow.AddDays(-3),
+            DueDate = DateTimeOffset.UtcNow.AddDays(2),
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-3),
+            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-3),
+        };
+
+        _db.Waitlist.Add(new WaitlistEntry
+        {
+            Id = Guid.NewGuid(),
+            BookId = bookId,
+            BorrowerName = "Peter",
+            BorrowerEmail = "peter@spst.sk",
+            CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-10),
+        });
+        await _db.SaveChangesAsync();
+
+        _bookings.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(booking);
+        _bookCatalog.GetBookAsync(bookId, Arg.Any<CancellationToken>())
+            .Returns(new BookAvailabilitySnapshot(2, 1));
+        _bookings.CountActiveBookingsForBookAsync(
+                bookId,
+                Arg.Any<Guid?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(0);
+
+        Booking? promoted = null;
+        _bookings.AddAsync(Arg.Do<Booking>(b => promoted = b), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+
+        await _sut.UpdateAsync(id, new UpdateBookingRequest
+        {
+            BookId = bookId,
+            BorrowerName = booking.BorrowerName,
+            BorrowerEmail = booking.BorrowerEmail,
+            Status = BookingStatus.Returned,
+            DueDate = booking.DueDate,
+        });
+
+        booking.Status.Should().Be(BookingStatus.Returned);
+        promoted.Should().NotBeNull();
+        promoted!.BorrowerEmail.Should().Be("peter@spst.sk");
+        promoted.Status.Should().Be(BookingStatus.Reserved);
+        (await _db.Waitlist.CountAsync()).Should().Be(0);
+        _events.Events.Should().Contain(e => e is BookingCreatedEvent);
     }
 
     [Fact]

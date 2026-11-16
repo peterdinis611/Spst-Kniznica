@@ -6,7 +6,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using SpstKniznica.Common.Integrations;
-using MsOptions = Microsoft.Extensions.Options.Options;
+using BookingService.Tests.Infrastructure;
 
 namespace BookingService.Tests.Services;
 
@@ -85,7 +85,7 @@ public class SchoolCalendarServiceTests
             http,
             new MemoryCache(new MemoryCacheOptions()),
             NullLogger<NagerDateClient>.Instance);
-        return new SchoolCalendarService(nager, MsOptions.Create(options));
+        return new SchoolCalendarService(nager, new FixedLoanPolicyProvider(options));
     }
 
     private sealed class FixedJsonHandler(string json) : HttpMessageHandler

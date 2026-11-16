@@ -4,7 +4,21 @@ export type BooksCatalogFilters = {
   author?: string;
   shelf?: string;
   available?: boolean;
+  year?: number;
+  language?: string;
 };
+
+const LANGUAGE_LABELS: Record<string, string> = {
+  sk: "Slovenčina",
+  en: "Angličtina",
+  cs: "Čeština",
+  de: "Nemčina",
+};
+
+export function languageFilterLabel(code: string): string {
+  const key = code.trim().toLowerCase();
+  return LANGUAGE_LABELS[key] ?? code.trim();
+}
 
 export function buildBooksCatalogHref(filters: BooksCatalogFilters): string {
   const params = new URLSearchParams();
@@ -14,6 +28,11 @@ export function buildBooksCatalogHref(filters: BooksCatalogFilters): string {
   if (filters.author) params.set("author", filters.author);
   if (filters.shelf) params.set("shelf", filters.shelf);
   if (filters.available) params.set("available", "1");
+  if (filters.year != null && Number.isFinite(filters.year)) {
+    params.set("year", String(filters.year));
+  }
+  const lang = filters.language?.trim();
+  if (lang) params.set("lang", lang);
   const qs = params.toString();
   return qs ? `/books?${qs}` : "/books";
 }
@@ -27,6 +46,13 @@ export function parseBooksCatalogFilters(
     author: searchParams.get("author") ?? undefined,
     shelf: searchParams.get("shelf")?.toUpperCase() ?? undefined,
     available: searchParams.get("available") === "1",
+    year: (() => {
+      const raw = searchParams.get("year");
+      if (!raw) return undefined;
+      const value = Number.parseInt(raw, 10);
+      return Number.isFinite(value) ? value : undefined;
+    })(),
+    language: searchParams.get("lang")?.trim() || undefined,
   };
 }
 

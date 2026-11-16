@@ -62,6 +62,7 @@ try
 
     builder.Services.AddScoped<IBookingRepository, BookingRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+    builder.Services.AddScoped<ILoanPolicyProvider, LoanPolicyProvider>();
     builder.Services.AddScoped<WaitlistService>();
     builder.Services.AddScoped<FavoritesService>();
     builder.Services.AddScoped<SchoolCalendarService>();

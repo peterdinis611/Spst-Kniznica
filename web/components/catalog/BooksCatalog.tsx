@@ -18,6 +18,7 @@ import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import {
   buildBooksCatalogHref,
+  languageFilterLabel,
   parseBooksCatalogFilters,
   type BooksCatalogFilters,
 } from "@/lib/catalog/catalog-url";
@@ -38,6 +39,8 @@ function countAdvancedFilters(filters: BooksCatalogFilters): number {
   let n = 0;
   if (filters.author) n += 1;
   if (filters.shelf) n += 1;
+  if (filters.year != null) n += 1;
+  if (filters.language) n += 1;
   return n;
 }
 
@@ -77,6 +80,8 @@ export function BooksCatalog({
         ? `${activeFilters.shelf}-`
         : undefined,
       availableOnly: activeFilters.available,
+      language: activeFilters.language,
+      year: activeFilters.year,
       limit: 40,
     }),
     [activeFilters],
@@ -95,6 +100,8 @@ export function BooksCatalog({
     activeFilters.author,
     activeFilters.shelf,
     activeFilters.available,
+    activeFilters.year,
+    activeFilters.language,
   ]);
   const virtualizer = useWindowVirtualizer({
     count: results.length,
@@ -124,6 +131,20 @@ export function BooksCatalog({
     Boolean(liveQuery.trim());
 
   const activeTags = [
+    filters.year != null
+      ? {
+          key: "year",
+          label: `Rok ${filters.year}`,
+          clear: { year: undefined },
+        }
+      : null,
+    filters.language
+      ? {
+          key: "language",
+          label: languageFilterLabel(filters.language),
+          clear: { language: undefined },
+        }
+      : null,
     activeAuthor
       ? { key: "author", label: activeAuthor.name, clear: { author: undefined } }
       : null,

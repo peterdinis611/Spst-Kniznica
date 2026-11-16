@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 import {
   buildBooksCatalogHref,
+  languageFilterLabel,
   type BooksCatalogFilters,
 } from "@/lib/catalog/catalog-url";
 import type { CatalogAuthor } from "@/lib/catalog";
@@ -21,6 +22,20 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 type ShelfZone = { id: string; label: string };
+
+const LANGUAGE_PRESETS = [
+  { code: "sk", label: "Slovenčina" },
+  { code: "en", label: "Angličtina" },
+  { code: "cs", label: "Čeština" },
+  { code: "de", label: "Nemčina" },
+] as const;
+
+const PRESET_CODES = new Set(LANGUAGE_PRESETS.map((item) => item.code));
+
+function isPresetLanguage(code: string | undefined): boolean {
+  if (!code) return false;
+  return PRESET_CODES.has(code.toLowerCase() as (typeof LANGUAGE_PRESETS)[number]["code"]);
+}
 
 type BooksCatalogFiltersDialogProps = {
   open: boolean;
@@ -71,11 +86,16 @@ export function BooksCatalogFiltersDialog({
   const router = useRouter();
   const [draft, setDraft] = useState<BooksCatalogFilters>(applied);
   const [authorQuery, setAuthorQuery] = useState("");
+  const [customLanguage, setCustomLanguage] = useState("");
+  const [yearDraft, setYearDraft] = useState("");
 
   useEffect(() => {
     if (open) {
       setDraft(applied);
       setAuthorQuery("");
+      setYearDraft(applied.year != null ? String(applied.year) : "");
+      const lang = applied.language?.trim();
+      setCustomLanguage(lang && !isPresetLanguage(lang) ? lang : "");
     }
   }, [open, applied]);
 
@@ -90,11 +110,24 @@ export function BooksCatalogFiltersDialog({
   }
 
   function apply() {
+    const customLang = customLanguage.trim();
+    const language =
+      draft.language ?? (customLang.length > 0 ? customLang : undefined);
+    const yearParsed = yearDraft.trim()
+      ? Number.parseInt(yearDraft.trim(), 10)
+      : undefined;
+    const year =
+      yearParsed != null && Number.isFinite(yearParsed)
+        ? yearParsed
+        : undefined;
+
     router.push(
       buildBooksCatalogHref({
         ...applied,
         author: draft.author,
         shelf: draft.shelf,
+        year,
+        language,
         q: searchQuery?.trim() || undefined,
       }),
     );
@@ -106,11 +139,24 @@ export function BooksCatalogFiltersDialog({
       ...prev,
       author: undefined,
       shelf: undefined,
+      year: undefined,
+      language: undefined,
     }));
+    setYearDraft("");
+    setCustomLanguage("");
   }
 
   const dirty =
-    draft.author !== applied.author || draft.shelf !== applied.shelf;
+    draft.author !== applied.author ||
+    draft.shelf !== applied.shelf ||
+    draft.year !== applied.year ||
+    draft.language !== applied.language ||
+    yearDraft.trim() !==
+      (applied.year != null ? String(applied.year) : "") ||
+    customLanguage.trim() !==
+      (applied.language && !isPresetLanguage(applied.language)
+        ? applied.language.trim()
+        : "");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -118,7 +164,7 @@ export function BooksCatalogFiltersDialog({
         <DialogHeader className="border-b border-rule px-5 py-4 text-left dark:border-white/10">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <SlidersHorizontal className="size-4 text-sage" aria-hidden />
-            Autor & trakt
+            Rok, jazyk, autor & trakt
           </DialogTitle>
           <DialogDescription>
             Doplnkové filtre. Kategóriu a dostupnosť nastavíš priamo v katalógu.
@@ -126,6 +172,94 @@ export function BooksCatalogFiltersDialog({
         </DialogHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
+          <fieldset className="space-y-3">
+            <legend className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+              Rok
+            </legend>
+            <Label htmlFor="filters-year" className="sr-only">
+              Rok vydania
+            </Label>
+            <Input
+              id="filters-year"
+              type="number"
+              inputMode="numeric"
+              min={1000}
+              max={2100}
+              value={yearDraft}
+              onChange={(e) => {
+                setYearDraft(e.target.value);
+                const raw = e.target.value.trim();
+                if (!raw) {
+                  patch({ year: undefined });
+                  return;
+                }
+                const n = Number.parseInt(raw, 10);
+                patch({ year: Number.isFinite(n) ? n : undefined });
+              }}
+              placeholder="napr. 2019"
+              className="h-10 rounded-none border-rule bg-paper dark:border-white/15 dark:bg-paper-deep"
+            />
+          </fieldset>
+
+          <fieldset className="space-y-3">
+            <legend className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+              Jazyk
+            </legend>
+            <div className="grid grid-cols-2 gap-2">
+              <FilterOption
+                active={!draft.language && !customLanguage.trim()}
+                onClick={() => {
+                  patch({ language: undefined });
+                  setCustomLanguage("");
+                }}
+              >
+                Všetky jazyky
+              </FilterOption>
+              {LANGUAGE_PRESETS.map((item) => (
+                <FilterOption
+                  key={item.code}
+                  active={draft.language?.toLowerCase() === item.code}
+                  onClick={() => {
+                    patch({ language: item.code });
+                    setCustomLanguage("");
+                  }}
+                >
+                  {item.label}
+                </FilterOption>
+              ))}
+            </div>
+            <div>
+              <Label htmlFor="filters-lang-custom" className="text-xs text-muted-foreground">
+                Iný jazyk (kód alebo názov)
+              </Label>
+              <Input
+                id="filters-lang-custom"
+                value={customLanguage}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCustomLanguage(value);
+                  const trimmed = value.trim();
+                  if (!trimmed) {
+                    if (!isPresetLanguage(draft.language)) {
+                      patch({ language: undefined });
+                    }
+                    return;
+                  }
+                  if (!isPresetLanguage(trimmed)) {
+                    patch({ language: trimmed });
+                  }
+                }}
+                placeholder="napr. fr, hu…"
+                className="mt-1.5 h-10 rounded-none border-rule bg-paper dark:border-white/15 dark:bg-paper-deep"
+              />
+              {draft.language && !isPresetLanguage(draft.language) ? (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Aktívny: {languageFilterLabel(draft.language)}
+                </p>
+              ) : null}
+            </div>
+          </fieldset>
+
           <fieldset className="space-y-3">
             <legend className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
               Autor
@@ -208,7 +342,14 @@ export function BooksCatalogFiltersDialog({
             variant="ghost"
             className="h-10 rounded-none text-muted-foreground"
             onClick={reset}
-            disabled={!draft.author && !draft.shelf}
+            disabled={
+              !draft.author &&
+              !draft.shelf &&
+              draft.year == null &&
+              !draft.language &&
+              !yearDraft.trim() &&
+              !customLanguage.trim()
+            }
           >
             Vymazať výber
           </Button>

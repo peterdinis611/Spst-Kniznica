@@ -1,18 +1,17 @@
 using BookingService.Options;
-using Microsoft.Extensions.Options;
 using SpstKniznica.Common.Integrations;
 
 namespace BookingService.Services;
 
 public sealed class SchoolCalendarService(
     NagerDateClient nager,
-    IOptions<LoanPolicyOptions> policyOptions)
+    ILoanPolicyProvider loanPolicy)
 {
     public async Task<DateTimeOffset> AdjustDueDateAsync(
         DateTimeOffset due,
         CancellationToken cancellationToken = default)
     {
-        var policy = policyOptions.Value;
+        var policy = await loanPolicy.GetEffectiveAsync(cancellationToken);
         if (policy.SchoolYearEndUtc is { } yearEnd && due > yearEnd)
         {
             due = yearEnd;
@@ -51,7 +50,8 @@ public sealed class SchoolCalendarService(
             return true;
         }
 
-        var country = policyOptions.Value.HolidayCountryCode;
+        var policy = await loanPolicy.GetEffectiveAsync(cancellationToken);
+        var country = policy.HolidayCountryCode;
         if (string.IsNullOrWhiteSpace(country)) country = "SK";
         return await nager.IsPublicHolidayAsync(date, country, cancellationToken);
     }
@@ -61,7 +61,8 @@ public sealed class SchoolCalendarService(
         DateOnly to,
         CancellationToken cancellationToken = default)
     {
-        var country = policyOptions.Value.HolidayCountryCode;
+        var policy = await loanPolicy.GetEffectiveAsync(cancellationToken);
+        var country = policy.HolidayCountryCode;
         if (string.IsNullOrWhiteSpace(country)) country = "SK";
 
         var years = Enumerable.Range(from.Year, Math.Max(1, to.Year - from.Year + 1)).Distinct();

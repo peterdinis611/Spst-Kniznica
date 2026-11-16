@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Data;
 using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Integrations;
 using SpstKniznica.Common.Messaging;
@@ -42,6 +43,7 @@ try
 
     builder.Services.AddDbContext<BookDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .AddInterceptors(new SqliteFoldConnectionInterceptor())
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<IBookRepository, BookRepository>();

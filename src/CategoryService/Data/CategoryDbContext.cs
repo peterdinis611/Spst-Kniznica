@@ -1,5 +1,6 @@
 using CategoryService.Models;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Data;
 
 namespace CategoryService.Data;
 
@@ -9,6 +10,8 @@ public class CategoryDbContext(DbContextOptions<CategoryDbContext> options) : Db
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ConfigureSpstDbFunctions();
+
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(c => c.Id);

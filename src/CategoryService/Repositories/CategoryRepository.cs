@@ -5,7 +5,9 @@ using CategoryService.Exceptions;
 using CategoryService.Interfaces;
 using CategoryService.Models;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Data;
 using SpstKniznica.Common.Pagination;
+using SpstKniznica.Common.Text;
 
 namespace CategoryService.Repositories;
 
@@ -157,10 +159,10 @@ public class CategoryRepository(CategoryDbContext db) : ICategoryRepository
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
-            var search = filter.Search;
+            var folded = TextFold.Fold(filter.Search.Trim());
             query = query.Where(c =>
-                EF.Functions.Like(c.Name, $"%{search}%") ||
-                (c.Description != null && EF.Functions.Like(c.Description, $"%{search}%")));
+                EF.Functions.Like(SpstDbFunctions.Fold(c.Name), $"%{folded}%") ||
+                (c.Description != null && EF.Functions.Like(SpstDbFunctions.Fold(c.Description), $"%{folded}%")));
         }
 
         return query;

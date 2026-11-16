@@ -64,7 +64,7 @@ describe("mapBookListItem / mapBookDetail", () => {
     );
     expect(mapBookListItem({ ...book, format: 2 }).formatLabel).toBe("E-kniha");
     expect(
-      mapBookListItem({ ...book, format: 1, formatLabel: "  Viazaná  " })
+      mapBookDetail({ ...book, format: 1, formatLabel: "  Viazaná  " })
         .formatLabel,
     ).toBe("Viazaná");
   });
@@ -108,7 +108,7 @@ describe("mapBookListItem / mapBookDetail", () => {
         reserved: 0,
         lost: 0,
         maintenance: 0,
-      } as BookDetail["copySummary"],
+      } as unknown as BookDetail["copySummary"],
       copies: [],
     };
     expect(mapBookDetail(detail).copySummary).toMatchObject({

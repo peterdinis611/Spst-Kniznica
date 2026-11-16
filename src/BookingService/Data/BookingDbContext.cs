@@ -8,6 +8,7 @@ public class BookingDbContext(DbContextOptions<BookingDbContext> options) : DbCo
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<WaitlistEntry> Waitlist => Set<WaitlistEntry>();
     public DbSet<FavoriteBook> Favorites => Set<FavoriteBook>();
+    public DbSet<LoanPolicyStore> LoanPolicyStore => Set<LoanPolicyStore>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +45,11 @@ public class BookingDbContext(DbContextOptions<BookingDbContext> options) : DbCo
             entity.Property(f => f.ListName).HasMaxLength(120).IsRequired();
             entity.HasIndex(f => f.OwnerEmail);
             entity.HasIndex(f => new { f.OwnerEmail, f.BookId, f.ListName }).IsUnique();
+        });
+
+        modelBuilder.Entity<LoanPolicyStore>(entity =>
+        {
+            entity.HasKey(s => s.Id);
         });
     }
 }

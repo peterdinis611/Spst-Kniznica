@@ -15,6 +15,18 @@ public sealed class LoanPolicyDto
     public string HolidayCountryCode { get; init; } = "SK";
 }
 
+public sealed class UpdateLoanPolicyRequest
+{
+    public int DefaultLoanDays { get; set; }
+    public int MaxActiveLoansPerReader { get; set; }
+    public int RenewExtraDays { get; set; }
+    public int MaxRenewals { get; set; }
+    public bool FreezeNewLoans { get; set; }
+    public DateTimeOffset? SchoolYearEndUtc { get; set; }
+    public int ReminderDaysBeforeDue { get; set; }
+    public bool SkipNonSchoolDays { get; set; }
+}
+
 public sealed class WaitlistEntryDto
 {
     public Guid Id { get; init; }

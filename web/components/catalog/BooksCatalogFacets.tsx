@@ -125,8 +125,8 @@ export function BooksCatalogFacets({
           aria-expanded={filtersOpen}
           aria-label={
             filterCount > 0
-              ? `Ďalšie filtre, autor a trakt (${filterCount} aktívnych)`
-              : "Ďalšie filtre: autor a trakt"
+              ? `Ďalšie filtre: rok, jazyk, autor a trakt (${filterCount} aktívnych)`
+              : "Ďalšie filtre: rok, jazyk, autor a trakt"
           }
           className={cn(
             "h-10 rounded-none border-rule bg-paper-deep/60 dark:border-white/15",
@@ -135,7 +135,7 @@ export function BooksCatalogFacets({
           onClick={onOpenAdvanced}
         >
           <SlidersHorizontal className="size-4 text-sage" aria-hidden />
-          Autor & trakt
+          Rok & jazyk…
           {filterCount > 0 ? (
             <span className="ml-1.5 rounded-sm bg-sage/15 px-1.5 py-0.5 font-mono text-[10px] text-sage tabular-nums">
               {filterCount}
