@@ -49,14 +49,14 @@ export function HowToUse() {
       className="relative z-10 border-t border-rule/70 bg-paper-deep/55"
       aria-labelledby="how-to-use-heading"
     >
-      <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-5 sm:py-16 md:px-8 md:py-20">
-        <div className="max-w-2xl">
+      <div className="mx-auto w-full min-w-0 max-w-6xl px-4 py-12 sm:px-5 sm:py-16 md:px-8 md:py-20">
+        <div className="max-w-2xl min-w-0">
           <p className="text-[11px] tracking-[0.22em] text-accent uppercase">
             Ako to používať
           </p>
           <h2
             id="how-to-use-heading"
-            className="mt-3 font-display text-[clamp(1.85rem,5vw,3rem)] text-ink"
+            className="mt-3 font-display text-[clamp(1.6rem,6vw,3rem)] text-balance text-ink"
           >
             Od úvodnej stránky po katalóg v štyroch krokoch
           </h2>

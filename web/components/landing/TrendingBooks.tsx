@@ -12,14 +12,14 @@ export function TrendingBooks({ books }: TrendingBooksProps) {
 
   return (
     <section
-      className="relative z-10 border-t border-rule bg-paper px-4 py-14 sm:px-6 md:px-8 md:py-20"
+      className="relative z-10 border-t border-rule bg-paper px-4 py-12 sm:px-6 sm:py-14 md:px-8 md:py-20"
       aria-labelledby="trending-books-heading"
     >
-      <div className="mx-auto w-full max-w-6xl">
+      <div className="mx-auto w-full min-w-0 max-w-6xl">
         <TrendingBooksControls>
           <h2
             id="trending-books-heading"
-            className="flex-1 text-center font-display text-[clamp(1.8rem,4vw,2.75rem)] tracking-tight text-ink uppercase"
+            className="min-w-0 flex-1 text-center font-display text-[clamp(1.5rem,5vw,2.75rem)] tracking-tight text-balance text-ink uppercase"
           >
             Populárne tituly
           </h2>
@@ -28,14 +28,14 @@ export function TrendingBooks({ books }: TrendingBooksProps) {
         <ul
           data-trending-scroller
           aria-label="Populárne knihy"
-          className="mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-5 [&::-webkit-scrollbar]:hidden"
+          className="mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:mt-10 sm:gap-5 [&::-webkit-scrollbar]:hidden"
         >
           {items.map((book, index) => {
             const featured = index === 1;
             return (
               <li
                 key={book.id}
-                className="w-[68%] shrink-0 snap-start sm:w-[42%] md:w-[23%]"
+                className="w-[min(72%,16rem)] shrink-0 snap-start sm:w-[42%] lg:w-[23%]"
               >
                 <Link
                   href={`/books/${book.id}`}

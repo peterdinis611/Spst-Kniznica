@@ -45,14 +45,14 @@ export function FaqSection() {
         }}
       />
 
-      <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[0.85fr_1.15fr] md:gap-14 md:px-8 md:py-20">
-        <div className="md:sticky md:top-10 md:self-start">
+      <div className="relative mx-auto grid w-full min-w-0 max-w-6xl gap-8 px-4 py-12 sm:gap-10 sm:px-6 sm:py-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14 lg:px-8 lg:py-20">
+        <div className="min-w-0 lg:sticky lg:top-10 lg:self-start">
           <p className="font-mono text-[10px] tracking-[0.22em] text-sage uppercase">
             Otázky · odpovede
           </p>
           <h2
             id="faq-heading"
-            className="mt-3 font-display text-[clamp(2rem,5vw,3.25rem)] leading-[1.05] tracking-tight text-ink"
+            className="mt-3 font-display text-[clamp(1.75rem,6vw,3.25rem)] leading-[1.05] tracking-tight text-balance text-ink"
           >
             Často sa pýtate
           </h2>

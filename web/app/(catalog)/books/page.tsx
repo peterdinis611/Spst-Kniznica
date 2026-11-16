@@ -21,16 +21,14 @@ export const metadata: Metadata = buildPageMetadata({
 
 async function BooksPageContent() {
   await connection();
-  const [booksResult, categoriesResult, authorsResult, shelvesProbe] =
-    await Promise.all([
-      searchBooksAction({ page: 1, pageSize: 100 }),
-      searchCategoriesAction({ page: 1, pageSize: 100 }),
-      searchAuthorsAction({ page: 1, pageSize: 100 }),
-      searchBooksAction({ page: 1, pageSize: 100 }),
-    ]);
+  const [booksResult, categoriesResult, authorsResult] = await Promise.all([
+    searchBooksAction({ page: 1, pageSize: 100 }),
+    searchCategoriesAction({ page: 1, pageSize: 100 }),
+    searchAuthorsAction({ page: 1, pageSize: 100 }),
+  ]);
 
   const shelfZones = shelfZonesFromShelfCodes(
-    (shelvesProbe?.data?.items ?? []).map((book) => book.shelfLocation),
+    (booksResult?.data?.items ?? []).map((book) => book.shelfLocation),
   );
 
   return (

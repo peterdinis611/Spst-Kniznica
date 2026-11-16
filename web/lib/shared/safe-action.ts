@@ -9,8 +9,11 @@ export const actionClient = createSafeActionClient({
       throw error;
     }
 
-    // Expected gateway / auth failures — already redirected or shown as status.
-    if (isApiHttpError(error) && [401, 502, 503].includes(error.status)) {
+    // Expected gateway / auth / throttle failures — surface as action error, not overlay.
+    if (
+      isApiHttpError(error) &&
+      [401, 429, 502, 503].includes(error.status)
+    ) {
       return error.message;
     }
 

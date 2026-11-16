@@ -77,10 +77,10 @@ export function ServerStatusBanner() {
       aria-live="assertive"
       className="sticky top-0 z-50 border-b border-rule bg-surface-inverse text-paper"
     >
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 md:px-8">
-        <p className="min-w-0 text-[12px] leading-snug sm:text-[13px]">
+      <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 md:px-8">
+        <p className="min-w-0 text-[12px] leading-snug break-words sm:text-[13px]">
           <span className="mr-2 inline-flex items-center gap-1.5 font-mono text-[10px] font-semibold tracking-[0.18em] text-accent uppercase">
-            <WifiOff className="size-3.5" strokeWidth={2} aria-hidden />
+            <WifiOff className="size-3.5 shrink-0" strokeWidth={2} aria-hidden />
             Odpojené
           </span>
           <span className="text-paper/85">
@@ -88,7 +88,7 @@ export function ServerStatusBanner() {
             dočasne nefungovať.
           </span>
         </p>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           <Link
             href="/503"
             className="text-[12px] font-medium text-paper/80 underline-offset-2 hover:text-paper hover:underline"

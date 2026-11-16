@@ -220,6 +220,7 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -230,8 +231,18 @@
 
   body {
     min-height: 100vh;
+    min-width: 0;
+    overflow-x: clip;
     font-family: var(--font-body-family), ui-sans-serif, sans-serif;
     @apply bg-background text-foreground antialiased;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+    height: auto;
   }
 
   :focus-visible {

@@ -21,10 +21,10 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className="relative flex min-h-full flex-1 flex-col overflow-x-hidden bg-paper">
+    <div className="relative flex min-h-full min-w-0 flex-1 flex-col overflow-x-clip bg-paper">
       <SiteHeader />
 
-      <MainContent className="relative z-10 flex min-w-0 flex-1 flex-col">
+      <MainContent className="relative z-10 flex w-full min-w-0 flex-1 flex-col">
         <Suspense fallback={<RouteLoading variant="landing" />}>
           <LandingContent />
         </Suspense>

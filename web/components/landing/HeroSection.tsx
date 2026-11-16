@@ -25,31 +25,31 @@ export function HeroSection({ books }: HeroSectionProps) {
 
   return (
     <section
-      className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pb-6 pt-2 sm:px-6 md:grid-cols-[1.05fr_0.95fr] md:gap-8 md:px-8 md:pb-4 md:pt-2"
+      className="relative z-10 mx-auto grid w-full min-w-0 max-w-6xl items-center gap-8 px-4 pb-4 pt-2 sm:gap-10 sm:px-6 sm:pb-6 md:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:pb-4"
       aria-labelledby="hero-heading"
     >
-      <div className="max-w-xl">
+      <div className="min-w-0 max-w-xl">
         <p className="reveal text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
           Školský katalóg
         </p>
         <h1
           id="hero-heading"
-          className="reveal reveal-delay-1 mt-4 font-display text-[clamp(2.4rem,7.2vw,4.6rem)] leading-[1.02] font-medium tracking-[-0.02em] text-ink"
+          className="reveal reveal-delay-1 mt-3 font-display text-[clamp(2rem,8vw,4.6rem)] leading-[1.05] font-medium tracking-[-0.02em] text-balance text-ink sm:mt-4"
         >
           Akú knihu{" "}
           <em className="not-italic text-ink">hľadáte?</em>
         </h1>
-        <p className="reveal reveal-delay-2 mt-5 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
+        <p className="reveal reveal-delay-2 mt-4 max-w-md text-sm leading-relaxed text-muted-foreground sm:mt-5 sm:text-[15px]">
           Nie ste si istí, čo čítať ďalej? Prehliadnite fond SPST — autori,
           kategórie a dostupnosť exemplárov na jednom mieste.
         </p>
 
-        <div className="reveal reveal-delay-3 mt-8 flex flex-col items-start">
+        <div className="reveal reveal-delay-3 mt-6 flex w-full min-w-0 flex-col items-stretch gap-3 sm:mt-8 sm:items-start">
           <Link
             href="/books"
-            className="split-cta group border border-ink bg-paper transition hover:-translate-y-0.5"
+            className="split-cta group w-full max-w-sm border border-ink bg-paper transition hover:-translate-y-0.5 sm:w-auto"
           >
-            <span className="flex items-center px-6 py-3.5 text-sm font-semibold tracking-wide">
+            <span className="flex items-center px-5 py-3.5 text-sm font-semibold tracking-wide sm:px-6">
               Preskúmať teraz
             </span>
             <span className="flex items-center justify-center bg-ink px-4 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground">
@@ -58,24 +58,24 @@ export function HeroSection({ books }: HeroSectionProps) {
           </Link>
           <Link
             href="/bookings"
-            className="mt-4 inline-flex text-sm font-medium text-ink/70 underline-offset-4 hover:text-ink hover:underline"
+            className="inline-flex text-sm font-medium text-ink/70 underline-offset-4 hover:text-ink hover:underline"
           >
             Alebo otvor výpožičný pult
           </Link>
         </div>
 
-        <div className="reveal reveal-delay-4 mt-10 flex items-center gap-3">
-          <div className="flex -space-x-2">
+        <div className="reveal reveal-delay-4 mt-8 flex items-center gap-3 sm:mt-10">
+          <div className="flex shrink-0 -space-x-2">
             {["#FFE500", "#FF5C33", "#8FA888", "#1F4E8C"].map((color) => (
               <span
                 key={color}
-                className="size-9 rounded-full border-2 border-paper"
+                className="size-8 rounded-full border-2 border-paper sm:size-9"
                 style={{ background: color }}
                 aria-hidden
               />
             ))}
           </div>
-          <p className="text-xs leading-snug text-muted-foreground sm:text-sm">
+          <p className="min-w-0 text-xs leading-snug text-muted-foreground sm:text-sm">
             <span className="font-semibold text-ink">Žiaci + učitelia</span>
             <br />
             čítajú so SPST knižnicou
@@ -83,7 +83,7 @@ export function HeroSection({ books }: HeroSectionProps) {
         </div>
       </div>
 
-      <div className="reveal reveal-delay-2 relative mx-auto flex h-[320px] w-full max-w-md items-center justify-center sm:h-[380px] md:mx-0 md:h-[420px] md:max-w-none">
+      <div className="reveal reveal-delay-2 relative mx-auto flex h-[260px] w-full min-w-0 max-w-[22rem] items-center justify-center sm:h-[340px] sm:max-w-md lg:mx-0 lg:h-[420px] lg:max-w-none">
         <div
           aria-hidden
           className="absolute top-[12%] left-[8%] h-[58%] w-[42%] bg-sage/70"
@@ -95,7 +95,7 @@ export function HeroSection({ books }: HeroSectionProps) {
 
         <Link
           href={`/books/${left.id}`}
-          className="absolute top-[8%] left-[10%] z-10 w-[42%] rotate-[-11deg] transition hover:-translate-y-1"
+          className="absolute top-[8%] left-[10%] z-10 w-[42%] max-w-[11rem] rotate-[-11deg] transition hover:-translate-y-1"
         >
           <FlatCover
             title={left.title}
@@ -107,7 +107,7 @@ export function HeroSection({ books }: HeroSectionProps) {
 
         <Link
           href={`/books/${right.id}`}
-          className="absolute right-[4%] bottom-[6%] z-20 w-[46%] rotate-[8deg] transition hover:-translate-y-1"
+          className="absolute right-[4%] bottom-[6%] z-20 w-[46%] max-w-[12rem] rotate-[8deg] transition hover:-translate-y-1"
         >
           <FlatCover
             title={right.title}
@@ -117,8 +117,8 @@ export function HeroSection({ books }: HeroSectionProps) {
           />
         </Link>
 
-        <div className="sunburst absolute top-[42%] left-[48%] z-30 flex size-[5.5rem] items-center justify-center bg-accent text-center sm:size-24">
-          <p className="font-display text-sm leading-tight font-semibold text-accent-foreground sm:text-base">
+        <div className="sunburst absolute top-[42%] left-[48%] z-30 flex size-[4.5rem] items-center justify-center bg-accent text-center sm:size-[5.5rem] lg:size-24">
+          <p className="font-display text-[11px] leading-tight font-semibold text-accent-foreground sm:text-sm lg:text-base">
             Otvorený
             <br />
             fond
