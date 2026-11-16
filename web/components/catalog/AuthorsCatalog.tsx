@@ -15,6 +15,12 @@ import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import { searchAuthorsCursorAction } from "@/lib/catalog/actions";
 import type { CatalogAuthor } from "@/lib/catalog";
+import {
+  AccentFillDiv,
+  ShadeOverlay,
+  VirtualOrderedList,
+  VirtualRow,
+} from "@/components/styled/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -180,12 +186,12 @@ export function AuthorsCatalog({
           resetHref="/authors"
         />
       ) : (
-        <ol
+        <VirtualOrderedList
           ref={listRef}
           aria-label="Zoznam autorov"
           aria-busy={isPending || undefined}
           className="relative mt-4 border-y border-rule pb-20 dark:border-white/10"
-          style={{ height: virtualizer.getTotalSize() }}
+          $height={virtualizer.getTotalSize()}
         >
           {virtualRows.map((virtualRow) => {
             const author = results[virtualRow.index];
@@ -193,35 +199,27 @@ export function AuthorsCatalog({
             const index = virtualRow.index;
             const initial = author.name.charAt(0).toUpperCase();
             return (
-              <li
+              <VirtualRow
                 key={author.id}
                 data-index={virtualRow.index}
                 ref={virtualizer.measureElement}
                 className="absolute inset-x-0 top-0 border-b border-rule dark:border-white/10"
-                style={{
-                  transform: `translateY(${virtualRow.start - scrollMargin}px)`,
-                }}
+                $start={virtualRow.start - scrollMargin}
               >
                 <Link
                   href={`/authors/${author.id}`}
                   className="group relative grid grid-cols-[3.25rem_minmax(0,1fr)] items-stretch gap-4 py-6 transition sm:grid-cols-[5.5rem_minmax(0,1fr)_auto] sm:gap-8 sm:py-7 md:gap-10"
                 >
-                  <div
+                  <AccentFillDiv
+                    $color={author.accent}
                     className="relative flex items-center justify-center self-stretch overflow-hidden"
-                    style={{ background: author.accent }}
                     aria-hidden
                   >
                     <span className="font-display text-3xl leading-none text-white/90 sm:text-5xl">
                       {initial}
                     </span>
-                    <span
-                      className="pointer-events-none absolute inset-0 opacity-25"
-                      style={{
-                        backgroundImage:
-                          "linear-gradient(160deg, transparent 30%, rgba(0,0,0,0.35))",
-                      }}
-                    />
-                  </div>
+                    <ShadeOverlay className="pointer-events-none absolute inset-0 opacity-25" />
+                  </AccentFillDiv>
 
                   <div className="min-w-0 self-center pr-2">
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -256,10 +254,10 @@ export function AuthorsCatalog({
                     aria-hidden
                   />
                 </Link>
-              </li>
+              </VirtualRow>
             );
           })}
-        </ol>
+        </VirtualOrderedList>
       )}
 
       <CatalogLoadMore

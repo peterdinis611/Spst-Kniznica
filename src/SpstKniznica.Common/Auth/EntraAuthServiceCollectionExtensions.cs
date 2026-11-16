@@ -87,6 +87,10 @@ public static class EntraAuthServiceCollectionExtensions
         }
 
         services.Configure<InternalApiOptions>(configuration.GetSection(InternalApiOptions.SectionName));
+        ValidateInternalApiKey(
+            configuration.GetSection(InternalApiOptions.SectionName).Get<InternalApiOptions>()
+                ?? new InternalApiOptions(),
+            environment);
         services.AddHttpContextAccessor();
         services.AddSingleton<IAuthorizationHandler, InternalApiKeyAuthorizationHandler>();
 
@@ -120,6 +124,41 @@ public static class EntraAuthServiceCollectionExtensions
 
     public static IApplicationBuilder UseSpstAuthentication(this IApplicationBuilder app)
         => app.UseAuthentication();
+
+    private const string InsecureDefaultInternalKey = "spst-dev-internal-key-change-me";
+
+    private static void ValidateInternalApiKey(InternalApiOptions options, IHostEnvironment environment)
+    {
+        var key = options.SharedKey?.Trim() ?? string.Empty;
+        var isDefault = string.Equals(key, InsecureDefaultInternalKey, StringComparison.Ordinal);
+
+        if (!environment.IsDevelopment())
+        {
+            if (string.IsNullOrEmpty(key) || isDefault)
+            {
+                throw new InvalidOperationException(
+                    "InternalApi:SharedKey must be set to a strong non-default secret outside Development. " +
+                    "Refuse to start with an empty or known-insecure key.");
+            }
+
+            return;
+        }
+
+        if (isDefault && !options.AllowInsecureDefaultKey)
+        {
+            throw new InvalidOperationException(
+                "InternalApi:SharedKey is the well-known local placeholder. " +
+                "Set InternalApi:AllowInsecureDefaultKey=true for explicit local-only use, " +
+                "or replace SharedKey with a unique secret.");
+        }
+
+        if (isDefault)
+        {
+            Console.Error.WriteLine(
+                "[SECURITY] InternalApi:SharedKey is the insecure Development placeholder. " +
+                "Do not expose this stack beyond loopback.");
+        }
+    }
 
     private static void MapRoles(ClaimsPrincipal? principal)
     {

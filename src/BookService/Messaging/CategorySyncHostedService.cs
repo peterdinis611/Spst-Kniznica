@@ -17,6 +17,9 @@ public sealed class CategorySyncHostedService(
         var kafka = options.Value;
         if (!kafka.Enabled)
         {
+            logger.LogWarning(
+                "Kafka is disabled — category name denormalization will not sync. " +
+                "Enable Kafka:Enabled or refresh book CategoryName manually after category renames.");
             return Task.CompletedTask;
         }
 

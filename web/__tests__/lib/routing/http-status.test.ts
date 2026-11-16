@@ -6,7 +6,7 @@ import {
 
 describe("isHttpStatusCode", () => {
   it("accepts known status codes", () => {
-    for (const code of [401, 404, 500, 502, 503] as const) {
+    for (const code of [401, 404, 429, 500, 502, 503] as const) {
       expect(isHttpStatusCode(code)).toBe(true);
     }
   });
@@ -19,7 +19,7 @@ describe("isHttpStatusCode", () => {
 
 describe("HTTP_STATUS_COPY", () => {
   it("has Slovak copy and at least one primary action", () => {
-    for (const code of [401, 404, 500, 502, 503] as const) {
+    for (const code of [401, 404, 429, 500, 502, 503] as const) {
       const copy = HTTP_STATUS_COPY[code];
       expect(copy.code).toBe(code);
       expect(copy.title.length).toBeGreaterThan(3);

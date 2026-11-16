@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight, Search } from "lucide-react";
+import { AccentGradient165 } from "@/components/styled/primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { CarouselBook } from "@/lib/catalog";
@@ -75,11 +76,10 @@ export function PopularShelf({ books }: PopularShelfProps) {
           {items.map((book, index) => (
             <li key={book.id} className={`reveal reveal-delay-${(index % 4) + 1}`}>
               <Link href={`/books/${book.id}`} className="group block">
-                <div
+                <AccentGradient165
+                  $from={book.accent}
+                  $to={shade(book.accent, -30)}
                   className="aspect-[2/3] rounded-[0.65rem] shadow-[0_18px_40px_rgba(26,23,20,0.14)] transition duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_28px_55px_rgba(26,23,20,0.18)]"
-                  style={{
-                    background: `linear-gradient(165deg, ${book.accent} 0%, ${shade(book.accent, -30)} 100%)`,
-                  }}
                 >
                   <div className="flex h-full flex-col justify-between p-4 text-[color:var(--paper)]">
                     <p className="font-display text-lg leading-tight md:text-xl">
@@ -89,7 +89,7 @@ export function PopularShelf({ books }: PopularShelfProps) {
                       {book.author}
                     </p>
                   </div>
-                </div>
+                </AccentGradient165>
                 <p className="mt-3 font-display text-lg text-ink transition group-hover:text-accent-deep dark:group-hover:text-accent">
                   {book.title}
                 </p>

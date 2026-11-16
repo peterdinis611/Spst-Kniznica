@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
+using GatewayService.Health;
 using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
 
@@ -9,6 +12,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration.AddJsonFile("reverse-proxy.json", optional: false, reloadOnChange: true);
     builder.UseSpstSerilog("GatewayService");
     // Gateway stays publicly reachable; downstream services use Network:BindLoopbackOnly.
     builder.UseSpstNetworkIsolation();
@@ -32,7 +36,34 @@ try
         .AddReverseProxy()
         .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-    builder.Services.AddHealthChecks();
+    builder.Services.AddHttpClient("gateway-ready", client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(2);
+    });
+
+    var bookBase = builder.Configuration["Services:BookService"]?.TrimEnd('/')
+        ?? "http://localhost:5203";
+    var bookingBase = builder.Configuration["Services:BookingService"]?.TrimEnd('/')
+        ?? "http://localhost:5208";
+
+    builder.Services.AddHealthChecks()
+        .AddCheck("self", () => HealthCheckResult.Healthy("GatewayService"), tags: ["live"])
+        .Add(new HealthCheckRegistration(
+            "book",
+            sp => new DownstreamReadyCheck(
+                "BookService",
+                $"{bookBase}/health",
+                sp.GetRequiredService<IHttpClientFactory>()),
+            failureStatus: HealthStatus.Unhealthy,
+            tags: ["ready"]))
+        .Add(new HealthCheckRegistration(
+            "booking",
+            sp => new DownstreamReadyCheck(
+                "BookingService",
+                $"{bookingBase}/health",
+                sp.GetRequiredService<IHttpClientFactory>()),
+            failureStatus: HealthStatus.Unhealthy,
+            tags: ["ready"]));
 
     var app = builder.Build();
 
@@ -64,15 +95,31 @@ try
     app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();
-    app.MapHealthChecks("/health").AllowAnonymous();
+
+    // Liveness: process is up (does not require Book/Booking).
+    app.MapHealthChecks("/health", new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("live"),
+    }).AllowAnonymous();
+
+    // Readiness: downstream catalog deps are reachable.
+    app.MapHealthChecks("/health/ready", new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("ready"),
+    }).AllowAnonymous();
+
     if (app.Environment.ShouldExposeSwagger())
     {
         app.MapGet("/", () => Results.Redirect("/swagger")).AllowAnonymous();
     }
     else
     {
-        app.MapGet("/", () => Results.Ok(new { service = "GatewayService", health = "/health" }))
-            .AllowAnonymous();
+        app.MapGet("/", () => Results.Ok(new
+        {
+            service = "GatewayService",
+            health = "/health",
+            ready = "/health/ready",
+        })).AllowAnonymous();
     }
 
     app.MapReverseProxy();

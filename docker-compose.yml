@@ -1,5 +1,11 @@
-# Local broker stack only. Do not publish these ports or use guest/plaintext
-# credentials in shared/staging/production environments.
+# Local broker stack only (Redis / RabbitMQ / Kafka).
+#
+# Microservice apps (Gateway, Book, Booking, Auth, …) and Next.js are NOT
+# containerized here — run them with ./start.sh (or `dotnet run` / `npm run dev`).
+# A future `docker-compose.apps.yml` / profile `apps` can wrap those images;
+# until then treat this file as infra-only.
+#
+# Do not publish these ports or use guest/plaintext credentials outside loopback.
 services:
   redis:
     image: redis:7.4-alpine

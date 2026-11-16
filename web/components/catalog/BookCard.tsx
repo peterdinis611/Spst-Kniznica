@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FlatCover } from "@/components/landing/FlatCover";
+import { AnimationDelayedArticle } from "@/components/styled/primitives";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -42,9 +43,9 @@ export function BookCard({ book, index = 0 }: BookCardProps) {
       : `${book.availableCopies} z ${book.totalCopies} exemplárov je voľných`;
 
   return (
-    <article
+    <AnimationDelayedArticle
       className="reveal h-full"
-      style={{ animationDelay: `${(index % 8) * 0.04}s` }}
+      $delay={`${(index % 8) * 0.04}s`}
     >
       <Card
         size="sm"
@@ -104,6 +105,6 @@ export function BookCard({ book, index = 0 }: BookCardProps) {
           </Tooltip>
         </div>
       </Card>
-    </article>
+    </AnimationDelayedArticle>
   );
 }

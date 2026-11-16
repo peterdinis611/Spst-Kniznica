@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
+const gatewayURL =
+  process.env.PLAYWRIGHT_GATEWAY_URL ?? "http://localhost:5200";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -19,6 +21,11 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "mobile-chrome",
+      use: { ...devices["Pixel 7"] },
+      testMatch: /smoke\.spec\.ts/,
+    },
   ],
   webServer: process.env.PLAYWRIGHT_NO_WEB_SERVER
     ? undefined
@@ -28,4 +35,9 @@ export default defineConfig({
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
       },
+  metadata: {
+    gatewayURL,
+    note:
+      "Full stack E2E (gateway + services) requires ./start.sh; CI runs Next-only smoke by default.",
+  },
 });

@@ -47,6 +47,53 @@ public class EntraAuthRegistrationTests
         act.Should().NotThrow();
     }
 
+    [Fact]
+    public void Rejects_insecure_default_internal_key_without_explicit_opt_in()
+    {
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Entra:Enabled"] = "false",
+                ["InternalApi:SharedKey"] = "spst-dev-internal-key-change-me",
+                ["InternalApi:AllowInsecureDefaultKey"] = "false",
+            })
+            .Build();
+
+        var act = () => services.AddSpstEntraAuthentication(
+            config,
+            new FakeHostEnvironment(Environments.Development));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*AllowInsecureDefaultKey*");
+    }
+
+    [Fact]
+    public void Rejects_default_internal_key_outside_Development()
+    {
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Entra:Enabled"] = "true",
+                ["Entra:TenantId"] = "tenant",
+                ["Entra:ClientId"] = "client",
+                ["Entra:Audience"] = "api://client",
+                ["InternalApi:SharedKey"] = "spst-dev-internal-key-change-me",
+                ["InternalApi:AllowInsecureDefaultKey"] = "true",
+            })
+            .Build();
+
+        var act = () => services.AddSpstEntraAuthentication(
+            config,
+            new FakeHostEnvironment(Environments.Production));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*InternalApi:SharedKey*");
+    }
+
     private sealed class FakeHostEnvironment(string environmentName) : IHostEnvironment
     {
         public string EnvironmentName { get; set; } = environmentName;

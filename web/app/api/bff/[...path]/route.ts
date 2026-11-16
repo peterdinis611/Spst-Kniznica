@@ -5,8 +5,48 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5200"
 ).replace(/\/$/, "");
 
+/** Only these gateway prefixes may be proxied from the browser BFF. */
+const ALLOWED_PREFIXES = [
+  "health",
+  "api/auth",
+  "api/books",
+  "api/authors",
+  "api/categories",
+  "api/bookings",
+  "api/library-ops",
+  "api/admin",
+  "api/orders",
+  "api/cache",
+  "api/messaging",
+  "api/workers",
+] as const;
+
+const UPSTREAM_TIMEOUT_MS = 25_000;
+const MAX_BODY_BYTES = 2 * 1024 * 1024;
+
+function isAllowedPath(path: string): boolean {
+  const normalized = path.replace(/^\/+/, "").toLowerCase();
+  if (!normalized) return false;
+  if (normalized.includes("..")) return false;
+  return ALLOWED_PREFIXES.some(
+    (prefix) =>
+      normalized === prefix || normalized.startsWith(`${prefix}/`),
+  );
+}
+
 async function proxy(request: Request, pathParts: string[]) {
   const path = pathParts.join("/");
+  if (!isAllowedPath(path)) {
+    return NextResponse.json(
+      {
+        title: "Forbidden",
+        detail: "Táto cesta nie je povolená cez BFF.",
+        status: 403,
+      },
+      { status: 403 },
+    );
+  }
+
   const incoming = new URL(request.url);
   const target = `${API_BASE}/${path}${incoming.search}`;
 
@@ -32,16 +72,31 @@ async function proxy(request: Request, pathParts: string[]) {
     }
   }
 
-  // Never forward browser cookies to the gateway
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+
   const init: RequestInit = {
     method: request.method,
     headers,
     cache: "no-store",
+    signal: controller.signal,
     duplex: "half",
   } as RequestInit;
 
   if (request.method !== "GET" && request.method !== "HEAD") {
-    init.body = await request.arrayBuffer();
+    const body = await request.arrayBuffer();
+    if (body.byteLength > MAX_BODY_BYTES) {
+      clearTimeout(timer);
+      return NextResponse.json(
+        {
+          title: "Payload Too Large",
+          detail: "Request body exceeds BFF limit.",
+          status: 413,
+        },
+        { status: 413 },
+      );
+    }
+    init.body = body;
   }
 
   try {
@@ -74,6 +129,8 @@ async function proxy(request: Request, pathParts: string[]) {
       },
       { status: 502 },
     );
+  } finally {
+    clearTimeout(timer);
   }
 }
 

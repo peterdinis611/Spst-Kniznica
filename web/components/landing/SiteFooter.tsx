@@ -3,6 +3,7 @@ import { cacheLife } from "next/cache";
 import { connection } from "next/server";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import { LibraryMap } from "@/components/landing/LibraryMap";
+import { AccentFill } from "@/components/styled/primitives";
 import { searchBooksAction } from "@/lib/catalog/actions";
 import { siteConfig } from "@/lib/site";
 
@@ -136,13 +137,13 @@ export async function SiteFooter() {
                       className="group flex gap-3 py-3.5 transition"
                       aria-label={`${book.title}, ${book.author}`}
                     >
-                      <span
+                      <AccentFill
+                        $color={book.accent}
                         className="mt-0.5 flex size-9 shrink-0 items-center justify-center font-mono text-[10px] text-white"
-                        style={{ background: book.accent }}
                         aria-hidden
                       >
                         {String(index + 1).padStart(2, "0")}
-                      </span>
+                      </AccentFill>
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-medium text-ink group-hover:text-sage">
                           {book.title}

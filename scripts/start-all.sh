@@ -163,6 +163,7 @@ wait_http() {
   local name="$1"
   local url="$2"
   local attempts="${3:-60}"
+  local required="${4:-0}"
 
   for ((i = 1; i <= attempts; i++)); do
     if curl -fsS --max-time 1 "$url" >/dev/null 2>&1; then
@@ -173,6 +174,9 @@ wait_http() {
   done
 
   echo "  ! $name ešte nie je ready (log: $LOG_DIR/${name}.log)"
+  if [[ "$required" -eq 1 ]]; then
+    return 1
+  fi
   return 0
 }
 
@@ -236,18 +240,38 @@ start_frontend
 echo
 
 echo "==> Čakám na health endpointy"
-wait_http "author"    "http://127.0.0.1:5207/health"
-wait_http "category"  "http://127.0.0.1:5204/health"
-wait_http "book"      "http://127.0.0.1:5203/health"
-wait_http "booking"   "http://127.0.0.1:5208/health"
-wait_http "workers"   "http://127.0.0.1:5209/health"
-wait_http "messaging" "http://127.0.0.1:5205/health"
-wait_http "cache"     "http://127.0.0.1:5206/health"
-wait_http "auth"      "http://127.0.0.1:5210/health"
-wait_http "admin"     "http://127.0.0.1:5211/health"
-wait_http "gateway"   "http://127.0.0.1:5200/health" 80
-wait_http "web"       "http://127.0.0.1:3000" 80
+FAILED=0
+wait_http "author"    "http://127.0.0.1:5207/health" || true
+wait_http "category"  "http://127.0.0.1:5204/health" || true
+wait_http "book"      "http://127.0.0.1:5203/health" 80 1 || FAILED=1
+wait_http "booking"   "http://127.0.0.1:5208/health" 80 1 || FAILED=1
+wait_http "workers"   "http://127.0.0.1:5209/health" || true
+wait_http "messaging" "http://127.0.0.1:5205/health" || true
+wait_http "cache"     "http://127.0.0.1:5206/health" || true
+wait_http "auth"      "http://127.0.0.1:5210/health" 80 1 || FAILED=1
+wait_http "admin"     "http://127.0.0.1:5211/health" || true
+wait_http "gateway"   "http://127.0.0.1:5200/health" 100 1 || FAILED=1
+# Ready = gateway + book + booking probes (stricter than /health liveness).
+wait_http "gateway-ready" "http://127.0.0.1:5200/health/ready" 40 1 || FAILED=1
+wait_http "web"       "http://127.0.0.1:3000" 100 1 || FAILED=1
 echo
+
+if [[ "$FAILED" -ne 0 ]]; then
+  cat <<EOF
+==> Stack NIE JE pripravený
+
+  Kritické služby (book / booking / auth / gateway[/ready] / web) neodpovedajú.
+  Skontroluj logy: $LOG_DIR
+  Stop:           ./scripts/stop-all.sh
+
+EOF
+  if [[ "$MODE" == "detach" ]]; then
+    exit 1
+  fi
+  echo "  Foreground mód – procesy nechávam bežať na debug (Ctrl+C zastaví)."
+  wait
+  exit 1
+fi
 
 cat <<EOF
 ==> Stack beží
@@ -257,6 +281,7 @@ cat <<EOF
   Auth         http://localhost:5210/swagger
   Admin        http://localhost:5211/swagger
   Booking      http://localhost:5208/swagger
+  Ready        http://localhost:5200/health/ready
 
   Logy         $LOG_DIR
   Stop         ./scripts/stop-all.sh

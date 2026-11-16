@@ -14,6 +14,7 @@ import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { DeskScanPanel } from "@/components/catalog/DeskScanPanel";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
+import { VirtualList, VirtualRow } from "@/components/styled/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -412,10 +413,10 @@ export function BookingsDesk({
           resetLabel="Do katalógu"
         />
       ) : (
-        <ul
+        <VirtualList
           ref={listRef}
           className="relative mt-2"
-          style={{ height: virtualizer.getTotalSize() }}
+          $height={virtualizer.getTotalSize()}
           aria-label="Zoznam výpožičných lístkov"
           aria-busy={search.isPending || undefined}
         >
@@ -426,14 +427,12 @@ export function BookingsDesk({
             const statusCode = booking.status as BookingStatusCode;
             const busy = pendingId === booking.id && update.isPending;
             return (
-              <li
+              <VirtualRow
                 key={booking.id}
                 data-index={virtualRow.index}
                 ref={virtualizer.measureElement}
                 className="absolute inset-x-0 top-0"
-                style={{
-                  transform: `translateY(${virtualRow.start - scrollMargin}px)`,
-                }}
+                $start={virtualRow.start - scrollMargin}
               >
                 <div className="relative grid gap-5 border-b border-rule py-7 md:grid-cols-[1fr_auto] md:items-center dark:border-white/10">
                   <span
@@ -593,10 +592,10 @@ export function BookingsDesk({
                     </div>
                   </div>
                 </div>
-              </li>
+              </VirtualRow>
             );
           })}
-        </ul>
+        </VirtualList>
       )}
 
       {totalPages > 1 ? (

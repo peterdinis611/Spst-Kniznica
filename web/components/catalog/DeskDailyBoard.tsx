@@ -176,11 +176,11 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
               : "Načítavam prehľad…"}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
           <Button
             type="button"
             variant="outline"
-            className="rounded-none"
+            className="w-full rounded-none sm:w-auto"
             onClick={() => void downloadCsv()}
           >
             <Download className="size-4" aria-hidden />
@@ -188,7 +188,7 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
           </Button>
           <Button
             render={<Link href="/bookings" />}
-            className="rounded-none bg-ink text-paper hover:bg-ink/90"
+            className="w-full rounded-none bg-ink text-paper hover:bg-ink/90 sm:w-auto"
           >
             Celý pult
           </Button>
@@ -202,15 +202,15 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
       ) : null}
 
       <div className="mt-6 flex flex-col gap-3 border border-ink bg-paper-deep px-4 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/15">
-        <div className="flex items-center gap-3">
-          <ScanLine className="size-5 shrink-0 text-accent" aria-hidden />
+        <div className="flex items-start gap-3 sm:items-center">
+          <ScanLine className="mt-0.5 size-5 shrink-0 text-accent sm:mt-0" aria-hidden />
           <p className="text-sm text-muted-foreground">
             Naskenuj inventárne číslo alebo čiarový kód pri výdaji a vrátení.
           </p>
         </div>
         <Button
           render={<Link href="/bookings?scan=1" />}
-          className="h-10 shrink-0 rounded-none bg-ink text-paper hover:bg-ink/90"
+          className="h-11 w-full shrink-0 rounded-none bg-ink text-paper hover:bg-ink/90 sm:h-10 sm:w-auto"
         >
           Otvoriť pult so skenerom
         </Button>
@@ -218,7 +218,7 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
 
       {board ? (
         <>
-          <div className="mt-6 grid gap-3 sm:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
               { label: "Po termíne", value: board.overdueCount },
               { label: "Čoskoro", value: board.dueSoonCount },

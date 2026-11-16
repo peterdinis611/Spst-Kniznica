@@ -1,0 +1,525 @@
+{
+  "ReverseProxy": {
+    "Routes": {
+      "books-api-write": {
+        "ClusterId": "books",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/books/{**catch-all}",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "books-api-root-write": {
+        "ClusterId": "books",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/books",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "books-export": {
+        "ClusterId": "books",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": -1,
+        "Match": {
+          "Path": "/api/books/export",
+          "Methods": [
+            "GET"
+          ]
+        }
+      },
+      "books-isbn-lookup": {
+        "ClusterId": "books",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": -1,
+        "Match": {
+          "Path": "/api/books/lookup/{**catch-all}",
+          "Methods": [
+            "GET"
+          ]
+        }
+      },
+      "books-api": {
+        "ClusterId": "books",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/books/{**catch-all}"
+        }
+      },
+      "books-api-root": {
+        "ClusterId": "books",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/books"
+        }
+      },
+      "books-swagger": {
+        "ClusterId": "books",
+        "Match": {
+          "Path": "/books/swagger/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/swagger/{**catch-all}"
+          }
+        ]
+      },
+      "categories-api-write": {
+        "ClusterId": "categories",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/categories/{**catch-all}",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "categories-api-root-write": {
+        "ClusterId": "categories",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/categories",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "categories-export": {
+        "ClusterId": "categories",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": -1,
+        "Match": {
+          "Path": "/api/categories/export",
+          "Methods": [
+            "GET"
+          ]
+        }
+      },
+      "categories-api": {
+        "ClusterId": "categories",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/categories/{**catch-all}"
+        }
+      },
+      "categories-api-root": {
+        "ClusterId": "categories",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/categories"
+        }
+      },
+      "categories-swagger": {
+        "ClusterId": "categories",
+        "Match": {
+          "Path": "/categories/swagger/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/swagger/{**catch-all}"
+          }
+        ]
+      },
+      "authors-api-write": {
+        "ClusterId": "authors",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/authors/{**catch-all}",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "authors-api-root-write": {
+        "ClusterId": "authors",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/authors",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "authors-export": {
+        "ClusterId": "authors",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": -1,
+        "Match": {
+          "Path": "/api/authors/export",
+          "Methods": [
+            "GET"
+          ]
+        }
+      },
+      "authors-enrich": {
+        "ClusterId": "authors",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": -1,
+        "Match": {
+          "Path": "/api/authors/enrich",
+          "Methods": [
+            "GET"
+          ]
+        }
+      },
+      "authors-api": {
+        "ClusterId": "authors",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/authors/{**catch-all}"
+        }
+      },
+      "authors-api-root": {
+        "ClusterId": "authors",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/authors"
+        }
+      },
+      "authors-swagger": {
+        "ClusterId": "authors",
+        "Match": {
+          "Path": "/authors/swagger/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/swagger/{**catch-all}"
+          }
+        ]
+      },
+      "bookings-api": {
+        "ClusterId": "bookings",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/bookings/{**catch-all}"
+        }
+      },
+      "bookings-api-root": {
+        "ClusterId": "bookings",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/bookings"
+        }
+      },
+      "bookings-swagger": {
+        "ClusterId": "bookings",
+        "Match": {
+          "Path": "/bookings/swagger/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/swagger/{**catch-all}"
+          }
+        ]
+      },
+      "orders-api": {
+        "ClusterId": "workers",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/orders/{**catch-all}"
+        }
+      },
+      "orders-api-root": {
+        "ClusterId": "workers",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/orders"
+        }
+      },
+      "workers-swagger": {
+        "ClusterId": "workers",
+        "Match": {
+          "Path": "/workers/swagger/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/swagger/{**catch-all}"
+          }
+        ]
+      },
+      "messaging-api-write": {
+        "ClusterId": "messaging",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/messaging/{**catch-all}",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "messaging-api": {
+        "ClusterId": "messaging",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/messaging/{**catch-all}"
+        }
+      },
+      "messaging-api-root": {
+        "ClusterId": "messaging",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/messaging"
+        }
+      },
+      "relations-api-write": {
+        "ClusterId": "messaging",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/relations/{**catch-all}",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "relations-api-root-write": {
+        "ClusterId": "messaging",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/relations",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "relations-api": {
+        "ClusterId": "messaging",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/relations/{**catch-all}"
+        }
+      },
+      "relations-api-root": {
+        "ClusterId": "messaging",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/relations"
+        }
+      },
+      "messaging-swagger": {
+        "ClusterId": "messaging",
+        "Match": {
+          "Path": "/messaging/swagger/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/swagger/{**catch-all}"
+          }
+        ]
+      },
+      "cache-api-write": {
+        "ClusterId": "cache",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/cache/{**catch-all}",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "cache-api-root-write": {
+        "ClusterId": "cache",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 0,
+        "Match": {
+          "Path": "/api/cache",
+          "Methods": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      },
+      "cache-api": {
+        "ClusterId": "cache",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/cache/{**catch-all}"
+        }
+      },
+      "cache-api-root": {
+        "ClusterId": "cache",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/cache"
+        }
+      },
+      "cache-swagger": {
+        "ClusterId": "cache",
+        "Match": {
+          "Path": "/cache/swagger/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/swagger/{**catch-all}"
+          }
+        ]
+      },
+      "auth-api": {
+        "ClusterId": "auth",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/auth/{**catch-all}"
+        }
+      },
+      "auth-api-root": {
+        "ClusterId": "auth",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/auth"
+        }
+      },
+      "auth-swagger": {
+        "ClusterId": "auth",
+        "Match": {
+          "Path": "/auth/swagger/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/swagger/{**catch-all}"
+          }
+        ]
+      },
+      "admin-api": {
+        "ClusterId": "admin",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/admin/{**catch-all}"
+        }
+      },
+      "admin-api-root": {
+        "ClusterId": "admin",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/admin"
+        }
+      },
+      "admin-swagger": {
+        "ClusterId": "admin",
+        "Match": {
+          "Path": "/admin/swagger/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/swagger/{**catch-all}"
+          }
+        ]
+      }
+    },
+    "Clusters": {
+      "books": {
+        "Destinations": {
+          "primary": {
+            "Address": "http://localhost:5203/"
+          }
+        }
+      },
+      "categories": {
+        "Destinations": {
+          "primary": {
+            "Address": "http://localhost:5204/"
+          }
+        }
+      },
+      "messaging": {
+        "Destinations": {
+          "primary": {
+            "Address": "http://localhost:5205/"
+          }
+        }
+      },
+      "cache": {
+        "Destinations": {
+          "primary": {
+            "Address": "http://localhost:5206/"
+          }
+        }
+      },
+      "authors": {
+        "Destinations": {
+          "primary": {
+            "Address": "http://localhost:5207/"
+          }
+        }
+      },
+      "bookings": {
+        "Destinations": {
+          "primary": {
+            "Address": "http://localhost:5208/"
+          }
+        }
+      },
+      "workers": {
+        "Destinations": {
+          "primary": {
+            "Address": "http://localhost:5209/"
+          }
+        }
+      },
+      "auth": {
+        "Destinations": {
+          "primary": {
+            "Address": "http://localhost:5210/"
+          }
+        }
+      },
+      "admin": {
+        "Destinations": {
+          "primary": {
+            "Address": "http://localhost:5211/"
+          }
+        }
+      }
+    }
+  }
+}

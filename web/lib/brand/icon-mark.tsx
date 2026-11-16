@@ -15,6 +15,7 @@ type IconMarkProps = {
 /**
  * Geometric open-book mark + sage spine + brand accent dot.
  * Flex-only layout for `next/og` ImageResponse compatibility.
+ * Inline `style={{}}` is required (Satori); do not convert to styled-components.
  */
 export function IconMark({ size }: IconMarkProps) {
   const pad = Math.round(size * 0.14);

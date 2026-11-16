@@ -1,4 +1,4 @@
-export type HttpStatusCode = 401 | 404 | 500 | 502 | 503;
+export type HttpStatusCode = 401 | 404 | 429 | 500 | 502 | 503;
 
 export type HttpStatusAction = {
   href: string;
@@ -37,6 +37,17 @@ export const HTTP_STATUS_COPY: Record<HttpStatusCode, HttpStatusCopy> = {
       { href: "/books", label: "Katalóg kníh" },
     ],
   },
+  429: {
+    code: 429,
+    eyebrow: "429 · príliš veľa požiadaviek",
+    title: "Spomaľ na chvíľu",
+    description:
+      "Prekročil si limit požiadaviek. Počkaj niekoľko sekúnd a skús to znova — katalóg sa o chvíľu uvoľní.",
+    actions: [
+      { href: "/", label: "Domov", primary: true },
+      { href: "/books", label: "Skúsiť katalóg" },
+    ],
+  },
   500: {
     code: 500,
     eyebrow: "500 · vnútorná chyba",
@@ -73,5 +84,12 @@ export const HTTP_STATUS_COPY: Record<HttpStatusCode, HttpStatusCopy> = {
 };
 
 export function isHttpStatusCode(value: number): value is HttpStatusCode {
-  return value === 401 || value === 404 || value === 500 || value === 502 || value === 503;
+  return (
+    value === 401 ||
+    value === 404 ||
+    value === 429 ||
+    value === 500 ||
+    value === 502 ||
+    value === 503
+  );
 }

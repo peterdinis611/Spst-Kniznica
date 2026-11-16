@@ -1,4 +1,5 @@
 import type { CoverMotif } from "@/lib/catalog";
+import { AccentFillDiv, AccentGradient } from "@/components/styled/primitives";
 
 type BookCoverProps = {
   title: string;
@@ -17,15 +18,14 @@ export function BookCover({
   className = "",
 }: BookCoverProps) {
   return (
-    <div
+    <AccentGradient
+      $from={accent}
+      $to={shade(accent, -28)}
       className={`relative overflow-hidden rounded-[1.1rem] shadow-[0_16px_36px_rgba(26,23,20,0.14)] ${className}`}
-      style={{
-        background: `linear-gradient(160deg, ${accent} 0%, ${shade(accent, -28)} 100%)`,
-      }}
     >
-      <div
+      <AccentFillDiv
+        $color={secondary}
         className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full opacity-20"
-        style={{ background: secondary }}
       />
       <div className="relative flex h-full flex-col justify-between p-4 text-[color:var(--paper)]">
         <p className="font-display text-lg leading-tight md:text-xl">{title}</p>
@@ -33,7 +33,7 @@ export function BookCover({
           <p className="text-xs tracking-[0.04em] opacity-80">{author}</p>
         ) : null}
       </div>
-    </div>
+    </AccentGradient>
   );
 }
 

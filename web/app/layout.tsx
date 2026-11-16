@@ -7,6 +7,7 @@ import { AuthProvider } from "@/components/auth/AuthProvider";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { ServerStatusBanner } from "@/components/server-status-banner";
 import { ScrollToTopLazy } from "@/components/scroll-to-top-lazy";
+import { StyledComponentsRegistry } from "@/components/styled/registry";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { SileoToaster } from "@/components/toast/SileoToaster";
 import { libraryJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
@@ -134,23 +135,25 @@ export default function RootLayout({
       >
         <SkipToContent />
         <JsonLd data={[libraryJsonLd(), websiteJsonLd()]} />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <AbilityProvider>
-              <LiveAnnouncerProvider>
-                <ServerStatusBanner />
-                {children}
-                <ScrollToTopLazy />
-                <SileoToaster />
-              </LiveAnnouncerProvider>
-            </AbilityProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <StyledComponentsRegistry>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthProvider>
+              <AbilityProvider>
+                <LiveAnnouncerProvider>
+                  <ServerStatusBanner />
+                  {children}
+                  <ScrollToTopLazy />
+                  <SileoToaster />
+                </LiveAnnouncerProvider>
+              </AbilityProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </StyledComponentsRegistry>
       </body>
     </html>
   );

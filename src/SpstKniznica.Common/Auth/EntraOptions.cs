@@ -27,7 +27,7 @@ public sealed class EntraOptions
     /// <summary>
     /// Development only. When true and the access token has no Admin/Librarian
     /// app roles yet, inject staff roles so local /admin works before Azure
-    /// role assignment is finished.
+    /// role assignment is finished. Defaults to false — opt in explicitly.
     /// </summary>
     public bool GrantStaffInDevelopment { get; set; }
 

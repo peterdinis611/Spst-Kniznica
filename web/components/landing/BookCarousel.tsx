@@ -14,6 +14,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows } from "@react-three/drei";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { TransparentCanvasRoot } from "@/components/styled/primitives";
 import type { CarouselBook } from "@/lib/catalog";
 import { BookMesh, wrappedOffset } from "./BookMesh";
 
@@ -204,23 +205,24 @@ export function BookCarousel({ books }: BookCarouselProps) {
         onPointerDown={onPointerDown}
         aria-hidden
       >
-        <Canvas
-          shadows
-          dpr={[1, 1.5]}
-          camera={{ position: [0, 0.15, 5.6], fov: 34 }}
-          gl={{ antialias: true, alpha: true }}
-          style={{ background: "transparent", width: "100%", height: "100%" }}
-        >
-          <Suspense fallback={null}>
-            <AutoSpin enabled={!dragging && !selected} onTick={onAutoTick} />
-            <CarouselScene
-              books={books}
-              progress={progress}
-              onSelect={handleSelect}
-              dragMoved={dragMoved}
-            />
-          </Suspense>
-        </Canvas>
+        <TransparentCanvasRoot>
+          <Canvas
+            shadows
+            dpr={[1, 1.5]}
+            camera={{ position: [0, 0.15, 5.6], fov: 34 }}
+            gl={{ antialias: true, alpha: true }}
+          >
+            <Suspense fallback={null}>
+              <AutoSpin enabled={!dragging && !selected} onTick={onAutoTick} />
+              <CarouselScene
+                books={books}
+                progress={progress}
+                onSelect={handleSelect}
+                dragMoved={dragMoved}
+              />
+            </Suspense>
+          </Canvas>
+        </TransparentCanvasRoot>
       </div>
 
       <div

@@ -21,6 +21,9 @@ public sealed class BookingCopySyncHostedService(
         var kafka = options.Value;
         if (!kafka.Enabled)
         {
+            logger.LogWarning(
+                "Kafka is disabled — booking copy status will not sync into BookService. " +
+                "Enable Kafka:Enabled for denormalized availability updates.");
             return Task.CompletedTask;
         }
 

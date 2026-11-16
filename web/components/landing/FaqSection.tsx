@@ -1,4 +1,8 @@
 import Link from "next/link";
+import {
+  AnimationDelayedDetails,
+  DotGridOverlay,
+} from "@/components/styled/primitives";
 
 const faqs = [
   {
@@ -34,15 +38,10 @@ export function FaqSection() {
       className="relative z-10 border-t border-rule bg-paper"
       aria-labelledby="faq-heading"
     >
-      <div
+      <DotGridOverlay
         aria-hidden
+        $size="18px 18px"
         className="pointer-events-none absolute inset-0 opacity-[0.035] dark:opacity-[0.05]"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
-          backgroundSize: "18px 18px",
-          color: "var(--ink)",
-        }}
       />
 
       <div className="relative mx-auto grid w-full min-w-0 max-w-6xl gap-8 px-4 py-12 sm:gap-10 sm:px-6 sm:py-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14 lg:px-8 lg:py-20">
@@ -71,10 +70,10 @@ export function FaqSection() {
 
         <div className="divide-y divide-rule border-y border-rule dark:divide-white/10 dark:border-white/10">
           {faqs.map((item, index) => (
-            <details
+            <AnimationDelayedDetails
               key={item.q}
               className="group faq-item py-1"
-              style={{ animationDelay: `${index * 0.04}s` }}
+              $delay={`${index * 0.04}s`}
             >
               <summary className="flex cursor-pointer list-none items-start justify-between gap-4 py-5 text-left outline-none marker:content-none focus-visible:ring-2 focus-visible:ring-sage/40 [&::-webkit-details-marker]:hidden">
                 <span className="font-display text-lg leading-snug text-ink sm:text-xl">
@@ -96,7 +95,7 @@ export function FaqSection() {
               <p className="max-w-xl pb-5 pl-9 text-sm leading-relaxed text-muted-foreground sm:pl-11 sm:text-[15px] sm:leading-7">
                 {item.a}
               </p>
-            </details>
+            </AnimationDelayedDetails>
           ))}
         </div>
       </div>

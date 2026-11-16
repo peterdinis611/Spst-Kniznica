@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { KeyRound } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { RuleDotGrid } from "@/components/styled/primitives";
 import { cn } from "@/lib/utils";
 
 type NoticeTone = "sign-in" | "forbidden";
@@ -115,14 +116,7 @@ function NotAuthorizedFrame({
           )}
         />
         <div className="not-auth-ambient-delayed absolute -right-16 bottom-0 h-40 w-40 rounded-full bg-gradient-to-tr from-sage/20 to-transparent blur-3xl dark:from-mint/10" />
-        <div
-          className="absolute inset-0 opacity-[0.35] dark:opacity-[0.2]"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--rule) 55%, transparent) 1px, transparent 0)",
-            backgroundSize: "22px 22px",
-          }}
-        />
+        <RuleDotGrid className="absolute inset-0 opacity-[0.35] dark:opacity-[0.2]" />
       </div>
 
       <div

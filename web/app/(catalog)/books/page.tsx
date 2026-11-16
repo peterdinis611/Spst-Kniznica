@@ -22,9 +22,9 @@ export const metadata: Metadata = buildPageMetadata({
 async function BooksPageContent() {
   await connection();
   const [booksResult, categoriesResult, authorsResult] = await Promise.all([
-    searchBooksAction({ page: 1, pageSize: 100 }),
-    searchCategoriesAction({ page: 1, pageSize: 100 }),
-    searchAuthorsAction({ page: 1, pageSize: 100 }),
+    searchBooksAction({ page: 1, pageSize: 24 }),
+    searchCategoriesAction({ page: 1, pageSize: 40 }),
+    searchAuthorsAction({ page: 1, pageSize: 40 }),
   ]);
 
   const shelfZones = shelfZonesFromShelfCodes(

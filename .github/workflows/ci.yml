@@ -60,3 +60,33 @@ jobs:
 
       - name: Test
         run: npm test
+
+  e2e:
+    name: E2E smoke (Playwright / Next only)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke E2E
+        # Next-only: no gateway/microservices in CI yet.
+        # Local full-stack: ./start.sh && PLAYWRIGHT_NO_WEB_SERVER=1 PLAYWRIGHT_REQUIRE_GATEWAY=1 npm run test:e2e
+        run: npm run test:e2e -- e2e/smoke.spec.ts
+        env:
+          CI: "true"
+          PLAYWRIGHT_REQUIRE_GATEWAY: "0"

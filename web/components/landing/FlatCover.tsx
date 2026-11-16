@@ -1,3 +1,4 @@
+import { AccentFill, AccentGradient } from "@/components/styled/primitives";
 import { cn } from "@/lib/utils";
 
 type FlatCoverProps = {
@@ -16,14 +17,13 @@ export function FlatCover({
   className,
 }: FlatCoverProps) {
   return (
-    <div
+    <AccentGradient
+      $from={accent}
+      $to={shade(accent, -28)}
       className={cn(
         "relative flex aspect-[2/3] w-full flex-col justify-between overflow-hidden p-4 text-white shadow-[8px_12px_0_rgba(11,11,11,0.12)]",
         className,
       )}
-      style={{
-        background: `linear-gradient(160deg, ${accent} 0%, ${shade(accent, -28)} 100%)`,
-      }}
     >
       <div
         aria-hidden
@@ -37,13 +37,13 @@ export function FlatCover({
           {author}
         </p>
       ) : (
-        <span
+        <AccentFill
           aria-hidden
+          $color={secondary}
           className="relative mt-auto h-8 w-8 rounded-full"
-          style={{ background: secondary }}
         />
       )}
-    </div>
+    </AccentGradient>
   );
 }
 

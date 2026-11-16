@@ -24,6 +24,7 @@ import {
 } from "@/lib/catalog/catalog-url";
 import { searchBooksCursorAction } from "@/lib/catalog/actions";
 import type { CatalogAuthor, CatalogBook, CatalogCategory } from "@/lib/catalog";
+import { VirtualList, VirtualRow } from "@/components/styled/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
@@ -278,10 +279,10 @@ export function BooksCatalog({
           resetHref="/books"
         />
       ) : (
-        <ul
+        <VirtualList
           ref={gridRef}
           className="relative mt-8 pb-16"
-          style={{ height: virtualizer.getTotalSize() }}
+          $height={virtualizer.getTotalSize()}
           aria-busy={isPending || undefined}
           aria-label="Výsledky kníh"
         >
@@ -289,22 +290,20 @@ export function BooksCatalog({
             const book = results[virtualItem.index];
             if (!book) return null;
             return (
-              <li
+              <VirtualRow
                 key={book.id}
                 data-index={virtualItem.index}
                 ref={virtualizer.measureElement}
                 className="absolute top-0 p-1.5 sm:p-2 md:p-2.5"
-                style={{
-                  width: `${100 / columns}%`,
-                  left: `${(virtualItem.lane * 100) / columns}%`,
-                  transform: `translateY(${virtualItem.start - scrollMargin}px)`,
-                }}
+                $start={virtualItem.start - scrollMargin}
+                $widthPct={100 / columns}
+                $leftPct={(virtualItem.lane * 100) / columns}
               >
                 <BookCard book={book} index={virtualItem.index} />
-              </li>
+              </VirtualRow>
             );
           })}
-        </ul>
+        </VirtualList>
       )}
 
       <CatalogLoadMore

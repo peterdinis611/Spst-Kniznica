@@ -74,6 +74,9 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   poweredByHeader: false,
   compress: true,
+  compiler: {
+    styledComponents: true,
+  },
   experimental: {
     optimizePackageImports: [
       "lucide-react",
@@ -86,6 +89,7 @@ const nextConfig: NextConfig = {
       "react-admin",
       "@mui/material",
       "@mui/icons-material",
+      "styled-components",
     ],
   },
   turbopack: {

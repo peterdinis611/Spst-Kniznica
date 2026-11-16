@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FlatCover } from "@/components/landing/FlatCover";
+import { AccentFill } from "@/components/styled/primitives";
 import type { CarouselBook } from "@/lib/catalog";
 
 type HeroSectionProps = {
@@ -67,10 +68,10 @@ export function HeroSection({ books }: HeroSectionProps) {
         <div className="reveal reveal-delay-4 mt-8 flex items-center gap-3 sm:mt-10">
           <div className="flex shrink-0 -space-x-2">
             {["#FFE500", "#FF5C33", "#8FA888", "#1F4E8C"].map((color) => (
-              <span
+              <AccentFill
                 key={color}
+                $color={color}
                 className="size-8 rounded-full border-2 border-paper sm:size-9"
-                style={{ background: color }}
                 aria-hidden
               />
             ))}

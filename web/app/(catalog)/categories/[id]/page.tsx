@@ -9,6 +9,7 @@ import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { AccentFill } from "@/components/styled/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buildBooksCatalogHref } from "@/lib/catalog/catalog-url";
@@ -101,9 +102,9 @@ async function CategoryDetailContent({
 
       <div className="mt-2 border-t border-rule pt-8 sm:mt-4 sm:pt-10">
         <div className="flex flex-wrap items-center gap-2">
-          <span
+          <AccentFill
+            $color={category.accent}
             className="size-2.5 shrink-0 rounded-full"
-            style={{ background: category.accent }}
             aria-hidden
           />
           <Badge className="rounded-none border border-sage/30 bg-mint/50 px-3 py-1 font-mono text-[10px] tracking-[0.12em] text-sage uppercase hover:bg-mint/50 dark:border-sage/35 dark:bg-paper-deep">

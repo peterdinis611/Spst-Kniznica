@@ -9,6 +9,7 @@ const SKIP_REDIRECT_PREFIXES = [
   "/health",
 ];
 
+/** Hard redirects for gateway / auth outages. 429 stays soft (toast) — page exists for manual use. */
 const GATEWAY_STATUSES = new Set([401, 502, 503]);
 
 /** Client helper — open dedicated status page for known HTTP errors. */
@@ -39,7 +40,7 @@ export function shouldRedirectToStatusPage(
   if (shouldSkipPath(apiPath)) return false;
 
   const current = window.location.pathname;
-  if (/^\/(401|404|500|502|503)(\/|$)/.test(current)) return false;
+  if (/^\/(401|404|429|500|502|503)(\/|$)/.test(current)) return false;
 
   return true;
 }

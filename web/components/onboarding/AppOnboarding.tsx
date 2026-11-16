@@ -9,6 +9,7 @@ import {
   Library,
   Search,
 } from "lucide-react";
+import { AnimationDelayedLi } from "@/components/styled/primitives";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -108,13 +109,13 @@ export function AppOnboarding({ className }: { className?: string }) {
       <div className="reveal reveal-delay-1 mt-8 overflow-hidden rounded-sm border border-rule bg-card/80 shadow-[0_24px_48px_-36px_rgba(14,26,36,0.2)] dark:border-white/12 dark:bg-surface-3/80 dark:shadow-none">
         <ol className="divide-y divide-rule dark:divide-white/10">
           {steps.map((step, index) => (
-            <li
+            <AnimationDelayedLi
               key={step.n}
               className={cn(
                 "group/step relative grid gap-4 px-5 py-6 sm:grid-cols-[4.5rem_1fr_auto] sm:items-center sm:gap-5 sm:px-6 sm:py-7",
                 "transition-colors hover:bg-paper-deep/50 dark:hover:bg-paper-deep/40",
               )}
-              style={{ animationDelay: `${0.06 + index * 0.07}s` }}
+              $delay={`${0.06 + index * 0.07}s`}
             >
               <div className="flex items-center gap-3 sm:flex-col sm:items-start sm:gap-3">
                 <span
@@ -161,7 +162,7 @@ export function AppOnboarding({ className }: { className?: string }) {
                   aria-hidden
                 />
               </Link>
-            </li>
+            </AnimationDelayedLi>
           ))}
         </ol>
       </div>

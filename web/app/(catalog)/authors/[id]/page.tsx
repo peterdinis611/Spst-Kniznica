@@ -10,6 +10,7 @@ import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { AccentFillDiv } from "@/components/styled/primitives";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -113,17 +114,16 @@ async function AuthorDetailContent({
 
       <div className="mt-2 grid gap-10 border-t border-rule pt-8 sm:mt-4 sm:pt-10 lg:grid-cols-[minmax(8rem,11rem)_1fr] lg:items-start lg:gap-14">
         <div className="lg:sticky lg:top-8">
-          <Avatar
-            className="mx-auto size-28 shadow-[0_28px_56px_-40px_rgba(14,26,36,0.5)] sm:size-32 lg:mx-0"
-            style={{ background: author.accent }}
+          <AccentFillDiv
+            $color={author.accent}
+            className="mx-auto size-28 overflow-hidden rounded-full shadow-[0_28px_56px_-40px_rgba(14,26,36,0.5)] sm:size-32 lg:mx-0"
           >
-            <AvatarFallback
-              className="bg-transparent font-display text-4xl text-white sm:text-5xl"
-              style={{ background: author.accent }}
-            >
-              {author.name.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+            <Avatar className="size-full bg-transparent">
+              <AvatarFallback className="bg-transparent font-display text-4xl text-white sm:text-5xl">
+                {author.name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          </AccentFillDiv>
         </div>
 
         <div className="min-w-0">

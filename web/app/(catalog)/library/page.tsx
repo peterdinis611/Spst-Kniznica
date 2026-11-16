@@ -17,8 +17,8 @@ export const metadata: Metadata = buildPageMetadata({
 async function LibraryContent() {
   await connection();
   const [bookingsResult, booksResult] = await Promise.all([
-    searchBookingsAction({ page: 1, pageSize: 100 }),
-    searchBooksAction({ page: 1, pageSize: 100 }),
+    searchBookingsAction({ page: 1, pageSize: 24 }),
+    searchBooksAction({ page: 1, pageSize: 24 }),
   ]);
 
   const catalog = (booksResult?.data?.items ?? []).map((item) => ({

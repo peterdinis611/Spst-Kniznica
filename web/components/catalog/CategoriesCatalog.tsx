@@ -16,6 +16,11 @@ import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import { searchCategoriesCursorAction } from "@/lib/catalog/actions";
 import type { CatalogCategory } from "@/lib/catalog";
+import {
+  AccentFillDiv,
+  VirtualList,
+  VirtualRow,
+} from "@/components/styled/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -148,10 +153,10 @@ export function CategoriesCatalog({
           resetLabel="Resetovať"
         />
       ) : (
-        <ul
+        <VirtualList
           ref={gridRef}
           className="relative mt-6 border-t border-rule pb-20 dark:border-white/10"
-          style={{ height: virtualizer.getTotalSize() }}
+          $height={virtualizer.getTotalSize()}
           aria-busy={isPending || undefined}
           aria-label="Zoznam kategórií"
         >
@@ -161,17 +166,15 @@ export function CategoriesCatalog({
             const index = virtualItem.index;
             const featured = index === 0;
             return (
-              <li
+              <VirtualRow
                 key={category.id}
                 id={category.id}
                 data-index={virtualItem.index}
                 ref={virtualizer.measureElement}
                 className="absolute top-0 border-b border-rule dark:border-white/10"
-                style={{
-                  width: `${100 / lanes}%`,
-                  left: `${(virtualItem.lane * 100) / lanes}%`,
-                  transform: `translateY(${virtualItem.start - scrollMargin}px)`,
-                }}
+                $start={virtualItem.start - scrollMargin}
+                $widthPct={100 / lanes}
+                $leftPct={(virtualItem.lane * 100) / lanes}
               >
                 <Link
                   href={`/categories/${category.id}`}
@@ -187,12 +190,12 @@ export function CategoriesCatalog({
                     {String(index + 1).padStart(2, "0")}
                   </span>
 
-                  <div
+                  <AccentFillDiv
+                    $color={category.accent}
                     className={cn(
                       "relative shrink-0",
                       featured ? "h-2 w-24 sm:h-24 sm:w-2" : "h-1.5 w-16",
                     )}
-                    style={{ background: category.accent }}
                     aria-hidden
                   />
 
@@ -223,10 +226,10 @@ export function CategoriesCatalog({
                     </span>
                   </div>
                 </Link>
-              </li>
+              </VirtualRow>
             );
           })}
-        </ul>
+        </VirtualList>
       )}
 
       <CatalogLoadMore

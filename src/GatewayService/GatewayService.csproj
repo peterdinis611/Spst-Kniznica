@@ -20,4 +20,11 @@
     <ProjectReference Include="..\SpstKniznica.Common\SpstKniznica.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="reverse-proxy.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
+

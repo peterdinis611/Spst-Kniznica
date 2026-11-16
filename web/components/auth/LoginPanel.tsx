@@ -97,11 +97,11 @@ export function LoginPanel() {
 
         {wantsAdmin && !user.isStaff ? (
           <p className="mt-4 border border-stair-1/35 bg-stair-1/10 px-3 py-2 text-sm text-ink">
-            Účet ešte nemá rolu administrátora alebo knižníka. Po reštarte
-            služieb s{" "}
+            Účet ešte nemá rolu administrátora alebo knižníka. Lokálne môžeš
+            dočasne zapnúť{" "}
             <code className="font-mono text-xs">GrantStaffInDevelopment</code>{" "}
-            by mal stačiť odhlásiť → prihlásiť. V Azure: App roles → priraď{" "}
-            <strong>Admin</strong> (administrátor).
+            (opt-in) a odhlásiť → prihlásiť, alebo v Azure priraď App role{" "}
+            <strong>Admin</strong>.
           </p>
         ) : null}
 

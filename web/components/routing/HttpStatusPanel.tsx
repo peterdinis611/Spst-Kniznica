@@ -7,6 +7,7 @@ import {
   ArrowRight,
   BookMarked,
   CloudOff,
+  Gauge,
   KeyRound,
   RotateCcw,
   ServerCrash,
@@ -19,6 +20,7 @@ import {
   HTTP_STATUS_COPY,
   type HttpStatusCode,
 } from "@/lib/routing/http-status";
+import { RuleDotGrid } from "@/components/styled/primitives";
 import { apiUrl } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 
@@ -80,6 +82,7 @@ const iconShow = {
 const ICONS: Record<HttpStatusCode, LucideIcon> = {
   401: KeyRound,
   404: BookMarked,
+  429: Gauge,
   500: ServerCrash,
   502: Unplug,
   503: CloudOff,
@@ -199,14 +202,7 @@ export function HttpStatusPanel({
         </p>
         <div className="not-auth-ambient absolute -top-20 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-gradient-to-b from-accent/35 via-mint/15 to-transparent blur-3xl" />
         <div className="not-auth-ambient-delayed absolute -right-20 bottom-4 h-44 w-44 rounded-full bg-gradient-to-tr from-sage/25 to-transparent blur-3xl dark:from-mint/12" />
-        <div
-          className="absolute inset-0 opacity-[0.32] dark:opacity-[0.18]"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--rule) 55%, transparent) 1px, transparent 0)",
-            backgroundSize: "22px 22px",
-          }}
-        />
+        <RuleDotGrid className="absolute inset-0 opacity-[0.32] dark:opacity-[0.18]" />
       </div>
 
       <div

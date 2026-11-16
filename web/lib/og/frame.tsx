@@ -25,7 +25,11 @@ function badgeColor(tone: OgBadge["tone"]) {
   return ogTheme.paperMuted;
 }
 
-/** JSX for `ImageResponse` — every multi-child node uses `display: flex`. */
+/**
+ * JSX for `ImageResponse` (Satori).
+ * Must keep inline `style={{}}` — styled-components / classNames are not supported.
+ * Every multi-child node uses `display: flex`.
+ */
 export function OgFrame({
   variant = "list",
   eyebrow,

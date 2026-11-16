@@ -19,6 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { DotGridOverlay } from "@/components/styled/primitives";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -231,15 +232,10 @@ export function SiteHeader() {
             showCloseButton={false}
             className="w-[min(100%,22rem)] gap-0 border-l border-rule bg-paper p-0 shadow-[-18px_0_40px_rgba(0,0,0,0.18)] dark:border-white/10 dark:shadow-[-18px_0_40px_rgba(0,0,0,0.55)]"
           >
-            <div
+            <DotGridOverlay
               aria-hidden
+              $size="14px 14px"
               className="pointer-events-none absolute inset-0 opacity-[0.035] dark:opacity-[0.05]"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
-                backgroundSize: "14px 14px",
-                color: "var(--ink)",
-              }}
             />
 
             <SheetHeader className="relative border-b border-rule px-5 py-5 dark:border-white/10">

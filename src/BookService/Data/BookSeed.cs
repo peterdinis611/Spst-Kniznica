@@ -24,8 +24,19 @@ public static class BookSeed
         }
 
         Console.WriteLine("[BookSeed] Seeding {0} books…", missing.Count);
-        db.Books.AddRange(missing);
-        await db.SaveChangesAsync(cancellationToken);
+        try
+        {
+            db.Books.AddRange(missing);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            // Clear tracked entities so the host can continue serving requests.
+            db.ChangeTracker.Clear();
+            Console.Error.WriteLine("[BookSeed] Failed: {0}", ex.Message);
+            throw;
+        }
+
         Console.WriteLine(
             "[BookSeed] Total books: {0}.",
             await db.Books.CountAsync(cancellationToken));

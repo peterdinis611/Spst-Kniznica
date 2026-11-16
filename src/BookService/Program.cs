@@ -81,7 +81,15 @@ try
         async (db, ct) =>
         {
             await BookIntegrationsSchema.EnsureAsync(db, ct);
-            await BookSeed.EnsureSeededAsync(db);
+            try
+            {
+                await BookSeed.EnsureSeededAsync(db, ct);
+            }
+            catch (Exception ex)
+            {
+                // Seed must never take down the whole catalog API (502 cascade).
+                Log.Warning(ex, "BookSeed failed — service continues without seed data");
+            }
         });
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();

@@ -15,18 +15,33 @@ public sealed class DevelopmentAuthHandler(
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var identity = new ClaimsIdentity(
-            [
-                new Claim(ClaimTypes.NameIdentifier, "dev-admin"),
-                new Claim(ClaimTypes.Name, "Dev Admin"),
-                new Claim(ClaimTypes.Email, "admin@spst.local"),
-                new Claim("preferred_username", "admin@spst.local"),
-                new Claim(ClaimTypes.Role, AppRoles.Admin),
-                new Claim(ClaimTypes.Role, AppRoles.Librarian),
-                new Claim(ClaimTypes.Role, AppRoles.Reader),
-            ],
-            SchemeName);
+        // Default local principal is a reader. Opt into staff with SPST_DEV_ADMIN=1.
+        var elevate =
+            string.Equals(
+                Environment.GetEnvironmentVariable("SPST_DEV_ADMIN"),
+                "1",
+                StringComparison.Ordinal)
+            || string.Equals(
+                Environment.GetEnvironmentVariable("SPST_DEV_ADMIN"),
+                "true",
+                StringComparison.OrdinalIgnoreCase);
 
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, elevate ? "dev-admin" : "dev-reader"),
+            new(ClaimTypes.Name, elevate ? "Dev Admin" : "Dev Reader"),
+            new(ClaimTypes.Email, elevate ? "admin@spst.local" : "reader@spst.local"),
+            new("preferred_username", elevate ? "admin@spst.local" : "reader@spst.local"),
+            new(ClaimTypes.Role, AppRoles.Reader),
+        };
+
+        if (elevate)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, AppRoles.Librarian));
+            claims.Add(new Claim(ClaimTypes.Role, AppRoles.Admin));
+        }
+
+        var identity = new ClaimsIdentity(claims, SchemeName);
         var principal = new ClaimsPrincipal(identity);
         var ticket = new AuthenticationTicket(principal, SchemeName);
         return Task.FromResult(AuthenticateResult.Success(ticket));

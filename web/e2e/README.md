@@ -5,9 +5,21 @@ Lightweight smoke tests against the Next.js app. They intentionally **do not** r
 ## What is covered
 
 - `/books` — catalog heading and search (when Book API responds)
-- `/401`, `/404` — Slovak status copy
+- `/401`, `/404`, `/429` — Slovak status copy
+- Optional gateway probe (`/health`, `/health/ready`) when the stack is up
+- Mobile Chrome project runs the smoke suite on a Pixel 7 viewport
 
-Full **reserve → checkout** flows need the whole stack (`./start.sh` or Docker + gateway on port 5200) and **DevAuth** / staff login — not exercised here.
+## Gaps (documented)
+
+CI runs **Next-only** smoke (Playwright starts `npm run dev`). It does **not** boot the .NET gateway or microservices. Catalog data may show the offline error page.
+
+Full-stack checks locally:
+
+```bash
+./start.sh --detach
+./scripts/ci-gateway-smoke.sh
+cd web && PLAYWRIGHT_NO_WEB_SERVER=1 PLAYWRIGHT_REQUIRE_GATEWAY=1 npm run test:e2e
+```
 
 ## Run locally
 
@@ -15,23 +27,7 @@ Full **reserve → checkout** flows need the whole stack (`./start.sh` or Docker
 cd web
 npm install
 npx playwright install chromium   # once per machine
-```
-
-Either let Playwright start Next (`npm run dev` via `playwright.config.ts`):
-
-```bash
 npm run test:e2e
-```
-
-Or run the app yourself and reuse the server:
-
-```bash
-# from repo root
-./start.sh
-# or: cd web && npm run dev
-
-cd web
-PLAYWRIGHT_NO_WEB_SERVER=1 npm run test:e2e
 ```
 
 UI mode:
@@ -39,7 +35,3 @@ UI mode:
 ```bash
 npm run test:e2e:ui
 ```
-
-## CI
-
-Set `CI=true` if you want a fresh dev server (no reuse). Skip starting the server entirely with `PLAYWRIGHT_NO_WEB_SERVER=1` when nothing listens on port 3000 — tests that need `/books` data may show the offline error page instead of the full catalog shell.
