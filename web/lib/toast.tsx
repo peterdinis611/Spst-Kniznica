@@ -1,15 +1,6 @@
-import {
-  AlertTriangle,
-  BookMarked,
-  CheckCircle2,
-  Info,
-  LoaderCircle,
-  Sparkles,
-  XCircle,
-  type LucideIcon,
-} from "lucide-react";
-import { createElement, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { sileo, type SileoOptions, type SileoPosition } from "sileo";
+import { toastIcons } from "@/lib/toast-icons";
 
 export type {
   SileoButton,
@@ -18,6 +9,8 @@ export type {
   SileoState,
   SileoStyles,
 } from "sileo";
+export { toastIcons, toastSvg } from "@/lib/toast-icons";
+export type { ToastIconName } from "@/lib/toast-icons";
 
 export { sileo };
 
@@ -33,16 +26,9 @@ const FILL = {
 type ToastInput = Omit<SileoOptions, "title" | "description" | "icon"> & {
   title: string;
   description?: ReactNode | string;
+  /** Vlastná SVG / React ikona v badge. `null` skryje ikonu. */
   icon?: ReactNode | null;
 };
-
-function badgeIcon(Icon: LucideIcon, spin = false): ReactNode {
-  return createElement(Icon, {
-    className: spin ? "size-3.5 animate-spin" : "size-3.5",
-    strokeWidth: 2.4,
-    "aria-hidden": true,
-  });
-}
 
 function withDefaults(
   input: ToastInput,
@@ -70,7 +56,7 @@ function success(input: ToastInput) {
   return sileo.success(
     withDefaults(input, {
       fill: FILL.sage,
-      icon: badgeIcon(CheckCircle2),
+      icon: toastIcons.success,
       styles: {
         title: "text-[#f7f3ea]!",
         description: "text-[#f7f3ea]/80!",
@@ -85,7 +71,7 @@ function error(input: ToastInput) {
     withDefaults(input, {
       fill: FILL.rose,
       duration: 7000,
-      icon: badgeIcon(XCircle),
+      icon: toastIcons.error,
       styles: {
         title: "text-[#f7f3ea]!",
         description: "text-[#f7f3ea]/85!",
@@ -99,7 +85,7 @@ function warning(input: ToastInput) {
   return sileo.warning(
     withDefaults(input, {
       fill: FILL.clay,
-      icon: badgeIcon(AlertTriangle),
+      icon: toastIcons.warning,
       styles: {
         title: "text-[#0e1a24]!",
         description: "text-[#0e1a24]/75!",
@@ -113,7 +99,7 @@ function info(input: ToastInput) {
   return sileo.info(
     withDefaults(input, {
       fill: FILL.sky,
-      icon: badgeIcon(Info),
+      icon: toastIcons.info,
       styles: {
         title: "text-[#f7f3ea]!",
         description: "text-[#f7f3ea]/80!",
@@ -127,7 +113,7 @@ function library(input: ToastInput) {
   return sileo.show(
     withDefaults(input, {
       fill: FILL.ink,
-      icon: badgeIcon(BookMarked),
+      icon: toastIcons.library,
       styles: {
         title: "text-[#f7f3ea]!",
         description: "text-[#f7f3ea]/75!",
@@ -146,7 +132,7 @@ function action(
     withDefaults(input, {
       fill: FILL.ink,
       duration: null,
-      icon: badgeIcon(Sparkles),
+      icon: toastIcons.action,
       styles: {
         title: "text-[#f7f3ea]!",
         description: "text-[#f7f3ea]/75!",
@@ -180,7 +166,7 @@ function promise<T>(
     loading: withDefaults(messages.loading, {
       fill: FILL.ink,
       duration: null,
-      icon: badgeIcon(LoaderCircle, true),
+      icon: toastIcons.loading,
       styles: {
         title: "text-[#f7f3ea]!",
         description: "text-[#f7f3ea]/70!",
@@ -190,7 +176,7 @@ function promise<T>(
     success: (data) =>
       withDefaults(resolveMessage(messages.success, data), {
         fill: FILL.sage,
-        icon: badgeIcon(CheckCircle2),
+        icon: toastIcons.success,
         styles: {
           title: "text-[#f7f3ea]!",
           description: "text-[#f7f3ea]/80!",
@@ -201,7 +187,7 @@ function promise<T>(
       withDefaults(resolveMessage(messages.error, err), {
         fill: FILL.rose,
         duration: 7000,
-        icon: badgeIcon(XCircle),
+        icon: toastIcons.error,
         styles: {
           title: "text-[#f7f3ea]!",
           description: "text-[#f7f3ea]/85!",
@@ -211,7 +197,7 @@ function promise<T>(
   });
 }
 
-/** Brandované toast API pre SPST knižnicu. */
+/** Brandované toast API pre SPST knižnicu (SVG ikony v badge). */
 export const toast = {
   success,
   error,

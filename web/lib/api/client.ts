@@ -171,9 +171,7 @@ async function apiRequest<T>(
       credentials: isBrowser ? "same-origin" : init?.credentials,
     });
   } catch {
-    if (handleStatusNavigation(502, path, skipStatusRedirect)) {
-      await new Promise<never>(() => undefined);
-    }
+    handleStatusNavigation(502, path, skipStatusRedirect);
     throw new ApiHttpError(
       502,
       path,
@@ -186,7 +184,12 @@ async function apiRequest<T>(
   }
 
   if (handleStatusNavigation(response.status, path, skipStatusRedirect)) {
-    await new Promise<never>(() => undefined);
+    // Client hard-nav already started; throw instead of hanging the UI forever.
+    throw new ApiHttpError(
+      response.status,
+      path,
+      await readErrorMessage(response, path),
+    );
   }
 
   if (!response.ok) {

@@ -23,5 +23,7 @@ export {
 } from "./categories";
 export {
   lookupBookCopyAction,
+  updateBookCopyStatusAction,
   type BookCopyLookup,
+  type BookCopyStatusUpdate,
 } from "./copies";

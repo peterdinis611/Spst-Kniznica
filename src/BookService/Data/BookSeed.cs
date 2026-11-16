@@ -132,7 +132,8 @@ public static class BookSeed
             UpdatedAt = now,
         };
 
-        var shortId = id.ToString("N")[..8].ToUpperInvariant();
+        // Last 8 hex chars distinguish sequential seed book ids (shared c3333333… prefix).
+        var shortId = id.ToString("N")[^8..].ToUpperInvariant();
         foreach (var (status, index) in copies)
         {
             book.Copies.Add(new BookCopy
@@ -152,11 +153,24 @@ public static class BookSeed
         return book;
     }
 
+    /// <summary>
+    /// Stable per-(book, index) id. Must not clobber the book GUID suffix — seed book
+    /// ids only differ in the last bytes, so overwriting them caused EF tracking collisions.
+    /// </summary>
     private static Guid CreateCopyId(Guid bookId, int index)
     {
         var bytes = bookId.ToByteArray();
-        bytes[15] = (byte)index;
-        bytes[14] = (byte)(bytes[14] ^ 0xA5);
+        unchecked
+        {
+            var mix = (uint)(index * unchecked((int)0x9E3779B9));
+            bytes[0] ^= (byte)mix;
+            bytes[1] ^= (byte)(mix >> 8);
+            bytes[2] ^= (byte)(mix >> 16);
+            bytes[3] ^= (byte)(mix >> 24);
+            bytes[8] ^= (byte)(0xC0 ^ index);
+            bytes[9] ^= (byte)(0xFF ^ (index << 2));
+        }
+
         return new Guid(bytes);
     }
 }

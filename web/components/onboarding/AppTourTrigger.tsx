@@ -22,9 +22,10 @@ export function AppTourTrigger() {
       className="hidden h-10 rounded-full border-rule px-3 text-xs font-semibold tracking-wide sm:inline-flex dark:border-white/25"
       onClick={() => startAppTour()}
       aria-label="Spustiť prehliadku aplikácie"
+      title="Prehliadka"
     >
       <Sparkles className="size-3.5 text-sage" aria-hidden />
-      Prehliadka
+      <span className="hidden xl:inline">Prehliadka</span>
     </Button>
   );
 }

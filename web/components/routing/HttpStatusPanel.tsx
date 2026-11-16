@@ -1,7 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   BookMarked,
@@ -18,7 +19,11 @@ import {
   HTTP_STATUS_COPY,
   type HttpStatusCode,
 } from "@/lib/routing/http-status";
+import { apiUrl } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
+
+const RECOVERABLE = new Set<HttpStatusCode>([502, 503]);
+const RECOVERY_POLL_MS = 4_000;
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
@@ -104,7 +109,56 @@ export function HttpStatusPanel({
   onRetry,
   retryLabel = "Skúsiť znova",
 }: HttpStatusPanelProps) {
+  const router = useRouter();
   const reduceMotion = useReducedMotion();
+  const [recovering, setRecovering] = useState(false);
+  const canRecover = RECOVERABLE.has(code);
+  const recoverHref = homeHref ?? "/";
+
+  const goHome = useCallback(() => {
+    router.replace(recoverHref);
+  }, [recoverHref, router]);
+
+  const probeAndRecover = useCallback(async () => {
+    if (!canRecover) return false;
+    setRecovering(true);
+    try {
+      const response = await fetch(apiUrl("/health"), {
+        method: "GET",
+        cache: "no-store",
+      });
+      if (response.ok) {
+        goHome();
+        return true;
+      }
+    } catch {
+      // still down
+    } finally {
+      setRecovering(false);
+    }
+    return false;
+  }, [canRecover, goHome]);
+
+  useEffect(() => {
+    if (!canRecover) return;
+
+    let cancelled = false;
+    const tick = async () => {
+      if (cancelled) return;
+      const ok = await probeAndRecover();
+      if (!ok && !cancelled) {
+        window.setTimeout(tick, RECOVERY_POLL_MS);
+      }
+    };
+    void tick();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [canRecover, probeAndRecover]);
+
+  const handleRetry = onRetry ?? (canRecover ? () => void probeAndRecover() : undefined);
+
   const base = HTTP_STATUS_COPY[code];
   const copy = {
     ...base,
@@ -222,6 +276,16 @@ export function HttpStatusPanel({
           {copy.description}
         </motion.p>
 
+        {canRecover ? (
+          <motion.p
+            className="mt-3 font-mono text-[11px] tracking-[0.18em] text-muted-foreground uppercase"
+            variants={reduceMotion ? undefined : item}
+            aria-live="polite"
+          >
+            {recovering ? "Kontrolujem API…" : "Automaticky skúšam znova"}
+          </motion.p>
+        ) : null}
+
         <motion.div
           className="mx-auto mt-9 h-px max-w-xs origin-center bg-gradient-to-r from-transparent via-rule to-transparent dark:via-white/15"
           variants={reduceMotion ? undefined : line}
@@ -231,18 +295,23 @@ export function HttpStatusPanel({
           className="mt-9 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
           variants={reduceMotion ? undefined : item}
         >
-          {onRetry ? (
+          {handleRetry ? (
             <button
               type="button"
-              onClick={onRetry}
-              className="split-cta group border border-ink bg-paper transition hover:-translate-y-0.5 dark:border-white/25 dark:bg-surface-2"
+              onClick={handleRetry}
+              disabled={recovering}
+              className="split-cta group border border-ink bg-paper text-ink transition hover:-translate-y-0.5 disabled:opacity-60 dark:border-white/35 dark:bg-surface-2"
             >
-              <span className="flex items-center gap-2 px-6 py-3.5 text-sm font-semibold tracking-wide text-ink">
-                <RotateCcw className="size-4" strokeWidth={2} aria-hidden />
+              <span className="flex items-center gap-2 px-6 py-3.5 text-sm font-semibold tracking-wide">
+                <RotateCcw
+                  className={cn("size-4", recovering && "animate-spin")}
+                  strokeWidth={2}
+                  aria-hidden
+                />
                 {retryLabel}
               </span>
-              <span className="flex items-center justify-center bg-ink px-4 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground dark:bg-white dark:text-ink dark:group-hover:bg-mint dark:group-hover:text-ink">
-                <ArrowRight className="size-4" strokeWidth={2} aria-hidden />
+              <span className="flex items-center justify-center bg-[#0e1a24] px-4 text-[#f7f3ea] transition group-hover:bg-accent group-hover:text-accent-foreground dark:bg-[#f0ebe3] dark:text-[#0e1a24] dark:group-hover:bg-accent dark:group-hover:text-accent-foreground">
+                <ArrowRight className="size-4" strokeWidth={2.2} aria-hidden />
               </span>
             </button>
           ) : null}
@@ -250,20 +319,20 @@ export function HttpStatusPanel({
           {copy.actions.map((action) => {
             const href =
               action.primary && primaryHref ? primaryHref : action.href;
-            const isPrimary = Boolean(action.primary) && !onRetry;
+            const isPrimary = Boolean(action.primary) && !handleRetry;
 
             if (isPrimary) {
               return (
                 <Link
                   key={action.label}
                   href={href}
-                  className="split-cta group border border-ink bg-paper transition hover:-translate-y-0.5 dark:border-white/25 dark:bg-surface-2"
+                  className="split-cta group border border-ink bg-paper text-ink transition hover:-translate-y-0.5 dark:border-white/35 dark:bg-surface-2"
                 >
-                  <span className="flex items-center px-6 py-3.5 text-sm font-semibold tracking-wide text-ink">
+                  <span className="flex items-center px-6 py-3.5 text-sm font-semibold tracking-wide">
                     {action.label}
                   </span>
-                  <span className="flex items-center justify-center bg-ink px-4 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground dark:bg-white dark:text-ink dark:group-hover:bg-mint dark:group-hover:text-ink">
-                    <ArrowRight className="size-4" strokeWidth={2} aria-hidden />
+                  <span className="flex items-center justify-center bg-[#0e1a24] px-4 text-[#f7f3ea] transition group-hover:bg-accent group-hover:text-accent-foreground dark:bg-[#f0ebe3] dark:text-[#0e1a24] dark:group-hover:bg-accent dark:group-hover:text-accent-foreground">
+                    <ArrowRight className="size-4" strokeWidth={2.2} aria-hidden />
                   </span>
                 </Link>
               );
@@ -273,12 +342,12 @@ export function HttpStatusPanel({
               <Link
                 key={action.label}
                 href={href}
-                className="group inline-flex items-center gap-2 border border-rule bg-transparent px-5 py-3.5 text-sm font-semibold tracking-wide text-ink transition hover:-translate-y-0.5 hover:border-accent/50 hover:bg-accent/5 dark:border-white/15 dark:hover:border-mint/40 dark:hover:bg-mint/5"
+                className="group inline-flex items-center gap-2 border border-rule bg-transparent px-5 py-3.5 text-sm font-semibold tracking-wide text-ink transition hover:-translate-y-0.5 hover:border-accent/50 hover:bg-accent/5 dark:border-white/30 dark:text-[#f0ebe3] dark:hover:border-accent dark:hover:bg-accent/10"
               >
                 {action.label}
                 <ArrowRight
                   className="size-4 transition-transform group-hover:translate-x-0.5"
-                  strokeWidth={2}
+                  strokeWidth={2.2}
                   aria-hidden
                 />
               </Link>

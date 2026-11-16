@@ -146,6 +146,7 @@ public static class RateLimitingServiceCollectionExtensions
     private static bool IsExemptPath(PathString path)
         => path.StartsWithSegments("/health")
            || path.StartsWithSegments("/swagger")
+           || path.StartsWithSegments("/api/auth/config")
            || path.Value?.EndsWith("/swagger/v1/swagger.json", StringComparison.OrdinalIgnoreCase) == true;
 
     private static string GetClientKey(HttpContext httpContext)

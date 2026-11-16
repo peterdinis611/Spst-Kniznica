@@ -182,28 +182,30 @@ export function SiteHeader() {
   return (
     <header
       role="banner"
-      className="reveal relative z-20 mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5 sm:gap-4 sm:px-6 md:px-8 md:py-7"
+      className="reveal relative z-20 mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-5 sm:gap-4 sm:px-6 md:px-8 md:py-7"
     >
-      <BrandLogo />
+      <div className="shrink-0">
+        <BrandLogo />
+      </div>
 
       <Suspense
         fallback={
           <nav
-            className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 xl:gap-8 lg:flex"
+            className="hidden min-w-0 flex-1 items-center justify-center gap-4 overflow-x-auto lg:flex xl:gap-6"
             aria-hidden
           >
             {links.map((link) => (
-              <span key={link.href} className="text-sm text-ink/50">
+              <span key={link.href} className="shrink-0 text-sm text-ink/50">
                 {link.label}
               </span>
             ))}
           </nav>
         }
       >
-        <DesktopNav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 xl:gap-8 lg:flex" />
+        <DesktopNav className="hidden min-w-0 flex-1 items-center justify-center gap-4 overflow-x-auto lg:flex xl:gap-6 [&_a]:shrink-0" />
       </Suspense>
 
-      <div className="flex items-center gap-2">
+      <div className="relative z-10 flex shrink-0 items-center gap-2">
         <AppTourTrigger />
         <ThemeToggle />
         <AuthNavCluster />
