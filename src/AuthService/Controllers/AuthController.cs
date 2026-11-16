@@ -1,7 +1,7 @@
 using AuthService.DTOs;
+using AuthService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using SpstKniznica.Common.Auth;
 
 namespace AuthService.Controllers;
@@ -9,27 +9,36 @@ namespace AuthService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class AuthController(IOptions<EntraOptions> entraOptions) : ControllerBase
+public class AuthController(IAuthSettingsProvider settings) : ControllerBase
 {
     [HttpGet("config")]
     [AllowAnonymous]
-    public ActionResult<AuthConfigDto> Config()
+    [ProducesResponseType(typeof(AuthConfigDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AuthConfigDto>> Config(CancellationToken cancellationToken)
+        => Ok(await settings.GetPublicConfigAsync(cancellationToken));
+
+    [HttpGet("settings")]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
+    [ProducesResponseType(typeof(AuthSettingsDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AuthSettingsDto>> GetSettings(CancellationToken cancellationToken)
+        => Ok(await settings.GetSettingsAsync(cancellationToken));
+
+    [HttpPut("settings")]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
+    [ProducesResponseType(typeof(AuthSettingsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<AuthSettingsDto>> UpdateSettings(
+        [FromBody] UpdateAuthSettingsRequest request,
+        CancellationToken cancellationToken)
     {
-        var entra = entraOptions.Value;
-        return Ok(new AuthConfigDto
+        try
         {
-            Enabled = entra.Enabled,
-            TenantId = entra.TenantId,
-            ClientId = entra.ClientId,
-            Audience = string.IsNullOrWhiteSpace(entra.Audience)
-                ? (string.IsNullOrWhiteSpace(entra.ClientId) ? string.Empty : $"api://{entra.ClientId}")
-                : entra.Audience,
-            ApiScope = string.IsNullOrWhiteSpace(entra.ApiScope) && !string.IsNullOrWhiteSpace(entra.ClientId)
-                ? $"api://{entra.ClientId}/access_as_user"
-                : entra.ApiScope,
-            Authority = entra.Enabled ? entra.Authority : string.Empty,
-            RedirectUriHint = "http://localhost:3000/login",
-        });
+            return Ok(await settings.SaveOverridesAsync(request, cancellationToken));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { detail = ex.Message });
+        }
     }
 
     [HttpGet("me")]

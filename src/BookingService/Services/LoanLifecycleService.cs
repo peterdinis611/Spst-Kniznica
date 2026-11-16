@@ -10,6 +10,7 @@ public sealed class LoanLifecycleService(
     IUnitOfWork unitOfWork,
     IAppCache cache,
     IIntegrationEventPublisher eventPublisher,
+    ILoanNotificationSender notificationSender,
     ILoanPolicyProvider loanPolicy,
     WaitlistService waitlist,
     IBookCatalogLookup bookCatalog,
@@ -83,13 +84,22 @@ public sealed class LoanLifecycleService(
             await unitOfWork.SaveChangesAsync(cancellationToken);
             await cache.RemoveAsync(CacheKeys.Booking(tracked.Id), cancellationToken);
 
-            // Email transport is not wired yet — structured log acts as the notification hook.
-            logger.LogInformation(
-                "Due reminder for booking {BookingId} to {Email} due {DueDate:o} (book {BookId})",
+            var message = new LoanNotificationMessage(
                 tracked.Id,
+                tracked.BookId,
                 tracked.BorrowerEmail,
-                tracked.DueDate,
-                tracked.BookId);
+                tracked.BorrowerName,
+                tracked.DueDate);
+
+            await eventPublisher.PublishAsync(
+                new LoanDueReminderEvent(
+                    tracked.Id,
+                    tracked.BookId,
+                    tracked.BorrowerName,
+                    tracked.BorrowerEmail,
+                    tracked.DueDate),
+                cancellationToken);
+            await notificationSender.SendDueReminderAsync(message, cancellationToken);
 
             reminded.Add(tracked.Id);
         }
@@ -146,6 +156,23 @@ public sealed class LoanLifecycleService(
                 booking.Status.ToString(),
                 booking.DueDate),
             cancellationToken);
+
+        var notify = new LoanNotificationMessage(
+            booking.Id,
+            booking.BookId,
+            booking.BorrowerEmail,
+            booking.BorrowerName,
+            booking.DueDate);
+
+        await eventPublisher.PublishAsync(
+            new WaitlistPickupReadyEvent(
+                booking.Id,
+                booking.BookId,
+                booking.BorrowerName,
+                booking.BorrowerEmail,
+                booking.DueDate),
+            cancellationToken);
+        await notificationSender.SendWaitlistPromotionAsync(notify, cancellationToken);
 
         logger.LogInformation(
             "Promoted waitlist for book {BookId} → {Email} as booking {BookingId}",

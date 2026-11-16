@@ -6,6 +6,7 @@ export type AuthConfig = {
   apiScope: string;
   authority: string;
   redirectUriHint: string;
+  loginNotice?: string | null;
 };
 
 export type AuthUser = {

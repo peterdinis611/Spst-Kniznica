@@ -1,3 +1,7 @@
+using AuthService.Data;
+using AuthService.Options;
+using AuthService.Services;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
@@ -28,7 +32,18 @@ try
         builder.Configuration,
         builder.Environment,
         requireAuthenticatedByDefault: true);
-    builder.Services.AddHealthChecks();
+
+    builder.Services.Configure<AuthPresentationOptions>(
+        builder.Configuration.GetSection(AuthPresentationOptions.SectionName));
+
+    builder.Services.AddDbContext<AuthDbContext>(options =>
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .ConfigureSpstMigrations());
+
+    builder.Services.AddScoped<IAuthSettingsProvider, AuthSettingsProvider>();
+
+    builder.Services.AddHealthChecks()
+        .AddDbContextCheck<AuthDbContext>("database");
 
     var app = builder.Build();
 
@@ -36,6 +51,8 @@ try
         "Starting AuthService in {Environment}; Entra enabled={Enabled}",
         app.Environment.EnvironmentName,
         app.Configuration.GetValue("Entra:Enabled", false));
+
+    await app.Services.MigrateSpstDatabaseAsync<AuthDbContext>("AuthService");
 
     app.UseSpstRequestLogging();
     app.UseSpstCors();

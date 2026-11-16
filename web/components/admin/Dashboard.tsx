@@ -30,7 +30,19 @@ const TOOL_LINKS = [
   { to: "/tools/orders", label: "Fronta úloh" },
   { to: "/tools/links", label: "Odkazy" },
   { to: "/tools/account", label: "Účet" },
+  { to: "/tools/waitlist", label: "Čakací zoznam" },
+  { to: "/tools/loan-policy", label: "Pravidlá výpožičiek" },
+  { to: "/tools/auth-settings", label: "Prihlasovanie" },
 ] as const;
+
+const ATTENTION_SECTION_LABEL: Record<
+  "overdue" | "dueSoon" | "pickup",
+  string
+> = {
+  overdue: "Po termíne",
+  dueSoon: "Blíži sa termín",
+  pickup: "Na vyzdvihnutie",
+};
 
 function CatalogWidgets({ data }: { data: AdminOverview }) {
   const tiles = [
@@ -147,7 +159,8 @@ function AttentionList({ data }: { data: AdminOverview }) {
           Pozornosť
         </p>
         <p className="text-sm text-muted-foreground">
-          Žiadne po termíne ani blížiace sa termíny.
+          Žiadne položky na vyzdvihnutie, po termíne ani s blížiacim sa
+          termínom.
         </p>
       </section>
     );
@@ -159,7 +172,7 @@ function AttentionList({ data }: { data: AdminOverview }) {
         id="admin-attention-heading"
         className="mb-3 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
       >
-        Pozornosť · po termíne / blížiace sa termíny
+        Pozornosť · vyzdvihnutie / termíny
       </p>
       <ul
         className="divide-y divide-rule border border-rule dark:divide-white/10 dark:border-white/10"
@@ -167,6 +180,11 @@ function AttentionList({ data }: { data: AdminOverview }) {
       >
         {data.attention.map((item) => {
           const status = normalizeBookingStatus(item.status) as BookingStatusCode;
+          const section = item.section;
+          const sectionLabel =
+            section && section in ATTENTION_SECTION_LABEL
+              ? ATTENTION_SECTION_LABEL[section]
+              : null;
           return (
             <li key={item.id}>
               <Button
@@ -182,7 +200,17 @@ function AttentionList({ data }: { data: AdminOverview }) {
                 }}
               >
                 <span className="min-w-0">
-                  <span className="block truncate font-display text-lg text-ink">
+                  {item.bookTitle ? (
+                    <span className="block truncate font-display text-lg text-ink">
+                      {item.bookTitle}
+                    </span>
+                  ) : null}
+                  <span
+                    className={cn(
+                      "block truncate font-display text-ink",
+                      item.bookTitle ? "text-base" : "text-lg",
+                    )}
+                  >
                     {item.borrowerName}
                   </span>
                   <span className="block truncate font-mono text-[11px] text-muted-foreground">
@@ -190,14 +218,29 @@ function AttentionList({ data }: { data: AdminOverview }) {
                   </span>
                 </span>
                 <span className="shrink-0 text-right font-mono text-[11px]">
-                  <span
-                    className={cn(
-                      "block uppercase tracking-wide",
-                      status === 4 ? "text-stair-2" : "text-muted-foreground",
-                    )}
-                  >
-                    {BOOKING_STATUS_LABEL[status]}
-                  </span>
+                  {sectionLabel ? (
+                    <span
+                      className={cn(
+                        "block uppercase tracking-wide",
+                        section === "overdue"
+                          ? "text-stair-2"
+                          : section === "pickup"
+                            ? "text-sage"
+                            : "text-muted-foreground",
+                      )}
+                    >
+                      {sectionLabel}
+                    </span>
+                  ) : (
+                    <span
+                      className={cn(
+                        "block uppercase tracking-wide",
+                        status === 4 ? "text-stair-2" : "text-muted-foreground",
+                      )}
+                    >
+                      {BOOKING_STATUS_LABEL[status]}
+                    </span>
+                  )}
                   <span className="block tabular-nums text-muted-foreground">
                     {new Date(item.dueDate).toLocaleString("sk-SK")}
                   </span>

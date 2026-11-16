@@ -251,9 +251,16 @@ export async function apiPatch<T>(
   path: string,
   body?: unknown,
   init?: RequestInit,
+  accessToken?: string | null,
   options?: ApiRequestOptions,
 ): Promise<T> {
-  return apiRequest<T>(path, { ...init, method: "PATCH" }, body, undefined, options);
+  return apiRequest<T>(
+    path,
+    { ...init, method: "PATCH" },
+    body,
+    accessToken,
+    options,
+  );
 }
 
 export async function apiDelete<T = void>(

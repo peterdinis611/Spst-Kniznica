@@ -70,6 +70,9 @@ public sealed class BookingAttentionDto
 {
     public Guid Id { get; init; }
     public Guid BookId { get; init; }
+    public string? BookTitle { get; init; }
+    /// <summary>overdue | dueSoon | pickup</summary>
+    public string? Section { get; init; }
     public string BorrowerName { get; init; } = string.Empty;
     public string BorrowerEmail { get; init; } = string.Empty;
     public int Status { get; init; }

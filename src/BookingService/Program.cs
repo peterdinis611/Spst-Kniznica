@@ -66,6 +66,7 @@ try
     builder.Services.AddScoped<WaitlistService>();
     builder.Services.AddScoped<FavoritesService>();
     builder.Services.AddScoped<SchoolCalendarService>();
+    builder.Services.AddSingleton<ILoanNotificationSender, LoggingLoanNotificationSender>();
     builder.Services.AddScoped<LoanLifecycleService>();
     builder.Services.AddScoped<IBookingService, BookingAppService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();

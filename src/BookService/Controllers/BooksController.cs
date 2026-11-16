@@ -170,6 +170,40 @@ public class BooksController(
     }
 
     /// <summary>
+    /// Staff: set copy status to available, lost, or maintenance (not borrowed/reserved).
+    /// </summary>
+    [HttpPatch("{bookId:guid}/copies/{copyId:guid}")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(typeof(UpdateBookCopyStatusResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<UpdateBookCopyStatusResult>> UpdateCopyStatus(
+        Guid bookId,
+        Guid copyId,
+        [FromBody] UpdateBookCopyStatusRequest request,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation(
+            "Updating copy {CopyId} on book {BookId} to status {Status}",
+            copyId,
+            bookId,
+            request.Status);
+        var result = await books.UpdateCopyStatusAsync(bookId, copyId, request, cancellationToken);
+        audit.StaffAction(User, "book.copy.status", "BookCopy", copyId.ToString(), new
+        {
+            bookId,
+            copyId,
+            status = request.Status,
+            result.AvailableCopies,
+        });
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Get a book including all physical copies (barcode / inventory number).
     /// </summary>
     [HttpGet("{id:guid}")]

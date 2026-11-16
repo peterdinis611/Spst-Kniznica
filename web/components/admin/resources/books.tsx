@@ -37,6 +37,7 @@ import {
   SectionTitle,
   StockField,
 } from "@/components/admin/shared";
+import { BookCopyStatusActions } from "@/components/admin/BookCopyStatusActions";
 import { IsbnLookupButton } from "@/components/admin/IsbnLookupButton";
 import { ServerExportButtons } from "@/components/admin/ServerExportButtons";
 
@@ -89,6 +90,26 @@ export const BookList = () => (
 function BookTitle() {
   const record = useRecordContext();
   return <span>{record?.title ? `Kniha · ${record.title}` : "Kniha"}</span>;
+}
+
+function BookCopiesGrid() {
+  const book = useRecordContext();
+  const bookId = book?.id != null ? String(book.id) : "";
+  return (
+    <ArrayField source="copies" label={false}>
+      <Datagrid bulkActionButtons={false} rowClick={false}>
+        <TextField source="inventoryNumber" label="Inventárne č." />
+        <TextField source="barcode" label="Čiarový kód" emptyText="—" />
+        <SelectField
+          source="status"
+          choices={COPY_STATUS_CHOICES}
+          label="Stav"
+        />
+        <TextField source="shelfLocation" label="Polica" emptyText="—" />
+        <BookCopyStatusActions bookId={bookId} />
+      </Datagrid>
+    </ArrayField>
+  );
 }
 
 const BookForm = () => (
@@ -172,18 +193,7 @@ export const BookShow = () => (
       <Typography variant="overline" color="text.secondary">
         Exempláre (inventár)
       </Typography>
-      <ArrayField source="copies" label={false}>
-        <Datagrid bulkActionButtons={false} rowClick={false}>
-          <TextField source="inventoryNumber" label="Inventárne č." />
-          <TextField source="barcode" label="Čiarový kód" emptyText="—" />
-          <SelectField
-            source="status"
-            choices={COPY_STATUS_CHOICES}
-            label="Stav"
-          />
-          <TextField source="shelfLocation" label="Polica" emptyText="—" />
-        </Datagrid>
-      </ArrayField>
+      <BookCopiesGrid />
       <Divider sx={{ my: 2 }} />
       <Typography variant="overline" color="text.secondary">
         Rezervácie

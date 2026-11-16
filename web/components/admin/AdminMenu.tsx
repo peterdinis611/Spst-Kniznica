@@ -13,6 +13,7 @@ import DnsIcon from "@mui/icons-material/Dns";
 import LinkIcon from "@mui/icons-material/Link";
 import PolicyIcon from "@mui/icons-material/Policy";
 import HourglassTopIcon from "@mui/icons-material/HourglassTop";
+import LockIcon from "@mui/icons-material/Lock";
 
 export function AdminMenu() {
   return (
@@ -73,6 +74,11 @@ export function AdminMenu() {
         to="/tools/links"
         primaryText="Odkazy"
         leftIcon={<LinkIcon />}
+      />
+      <Menu.Item
+        to="/tools/auth-settings"
+        primaryText="Auth nastavenia"
+        leftIcon={<LockIcon />}
       />
       <Menu.Item
         to="/tools/account"

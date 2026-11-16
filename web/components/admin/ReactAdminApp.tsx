@@ -53,6 +53,7 @@ import { MessagingToolsPage } from "@/components/admin/tools/MessagingToolsPage"
 import { OrdersToolsPage } from "@/components/admin/tools/OrdersToolsPage";
 import { RelationsPage } from "@/components/admin/tools/RelationsPage";
 import { ServicesRegistryPage } from "@/components/admin/tools/ServicesRegistryPage";
+import { AuthSettingsPage } from "@/components/admin/tools/AuthSettingsPage";
 import { LoanPolicyPage } from "@/components/admin/tools/LoanPolicyPage";
 import { WaitlistToolsPage } from "@/components/admin/tools/WaitlistToolsPage";
 
@@ -125,6 +126,7 @@ export default function ReactAdminApp() {
         <Route path="/tools/orders" element={<OrdersToolsPage />} />
         <Route path="/tools/links" element={<LinksToolsPage />} />
         <Route path="/tools/account" element={<AccountPage />} />
+        <Route path="/tools/auth-settings" element={<AuthSettingsPage />} />
         <Route path="/tools/waitlist" element={<WaitlistToolsPage />} />
         <Route path="/tools/loan-policy" element={<LoanPolicyPage />} />
       </CustomRoutes>

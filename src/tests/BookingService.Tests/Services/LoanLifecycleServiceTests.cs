@@ -25,6 +25,7 @@ public class LoanLifecycleServiceTests : IAsyncLifetime
     private BookingDbContext _db = null!;
     private LoanLifecycleService _sut = null!;
     private RecordingEventPublisher _events = null!;
+    private RecordingLoanNotificationSender _notifications = null!;
     private IBookCatalogLookup _bookCatalog = null!;
 
     public async Task InitializeAsync()
@@ -36,8 +37,9 @@ public class LoanLifecycleServiceTests : IAsyncLifetime
         _db = new BookingDbContext(options);
         await _db.Database.EnsureCreatedAsync();
         _events = new RecordingEventPublisher();
+        _notifications = new RecordingLoanNotificationSender();
         _bookCatalog = Substitute.For<IBookCatalogLookup>();
-        _sut = CreateSut(_db, _bookCatalog, _events);
+        _sut = CreateSut(_db, _bookCatalog, _events, notifications: _notifications);
     }
 
     public async Task DisposeAsync()
@@ -121,6 +123,38 @@ public class LoanLifecycleServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task QueueDueRemindersAsync_publishes_event_and_sends_notification()
+    {
+        var policy = new LoanPolicyOptions { ReminderDaysBeforeDue = 5, SkipNonSchoolDays = false };
+        _sut = CreateSut(_db, _bookCatalog, _events, policy, _notifications);
+
+        var dueSoon = SeedBooking(status: BookingStatus.Active, dueDaysFromNow: 2);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.QueueDueRemindersAsync();
+
+        result.RemindersQueued.Should().Be(1);
+        result.ReminderBookingIds.Should().ContainSingle().Which.Should().Be(dueSoon.Id);
+        _events.Events.Should().ContainSingle(e => e is LoanDueReminderEvent);
+        _notifications.DueReminders.Should().ContainSingle()
+            .Which.BorrowerEmail.Should().Be(dueSoon.BorrowerEmail);
+    }
+
+    [Fact]
+    public async Task QueueDueRemindersAsync_skips_when_recently_reminded()
+    {
+        var booking = SeedBooking(status: BookingStatus.Active, dueDaysFromNow: 1);
+        booking.LastReminderAt = DateTimeOffset.UtcNow.AddHours(-1);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.QueueDueRemindersAsync();
+
+        result.RemindersQueued.Should().Be(0);
+        _events.Events.Should().BeEmpty();
+        _notifications.DueReminders.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task TryPromoteWaitlistAsync_skips_when_at_capacity()
     {
         var bookId = Guid.NewGuid();
@@ -172,7 +206,8 @@ public class LoanLifecycleServiceTests : IAsyncLifetime
         BookingDbContext db,
         IBookCatalogLookup bookCatalog,
         RecordingEventPublisher events,
-        LoanPolicyOptions? policy = null)
+        LoanPolicyOptions? policy = null,
+        RecordingLoanNotificationSender? notifications = null)
     {
         var repo = new BookingRepository(db);
         var uow = new UnitOfWork(db, repo);
@@ -197,6 +232,7 @@ public class LoanLifecycleServiceTests : IAsyncLifetime
             uow,
             new NullAppCache(),
             events,
+            notifications ?? new RecordingLoanNotificationSender(),
             loanPolicy,
             waitlist,
             bookCatalog,

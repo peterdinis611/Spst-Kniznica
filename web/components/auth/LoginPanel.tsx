@@ -38,8 +38,9 @@ function safeNextPath(raw: string | null): string | null {
 export function LoginPanel() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { ready, entraEnabled, user, account, login, logout, error } =
+  const { ready, entraEnabled, user, account, login, logout, error, config } =
     useAuth();
+  const loginNotice = config?.loginNotice?.trim();
   const turnstileRequired = isTurnstileConfigured();
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const onTurnstile = useCallback((token: string | null) => {
@@ -146,6 +147,15 @@ export function LoginPanel() {
           ? "Účet Microsoft ti odomkne rezerváciu kníh."
           : "Lokálny administrátor pre vývoj."}
       </p>
+
+      {loginNotice ? (
+        <p
+          className="mt-4 border border-sage/30 bg-mint/35 px-3 py-2 text-sm text-ink dark:border-accent/40 dark:bg-accent/10"
+          role="status"
+        >
+          {loginNotice}
+        </p>
+      ) : null}
 
       {error ? (
         <p

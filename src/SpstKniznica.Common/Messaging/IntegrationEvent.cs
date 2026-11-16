@@ -75,4 +75,18 @@ public sealed record BookingUpdatedEvent(
 
 public sealed record BookingDeletedEvent(Guid BookingId, Guid BookId) : IntegrationEvent;
 
+public sealed record LoanDueReminderEvent(
+    Guid BookingId,
+    Guid BookId,
+    string BorrowerName,
+    string BorrowerEmail,
+    DateTimeOffset DueDate) : IntegrationEvent;
+
+public sealed record WaitlistPickupReadyEvent(
+    Guid BookingId,
+    Guid BookId,
+    string BorrowerName,
+    string BorrowerEmail,
+    DateTimeOffset DueDate) : IntegrationEvent;
+
 public sealed record PingEvent(string Source, string Message) : IntegrationEvent;

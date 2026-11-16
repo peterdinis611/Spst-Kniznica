@@ -8,6 +8,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { ServerStatusBanner } from "@/components/server-status-banner";
 import { ScrollToTopLazy } from "@/components/scroll-to-top-lazy";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { SileoToaster } from "@/components/toast/SileoToaster";
 import { libraryJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
 import { absoluteUrl, getSiteUrl, siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -145,6 +146,7 @@ export default function RootLayout({
                 <ServerStatusBanner />
                 {children}
                 <ScrollToTopLazy />
+                <SileoToaster />
               </LiveAnnouncerProvider>
             </AbilityProvider>
           </AuthProvider>

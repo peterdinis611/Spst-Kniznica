@@ -35,9 +35,13 @@ export type BookingStats = {
   partial: boolean;
 };
 
+export type BookingAttentionSection = "overdue" | "dueSoon" | "pickup";
+
 export type BookingAttention = {
   id: string;
   bookId: string;
+  bookTitle?: string | null;
+  section?: BookingAttentionSection | null;
   borrowerName: string;
   borrowerEmail: string;
   status: number;

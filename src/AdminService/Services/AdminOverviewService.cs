@@ -108,22 +108,159 @@ public sealed class AdminOverviewService(
     private async Task<IReadOnlyList<BookingAttentionDto>> LoadAttentionAsync(
         CancellationToken cancellationToken)
     {
+        // BookingService desk/daily uses loan policy ReminderDaysBeforeDue for the due-soon window (not a fixed 3-day cutoff).
+        var desk = await downstream.GetJsonAsync<DeskDailyResponse>(
+            "Services:BookingService",
+            "http://127.0.0.1:5208",
+            "/api/bookings/desk/daily",
+            cancellationToken,
+            forwardAuth: true);
+
+        List<BookingAttentionDto> merged;
+        if (desk is not null)
+        {
+            merged = CollectDeskAttention(desk);
+        }
+        else
+        {
+            merged = await LoadAttentionFromBookingsListAsync(cancellationToken);
+        }
+
+        await EnrichBookTitlesAsync(merged, cancellationToken);
+        return merged;
+    }
+
+    private static List<BookingAttentionDto> CollectDeskAttention(DeskDailyResponse desk)
+    {
+        var ranked = new List<(BookingAttentionDto Item, int Rank)>();
+
+        foreach (var item in desk.Overdue.Take(AttentionTake))
+        {
+            ranked.Add((MapDeskItem(item, "overdue"), 0));
+        }
+
+        foreach (var item in desk.DueSoon.Take(AttentionTake))
+        {
+            ranked.Add((MapDeskItem(item, "dueSoon"), 1));
+        }
+
+        foreach (var item in desk.PickupReady.Take(AttentionTake))
+        {
+            ranked.Add((MapDeskItem(item, "pickup"), 2));
+        }
+
+        return ranked
+            .GroupBy(x => x.Item.Id)
+            .Select(g => g.MinBy(x => x.Rank).Item)
+            .OrderBy(x => SectionSortKey(x.Section))
+            .ThenBy(x => x.DueDate)
+            .Take(AttentionTake)
+            .ToList();
+    }
+
+    private static int SectionSortKey(string? section) => section switch
+    {
+        "overdue" => 0,
+        "dueSoon" => 1,
+        "pickup" => 2,
+        _ => 3,
+    };
+
+    private static BookingAttentionDto MapDeskItem(DeskBookingItem item, string section) => new()
+    {
+        Id = item.Id,
+        BookId = item.BookId,
+        BorrowerName = item.BorrowerName ?? string.Empty,
+        BorrowerEmail = item.BorrowerEmail ?? string.Empty,
+        Status = item.Status,
+        DueDate = item.DueDate,
+        Section = section,
+    };
+
+    private async Task<List<BookingAttentionDto>> LoadAttentionFromBookingsListAsync(
+        CancellationToken cancellationToken)
+    {
         var overdue = await ListBookingsAsync(status: 4, pageSize: AttentionTake, cancellationToken);
         var active = await ListBookingsAsync(status: 1, pageSize: AttentionTake, cancellationToken);
+        var reserved = await ListBookingsAsync(status: 0, pageSize: AttentionTake, cancellationToken);
 
+        // Fallback when desk/daily is unavailable — uses 3 days for due-soon (policy not reachable here).
         var now = DateTimeOffset.UtcNow;
         var dueSoon = active
             .Where(b => b.DueDate <= now.AddDays(3))
+            .Select(b => WithSection(b, "dueSoon"))
             .OrderBy(b => b.DueDate)
             .ToList();
 
-        return overdue
+        return overdue.Select(b => WithSection(b, "overdue"))
             .Concat(dueSoon)
+            .Concat(reserved.Select(b => WithSection(b, "pickup")))
             .GroupBy(b => b.Id)
             .Select(g => g.First())
-            .OrderBy(b => b.DueDate)
+            .OrderBy(b => SectionSortKey(b.Section))
+            .ThenBy(b => b.DueDate)
             .Take(AttentionTake)
             .ToList();
+    }
+
+    private static BookingAttentionDto WithSection(BookingAttentionDto source, string section) => new()
+    {
+        Id = source.Id,
+        BookId = source.BookId,
+        BookTitle = source.BookTitle,
+        BorrowerName = source.BorrowerName,
+        BorrowerEmail = source.BorrowerEmail,
+        Status = source.Status,
+        DueDate = source.DueDate,
+        Section = section,
+    };
+
+    private async Task EnrichBookTitlesAsync(
+        List<BookingAttentionDto> items,
+        CancellationToken cancellationToken)
+    {
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        var bookIds = items.Select(i => i.BookId).Distinct().ToList();
+        var titleTasks = bookIds.ToDictionary(
+            id => id,
+            id => downstream.GetJsonAsync<BookTitleResponse>(
+                "Services:BookService",
+                "http://127.0.0.1:5203",
+                $"/api/books/{id}",
+                cancellationToken,
+                forwardAuth: false));
+
+        await Task.WhenAll(titleTasks.Values);
+
+        var titles = new Dictionary<Guid, string?>();
+        foreach (var (bookId, task) in titleTasks)
+        {
+            var book = await task;
+            titles[bookId] = book?.Title;
+        }
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            var item = items[i];
+            if (titles.TryGetValue(item.BookId, out var title) && !string.IsNullOrWhiteSpace(title))
+            {
+                items[i] = new BookingAttentionDto
+                {
+                    Id = item.Id,
+                    BookId = item.BookId,
+                    BookTitle = title,
+                    Section = item.Section,
+                    BorrowerName = item.BorrowerName,
+                    BorrowerEmail = item.BorrowerEmail,
+                    Status = item.Status,
+                    DueDate = item.DueDate,
+                };
+            }
+        }
     }
 
     private Task<int?> CountAsync(
@@ -205,5 +342,27 @@ public sealed class AdminOverviewService(
         public string? BorrowerEmail { get; set; }
         public int Status { get; set; }
         public DateTimeOffset DueDate { get; set; }
+    }
+
+    private sealed class DeskDailyResponse
+    {
+        public List<DeskBookingItem> Overdue { get; set; } = [];
+        public List<DeskBookingItem> DueSoon { get; set; } = [];
+        public List<DeskBookingItem> PickupReady { get; set; } = [];
+    }
+
+    private sealed class DeskBookingItem
+    {
+        public Guid Id { get; set; }
+        public Guid BookId { get; set; }
+        public string? BorrowerName { get; set; }
+        public string? BorrowerEmail { get; set; }
+        public int Status { get; set; }
+        public DateTimeOffset DueDate { get; set; }
+    }
+
+    private sealed class BookTitleResponse
+    {
+        public string? Title { get; set; }
     }
 }

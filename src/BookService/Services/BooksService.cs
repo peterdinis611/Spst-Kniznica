@@ -127,6 +127,82 @@ public class BooksService(
         };
     }
 
+    public async Task<UpdateBookCopyStatusResult> UpdateCopyStatusAsync(
+        Guid bookId,
+        Guid copyId,
+        UpdateBookCopyStatusRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request.Status is BookCopyStatus.Borrowed or BookCopyStatus.Reserved)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["status"] =
+                [
+                    "Stavy požičaný a rezervovaný sa menia len cez výpožičky."
+                ]
+            });
+        }
+
+        var book = await unitOfWork.Books.GetByIdAsync(bookId, includeCopies: true, cancellationToken);
+        if (book is null)
+        {
+            logger.LogWarning(
+                "Update copy status failed. Book {BookId} was not found",
+                bookId);
+            throw new NotFoundException($"Book '{bookId}' was not found.");
+        }
+
+        var copy = book.Copies.FirstOrDefault(c => c.Id == copyId);
+        if (copy is null)
+        {
+            logger.LogWarning(
+                "Update copy status failed. Copy {CopyId} on book {BookId} was not found",
+                copyId,
+                bookId);
+            throw new NotFoundException($"Book copy '{copyId}' was not found on book '{bookId}'.");
+        }
+
+        var utcNow = DateTimeOffset.UtcNow;
+        if (copy.Status != request.Status)
+        {
+            copy.Status = request.Status;
+            copy.UpdatedAt = utcNow;
+            book.RecalculateCopyCounts();
+            book.UpdatedAt = utcNow;
+            unitOfWork.Books.Update(book);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var detail = MapDetail(book);
+            await cache.SetAsync(
+                CacheKeys.Book(book.Id),
+                detail,
+                TimeSpan.FromMinutes(5),
+                cancellationToken);
+
+            logger.LogInformation(
+                "Updated copy {CopyId} on book {BookId} → {CopyStatus}. AvailableCopies={AvailableCopies}",
+                copy.Id,
+                bookId,
+                request.Status,
+                book.AvailableCopies);
+        }
+
+        return new UpdateBookCopyStatusResult
+        {
+            Copy = new BookCopyDto
+            {
+                Id = copy.Id,
+                InventoryNumber = copy.InventoryNumber,
+                Barcode = copy.Barcode,
+                Status = copy.Status,
+                ShelfLocation = copy.ShelfLocation,
+            },
+            TotalCopies = book.TotalCopies,
+            AvailableCopies = book.AvailableCopies,
+        };
+    }
+
     public async Task<BookDetailDto> CreateAsync(CreateBookRequest request, CancellationToken cancellationToken = default)
     {
         var validation = await createValidator.ValidateAsync(request, cancellationToken);

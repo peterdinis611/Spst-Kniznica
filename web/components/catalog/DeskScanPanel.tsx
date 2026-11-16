@@ -14,6 +14,7 @@ import {
 } from "@/lib/bookings";
 import {
   lookupBookCopyAction,
+  updateBookCopyStatusAction,
   type BookCopyLookup,
 } from "@/lib/catalog/actions/copies";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,7 @@ export function DeskScanPanel({
   const canManage = ability.can("manage", "BookingsDesk");
 
   const lookupCopy = useAction(lookupBookCopyAction);
+  const updateCopyStatus = useAction(updateBookCopyStatusAction);
   const search = useAction(searchBookingsAction);
   const update = useAction(updateBookingAction);
 
@@ -196,6 +198,44 @@ export function DeskScanPanel({
     }
   }
 
+  async function setCopyStatus(status: 0 | 3 | 4) {
+    if (!lookup) return;
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const accessToken = await resolveToken();
+      const result = await updateCopyStatus.executeAsync({
+        accessToken: accessToken ?? undefined,
+        bookId: lookup.bookId,
+        copyId: lookup.copyId,
+        status,
+      });
+      if (result?.serverError) {
+        setError(result.serverError);
+        return;
+      }
+      if (result?.validationErrors) {
+        setError("Neplatný stav výtlačku.");
+        return;
+      }
+      if (result?.data) {
+        const next = {
+          ...lookup,
+          status: result.data.status,
+          statusLabel: result.data.statusLabel,
+        };
+        setLookup(next);
+        setMessage(
+          `Stav výtlačku: ${result.data.statusLabel} (${lookup.inventoryNumber})`,
+        );
+        onBookingsChanged?.();
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <section
       className="reveal reveal-delay-2 mt-8 border border-ink bg-paper-deep p-5 dark:border-white/15"
@@ -299,6 +339,41 @@ export function DeskScanPanel({
             >
               Vrátiť
             </Button>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-rule pt-3 dark:border-white/10">
+            {lookup.status !== 3 ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy || updateCopyStatus.isPending}
+                className="h-9 rounded-none border-stair-2 text-stair-2"
+                onClick={() => void setCopyStatus(3)}
+              >
+                Stratený
+              </Button>
+            ) : null}
+            {lookup.status !== 4 ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy || updateCopyStatus.isPending}
+                className="h-9 rounded-none border-amber-700/50 text-amber-800 dark:text-amber-200"
+                onClick={() => void setCopyStatus(4)}
+              >
+                Údržba
+              </Button>
+            ) : null}
+            {lookup.status !== 0 ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy || updateCopyStatus.isPending}
+                className="h-9 rounded-none border-sage text-sage"
+                onClick={() => void setCopyStatus(0)}
+              >
+                Obnoviť dostupný
+              </Button>
+            ) : null}
           </div>
         </div>
       ) : null}

@@ -79,6 +79,7 @@ public class BookingAppServiceTests : IAsyncLifetime
             _unitOfWork,
             new NullAppCache(),
             _events,
+            new RecordingLoanNotificationSender(),
             loanPolicy,
             waitlist,
             _bookCatalog,
