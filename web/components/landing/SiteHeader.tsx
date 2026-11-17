@@ -21,6 +21,73 @@ import {
 } from "@/components/ui/sheet";
 import { DotGridOverlay } from "@/components/styled/primitives";
 import { cn } from "@/lib/utils";
+import styled from "styled-components";
+
+const HeaderBar = styled.header`
+  position: relative;
+  z-index: 20;
+  display: flex;
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem;
+
+  @media (min-width: 640px) {
+    gap: 1rem;
+    padding-inline: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    padding-inline: 2rem;
+    padding-block: 1.75rem;
+  }
+`;
+
+const BrandSlot = styled.div`
+  flex-shrink: 0;
+  min-width: 0;
+`;
+
+const DesktopNavSlot = styled.div`
+  display: none;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  overflow-x: auto;
+
+  @media (min-width: 1280px) {
+    display: flex;
+  }
+
+  & a {
+    flex-shrink: 0;
+  }
+`;
+
+const ActionsCluster = styled.div`
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-shrink: 0;
+  margin-left: auto;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const MenuTriggerButton = styled(Button)`
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+
+  @media (min-width: 1280px) {
+    display: none;
+  }
+`;
 
 const links = [
   {
@@ -181,32 +248,26 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header
-      role="banner"
-      className="reveal relative z-20 mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-5 sm:gap-4 sm:px-6 md:px-8 md:py-7"
-    >
-      <div className="shrink-0">
+    <HeaderBar role="banner" className="reveal">
+      <BrandSlot>
         <BrandLogo />
-      </div>
+      </BrandSlot>
 
       <Suspense
         fallback={
-          <nav
-            className="hidden min-w-0 flex-1 items-center justify-center gap-4 overflow-x-auto lg:flex xl:gap-6"
-            aria-hidden
-          >
+          <DesktopNavSlot as="nav" aria-hidden>
             {links.map((link) => (
               <span key={link.href} className="shrink-0 text-sm text-ink/50">
                 {link.label}
               </span>
             ))}
-          </nav>
+          </DesktopNavSlot>
         }
       >
-        <DesktopNav className="hidden min-w-0 flex-1 items-center justify-center gap-4 overflow-x-auto lg:flex xl:gap-6 [&_a]:shrink-0" />
+        <DesktopNavSlot as={DesktopNav} />
       </Suspense>
 
-      <div className="relative z-10 flex shrink-0 items-center gap-2">
+      <ActionsCluster>
         <AppTourTrigger />
         <ThemeToggle />
         <AuthNavCluster />
@@ -214,10 +275,10 @@ export function SiteHeader() {
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger
             render={
-              <Button
+              <MenuTriggerButton
                 variant="outline"
                 size="icon"
-                className="size-10 rounded-full border-rule dark:border-white/25 dark:text-white lg:hidden"
+                className="border-rule dark:border-white/25 dark:text-white"
                 aria-label={open ? "Zavrieť menu" : "Otvoriť menu"}
                 aria-expanded={open}
                 aria-controls="mobile-nav-sheet"
@@ -295,7 +356,7 @@ export function SiteHeader() {
             </div>
           </SheetContent>
         </Sheet>
-      </div>
-    </header>
+      </ActionsCluster>
+    </HeaderBar>
   );
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { apiGet, withQuery } from "@/lib/api";
+import { apiGet, isApiHttpError, withQuery } from "@/lib/api";
 import { actionClient } from "@/lib/shared";
 import type { CursorPage, PagedResult } from "@/lib/shared";
 import { mapAuthor, type CatalogAuthor } from "../mappers";
@@ -62,7 +62,7 @@ export type SearchAuthorsCursorResult = {
 };
 
 export type GetAuthorResult = {
-  author: CatalogAuthor;
+  author: CatalogAuthor | null;
 };
 
 export const searchAuthorsAction = actionClient
@@ -128,6 +128,13 @@ export const searchAuthorsCursorAction = actionClient
 export const getAuthorAction = actionClient
   .inputSchema(getAuthorSchema)
   .action(async ({ parsedInput }): Promise<GetAuthorResult> => {
-    const author = await apiGet<AuthorDto>(`/api/authors/${parsedInput.id}`);
-    return { author: mapAuthor(author) };
+    try {
+      const author = await apiGet<AuthorDto>(`/api/authors/${parsedInput.id}`);
+      return { author: mapAuthor(author) };
+    } catch (error) {
+      if (isApiHttpError(error) && error.status === 404) {
+        return { author: null };
+      }
+      throw error;
+    }
   });

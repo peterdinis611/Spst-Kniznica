@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MainContent } from "@/components/a11y/MainContent";
 import { BrandLogo } from "@/components/brand-logo";
 import { LoginPanel } from "@/components/auth/LoginPanel";
+import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
@@ -54,7 +55,7 @@ export default function LoginPage() {
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,22rem)_1fr] lg:items-start lg:gap-16">
           <div className="lg:sticky lg:top-8">
-            <Suspense fallback={<p className="text-sm text-muted-foreground">Načítavam…</p>}>
+            <Suspense fallback={<CatalogSkeleton variant="panel" />}>
               <LoginPanel />
             </Suspense>
           </div>

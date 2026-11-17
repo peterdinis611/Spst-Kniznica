@@ -9,6 +9,7 @@ import { ResultsStatus } from "@/components/a11y/ResultsStatus";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
+import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { CatalogLoadMore } from "@/components/catalog/CatalogLoadMore";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useCatalogLaneCount } from "@/hooks/use-catalog-lane-count";
@@ -145,7 +146,11 @@ export function CategoriesCatalog({
         </CatalogChipRow>
       </div>
 
-      {results.length === 0 ? (
+      {results.length === 0 && isPending ? (
+        <div className="mt-6">
+          <CatalogSkeleton rows={5} />
+        </div>
+      ) : results.length === 0 ? (
         <CatalogEmpty
           title="Žiadna kategória"
           description="Skús iný výraz alebo vymaž vyhľadávanie."
@@ -155,7 +160,7 @@ export function CategoriesCatalog({
       ) : (
         <VirtualList
           ref={gridRef}
-          className="relative mt-6 border-t border-rule pb-20 dark:border-white/10"
+          className={`relative mt-6 border-t border-rule pb-20 transition-opacity duration-200 dark:border-white/10 ${isPending ? "opacity-55" : "opacity-100"}`}
           $height={virtualizer.getTotalSize()}
           aria-busy={isPending || undefined}
           aria-label="Zoznam kategórií"

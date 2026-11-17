@@ -12,7 +12,7 @@ export const actionClient = createSafeActionClient({
     // Expected gateway / auth / throttle failures — surface as action error, not overlay.
     if (
       isApiHttpError(error) &&
-      [401, 429, 502, 503].includes(error.status)
+      [401, 404, 429, 502, 503].includes(error.status)
     ) {
       return error.message;
     }

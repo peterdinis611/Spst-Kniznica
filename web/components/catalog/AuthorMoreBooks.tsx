@@ -29,7 +29,7 @@ export async function AuthorMoreBooks({
 
   if (books.length === 0) return null;
 
-  const catalogHref = buildBooksCatalogHref({ author: authorId });
+  const catalogHref = buildBooksCatalogHref({ authors: [authorId] });
 
   return (
     <section

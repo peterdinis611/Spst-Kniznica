@@ -6,6 +6,7 @@ import { AbilityProvider } from "@/components/auth/AbilityProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { ServerStatusBanner } from "@/components/server-status-banner";
+import { NavigationProgress } from "@/components/routing/NavigationProgress";
 import { ScrollToTopLazy } from "@/components/scroll-to-top-lazy";
 import { StyledComponentsRegistry } from "@/components/styled/registry";
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -145,6 +146,7 @@ export default function RootLayout({
             <AuthProvider>
               <AbilityProvider>
                 <LiveAnnouncerProvider>
+                  <NavigationProgress />
                   <ServerStatusBanner />
                   {children}
                   <ScrollToTopLazy />

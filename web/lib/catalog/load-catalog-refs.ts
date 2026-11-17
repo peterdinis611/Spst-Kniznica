@@ -1,3 +1,5 @@
+"use server";
+
 import { searchBooksCursorAction } from "@/lib/catalog/actions";
 
 export type CatalogBookRef = {

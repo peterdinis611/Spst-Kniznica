@@ -83,7 +83,7 @@ async function AuthorDetailContent({
     author.bookCount > 0
       ? author.bookCount
       : (booksResult?.data?.totalCount ?? books.length);
-  const booksHref = buildBooksCatalogHref({ author: author.id });
+  const booksHref = buildBooksCatalogHref({ authors: [author.id] });
 
   return (
     <>

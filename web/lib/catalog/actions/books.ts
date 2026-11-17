@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { apiGet, withQuery } from "@/lib/api";
+import { apiGet, isApiHttpError, withQuery } from "@/lib/api";
 import { actionClient } from "@/lib/shared";
 import type { CursorPage, PagedResult } from "@/lib/shared";
 import {
@@ -30,10 +30,18 @@ const optionalYear = z
   .max(2100)
   .optional();
 
+const idListSchema = z
+  .array(z.string().trim().min(1))
+  .max(40)
+  .optional()
+  .transform((value) => (value?.length ? value : undefined));
+
 const searchBooksSchema = z.object({
   search: optionalId,
   categoryId: optionalId,
+  categoryIds: idListSchema,
   authorId: optionalId,
+  authorIds: idListSchema,
   shelfLocation: optionalId,
   availableOnly: z.boolean().optional(),
   language: optionalLanguage,
@@ -45,7 +53,9 @@ const searchBooksSchema = z.object({
 const searchBooksCursorSchema = z.object({
   search: optionalId,
   categoryId: optionalId,
+  categoryIds: idListSchema,
   authorId: optionalId,
+  authorIds: idListSchema,
   shelfLocation: optionalId,
   availableOnly: z.boolean().optional(),
   language: optionalLanguage,
@@ -82,7 +92,9 @@ export const searchBooksAction = actionClient
     const {
       search,
       categoryId,
+      categoryIds,
       authorId,
+      authorIds,
       shelfLocation,
       availableOnly,
       language,
@@ -96,8 +108,10 @@ export const searchBooksAction = actionClient
         page,
         pageSize,
         search: search || undefined,
-        categoryId,
-        authorId,
+        categoryId: categoryIds?.length ? undefined : categoryId,
+        categoryIds: categoryIds?.length ? categoryIds : undefined,
+        authorId: authorIds?.length ? undefined : authorId,
+        authorIds: authorIds?.length ? authorIds : undefined,
         shelfLocation,
         availableOnly: availableOnly ? true : undefined,
         language,
@@ -121,7 +135,9 @@ export const searchBooksCursorAction = actionClient
     const {
       search,
       categoryId,
+      categoryIds,
       authorId,
+      authorIds,
       shelfLocation,
       availableOnly,
       language,
@@ -135,8 +151,10 @@ export const searchBooksCursorAction = actionClient
         limit,
         cursor,
         search: search || undefined,
-        categoryId,
-        authorId,
+        categoryId: categoryIds?.length ? undefined : categoryId,
+        categoryIds: categoryIds?.length ? categoryIds : undefined,
+        authorId: authorIds?.length ? undefined : authorId,
+        authorIds: authorIds?.length ? authorIds : undefined,
         shelfLocation,
         availableOnly: availableOnly ? true : undefined,
         language,
@@ -155,12 +173,19 @@ export const searchBooksCursorAction = actionClient
   });
 
 export type GetBookResult = {
-  book: CatalogBook;
+  book: CatalogBook | null;
 };
 
 export const getBookAction = actionClient
   .inputSchema(getBookSchema)
   .action(async ({ parsedInput }): Promise<GetBookResult> => {
-    const book = await apiGet<BookDetail>(`/api/books/${parsedInput.id}`);
-    return { book: mapBookDetail(book) };
+    try {
+      const book = await apiGet<BookDetail>(`/api/books/${parsedInput.id}`);
+      return { book: mapBookDetail(book) };
+    } catch (error) {
+      if (isApiHttpError(error) && error.status === 404) {
+        return { book: null };
+      }
+      throw error;
+    }
   });

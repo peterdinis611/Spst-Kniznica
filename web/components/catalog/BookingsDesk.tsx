@@ -13,6 +13,7 @@ import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { DeskScanPanel } from "@/components/catalog/DeskScanPanel";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
+import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import { VirtualList, VirtualRow } from "@/components/styled/primitives";
 import { Badge } from "@/components/ui/badge";
@@ -401,21 +402,21 @@ export function BookingsDesk({
 
       <Separator className="mt-8" />
 
-      {items.length === 0 ? (
+      {items.length === 0 && search.isPending ? (
+        <div className="mt-4">
+          <CatalogSkeleton rows={4} variant="desk" />
+        </div>
+      ) : items.length === 0 ? (
         <CatalogEmpty
-          title={search.isPending ? "Hľadám lístky" : "Pult je prázdny"}
-          description={
-            search.isPending
-              ? "Služba výpožičiek ešte vracia výber."
-              : "Žiadny lístok nezodpovedá filtru. Rezerváciu vystavíš na detaile knihy."
-          }
+          title="Pult je prázdny"
+          description="Žiadny lístok nezodpovedá filtru. Rezerváciu vystavíš na detaile knihy."
           resetHref="/books"
           resetLabel="Do katalógu"
         />
       ) : (
         <VirtualList
           ref={listRef}
-          className="relative mt-2"
+          className={`relative mt-2 transition-opacity duration-200 ${search.isPending ? "opacity-55" : "opacity-100"}`}
           $height={virtualizer.getTotalSize()}
           aria-label="Zoznam výpožičných lístkov"
           aria-busy={search.isPending || undefined}

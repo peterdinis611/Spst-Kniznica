@@ -18,7 +18,9 @@ import {
 } from "@/lib/bookings";
 import { apiUrl } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
+import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { WaitlistBoard } from "@/components/catalog/WaitlistBoard";
+import { useCatalogRefs } from "@/hooks/use-catalog-refs";
 
 type CatalogRef = { id: string; title: string; author: string };
 
@@ -81,10 +83,11 @@ function DeskSection({
   );
 }
 
-export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
+export function DeskDailyBoard() {
   const { user, getAccessToken, ready, entraEnabled } = useAuth();
   const ability = useAbility();
   const canManage = ability.can("manage", "BookingsDesk");
+  const { catalog } = useCatalogRefs();
   const [board, setBoard] = useState<DeskDaily | null>(null);
   const [error, setError] = useState<string | null>(null);
   const load = useAction(getDeskDailyAction);
@@ -108,7 +111,7 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
   }, [user?.isAuthenticated, canManage, entraEnabled, getAccessToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!ready) {
-    return <p className="text-sm text-muted-foreground">Načítavam…</p>;
+    return <CatalogSkeleton rows={5} variant="desk" />;
   }
 
   if (!user?.isAuthenticated) {
@@ -252,9 +255,9 @@ export function DeskDailyBoard({ catalog }: { catalog: CatalogRef[] }) {
           />
         </>
       ) : (
-        <p className="mt-6 text-sm text-muted-foreground">
-          Kontrolujem službu výpožičiek…
-        </p>
+        <div className="mt-6">
+          <CatalogSkeleton rows={4} variant="desk" />
+        </div>
       )}
     </>
   );

@@ -12,11 +12,25 @@ public class BookQueryFilter : PagedQuery
 
     public string? Title { get; set; }
     public Guid? AuthorId { get; set; }
+
+    /// <summary>
+    /// Optional multi-author filter (OR). When set, takes precedence over <see cref="AuthorId"/>.
+    /// Bound from repeated <c>authorIds</c> query params.
+    /// </summary>
+    public List<Guid>? AuthorIds { get; set; }
+
     public string? Author { get; set; }
     public string? Publisher { get; set; }
     public string? Isbn { get; set; }
     public string? Language { get; set; }
     public Guid? CategoryId { get; set; }
+
+    /// <summary>
+    /// Optional multi-category filter (OR). When set, takes precedence over <see cref="CategoryId"/>.
+    /// Bound from repeated <c>categoryIds</c> query params.
+    /// </summary>
+    public List<Guid>? CategoryIds { get; set; }
+
     public string? CategoryName { get; set; }
     public string? ShelfLocation { get; set; }
     public int? PublishedYear { get; set; }

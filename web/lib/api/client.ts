@@ -33,16 +33,28 @@ export function gatewayUrl(path: string): string {
   return `${API_BASE}${normalized}`;
 }
 
-export type ApiQuery = Record<
-  string,
-  string | number | boolean | null | undefined
->;
+export type ApiQueryValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Array<string | number>;
+
+export type ApiQuery = Record<string, ApiQueryValue>;
 
 export function withQuery(path: string, query?: ApiQuery): string {
   if (!query) return path;
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
     if (value === undefined || value === null || value === "") continue;
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item === undefined || item === null || item === "") continue;
+        params.append(key, String(item));
+      }
+      continue;
+    }
     params.set(key, String(value));
   }
   const qs = params.toString();

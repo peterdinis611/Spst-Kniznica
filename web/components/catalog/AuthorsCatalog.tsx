@@ -9,6 +9,7 @@ import { ResultsStatus } from "@/components/a11y/ResultsStatus";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogChipRow } from "@/components/catalog/CatalogChipRow";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
+import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { CatalogLoadMore } from "@/components/catalog/CatalogLoadMore";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
@@ -179,7 +180,11 @@ export function AuthorsCatalog({
         </CatalogChipRow>
       </div>
 
-      {results.length === 0 ? (
+      {results.length === 0 && isPending ? (
+        <div className="mt-6">
+          <CatalogSkeleton rows={5} />
+        </div>
+      ) : results.length === 0 ? (
         <CatalogEmpty
           title="Nikto sa nenašiel"
           description="Skús iné meno alebo zruš filter písmena."
@@ -190,7 +195,7 @@ export function AuthorsCatalog({
           ref={listRef}
           aria-label="Zoznam autorov"
           aria-busy={isPending || undefined}
-          className="relative mt-4 border-y border-rule pb-20 dark:border-white/10"
+          className={`relative mt-4 border-y border-rule pb-20 transition-opacity duration-200 dark:border-white/10 ${isPending ? "opacity-55" : "opacity-100"}`}
           $height={virtualizer.getTotalSize()}
         >
           {virtualRows.map((virtualRow) => {

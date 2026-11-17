@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 import {
@@ -8,7 +8,6 @@ import {
   languageFilterLabel,
   type BooksCatalogFilters,
 } from "@/lib/catalog/catalog-url";
-import type { CatalogAuthor } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,7 +40,6 @@ type BooksCatalogFiltersDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   applied: BooksCatalogFilters;
-  authors: CatalogAuthor[];
   shelfZones: ShelfZone[];
   searchQuery?: string;
 };
@@ -79,31 +77,22 @@ export function BooksCatalogFiltersDialog({
   open,
   onOpenChange,
   applied,
-  authors,
   shelfZones,
   searchQuery,
 }: BooksCatalogFiltersDialogProps) {
   const router = useRouter();
   const [draft, setDraft] = useState<BooksCatalogFilters>(applied);
-  const [authorQuery, setAuthorQuery] = useState("");
   const [customLanguage, setCustomLanguage] = useState("");
   const [yearDraft, setYearDraft] = useState("");
 
   useEffect(() => {
     if (open) {
       setDraft(applied);
-      setAuthorQuery("");
       setYearDraft(applied.year != null ? String(applied.year) : "");
       const lang = applied.language?.trim();
       setCustomLanguage(lang && !isPresetLanguage(lang) ? lang : "");
     }
   }, [open, applied]);
-
-  const filteredAuthors = useMemo(() => {
-    const q = authorQuery.trim().toLowerCase();
-    if (!q) return authors;
-    return authors.filter((a) => a.name.toLowerCase().includes(q));
-  }, [authors, authorQuery]);
 
   function patch(next: Partial<BooksCatalogFilters>) {
     setDraft((prev) => ({ ...prev, ...next }));
@@ -124,7 +113,6 @@ export function BooksCatalogFiltersDialog({
     router.push(
       buildBooksCatalogHref({
         ...applied,
-        author: draft.author,
         shelf: draft.shelf,
         year,
         language,
@@ -137,7 +125,6 @@ export function BooksCatalogFiltersDialog({
   function reset() {
     setDraft((prev) => ({
       ...prev,
-      author: undefined,
       shelf: undefined,
       year: undefined,
       language: undefined,
@@ -147,7 +134,6 @@ export function BooksCatalogFiltersDialog({
   }
 
   const dirty =
-    draft.author !== applied.author ||
     draft.shelf !== applied.shelf ||
     draft.year !== applied.year ||
     draft.language !== applied.language ||
@@ -164,10 +150,11 @@ export function BooksCatalogFiltersDialog({
         <DialogHeader className="border-b border-rule px-5 py-4 text-left dark:border-white/10">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <SlidersHorizontal className="size-4 text-sage" aria-hidden />
-            Rok, jazyk, autor & trakt
+            Rok, jazyk & trakt
           </DialogTitle>
           <DialogDescription>
-            Doplnkové filtre. Kategóriu a dostupnosť nastavíš priamo v katalógu.
+            Doplnkové filtre. Kategóriu, autora a dostupnosť nastavíš priamo v
+            katalógu.
           </DialogDescription>
         </DialogHeader>
 
@@ -229,7 +216,10 @@ export function BooksCatalogFiltersDialog({
               ))}
             </div>
             <div>
-              <Label htmlFor="filters-lang-custom" className="text-xs text-muted-foreground">
+              <Label
+                htmlFor="filters-lang-custom"
+                className="text-xs text-muted-foreground"
+              >
                 Iný jazyk (kód alebo názov)
               </Label>
               <Input
@@ -257,49 +247,6 @@ export function BooksCatalogFiltersDialog({
                   Aktívny: {languageFilterLabel(draft.language)}
                 </p>
               ) : null}
-            </div>
-          </fieldset>
-
-          <fieldset className="space-y-3">
-            <legend className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              Autor
-            </legend>
-            <div>
-              <Label htmlFor="filters-author-q" className="sr-only">
-                Hľadať autora
-              </Label>
-              <Input
-                id="filters-author-q"
-                value={authorQuery}
-                onChange={(e) => setAuthorQuery(e.target.value)}
-                placeholder="Hľadať meno autora…"
-                className="h-10 rounded-none border-rule bg-paper dark:border-white/15 dark:bg-paper-deep"
-              />
-            </div>
-            <div className="max-h-44 space-y-1 overflow-y-auto pr-1">
-              <FilterOption
-                active={!draft.author}
-                onClick={() => patch({ author: undefined })}
-                className="w-full"
-              >
-                Všetci autori
-              </FilterOption>
-              {filteredAuthors.length === 0 ? (
-                <p className="py-2 text-xs text-muted-foreground">
-                  Žiadny autor na „{authorQuery.trim()}“.
-                </p>
-              ) : (
-                filteredAuthors.map((item) => (
-                  <FilterOption
-                    key={item.id}
-                    active={draft.author === item.id}
-                    onClick={() => patch({ author: item.id })}
-                    className="w-full"
-                  >
-                    {item.name}
-                  </FilterOption>
-                ))
-              )}
             </div>
           </fieldset>
 
@@ -343,7 +290,6 @@ export function BooksCatalogFiltersDialog({
             className="h-10 rounded-none text-muted-foreground"
             onClick={reset}
             disabled={
-              !draft.author &&
               !draft.shelf &&
               draft.year == null &&
               !draft.language &&

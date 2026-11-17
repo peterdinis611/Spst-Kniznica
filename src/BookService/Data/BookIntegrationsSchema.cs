@@ -6,13 +6,22 @@ public static class BookIntegrationsSchema
 {
     public static async Task EnsureAsync(BookDbContext db, CancellationToken cancellationToken = default)
     {
-        if (await ColumnExistsAsync(db, "Books", "CoverUrl", cancellationToken))
+        if (!await ColumnExistsAsync(db, "Books", "CoverUrl", cancellationToken))
         {
-            return;
+            await db.Database.ExecuteSqlRawAsync(
+                """ALTER TABLE "Books" ADD COLUMN "CoverUrl" TEXT NULL;""",
+                cancellationToken);
         }
 
+        // Some seed/import paths wrote GUID TEXT in uppercase; normalize so lookups match Guid.ToString().
         await db.Database.ExecuteSqlRawAsync(
-            """ALTER TABLE "Books" ADD COLUMN "CoverUrl" TEXT NULL;""",
+            """
+            UPDATE "Books" SET "Id" = lower("Id") WHERE "Id" != lower("Id");
+            UPDATE "Books" SET "AuthorId" = lower("AuthorId") WHERE "AuthorId" IS NOT NULL AND "AuthorId" != lower("AuthorId");
+            UPDATE "Books" SET "CategoryId" = lower("CategoryId") WHERE "CategoryId" IS NOT NULL AND "CategoryId" != lower("CategoryId");
+            UPDATE "BookCopies" SET "Id" = lower("Id") WHERE "Id" != lower("Id");
+            UPDATE "BookCopies" SET "BookId" = lower("BookId") WHERE "BookId" != lower("BookId");
+            """,
             cancellationToken);
     }
 

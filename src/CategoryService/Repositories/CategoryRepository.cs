@@ -91,14 +91,20 @@ public class CategoryRepository(CategoryDbContext db) : ICategoryRepository
     {
         EnsureValidId(id);
         var idText = id.ToString();
-        return db.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.Id.ToString() == idText, cancellationToken);
+        var normalized = idText.ToLowerInvariant();
+        return db.Categories.AsNoTracking().FirstOrDefaultAsync(
+            c => c.Id.ToString().ToLower() == normalized,
+            cancellationToken);
     }
 
     public Task<Category?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         EnsureValidId(id);
         var idText = id.ToString();
-        return db.Categories.FirstOrDefaultAsync(c => c.Id.ToString() == idText, cancellationToken);
+        var normalized = idText.ToLowerInvariant();
+        return db.Categories.FirstOrDefaultAsync(
+            c => c.Id.ToString().ToLower() == normalized,
+            cancellationToken);
     }
 
     public Task AddAsync(Category category, CancellationToken cancellationToken = default)

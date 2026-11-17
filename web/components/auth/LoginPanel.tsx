@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, BookOpen, Library, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -11,6 +11,7 @@ import {
 } from "@/components/security/TurnstileWidget";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { resolveUserDisplayName } from "@/lib/auth/display-name";
 import { cn } from "@/lib/utils";
 
@@ -107,7 +108,7 @@ export function LoginPanel() {
 
         <nav className="mt-6 grid gap-1.5" aria-label="Skratky účtu">
           <QuickLink href="/books" icon={BookOpen} label="Katalóg kníh" />
-          <QuickLink href="/bookings" icon={Library} label="Moje výpožičky" />
+          <QuickLink href="/library" icon={Library} label="Moje výpožičky" />
           {user.isStaff ? (
             <QuickLink href="/admin" icon={Shield} label="Správcovský pult" />
           ) : (
@@ -211,10 +212,21 @@ function PanelShell({
 
 function LoadingState() {
   return (
-    <div role="status" aria-live="polite" aria-busy="true">
-      <div className="h-3 w-20 animate-pulse bg-rule dark:bg-white/10" aria-hidden />
-      <div className="mt-5 h-10 w-40 animate-pulse bg-rule dark:bg-white/10" aria-hidden />
-      <p className="mt-4 text-sm text-muted-foreground">Načítavam…</p>
+    <div role="status" aria-live="polite" aria-busy="true" className="space-y-4">
+      <span className="sr-only">Načítavam účet…</span>
+      <div className="flex justify-between" aria-hidden>
+        <Skeleton className="size-12" />
+        <Skeleton className="h-3 w-20" />
+      </div>
+      <Skeleton className="h-8 w-48" aria-hidden />
+      <Skeleton className="h-4 w-56" aria-hidden />
+      <Skeleton className="h-6 w-24" aria-hidden />
+      <div className="space-y-2 pt-2" aria-hidden>
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <Skeleton className="h-10 w-full" aria-hidden />
     </div>
   );
 }
@@ -256,6 +268,7 @@ function QuickLink({
   return (
     <Link
       href={href}
+      prefetch
       className={cn(
         "group flex items-center justify-between gap-2 border border-transparent px-2 py-2 text-sm text-ink transition",
         "hover:border-rule hover:bg-accent-soft/40 dark:hover:border-white/10 dark:hover:bg-paper/80",
@@ -268,11 +281,25 @@ function QuickLink({
           aria-hidden
         />
         {label}
+        <QuickLinkPending />
       </span>
       <ArrowRight
         className="size-3.5 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-ink"
         aria-hidden
       />
     </Link>
+  );
+}
+
+function QuickLinkPending() {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return (
+    <span
+      className="font-mono text-[10px] tracking-wide text-muted-foreground uppercase"
+      aria-live="polite"
+    >
+      …
+    </span>
   );
 }

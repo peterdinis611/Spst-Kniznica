@@ -15,12 +15,28 @@ describe("buildBooksCatalogHref", () => {
     expect(
       buildBooksCatalogHref({
         q: "  motor  ",
-        category: "cat-1",
-        author: "a1",
+        categories: ["cat-1"],
+        authors: ["a1"],
         shelf: "E",
         available: true,
       }),
     ).toBe("/books?q=motor&category=cat-1&author=a1&shelf=E&available=1");
+  });
+
+  it("joins multiple categories", () => {
+    expect(
+      buildBooksCatalogHref({
+        categories: ["c1", "c2", "c1"],
+      }),
+    ).toBe("/books?category=c1%2Cc2");
+  });
+
+  it("joins multiple authors", () => {
+    expect(
+      buildBooksCatalogHref({
+        authors: ["a1", "a2", "a1"],
+      }),
+    ).toBe("/books?author=a1%2Ca2");
   });
 
   it("encodes year and language", () => {
@@ -46,13 +62,26 @@ describe("parseBooksCatalogFilters", () => {
     );
     expect(parseBooksCatalogFilters(params)).toEqual({
       q: "lean",
-      category: "c1",
-      author: "a1",
+      categories: ["c1"],
+      authors: ["a1"],
       shelf: "E-12",
       available: true,
       year: 2004,
       language: "sk",
     });
+  });
+
+  it("parses comma-separated categories", () => {
+    expect(
+      parseBooksCatalogFilters(new URLSearchParams("category=c1,c2,c1"))
+        .categories,
+    ).toEqual(["c1", "c2"]);
+  });
+
+  it("parses comma-separated authors", () => {
+    expect(
+      parseBooksCatalogFilters(new URLSearchParams("author=a1,a2,a1")).authors,
+    ).toEqual(["a1", "a2"]);
   });
 
   it("ignores invalid year", () => {

@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { SignInRequiredNotice } from "@/components/auth/NotAuthorizedNotice";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
+import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import {
   BOOKING_STATUS,
@@ -24,6 +25,7 @@ import {
 } from "@/lib/bookings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type CatalogRef = { id: string; title: string; author: string };
 
@@ -114,11 +116,7 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
   }
 
   if (!ready) {
-    return (
-      <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
-        Načítavam účet…
-      </p>
-    );
+    return <CatalogSkeleton rows={4} variant="library" />;
   }
 
   if (!user?.isAuthenticated) {
@@ -237,8 +235,13 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
         >
           Čakací zoznam · {waitlist.length}
         </h2>
-        <ul className="mt-3 space-y-3" aria-label="Čakací zoznam">
-          {waitlist.length === 0 ? (
+        <ul className="mt-3 space-y-3" aria-label="Čakací zoznam" aria-busy={loadWaitlist.isPending || undefined}>
+          {waitlist.length === 0 && loadWaitlist.isPending ? (
+            <li className="space-y-2" aria-hidden>
+              <Skeleton className="h-14 w-full" />
+              <Skeleton className="h-14 w-full" />
+            </li>
+          ) : waitlist.length === 0 ? (
             <li className="text-sm text-muted-foreground">Nie si v žiadnom poradovníku.</li>
           ) : (
             waitlist.map((entry) => {
@@ -283,8 +286,17 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
         >
           Obľúbené · {favorites.length}
         </h2>
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2" aria-label="Obľúbené knihy">
-          {favorites.length === 0 ? (
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2" aria-label="Obľúbené knihy" aria-busy={loadFavorites.isPending || undefined}>
+          {favorites.length === 0 && loadFavorites.isPending ? (
+            <>
+              <li aria-hidden>
+                <Skeleton className="h-16 w-full" />
+              </li>
+              <li aria-hidden>
+                <Skeleton className="h-16 w-full" />
+              </li>
+            </>
+          ) : favorites.length === 0 ? (
             <li className="text-sm text-muted-foreground">Zatiaľ prázdne — pridaj z detailu knihy.</li>
           ) : (
             favorites.map((fav) => {

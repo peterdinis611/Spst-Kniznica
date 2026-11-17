@@ -29,7 +29,9 @@ export async function CategoryMoreBooks({
 
   if (books.length === 0) return null;
 
-  const catalogHref = buildBooksCatalogHref({ category: categoryId });
+  const catalogHref = buildBooksCatalogHref({
+    categories: categoryId ? [categoryId] : undefined,
+  });
 
   return (
     <section

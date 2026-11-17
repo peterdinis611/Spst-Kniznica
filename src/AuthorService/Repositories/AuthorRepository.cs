@@ -93,14 +93,20 @@ public class AuthorRepository(AuthorDbContext db) : IAuthorRepository
     {
         EnsureValidId(id);
         var idText = id.ToString();
-        return db.Authors.AsNoTracking().FirstOrDefaultAsync(a => a.Id.ToString() == idText, cancellationToken);
+        var normalized = idText.ToLowerInvariant();
+        return db.Authors.AsNoTracking().FirstOrDefaultAsync(
+            a => a.Id.ToString().ToLower() == normalized,
+            cancellationToken);
     }
 
     public Task<Author?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         EnsureValidId(id);
         var idText = id.ToString();
-        return db.Authors.FirstOrDefaultAsync(a => a.Id.ToString() == idText, cancellationToken);
+        var normalized = idText.ToLowerInvariant();
+        return db.Authors.FirstOrDefaultAsync(
+            a => a.Id.ToString().ToLower() == normalized,
+            cancellationToken);
     }
 
     public Task AddAsync(Author author, CancellationToken cancellationToken = default)

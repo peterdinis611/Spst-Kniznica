@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { connection } from "next/server";
 import { BookingsAccessGate } from "@/components/catalog/BookingsAccessGate";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
-import { loadCatalogRefs } from "@/lib/catalog/load-catalog-refs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -14,18 +12,11 @@ export const metadata: Metadata = buildPageMetadata({
   noIndex: true,
 });
 
-async function BookingsContent() {
-  await connection();
-  const catalog = await loadCatalogRefs();
-
-  return <BookingsAccessGate catalog={catalog} />;
-}
-
 export default function BookingsPage() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-10">
-      <Suspense fallback={<CatalogSkeleton rows={4} />}>
-        <BookingsContent />
+      <Suspense fallback={<CatalogSkeleton rows={5} variant="desk" />}>
+        <BookingsAccessGate />
       </Suspense>
     </div>
   );

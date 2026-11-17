@@ -74,7 +74,7 @@ async function CategoryDetailContent({
     category.bookCount > 0
       ? category.bookCount
       : (booksResult?.data?.totalCount ?? books.length);
-  const booksHref = buildBooksCatalogHref({ category: category.id });
+  const booksHref = buildBooksCatalogHref({ categories: [category.id] });
 
   return (
     <>

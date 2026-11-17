@@ -135,10 +135,7 @@ export function RouteLoading({
       aria-live="polite"
       role="status"
     >
-      <span className="sr-only">Načítavam katalóg…</span>
-      <div aria-hidden>
-        <CatalogSkeleton rows={4} />
-      </div>
+      <CatalogSkeleton rows={4} variant="books" />
     </div>
   );
 }

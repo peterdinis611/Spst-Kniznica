@@ -5,20 +5,12 @@ import { useAbility } from "@/components/auth/AbilityProvider";
 import { AuthRequiredGate } from "@/components/auth/AuthRequiredGate";
 import { BookingsDesk } from "@/components/catalog/BookingsDesk";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
+import { useCatalogRefs } from "@/hooks/use-catalog-refs";
 
-type CatalogRef = {
-  id: string;
-  title: string;
-  author: string;
-};
-
-type BookingsAccessGateProps = {
-  catalog: CatalogRef[];
-};
-
-export function BookingsAccessGate({ catalog }: BookingsAccessGateProps) {
+export function BookingsAccessGate() {
   const { ready, entraEnabled } = useAuth();
   const ability = useAbility();
+  const { catalog } = useCatalogRefs();
 
   return (
     <AuthRequiredGate

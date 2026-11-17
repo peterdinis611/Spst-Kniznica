@@ -12,6 +12,7 @@ import { BooksCatalogFiltersDialog } from "@/components/catalog/BooksCatalogFilt
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogLoadMore } from "@/components/catalog/CatalogLoadMore";
+import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useCatalogColumnCount } from "@/hooks/use-catalog-column-count";
 import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
@@ -35,10 +36,9 @@ type BooksCatalogProps = {
   shelfZones: Array<{ id: string; label: string }>;
 };
 
-/** Advanced filters that live in the dialog (category + available are inline). */
+/** Advanced filters that live in the dialog (category/author/available are inline). */
 function countAdvancedFilters(filters: BooksCatalogFilters): number {
   let n = 0;
-  if (filters.author) n += 1;
   if (filters.shelf) n += 1;
   if (filters.year != null) n += 1;
   if (filters.language) n += 1;
@@ -75,8 +75,8 @@ export function BooksCatalog({
   const input = useMemo(
     () => ({
       search: activeFilters.q,
-      categoryId: activeFilters.category,
-      authorId: activeFilters.author,
+      categoryIds: activeFilters.categories,
+      authorIds: activeFilters.authors,
       shelfLocation: activeFilters.shelf
         ? `${activeFilters.shelf}-`
         : undefined,
@@ -97,8 +97,8 @@ export function BooksCatalog({
     results.length,
     columns,
     activeFilters.q,
-    activeFilters.category,
-    activeFilters.author,
+    activeFilters.categories?.join(","),
+    activeFilters.authors?.join(","),
     activeFilters.shelf,
     activeFilters.available,
     activeFilters.year,
@@ -120,13 +120,11 @@ export function BooksCatalog({
       void loadMore();
     }
   }, [virtualItems, results.length, loadMore]);
-  const activeAuthor = initialAuthors.find(
-    (item) => item.id === filters.author,
-  );
   const activeShelf = shelfZones.find((item) => item.id === filters.shelf);
   const advancedCount = countAdvancedFilters(filters);
   const hasAnyFilter =
-    Boolean(filters.category) ||
+    Boolean(filters.categories?.length) ||
+    Boolean(filters.authors?.length) ||
     Boolean(filters.available) ||
     advancedCount > 0 ||
     Boolean(liveQuery.trim());
@@ -145,9 +143,6 @@ export function BooksCatalog({
           label: languageFilterLabel(filters.language),
           clear: { language: undefined },
         }
-      : null,
-    activeAuthor
-      ? { key: "author", label: activeAuthor.name, clear: { author: undefined } }
       : null,
     activeShelf
       ? {
@@ -178,9 +173,9 @@ export function BooksCatalog({
 
       <CatalogTopBar
         title="Knižný fond"
-        lead="Hľadaj názov alebo tému — kategóriu a dostupnosť prepneš jedným klikom."
+        lead="Hľadaj názov alebo tému — kategórie a autorov vyberieš vo filtri (aj viac naraz)."
         defaultQuery={urlQuery}
-        defaultCategory={filters.category}
+        defaultCategory={filters.categories?.[0]}
         showCategorySelect={false}
         categories={initialCategories}
         onQueryChange={setLiveQuery}
@@ -194,10 +189,10 @@ export function BooksCatalog({
             filters={filters}
             liveQuery={liveQuery}
             categories={initialCategories}
+            authors={initialAuthors}
             filterCount={advancedCount}
             onOpenAdvanced={() => setFiltersOpen(true)}
             filtersOpen={filtersOpen}
-            isPending={isPending}
           />
 
           {activeTags.length > 0 ? (
@@ -225,12 +220,19 @@ export function BooksCatalog({
             </ul>
           ) : null}
 
-          {hasAnyFilter ? (
+          {isPending ? (
+            <p className="text-sm text-sage" role="status" aria-live="polite">
+              Hľadám v katalógu…
+            </p>
+          ) : hasAnyFilter ? (
             <p className="text-sm text-muted-foreground">
               {liveQuery.trim() ? (
                 <>
                   Výsledky pre „{liveQuery.trim()}“
-                  {filters.category || filters.available || advancedCount > 0
+                  {filters.categories?.length ||
+                  filters.authors?.length ||
+                  filters.available ||
+                  advancedCount > 0
                     ? " · s filtrami"
                     : null}
                 </>
@@ -256,9 +258,9 @@ export function BooksCatalog({
           variant="secondary"
           className="h-auto shrink-0 rounded-full bg-paper-deep px-3 py-1 font-display text-sm tabular-nums text-ink ring-1 ring-rule dark:ring-white/10"
         >
-          {results.length}{" "}
+          {isPending ? "…" : results.length}{" "}
           <span className="font-sans font-normal text-muted-foreground">
-            {results.length === 1 ? "titul" : "titulov"}
+            {results.length === 1 && !isPending ? "titul" : "titulov"}
           </span>
         </Badge>
       </div>
@@ -267,12 +269,15 @@ export function BooksCatalog({
         open={filtersOpen}
         onOpenChange={setFiltersOpen}
         applied={filters}
-        authors={initialAuthors}
         shelfZones={shelfZones}
         searchQuery={liveQuery}
       />
 
-      {results.length === 0 ? (
+      {results.length === 0 && isPending ? (
+        <div className="mt-8">
+          <CatalogSkeleton rows={6} variant="books-grid" />
+        </div>
+      ) : results.length === 0 ? (
         <CatalogEmpty
           title="Nič sa nenašlo"
           description="Skús iný filter alebo výraz v vyhľadávaní."
@@ -281,7 +286,7 @@ export function BooksCatalog({
       ) : (
         <VirtualList
           ref={gridRef}
-          className="relative mt-8 pb-16"
+          className={`relative mt-8 pb-16 transition-opacity duration-200 ${isPending ? "opacity-55" : "opacity-100"}`}
           $height={virtualizer.getTotalSize()}
           aria-busy={isPending || undefined}
           aria-label="Výsledky kníh"

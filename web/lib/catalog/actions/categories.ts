@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { apiGet, withQuery } from "@/lib/api";
+import { apiGet, isApiHttpError, withQuery } from "@/lib/api";
 import { actionClient } from "@/lib/shared";
 import type { CursorPage, PagedResult } from "@/lib/shared";
 import { mapCategory, type CatalogCategory } from "../mappers";
@@ -100,8 +100,15 @@ export const searchCategoriesCursorAction = actionClient
 export const getCategoryAction = actionClient
   .inputSchema(getCategorySchema)
   .action(async ({ parsedInput }) => {
-    const category = await apiGet<CategoryDto>(
-      `/api/categories/${parsedInput.id}`,
-    );
-    return { category: mapCategory(category) };
+    try {
+      const category = await apiGet<CategoryDto>(
+        `/api/categories/${parsedInput.id}`,
+      );
+      return { category: mapCategory(category) };
+    } catch (error) {
+      if (isApiHttpError(error) && error.status === 404) {
+        return { category: null };
+      }
+      throw error;
+    }
   });
