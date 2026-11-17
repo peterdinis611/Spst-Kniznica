@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService", "AuthService\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminService", "AdminService\AdminService.csproj", "{E619174B-3B4A-43AD-8123-103F56A57C59}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService", "EmailService\EmailService.csproj", "{09809191-5A75-41B9-8C97-69CC3AFDCB85}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -267,6 +269,18 @@ Global
 		{E619174B-3B4A-43AD-8123-103F56A57C59}.Release|x64.Build.0 = Release|Any CPU
 		{E619174B-3B4A-43AD-8123-103F56A57C59}.Release|x86.ActiveCfg = Release|Any CPU
 		{E619174B-3B4A-43AD-8123-103F56A57C59}.Release|x86.Build.0 = Release|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Debug|x64.Build.0 = Debug|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Debug|x86.Build.0 = Debug|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Release|x64.ActiveCfg = Release|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Release|x64.Build.0 = Release|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Release|x86.ActiveCfg = Release|Any CPU
+		{09809191-5A75-41B9-8C97-69CC3AFDCB85}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

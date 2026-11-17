@@ -1,0 +1,35 @@
+@EmailService_HostAddress = http://localhost:5212
+@InternalKey = spst-dev-internal-key-change-me
+
+### Health
+GET {{EmailService_HostAddress}}/health
+
+### Status (staff JWT)
+GET {{EmailService_HostAddress}}/api/emails/status
+Authorization: Bearer {{token}}
+
+### Send (internal)
+POST {{EmailService_HostAddress}}/api/internal/emails/send
+Content-Type: application/json
+X-Internal-Api-Key: {{InternalKey}}
+
+{
+  "to": "peter@spst.sk",
+  "toName": "Peter",
+  "subject": "Test",
+  "bodyText": "Ahoj z EmailService."
+}
+
+### Loan due reminder (internal)
+POST {{EmailService_HostAddress}}/api/internal/emails/templates/loan-due-reminder
+Content-Type: application/json
+X-Internal-Api-Key: {{InternalKey}}
+
+{
+  "bookingId": "11111111-1111-1111-1111-111111111111",
+  "bookId": "22222222-2222-2222-2222-222222222222",
+  "borrowerEmail": "peter@spst.sk",
+  "borrowerName": "Peter Dinis",
+  "dueDate": "2026-12-01T00:00:00Z",
+  "bookTitle": "1984"
+}

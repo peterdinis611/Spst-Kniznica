@@ -280,6 +280,7 @@ start_dotnet "messaging"  "MessagingService/MessagingService.csproj"   "http://1
 start_dotnet "cache"      "CacheService/CacheService.csproj"           "http://127.0.0.1:5206"
 start_dotnet "auth"       "AuthService/AuthService.csproj"             "http://127.0.0.1:5210"
 start_dotnet "admin"      "AdminService/AdminService.csproj"           "http://127.0.0.1:5211"
+start_dotnet "email"      "EmailService/EmailService.csproj"           "http://127.0.0.1:5212"
 start_dotnet "gateway"    "GatewayService/GatewayService.csproj"       "http://127.0.0.1:5200"
 echo
 
@@ -298,6 +299,7 @@ wait_http "messaging" "http://127.0.0.1:5205/health" || true
 wait_http "cache"     "http://127.0.0.1:5206/health" || true
 wait_http "auth"      "http://127.0.0.1:5210/health" 80 1 || FAILED=1
 wait_http "admin"     "http://127.0.0.1:5211/health" || true
+wait_http "email"     "http://127.0.0.1:5212/health" || true
 wait_http "gateway"   "http://127.0.0.1:5200/health" 100 1 || FAILED=1
 # Ready = gateway + book + booking probes (stricter than /health liveness).
 wait_http "gateway-ready" "http://127.0.0.1:5200/health/ready" 40 1 || FAILED=1
@@ -328,6 +330,7 @@ cat <<EOF
   Gateway      http://localhost:5200/swagger
   Auth         http://localhost:5210/swagger
   Admin        http://localhost:5211/swagger
+  Email        http://localhost:5212/swagger
   Booking      http://localhost:5208/swagger
   Ready        http://localhost:5200/health/ready
 

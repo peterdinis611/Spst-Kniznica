@@ -45,7 +45,8 @@ public class GatewayController(
                 messaging = configuration["Services:MessagingService"],
                 cache = configuration["Services:CacheService"],
                 auth = configuration["Services:AuthService"],
-                admin = configuration["Services:AdminService"]
+                admin = configuration["Services:AdminService"],
+                email = configuration["Services:EmailService"]
             }
         });
     }

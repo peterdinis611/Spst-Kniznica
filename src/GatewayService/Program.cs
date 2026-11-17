@@ -107,6 +107,7 @@ try
             options.SwaggerEndpoint("/cache/swagger/v1/swagger.json", "CacheService");
             options.SwaggerEndpoint("/auth/swagger/v1/swagger.json", "AuthService");
             options.SwaggerEndpoint("/admin/swagger/v1/swagger.json", "AdminService");
+            options.SwaggerEndpoint("/email/swagger/v1/swagger.json", "EmailService");
             options.RoutePrefix = "swagger";
         });
     }

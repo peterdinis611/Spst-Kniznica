@@ -454,6 +454,33 @@
             "PathPattern": "/swagger/{**catch-all}"
           }
         ]
+      },
+      "emails-api": {
+        "ClusterId": "email",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 1,
+        "Match": {
+          "Path": "/api/emails/{**catch-all}"
+        }
+      },
+      "emails-api-root": {
+        "ClusterId": "email",
+        "AuthorizationPolicy": "Authenticated",
+        "Order": 2,
+        "Match": {
+          "Path": "/api/emails"
+        }
+      },
+      "email-swagger": {
+        "ClusterId": "email",
+        "Match": {
+          "Path": "/email/swagger/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/swagger/{**catch-all}"
+          }
+        ]
       }
     },
     "Clusters": {
@@ -517,6 +544,13 @@
         "Destinations": {
           "primary": {
             "Address": "http://localhost:5211/"
+          }
+        }
+      },
+      "email": {
+        "Destinations": {
+          "primary": {
+            "Address": "http://localhost:5212/"
           }
         }
       }
