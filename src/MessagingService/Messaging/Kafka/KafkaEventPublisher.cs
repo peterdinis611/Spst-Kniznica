@@ -32,15 +32,23 @@ public sealed class KafkaEventPublisher : IEventPublisher, IDisposable
         where TEvent : IntegrationEvent
     {
         var payload = EventSerializer.Serialize(integrationEvent);
+        var headers = new Headers
+        {
+            { "event-type", Encoding.UTF8.GetBytes(integrationEvent.EventType) },
+            { "occurred-at", Encoding.UTF8.GetBytes(integrationEvent.OccurredAt.ToString("O")) },
+        };
+
+        if (!string.IsNullOrWhiteSpace(_options.SigningSecret))
+        {
+            var signature = EventHmac.Sign(_options.SigningSecret, Encoding.UTF8.GetBytes(payload));
+            headers.Add(EventHmac.HeaderName, Encoding.UTF8.GetBytes(signature));
+        }
+
         var message = new Message<string, string>
         {
             Key = integrationEvent.EventId.ToString(),
             Value = payload,
-            Headers =
-            [
-                new Header("event-type", Encoding.UTF8.GetBytes(integrationEvent.EventType)),
-                new Header("occurred-at", Encoding.UTF8.GetBytes(integrationEvent.OccurredAt.ToString("O")))
-            ]
+            Headers = headers
         };
 
         var result = await _producer.ProduceAsync(_options.Topic, message, cancellationToken);

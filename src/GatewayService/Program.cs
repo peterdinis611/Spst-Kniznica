@@ -31,6 +31,7 @@ try
     builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
     builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
+    builder.Services.AddSpstForwardedHeaders(builder.Configuration);
 
     builder.Services
         .AddReverseProxy()
@@ -89,6 +90,8 @@ try
 
     Log.Information("Starting GatewayService in {Environment}", app.Environment.EnvironmentName);
 
+    app.UseSpstForwardedHeaders();
+    app.UseSpstHstsWhenPublic(app.Environment);
     app.UseSpstRequestLogging();
     app.UseSpstCors();
 
@@ -112,6 +115,12 @@ try
         });
     }
 
+    // HTTPS redirect only when the request itself is HTTPS-capable or terminated upstream.
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
+
     app.UseSpstRateLimiting();
     app.UseSpstAuthentication();
     app.UseAuthorization();
@@ -121,9 +130,11 @@ try
     app.MapHealthChecks("/health", new HealthCheckOptions
     {
         Predicate = check => check.Tags.Contains("live"),
+        ResponseWriter = WriteMinimalHealthAsync,
     }).AllowAnonymous();
 
     // Readiness: core deps must be up; author/category may degrade the status.
+    // Detailed topology is Staff-only via /api/gateway/status.
     app.MapHealthChecks("/health/ready", new HealthCheckOptions
     {
         Predicate = check => check.Tags.Contains("ready"),
@@ -157,6 +168,19 @@ finally
     await Log.CloseAndFlushAsync();
 }
 
+static async Task WriteMinimalHealthAsync(HttpContext context, HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+    context.Response.StatusCode = report.Status == HealthStatus.Healthy
+        ? StatusCodes.Status200OK
+        : StatusCodes.Status503ServiceUnavailable;
+
+    await context.Response.WriteAsJsonAsync(new
+    {
+        status = report.Status == HealthStatus.Healthy ? "Healthy" : "Unhealthy",
+    });
+}
+
 static async Task WriteReadyResponseAsync(HttpContext context, HealthReport report)
 {
     context.Response.ContentType = "application/json";
@@ -175,19 +199,12 @@ static async Task WriteReadyResponseAsync(HttpContext context, HealthReport repo
         _ => StatusCodes.Status503ServiceUnavailable,
     };
 
-    var payload = new
+    // Public readiness: aggregate only — no per-service descriptions/URLs.
+    await context.Response.WriteAsJsonAsync(new
     {
         status,
-        totalDurationMs = report.TotalDuration.TotalMilliseconds,
-        entries = report.Entries.ToDictionary(
-            e => e.Key,
-            e => new
-            {
-                status = e.Value.Status.ToString(),
-                description = e.Value.Description,
-                durationMs = e.Value.Duration.TotalMilliseconds,
-            }),
-    };
-
-    await context.Response.WriteAsJsonAsync(payload);
+        checks = report.Entries.Count,
+        unhealthy = report.Entries.Count(e => e.Value.Status == HealthStatus.Unhealthy),
+        degraded = report.Entries.Count(e => e.Value.Status == HealthStatus.Degraded),
+    });
 }

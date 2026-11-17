@@ -22,7 +22,7 @@ public class MessagingController(
     /// Publish a ping event to Kafka, RabbitMQ, or both.
     /// </summary>
     [HttpPost("publish")]
-    [Authorize(Policy = AuthPolicies.Staff)]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -70,7 +70,7 @@ public class MessagingController(
     }
 
     [HttpGet("status")]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthPolicies.Staff)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     public ActionResult<object> Status([FromServices] IConfiguration configuration)
     {
@@ -79,8 +79,6 @@ public class MessagingController(
             application = "MessagingService",
             kafkaEnabled = configuration.GetValue("Kafka:Enabled", true),
             rabbitMqEnabled = configuration.GetValue("RabbitMq:Enabled", true),
-            kafkaBootstrap = configuration["Kafka:BootstrapServers"],
-            rabbitHost = configuration["RabbitMq:HostName"]
         });
     }
 }

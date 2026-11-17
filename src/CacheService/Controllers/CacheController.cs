@@ -14,7 +14,7 @@ namespace CacheService.Controllers;
 public class CacheController(IAppCache cache) : ControllerBase
 {
     [HttpGet("status")]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthPolicies.Staff)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     public ActionResult<object> Status([FromServices] IConfiguration configuration)
     {
@@ -22,7 +22,6 @@ public class CacheController(IAppCache cache) : ControllerBase
         {
             application = "CacheService",
             enabled = cache.IsEnabled,
-            connection = configuration["Cache:ConnectionString"],
             instanceName = configuration["Cache:InstanceName"],
             defaultTtlSeconds = configuration.GetValue("Cache:DefaultTtlSeconds", 300)
         });

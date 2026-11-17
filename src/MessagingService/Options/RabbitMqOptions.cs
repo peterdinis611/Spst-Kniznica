@@ -13,4 +13,7 @@ public class RabbitMqOptions
     public string Exchange { get; set; } = "spst.library.events";
     public string Queue { get; set; } = "spst.library.messaging";
     public string RoutingKey { get; set; } = "library.#";
+
+    /// <summary>Optional HMAC secret for <c>x-spst-signature</c> on published/consumed messages.</summary>
+    public string? SigningSecret { get; set; }
 }

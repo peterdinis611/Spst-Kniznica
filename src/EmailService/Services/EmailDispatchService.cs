@@ -12,15 +12,29 @@ public sealed class EmailDispatchService(
     EmailDbContext db,
     IEmailTransport transport,
     IOptions<SmtpOptions> smtpOptions,
+    IOptions<EmailDispatchOptions> dispatchOptions,
     ILogger<EmailDispatchService> logger) : IEmailDispatchService
 {
     public async Task<EmailMessageDto> SendAsync(
         SendEmailRequest request,
         CancellationToken cancellationToken = default)
     {
+        var policy = dispatchOptions.Value;
         var to = NormalizeEmail(request.To);
         var subject = StringNormalize.Required(request.Subject);
         var body = StringNormalize.Required(request.BodyText);
+        var templateKey = string.IsNullOrWhiteSpace(request.TemplateKey)
+            ? null
+            : request.TemplateKey.Trim();
+
+        if (policy.RequireTemplateKeyForRawSend && string.IsNullOrWhiteSpace(templateKey))
+        {
+            throw new ArgumentException(
+                "TemplateKey is required for internal email send. Use a template endpoint or set TemplateKey.");
+        }
+
+        EnsureRecipientAllowed(to, policy);
+        await EnsureWithinSendQuotaAsync(policy, cancellationToken);
 
         var log = new EmailMessageLog
         {
@@ -34,9 +48,7 @@ public sealed class EmailDispatchService(
             BodyHtml = string.IsNullOrWhiteSpace(request.BodyHtml)
                 ? null
                 : request.BodyHtml,
-            TemplateKey = string.IsNullOrWhiteSpace(request.TemplateKey)
-                ? null
-                : request.TemplateKey.Trim(),
+            TemplateKey = templateKey,
             CorrelationId = string.IsNullOrWhiteSpace(request.CorrelationId)
                 ? null
                 : request.CorrelationId.Trim(),
@@ -171,6 +183,44 @@ public sealed class EmailDispatchService(
         CreatedAt = log.CreatedAt,
         SentAt = log.SentAt,
     };
+
+    private static void EnsureRecipientAllowed(string to, EmailDispatchOptions policy)
+    {
+        if (policy.AllowedRecipientDomains is not { Length: > 0 })
+        {
+            return;
+        }
+
+        var at = to.LastIndexOf('@');
+        if (at < 0 || at >= to.Length - 1)
+        {
+            throw new ArgumentException("Invalid recipient email address.");
+        }
+
+        var domain = to[(at + 1)..];
+        var allowed = policy.AllowedRecipientDomains.Any(d =>
+            string.Equals(d.Trim().TrimStart('@'), domain, StringComparison.OrdinalIgnoreCase));
+
+        if (!allowed)
+        {
+            throw new ArgumentException(
+                $"Recipient domain '{domain}' is not in EmailDispatch:AllowedRecipientDomains.");
+        }
+    }
+
+    private async Task EnsureWithinSendQuotaAsync(
+        EmailDispatchOptions policy,
+        CancellationToken cancellationToken)
+    {
+        var limit = Math.Max(1, policy.MaxSendsPerMinute);
+        var since = DateTimeOffset.UtcNow.AddMinutes(-1);
+        var recent = await db.Messages.CountAsync(m => m.CreatedAt >= since, cancellationToken);
+        if (recent >= limit)
+        {
+            throw new InvalidOperationException(
+                $"Email send rate limit exceeded ({limit}/min). Retry later.");
+        }
+    }
 
     private static string NormalizeEmail(string email)
         => StringNormalize.Required(email).ToLowerInvariant();

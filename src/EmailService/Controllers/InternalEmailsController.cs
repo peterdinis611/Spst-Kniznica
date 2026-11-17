@@ -30,6 +30,10 @@ public class InternalEmailsController(IEmailDispatchService emails) : Controller
         {
             return BadRequest(new { detail = ex.Message });
         }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(StatusCodes.Status429TooManyRequests, new { detail = ex.Message });
+        }
     }
 
     [HttpPost("templates/loan-due-reminder")]
@@ -47,6 +51,10 @@ public class InternalEmailsController(IEmailDispatchService emails) : Controller
         {
             return BadRequest(new { detail = ex.Message });
         }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(StatusCodes.Status429TooManyRequests, new { detail = ex.Message });
+        }
     }
 
     [HttpPost("templates/waitlist-promotion")]
@@ -63,6 +71,10 @@ public class InternalEmailsController(IEmailDispatchService emails) : Controller
         catch (ArgumentException ex)
         {
             return BadRequest(new { detail = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(StatusCodes.Status429TooManyRequests, new { detail = ex.Message });
         }
     }
 }

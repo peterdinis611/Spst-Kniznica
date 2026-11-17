@@ -18,6 +18,8 @@ try
     builder.UseSpstNetworkIsolation();
 
     builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
+    builder.Services.Configure<EmailDispatchOptions>(
+        builder.Configuration.GetSection(EmailDispatchOptions.SectionName));
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();

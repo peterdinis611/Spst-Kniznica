@@ -2,6 +2,7 @@ using BookService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Messaging;
 
 namespace BookService.Controllers;
 
@@ -16,6 +17,17 @@ public sealed class InternalCatalogSyncController(
     CatalogDenormalizationService catalogDenorm,
     BookingCopyDenormalizationService bookingCopyDenorm) : ControllerBase
 {
+    private static readonly HashSet<string> AllowedEventTypes = new(StringComparer.Ordinal)
+    {
+        nameof(CategoryUpdatedEvent),
+        nameof(CategoryDeletedEvent),
+        nameof(AuthorUpdatedEvent),
+        nameof(AuthorDeletedEvent),
+        nameof(BookingCreatedEvent),
+        nameof(BookingUpdatedEvent),
+        nameof(BookingDeletedEvent),
+    };
+
     public sealed record CatalogSyncEventBody(string EventType, string Payload);
 
     public sealed record CategoryUpdatedBody(Guid CategoryId, string Name);
@@ -28,17 +40,28 @@ public sealed class InternalCatalogSyncController(
     /// </summary>
     [HttpPost("events")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ApplyEvent(
         [FromBody] CatalogSyncEventBody body,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(body.EventType) || string.IsNullOrWhiteSpace(body.Payload))
         {
-            return BadRequest();
+            return BadRequest(new { detail = "EventType and Payload are required." });
         }
 
-        await catalogDenorm.ApplyEventPayloadAsync(body.EventType, body.Payload, cancellationToken);
-        await bookingCopyDenorm.ApplyEventPayloadAsync(body.EventType, body.Payload, cancellationToken);
+        if (!AllowedEventTypes.Contains(body.EventType.Trim()))
+        {
+            return BadRequest(new
+            {
+                detail = $"Unsupported EventType '{body.EventType}'.",
+                allowed = AllowedEventTypes.OrderBy(x => x).ToArray(),
+            });
+        }
+
+        var eventType = body.EventType.Trim();
+        await catalogDenorm.ApplyEventPayloadAsync(eventType, body.Payload, cancellationToken);
+        await bookingCopyDenorm.ApplyEventPayloadAsync(eventType, body.Payload, cancellationToken);
         return NoContent();
     }
 

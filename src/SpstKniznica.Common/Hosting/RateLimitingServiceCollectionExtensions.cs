@@ -36,7 +36,20 @@ public static class RateLimitingServiceCollectionExtensions
             try
             {
                 redis = ConnectionMultiplexer.Connect(redisCs);
+                if (!redis.IsConnected && settings.RequireRedis)
+                {
+                    redis.Dispose();
+                    throw new InvalidOperationException(
+                        "RateLimiting:UseRedis is true and RequireRedis is true, but Redis is not connected.");
+                }
+
                 services.AddSingleton(redis);
+            }
+            catch (Exception ex) when (settings.RequireRedis)
+            {
+                throw new InvalidOperationException(
+                    "RateLimiting requires Redis but connection failed. Set RequireRedis=false only for local fallback.",
+                    ex);
             }
             catch
             {
@@ -45,6 +58,7 @@ public static class RateLimitingServiceCollectionExtensions
         }
 
         var redisRef = redis;
+        var trustForwardedFor = settings.TrustForwardedFor;
 
         services.AddRateLimiter(options =>
         {
@@ -79,7 +93,7 @@ public static class RateLimitingServiceCollectionExtensions
 
                     return CreatePartition(
                         redisRef,
-                        "g:" + GetClientKey(httpContext),
+                        "g:" + GetClientKey(httpContext, trustForwardedFor),
                         settings.GlobalPermitLimit,
                         TimeSpan.FromSeconds(Math.Max(1, settings.GlobalWindowSeconds)));
                 });
@@ -88,21 +102,21 @@ public static class RateLimitingServiceCollectionExtensions
             options.AddPolicy(PublicReadPolicy, httpContext =>
                 CreatePartition(
                     redisRef,
-                    "r:" + GetClientKey(httpContext),
+                    "r:" + GetClientKey(httpContext, trustForwardedFor),
                     settings.PublicReadPermitLimit,
                     TimeSpan.FromSeconds(Math.Max(1, settings.PublicReadWindowSeconds))));
 
             options.AddPolicy(SensitiveWritePolicy, httpContext =>
                 CreatePartition(
                     redisRef,
-                    "w:" + GetClientKey(httpContext),
+                    "w:" + GetClientKey(httpContext, trustForwardedFor),
                     settings.SensitiveWritePermitLimit,
                     TimeSpan.FromSeconds(Math.Max(1, settings.SensitiveWriteWindowSeconds))));
 
             options.AddPolicy(DataExportPolicy, httpContext =>
                 CreatePartition(
                     redisRef,
-                    "x:" + GetClientKey(httpContext),
+                    "x:" + GetClientKey(httpContext, trustForwardedFor),
                     settings.DataExportPermitLimit,
                     TimeSpan.FromSeconds(Math.Max(1, settings.DataExportWindowSeconds))));
         });
@@ -149,7 +163,7 @@ public static class RateLimitingServiceCollectionExtensions
            || path.StartsWithSegments("/api/auth/config")
            || path.Value?.EndsWith("/swagger/v1/swagger.json", StringComparison.OrdinalIgnoreCase) == true;
 
-    private static string GetClientKey(HttpContext httpContext)
+    private static string GetClientKey(HttpContext httpContext, bool trustForwardedFor)
     {
         if (httpContext.User.Identity?.IsAuthenticated == true)
         {
@@ -159,10 +173,13 @@ public static class RateLimitingServiceCollectionExtensions
                 ?? "auth");
         }
 
-        var forwarded = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(forwarded))
+        if (trustForwardedFor)
         {
-            return "ip:" + forwarded.Split(',')[0].Trim();
+            var forwarded = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(forwarded))
+            {
+                return "ip:" + forwarded.Split(',')[0].Trim();
+            }
         }
 
         return "ip:" + (httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");

@@ -26,6 +26,14 @@ public class TurnstileVerifierTests
     }
 
     [Fact]
+    public async Task VerifyAsync_rejects_when_enabled_without_secret()
+    {
+        var sut = Create(enabled: true, secret: null, responseJson: """{"success":true}""");
+        (await sut.VerifyAsync("token-ok")).Should().BeFalse();
+        sut.IsEnforced.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task VerifyAsync_accepts_success_payload()
     {
         var sut = Create(enabled: true, secret: "secret", responseJson: """{"success":true}""");

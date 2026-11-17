@@ -67,13 +67,27 @@ public sealed class BookingCopySyncRabbitHostedService(
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.ReceivedAsync += async (_, args) =>
             {
-                var payload = Encoding.UTF8.GetString(args.Body.ToArray());
+                var body = args.Body.ToArray();
+                var payload = Encoding.UTF8.GetString(body);
                 var eventType = args.BasicProperties.Type
-                    ?? EventJson.TryGetEventType(args.Body.ToArray())
+                    ?? EventJson.TryGetEventType(body)
                     ?? "Unknown";
 
                 try
                 {
+                    if (!RabbitMqEventSecurity.IsAuthentic(rabbit, body, args.BasicProperties.Headers))
+                    {
+                        logger.LogWarning(
+                            "Rejected RabbitMQ booking-copy event {EventType}: invalid or missing HMAC",
+                            eventType);
+                        await _channel.BasicNackAsync(
+                            args.DeliveryTag,
+                            multiple: false,
+                            requeue: false,
+                            cancellationToken: stoppingToken);
+                        return;
+                    }
+
                     if (eventType is
                         nameof(BookingCreatedEvent)
                         or nameof(BookingUpdatedEvent)

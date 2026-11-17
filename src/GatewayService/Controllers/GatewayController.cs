@@ -13,7 +13,7 @@ public class GatewayController(
     IConfiguration configuration) : ControllerBase
 {
     [HttpGet("status")]
-    [Authorize(Policy = AuthPolicies.Staff)]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     public ActionResult<object> Status()
     {
         var config = proxyConfig.GetConfig();

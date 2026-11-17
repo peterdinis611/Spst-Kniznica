@@ -30,17 +30,24 @@ public sealed class RabbitMqEventPublisher : IEventPublisher, IAsyncDisposable
         var payload = EventSerializer.SerializeBytes(integrationEvent);
         var routingKey = $"library.{integrationEvent.EventType.ToLowerInvariant()}";
 
+        var headers = new Dictionary<string, object?>
+        {
+            ["event-type"] = integrationEvent.EventType,
+            ["occurred-at"] = integrationEvent.OccurredAt.ToString("O")
+        };
+
+        if (!string.IsNullOrWhiteSpace(_options.SigningSecret))
+        {
+            headers[EventHmac.HeaderName] = EventHmac.Sign(_options.SigningSecret, payload);
+        }
+
         var properties = new BasicProperties
         {
             ContentType = "application/json",
             DeliveryMode = DeliveryModes.Persistent,
             MessageId = integrationEvent.EventId.ToString(),
             Type = integrationEvent.EventType,
-            Headers = new Dictionary<string, object?>
-            {
-                ["event-type"] = integrationEvent.EventType,
-                ["occurred-at"] = integrationEvent.OccurredAt.ToString("O")
-            }
+            Headers = headers
         };
 
         await _channel!.BasicPublishAsync(

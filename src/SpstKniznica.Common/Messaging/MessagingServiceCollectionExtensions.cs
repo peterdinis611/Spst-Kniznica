@@ -26,6 +26,9 @@ public static class MessagingServiceCollectionExtensions
         var kafkaEnabled = configuration.GetValue($"{KafkaPublisherOptions.SectionName}:Enabled", true);
         var rabbitEnabled = configuration.GetValue($"{RabbitMqPublisherOptions.SectionName}:Enabled", true);
 
+        ValidateSigningRequired(configuration, KafkaPublisherOptions.SectionName, kafkaEnabled);
+        ValidateSigningRequired(configuration, RabbitMqPublisherOptions.SectionName, rabbitEnabled);
+
         if (kafkaEnabled)
         {
             services.AddSingleton<KafkaIntegrationEventPublisher>();
@@ -92,6 +95,30 @@ public static class MessagingServiceCollectionExtensions
         });
 
         return services;
+    }
+
+    private static void ValidateSigningRequired(
+        IConfiguration configuration,
+        string sectionName,
+        bool enabled)
+    {
+        if (!enabled)
+        {
+            return;
+        }
+
+        var requireSigning = configuration.GetValue($"{sectionName}:RequireSigning", false);
+        if (!requireSigning)
+        {
+            return;
+        }
+
+        var secret = configuration[$"{sectionName}:SigningSecret"];
+        if (string.IsNullOrWhiteSpace(secret))
+        {
+            throw new InvalidOperationException(
+                $"{sectionName}:RequireSigning is true but SigningSecret is empty.");
+        }
     }
 
     private static IIntegrationEventPublisher BuildComposite(

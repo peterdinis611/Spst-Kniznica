@@ -57,12 +57,16 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = (int)status;
 
+        var detail = status == HttpStatusCode.InternalServerError
+            ? "An unexpected error occurred. Please try again later."
+            : exception.Message;
+
         var payload = new
         {
             type = $"https://httpstatuses.com/{(int)status}",
             title,
             status = (int)status,
-            detail = exception.Message,
+            detail,
             instance = context.Request.Path.Value,
             errors,
             traceId = context.TraceIdentifier

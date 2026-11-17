@@ -9,4 +9,7 @@ public class KafkaOptions
     public string ClientId { get; set; } = "messaging-service";
     public string GroupId { get; set; } = "messaging-service";
     public string Topic { get; set; } = "spst.library.events";
+
+    /// <summary>Optional HMAC secret for <c>x-spst-signature</c> Kafka header.</summary>
+    public string? SigningSecret { get; set; }
 }

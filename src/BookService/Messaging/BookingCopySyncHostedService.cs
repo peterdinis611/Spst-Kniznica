@@ -62,6 +62,18 @@ public sealed class BookingCopySyncHostedService(
                             continue;
                         }
 
+                        if (!KafkaEventSecurity.IsAuthentic(
+                                kafka.SigningSecret,
+                                result.Message.Value,
+                                result.Message.Headers))
+                        {
+                            logger.LogWarning(
+                                "Rejected Kafka booking-copy event at offset {Offset}: invalid or missing HMAC",
+                                result.Offset.Value);
+                            consumer.Commit(result);
+                            continue;
+                        }
+
                         var eventType = result.Message.Headers?
                             .FirstOrDefault(h => h.Key == "event-type") is { } header
                             ? Encoding.UTF8.GetString(header.GetValueBytes())

@@ -15,4 +15,16 @@ public class RabbitMqPublisherOptions
     public string Queue { get; set; } = string.Empty;
     public string RoutingKey { get; set; } = "library.#";
     public string ClientName { get; set; } = "spst-publisher";
+
+    /// <summary>
+    /// Optional HMAC secret for <c>x-spst-signature</c> on published messages.
+    /// When set, consumers should reject unsigned/invalid payloads.
+    /// </summary>
+    public string? SigningSecret { get; set; }
+
+    /// <summary>
+    /// When true and <see cref="SigningSecret"/> is empty while Enabled, startup should fail
+    /// (Production). Local/dev leave false.
+    /// </summary>
+    public bool RequireSigning { get; set; }
 }

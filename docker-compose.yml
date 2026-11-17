@@ -6,6 +6,8 @@
 # until then treat this file as infra-only.
 #
 # Do not publish these ports or use guest/plaintext credentials outside loopback.
+# Production: set RABBITMQ_DEFAULT_USER/PASS, enable Kafka SASL/TLS, and set
+# Kafka:/RabbitMq:SigningSecret (+ RequireSigning=true) in service overlays.
 services:
   redis:
     image: redis:7.4-alpine
@@ -26,8 +28,9 @@ services:
       - "127.0.0.1:5672:5672"
       - "127.0.0.1:15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      # Loopback-only local defaults — override via env for shared hosts.
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -40,6 +43,7 @@ services:
     ports:
       - "127.0.0.1:9092:9092"
     environment:
+      # PLAINTEXT is local-only (bound to 127.0.0.1). Use SASL_SSL off-machine.
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093

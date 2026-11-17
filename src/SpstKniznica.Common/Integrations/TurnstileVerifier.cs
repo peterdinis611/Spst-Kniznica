@@ -29,9 +29,16 @@ public sealed class TurnstileVerifier(
         string? remoteIp = null,
         CancellationToken cancellationToken = default)
     {
-        if (!IsEnforced)
+        if (!options.Value.Enabled)
         {
             return true;
+        }
+
+        // Enabled without a secret must fail closed (misconfigured Production).
+        if (string.IsNullOrWhiteSpace(options.Value.SecretKey))
+        {
+            logger.LogError("Turnstile is Enabled but SecretKey is empty — rejecting request");
+            return false;
         }
 
         if (string.IsNullOrWhiteSpace(token))

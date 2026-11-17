@@ -3,7 +3,7 @@
     "Routes": {
       "books-api-write": {
         "ClusterId": "books",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/books/{**catch-all}",
@@ -17,7 +17,7 @@
       },
       "books-api-root-write": {
         "ClusterId": "books",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/books",
@@ -31,7 +31,7 @@
       },
       "books-export": {
         "ClusterId": "books",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": -1,
         "Match": {
           "Path": "/api/books/export",
@@ -42,7 +42,7 @@
       },
       "books-isbn-lookup": {
         "ClusterId": "books",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": -1,
         "Match": {
           "Path": "/api/books/lookup/{**catch-all}",
@@ -78,7 +78,7 @@
       },
       "categories-api-write": {
         "ClusterId": "categories",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/categories/{**catch-all}",
@@ -92,7 +92,7 @@
       },
       "categories-api-root-write": {
         "ClusterId": "categories",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/categories",
@@ -106,7 +106,7 @@
       },
       "categories-export": {
         "ClusterId": "categories",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": -1,
         "Match": {
           "Path": "/api/categories/export",
@@ -142,7 +142,7 @@
       },
       "authors-api-write": {
         "ClusterId": "authors",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/authors/{**catch-all}",
@@ -156,7 +156,7 @@
       },
       "authors-api-root-write": {
         "ClusterId": "authors",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/authors",
@@ -170,7 +170,7 @@
       },
       "authors-export": {
         "ClusterId": "authors",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": -1,
         "Match": {
           "Path": "/api/authors/export",
@@ -181,7 +181,7 @@
       },
       "authors-enrich": {
         "ClusterId": "authors",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": -1,
         "Match": {
           "Path": "/api/authors/enrich",
@@ -271,7 +271,7 @@
       },
       "messaging-api-write": {
         "ClusterId": "messaging",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/messaging/{**catch-all}",
@@ -299,7 +299,7 @@
       },
       "relations-api-write": {
         "ClusterId": "messaging",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/relations/{**catch-all}",
@@ -313,7 +313,7 @@
       },
       "relations-api-root-write": {
         "ClusterId": "messaging",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/relations",
@@ -352,7 +352,7 @@
       },
       "cache-api-write": {
         "ClusterId": "cache",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/cache/{**catch-all}",
@@ -366,7 +366,7 @@
       },
       "cache-api-root-write": {
         "ClusterId": "cache",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 0,
         "Match": {
           "Path": "/api/cache",
@@ -430,7 +430,7 @@
       },
       "admin-api": {
         "ClusterId": "admin",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "AdminOnly",
         "Order": 1,
         "Match": {
           "Path": "/api/admin/{**catch-all}"
@@ -438,7 +438,7 @@
       },
       "admin-api-root": {
         "ClusterId": "admin",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "AdminOnly",
         "Order": 2,
         "Match": {
           "Path": "/api/admin"
@@ -457,7 +457,7 @@
       },
       "emails-api": {
         "ClusterId": "email",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 1,
         "Match": {
           "Path": "/api/emails/{**catch-all}"
@@ -465,7 +465,7 @@
       },
       "emails-api-root": {
         "ClusterId": "email",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 2,
         "Match": {
           "Path": "/api/emails"
