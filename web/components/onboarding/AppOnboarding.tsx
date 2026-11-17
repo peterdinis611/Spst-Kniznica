@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, KeyRound, Library, Search } from "lucide-react";
+import { ArrowUpRight, BookOpen, KeyRound, Library, Search } from "@/components/icons";
 import { AnimationDelayedLi } from "@/components/styled/primitives";
 import { cn } from "@/lib/utils";
 

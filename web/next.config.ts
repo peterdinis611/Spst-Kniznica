@@ -79,9 +79,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: [
-      "lucide-react",
       "framer-motion",
       "@react-three/drei",
+
       "@react-three/fiber",
       "@tanstack/react-pacer",
       "@tanstack/react-virtual",

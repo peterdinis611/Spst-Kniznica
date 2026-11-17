@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "@/components/icons";
 import { FlatCover } from "@/components/landing/FlatCover";
 import { AccentFill } from "@/components/styled/primitives";
 import type { CarouselBook } from "@/lib/catalog";

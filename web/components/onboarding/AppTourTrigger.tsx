@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Sparkles } from "lucide-react";
+import { Sparkles } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { destroyAppTour, startAppTour } from "@/lib/tour/app-tour";
 

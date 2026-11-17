@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { RefreshCw, WifiOff } from "lucide-react";
+import { RefreshCw, WifiOff } from "@/components/icons";
 import { API_BASE, apiUrl } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

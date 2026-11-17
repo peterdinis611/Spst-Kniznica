@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, LogIn, Menu, X } from "lucide-react";
+import { ArrowRight, LogIn, Menu, X } from "@/components/icons";
 import { useAbility } from "@/components/auth/AbilityProvider";
 import { AuthNavCluster } from "@/components/auth/AuthNavCluster";
 import { BrandLogo } from "@/components/brand-logo";

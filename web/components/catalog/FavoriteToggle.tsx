@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAction } from "next-safe-action/hooks";
-import { Heart } from "lucide-react";
+import { Heart } from "@/components/icons";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import {

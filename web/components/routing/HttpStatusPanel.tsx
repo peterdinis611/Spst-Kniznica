@@ -12,8 +12,8 @@ import {
   RotateCcw,
   ServerCrash,
   Unplug,
-  type LucideIcon,
-} from "lucide-react";
+  type PulsoIcon,
+} from "@/components/icons";
 import { motion, useReducedMotion } from "framer-motion";
 import { MainContent } from "@/components/a11y/MainContent";
 import {
@@ -79,7 +79,7 @@ const iconShow = {
   },
 };
 
-const ICONS: Record<HttpStatusCode, LucideIcon> = {
+const ICONS: Record<HttpStatusCode, PulsoIcon> = {
   401: KeyRound,
   404: BookMarked,
   429: Gauge,

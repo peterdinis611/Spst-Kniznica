@@ -3,7 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useAction } from "next-safe-action/hooks";
-import { ArrowRight, Ticket } from "lucide-react";
+import { ArrowRight, Ticket } from "@/components/icons";
 import { useAnnounce } from "@/components/a11y/LiveAnnouncer";
 import { SignInRequiredNotice } from "@/components/auth/NotAuthorizedNotice";
 import { useAuth } from "@/components/auth/AuthProvider";

@@ -2,19 +2,18 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   BookOpenCheck,
-  ExternalLink,
   LibraryBig,
   MoveHorizontal,
   Ticket,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+} from "@/components/icons";
+import type { PulsoIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
 const steps: ReadonlyArray<{
   n: string;
   title: string;
   body: string;
-  Icon: LucideIcon;
+  Icon: PulsoIcon;
 }> = [
   {
     n: "01",
@@ -102,21 +101,6 @@ export function HowToUse() {
           >
             Otvoriť katalóg
             <ArrowUpRight className="size-4" strokeWidth={1.8} aria-hidden />
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="rounded-full"
-            render={
-              <Link
-                href="http://localhost:5200/swagger"
-                target="_blank"
-                rel="noreferrer"
-              />
-            }
-          >
-            Dokumentácia API
-            <ExternalLink className="size-3.5" strokeWidth={1.8} aria-hidden />
           </Button>
         </div>
       </div>

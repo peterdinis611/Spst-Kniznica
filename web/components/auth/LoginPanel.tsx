@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link, { useLinkStatus } from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, BookOpen, Library, LogOut, Shield } from "lucide-react";
+import { ArrowRight, BookOpen, Library, LogOut, Shield } from "@/components/icons";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
   isTurnstileConfigured,

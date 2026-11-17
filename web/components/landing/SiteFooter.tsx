@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
 import { connection } from "next/server";
-import { ArrowUpRight, MapPin } from "lucide-react";
+import { ArrowUpRight, MapPin } from "@/components/icons";
 import { LibraryMap } from "@/components/landing/LibraryMap";
 import { AccentFill } from "@/components/styled/primitives";
 import { searchBooksAction } from "@/lib/catalog/actions";

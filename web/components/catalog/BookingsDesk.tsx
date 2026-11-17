@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, Search } from "@/components/icons";
 import { useAbility } from "@/components/auth/AbilityProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";

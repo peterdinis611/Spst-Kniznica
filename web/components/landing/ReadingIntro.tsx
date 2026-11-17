@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, Radio, Users } from "lucide-react";
+import { ArrowUpRight, BookOpen, Radio, Users } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
 export function ReadingIntro() {

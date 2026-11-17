@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Search } from "lucide-react";
+import { ArrowUpRight, Search } from "@/components/icons";
 import { AccentGradient165 } from "@/components/styled/primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

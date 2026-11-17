@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAction } from "next-safe-action/hooks";
-import { Barcode, ScanLine } from "lucide-react";
+import { Barcode, ScanLine } from "@/components/icons";
 import { useAbility } from "@/components/auth/AbilityProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";

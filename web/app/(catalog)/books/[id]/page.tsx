@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "@/components/icons";
 import { BookBiblioFacts } from "@/components/catalog/BookBiblioFacts";
 import { BookDetailCover } from "@/components/catalog/BookDetailCover";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";

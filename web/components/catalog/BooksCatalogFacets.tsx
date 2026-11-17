@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, ChevronsUpDown, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronsUpDown, SlidersHorizontal, X } from "@/components/icons";
 import {
   buildBooksCatalogHref,
   type BooksCatalogFilters,

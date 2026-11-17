@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { X } from "lucide-react";
+import { X } from "@/components/icons";
 import { ResultsStatus } from "@/components/a11y/ResultsStatus";
 import { BookCard } from "@/components/catalog/BookCard";
 import { BooksCatalogFacets } from "@/components/catalog/BooksCatalogFacets";

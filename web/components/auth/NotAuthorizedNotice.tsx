@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { KeyRound } from "lucide-react";
+import { KeyRound } from "@/components/icons";
 import { motion, useReducedMotion } from "framer-motion";
 import { RuleDotGrid } from "@/components/styled/primitives";
 import { cn } from "@/lib/utils";

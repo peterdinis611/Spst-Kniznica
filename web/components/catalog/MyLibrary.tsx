@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAction } from "next-safe-action/hooks";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "@/components/icons";
 import { SignInRequiredNotice } from "@/components/auth/NotAuthorizedNotice";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";

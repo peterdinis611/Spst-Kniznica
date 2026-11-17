@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "@/components/icons";
 import { BookCard } from "@/components/catalog/BookCard";
 import { buildBooksCatalogHref } from "@/lib/catalog/catalog-url";
 import { searchBooksAction } from "@/lib/catalog/actions";

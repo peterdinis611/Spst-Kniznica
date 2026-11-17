@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAction } from "next-safe-action/hooks";
-import { Download, ScanLine } from "lucide-react";
+import { Download, ScanLine } from "@/components/icons";
 import { useAbility } from "@/components/auth/AbilityProvider";
 import { SignInRequiredNotice } from "@/components/auth/NotAuthorizedNotice";
 import { useAuth } from "@/components/auth/AuthProvider";
