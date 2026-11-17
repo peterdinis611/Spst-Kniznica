@@ -26,7 +26,6 @@ import {
 import { searchBooksCursorAction } from "@/lib/catalog/actions";
 import type { CatalogAuthor, CatalogBook, CatalogCategory } from "@/lib/catalog";
 import { VirtualList, VirtualRow } from "@/components/styled/primitives";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 type BooksCatalogProps = {
@@ -183,43 +182,52 @@ export function BooksCatalog({
 
       <Separator className="mt-10 sm:mt-12" />
 
-      <div className="flex flex-wrap items-start justify-between gap-4 pt-8 sm:pt-10">
-        <div className="min-w-0 flex-1 space-y-4">
-          <BooksCatalogFacets
-            filters={filters}
-            liveQuery={liveQuery}
-            categories={initialCategories}
-            authors={initialAuthors}
-            filterCount={advancedCount}
-            onOpenAdvanced={() => setFiltersOpen(true)}
-            filtersOpen={filtersOpen}
-          />
+      <div className="space-y-4 pt-8 sm:pt-10">
+        <BooksCatalogFacets
+          filters={filters}
+          liveQuery={liveQuery}
+          categories={initialCategories}
+          authors={initialAuthors}
+          filterCount={advancedCount}
+          resultCount={results.length}
+          resultsPending={isPending}
+          onOpenAdvanced={() => setFiltersOpen(true)}
+          filtersOpen={filtersOpen}
+        />
 
-          {activeTags.length > 0 ? (
-            <ul className="flex flex-wrap items-center gap-2">
-              {activeTags.map((tag) => (
-                <li key={tag.key}>
-                  <Link
-                    href={buildBooksCatalogHref({
-                      ...filters,
-                      ...tag.clear,
-                      q: liveQuery.trim() || undefined,
-                    })}
-                    scroll={false}
-                    className="group inline-flex items-center gap-1.5 border border-rule bg-card/80 py-1 pr-2 pl-2.5 text-xs text-ink transition hover:border-sage/40 dark:border-white/12"
-                  >
-                    {tag.label}
-                    <X
-                      className="size-3 text-muted-foreground group-hover:text-ink"
-                      aria-hidden
-                    />
-                    <span className="sr-only">Odstrániť filter</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+        {activeTags.length > 0 ? (
+          <ul className="flex flex-wrap items-center gap-2 px-0.5">
+            {activeTags.map((tag) => (
+              <li key={tag.key}>
+                <Link
+                  href={buildBooksCatalogHref({
+                    ...filters,
+                    ...tag.clear,
+                    q: liveQuery.trim() || undefined,
+                  })}
+                  scroll={false}
+                  className="group inline-flex items-center gap-1.5 border border-rule/90 bg-card/70 py-1 pr-1.5 pl-2.5 text-xs text-ink transition hover:border-sage/45 dark:border-white/12"
+                >
+                  <span className="font-mono text-[10px] tracking-[0.12em] text-sage uppercase">
+                    {tag.key === "year"
+                      ? "Rok"
+                      : tag.key === "language"
+                        ? "Jazyk"
+                        : "Trakt"}
+                  </span>
+                  {tag.label.replace(/^Rok\s+/, "").replace(/^Trakt\s+/, "")}
+                  <X
+                    className="size-3 text-muted-foreground group-hover:text-ink"
+                    aria-hidden
+                  />
+                  <span className="sr-only">Odstrániť filter</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
+        <div className="flex flex-wrap items-center justify-between gap-3 px-0.5">
           {isPending ? (
             <p className="text-sm text-sage" role="status" aria-live="polite">
               Hľadám v katalógu…
@@ -238,31 +246,24 @@ export function BooksCatalog({
                 </>
               ) : (
                 "Aktívne filtre — zoznam je zúžený"
-              )}{" "}
-              <Link
-                href="/books"
-                scroll={false}
-                className="text-sage underline-offset-2 hover:underline"
-              >
-                Zrušiť všetko
-              </Link>
+              )}
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
               Celý fond — bez aktívnych filtrov
             </p>
           )}
-        </div>
 
-        <Badge
-          variant="secondary"
-          className="h-auto shrink-0 rounded-full bg-paper-deep px-3 py-1 font-display text-sm tabular-nums text-ink ring-1 ring-rule dark:ring-white/10"
-        >
-          {isPending ? "…" : results.length}{" "}
-          <span className="font-sans font-normal text-muted-foreground">
-            {results.length === 1 && !isPending ? "titul" : "titulov"}
-          </span>
-        </Badge>
+          {hasAnyFilter ? (
+            <Link
+              href="/books"
+              scroll={false}
+              className="font-mono text-[11px] tracking-[0.14em] text-sage uppercase underline-offset-4 hover:underline"
+            >
+              Zrušiť všetko
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       <BooksCatalogFiltersDialog
