@@ -16,26 +16,58 @@ namespace BookService.Controllers;
 public class InternalBooksController(IBooksService books) : ControllerBase
 {
     [HttpGet("{id:guid}/availability")]
-    [ProducesResponseType(typeof(BookAvailabilityResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BookCatalogSnapshot), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<BookAvailabilityResponse>> GetAvailability(
+    public async Task<ActionResult<BookCatalogSnapshot>> GetAvailability(
         Guid id,
         CancellationToken cancellationToken)
     {
         var book = await books.GetByIdAsync(id, cancellationToken);
-        return Ok(new BookAvailabilityResponse
-        {
-            BookId = book.Id,
-            TotalCopies = book.TotalCopies,
-            AvailableCopies = book.AvailableCopies,
-        });
+        return Ok(ToSnapshot(book));
     }
+
+    [HttpPost("summaries")]
+    [ProducesResponseType(typeof(IReadOnlyList<BookCatalogSnapshot>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<BookCatalogSnapshot>>> GetSummaries(
+        [FromBody] BookSummariesRequest request,
+        CancellationToken cancellationToken)
+    {
+        var ids = (request.Ids ?? [])
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .Take(100)
+            .ToArray();
+
+        if (ids.Length == 0)
+        {
+            return Ok(Array.Empty<BookCatalogSnapshot>());
+        }
+
+        var items = await books.GetSummariesAsync(ids, cancellationToken);
+        return Ok(items);
+    }
+
+    private static BookCatalogSnapshot ToSnapshot(DTOs.BookDetailDto book) => new()
+    {
+        BookId = book.Id,
+        Title = book.Title,
+        Author = book.Author,
+        TotalCopies = book.TotalCopies,
+        AvailableCopies = book.AvailableCopies,
+    };
 }
 
-public sealed class BookAvailabilityResponse
+public sealed class BookSummariesRequest
+{
+    public List<Guid>? Ids { get; set; }
+}
+
+public sealed class BookCatalogSnapshot
 {
     public Guid BookId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Author { get; set; } = string.Empty;
     public int TotalCopies { get; set; }
     public int AvailableCopies { get; set; }
 }

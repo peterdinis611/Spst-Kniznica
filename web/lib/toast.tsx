@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import { sileo, type SileoOptions, type SileoPosition } from "sileo";
-import { toastIcons } from "@/lib/toast-icons";
+import {
+  resolveToastIcon,
+  toastIcons,
+  type ToastIconName,
+} from "@/lib/toast-icons";
 
 export type {
   SileoButton,
@@ -9,7 +13,11 @@ export type {
   SileoState,
   SileoStyles,
 } from "sileo";
-export { toastIcons, toastSvg } from "@/lib/toast-icons";
+export {
+  toastIcons,
+  toastSvg,
+  resolveToastIcon,
+} from "@/lib/toast-icons";
 export type { ToastIconName } from "@/lib/toast-icons";
 
 export { sileo };
@@ -28,19 +36,31 @@ type ToastInput = Omit<SileoOptions, "title" | "description" | "icon"> & {
   description?: ReactNode | string;
   /** Vlastná SVG / React ikona v badge. `null` skryje ikonu. */
   icon?: ReactNode | null;
+  /** Predpripravená animovaná SVG ikona podľa mena. */
+  iconName?: ToastIconName;
 };
+
+function pickIcon(
+  input: ToastInput,
+  fallback: ReactNode,
+): ReactNode | null | undefined {
+  if (input.icon !== undefined) return input.icon;
+  if (input.iconName) return resolveToastIcon(input.iconName);
+  return fallback;
+}
 
 function withDefaults(
   input: ToastInput,
   defaults: Partial<SileoOptions> & { icon: ReactNode },
 ): SileoOptions {
+  const { iconName: _iconName, ...rest } = input;
   return {
-    duration: 5200,
-    roundness: 14,
-    autopilot: { expand: 900, collapse: 3200 },
+    duration: 5600,
+    roundness: 16,
+    autopilot: { expand: 700, collapse: 2800 },
     ...defaults,
-    ...input,
-    icon: input.icon === undefined ? defaults.icon : input.icon,
+    ...rest,
+    icon: pickIcon(input, defaults.icon),
     styles: {
       title: "font-semibold tracking-tight!",
       description: "text-[13px] leading-snug opacity-80!",
@@ -70,7 +90,7 @@ function error(input: ToastInput) {
   return sileo.error(
     withDefaults(input, {
       fill: FILL.rose,
-      duration: 7000,
+      duration: 7200,
       icon: toastIcons.error,
       styles: {
         title: "text-[#f7f3ea]!",
@@ -186,7 +206,7 @@ function promise<T>(
     error: (err) =>
       withDefaults(resolveMessage(messages.error, err), {
         fill: FILL.rose,
-        duration: 7000,
+        duration: 7200,
         icon: toastIcons.error,
         styles: {
           title: "text-[#f7f3ea]!",
@@ -197,7 +217,31 @@ function promise<T>(
   });
 }
 
-/** Brandované toast API pre SPST knižnicu (SVG ikony v badge). */
+/** Doménové skratky s predvolenými SVG ikonami. */
+const domain = {
+  reserved: (title = "Rezervácia vystavená", description?: string) =>
+    success({ title, description, iconName: "book" }),
+  renewed: (title = "Termín predĺžený", description?: string) =>
+    success({ title, description, iconName: "renew" }),
+  cancelled: (title = "Lístok zrušený", description?: string) =>
+    info({ title, description, iconName: "cancel" }),
+  returned: (title = "Kniha vrátená", description?: string) =>
+    success({ title, description, iconName: "checkStack" }),
+  favorited: (title = "Pridané medzi obľúbené", description?: string) =>
+    library({ title, description, iconName: "heart" }),
+  copied: (title = "Skopírované", description?: string) =>
+    info({ title, description, iconName: "copy" }),
+  scanned: (title = "Kód načítaný", description?: string) =>
+    success({ title, description, iconName: "scan" }),
+  offline: (title = "Ste offline", description?: string) =>
+    warning({ title, description, iconName: "offline" }),
+  dueSoon: (title = "Blíži sa termín", description?: string) =>
+    warning({ title, description, iconName: "clock" }),
+  welcome: (title = "Vitaj v knižnici", description?: string) =>
+    library({ title, description, iconName: "spark" }),
+} as const;
+
+/** Brandované toast API pre SPST knižnicu (animované SVG ikony v badge). */
 export const toast = {
   success,
   error,
@@ -206,6 +250,7 @@ export const toast = {
   library,
   action,
   promise,
+  ...domain,
   dismiss: sileo.dismiss,
   clear: sileo.clear,
   show: sileo.show,

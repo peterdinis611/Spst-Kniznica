@@ -18,10 +18,12 @@ public static class CachingServiceCollectionExtensions
             services.PostConfigure<CacheOptions>(options => options.InstanceName = instanceName);
         }
 
-        var enabled = configuration.GetValue($"{CacheOptions.SectionName}:Enabled", true);
-        if (!enabled)
+        // Cache:Enabled=false → in-process memory (dev-friendly). true → Redis.
+        var useRedis = configuration.GetValue($"{CacheOptions.SectionName}:Enabled", true);
+        if (!useRedis)
         {
-            services.AddSingleton<IAppCache, NullAppCache>();
+            services.AddMemoryCache();
+            services.AddSingleton<IAppCache, MemoryAppCache>();
             return services;
         }
 

@@ -65,7 +65,14 @@ try
 
     await app.Services.MigrateSpstDatabaseAsync<CategoryDbContext>(
         "CategoryService",
-        async (db, _) => await CategorySeed.EnsureSeededAsync(db));
+        async (db, ct) =>
+        {
+            await SpstKniznica.Common.Data.SqliteGuidNormalize.LowerGuidColumnsAsync(
+                db,
+                [("Categories", "Id")],
+                ct);
+            await CategorySeed.EnsureSeededAsync(db);
+        });
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();

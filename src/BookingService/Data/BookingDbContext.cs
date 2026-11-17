@@ -1,5 +1,6 @@
 using BookingService.Models;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Data;
 
 namespace BookingService.Data;
 
@@ -12,6 +13,8 @@ public class BookingDbContext(DbContextOptions<BookingDbContext> options) : DbCo
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyLowercaseGuidText();
+
         modelBuilder.Entity<Booking>(entity =>
         {
             entity.HasKey(b => b.Id);

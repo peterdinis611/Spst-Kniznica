@@ -11,6 +11,7 @@ public class CategoryDbContext(DbContextOptions<CategoryDbContext> options) : Db
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ConfigureSpstDbFunctions();
+        modelBuilder.ApplyLowercaseGuidText();
 
         modelBuilder.Entity<Category>(entity =>
         {

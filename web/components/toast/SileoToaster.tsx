@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import { Toaster } from "sileo";
 import "sileo/styles.css";
+import "@/components/toast/sileo-toast.css";
 
 export function SileoToaster() {
   const { resolvedTheme } = useTheme();
@@ -17,9 +18,15 @@ export function SileoToaster() {
       theme={theme}
       offset={{ top: 18, right: 18, bottom: 18, left: 18 }}
       options={{
-        roundness: 14,
-        duration: 5200,
-        autopilot: { expand: 900, collapse: 3200 },
+        roundness: 16,
+        duration: 5600,
+        autopilot: { expand: 700, collapse: 2800 },
+        styles: {
+          title: "font-semibold tracking-tight!",
+          description: "text-[13px] leading-snug opacity-80!",
+          badge: "gap-1.5!",
+          button: "font-medium!",
+        },
       }}
     />
   );

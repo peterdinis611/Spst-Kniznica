@@ -71,33 +71,34 @@ export function LoginPanel() {
     const wantsAdmin = safeNextPath(searchParams.get("next")) === "/admin";
 
     return (
-      <PanelShell accentBar>
+      <PanelShell>
         <div className="flex items-start justify-between gap-4">
           <div
-            className="flex size-12 items-center justify-center border border-sage/25 bg-mint/60 font-display text-base text-sage dark:border-accent/50 dark:bg-accent/15 dark:text-ink"
+            className="grid size-14 place-items-center border border-sage/30 bg-mint/70 font-display text-lg tracking-tight text-sage dark:border-sage/45 dark:bg-accent/15 dark:text-ink"
             aria-hidden
           >
             {mono}
           </div>
-          <span className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
-            ● prihlásený
+          <span className="inline-flex items-center gap-1.5 pt-1 font-mono text-[10px] tracking-[0.16em] text-sage uppercase">
+            <span className="size-1.5 rounded-full bg-sage" aria-hidden />
+            prihlásený
           </span>
         </div>
 
         <h2
           id="login-panel-heading"
-          className="mt-6 font-display text-2xl tracking-tight text-ink"
+          className="mt-5 font-display text-[1.75rem] leading-none tracking-tight text-ink"
         >
           {fullName}
         </h2>
-        <p className="mt-1 break-all text-sm text-muted-foreground">
+        <p className="mt-2 break-all text-sm text-muted-foreground">
           {user.email ?? "bez emailu"}
         </p>
 
         <RoleBadges primaryRole={primaryRole} roles={user.roles} />
 
         {wantsAdmin && !user.isStaff ? (
-          <p className="mt-4 border border-stair-1/35 bg-stair-1/10 px-3 py-2 text-sm text-ink">
+          <p className="mt-5 border border-stair-1/35 bg-stair-1/10 px-3 py-2.5 text-sm leading-relaxed text-ink">
             Účet ešte nemá rolu administrátora alebo knižníka. Lokálne môžeš
             dočasne zapnúť{" "}
             <code className="font-mono text-xs">GrantStaffInDevelopment</code>{" "}
@@ -106,7 +107,10 @@ export function LoginPanel() {
           </p>
         ) : null}
 
-        <nav className="mt-6 grid gap-1.5" aria-label="Skratky účtu">
+        <nav
+          className="mt-6 border-t border-rule pt-2 dark:border-white/10"
+          aria-label="Skratky účtu"
+        >
           <QuickLink href="/books" icon={BookOpen} label="Katalóg kníh" />
           <QuickLink href="/library" icon={Library} label="Moje výpožičky" />
           {user.isStaff ? (
@@ -115,14 +119,15 @@ export function LoginPanel() {
             <QuickLink
               href="/admin"
               icon={Shield}
-              label="Správcovský pult (vyžaduje personál)"
+              label="Správcovský pult"
+              hint="vyžaduje personál"
             />
           )}
         </nav>
 
         <Button
           variant="outline"
-          className="mt-6 h-10 w-full rounded-none border-rule bg-paper/50 text-ink hover:bg-mint/30 dark:bg-transparent"
+          className="mt-5 h-11 w-full rounded-none border-rule bg-transparent text-ink hover:border-sage/40 hover:bg-mint/25 dark:border-white/15 dark:hover:bg-white/5"
           onClick={() => void logout()}
         >
           <LogOut className="size-4" strokeWidth={1.8} aria-hidden />
@@ -133,25 +138,25 @@ export function LoginPanel() {
   }
 
   return (
-    <PanelShell accentBar>
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+    <PanelShell>
+      <p className="font-mono text-[10px] tracking-[0.2em] text-eyebrow uppercase">
         {entraEnabled ? "Microsoft Entra" : "Vývojové prostredie"}
       </p>
       <h2
         id="login-panel-heading"
-        className="mt-2 font-display text-2xl tracking-tight text-ink"
+        className="mt-3 font-display text-[1.75rem] leading-none tracking-tight text-ink"
       >
         {entraEnabled ? "Prihlás sa" : "Vývojový režim"}
       </h2>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
         {entraEnabled
-          ? "Účet Microsoft ti odomkne rezerváciu kníh."
-          : "Lokálny administrátor pre vývoj."}
+          ? "Školský Microsoft účet ti odomkne rezerváciu kníh."
+          : "Lokálny administrátor pre vývoj bez Entra."}
       </p>
 
       {loginNotice ? (
         <p
-          className="mt-4 border border-sage/30 bg-mint/35 px-3 py-2 text-sm text-ink dark:border-accent/40 dark:bg-accent/10"
+          className="mt-5 border border-sage/30 bg-mint/35 px-3 py-2.5 text-sm text-ink dark:border-accent/40 dark:bg-accent/10"
           role="status"
         >
           {loginNotice}
@@ -160,7 +165,7 @@ export function LoginPanel() {
 
       {error ? (
         <p
-          className="mt-4 whitespace-pre-wrap border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-800 dark:text-red-300"
+          className="mt-5 whitespace-pre-wrap border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-800 dark:text-red-300"
           role="alert"
         >
           {error}
@@ -170,7 +175,7 @@ export function LoginPanel() {
       <TurnstileWidget onToken={onTurnstile} />
 
       <Button
-        className="mt-6 h-11 w-full rounded-none bg-accent text-accent-foreground hover:bg-accent-deep"
+        className="mt-6 h-12 w-full rounded-none bg-ink text-paper hover:bg-ink/90 dark:bg-sage dark:text-ink dark:hover:bg-sage/90"
         disabled={turnstileRequired && !turnstileToken}
         onClick={() => void login()}
       >
@@ -180,32 +185,32 @@ export function LoginPanel() {
         <ArrowRight className="size-4" strokeWidth={1.8} aria-hidden />
       </Button>
 
-      <p className="mt-4 text-center text-xs text-muted-foreground">
+      <p className="mt-4 text-center text-xs leading-relaxed text-muted-foreground">
         Nemáš účet? Požiadaj správcu školy o prístup v Entra.
       </p>
     </PanelShell>
   );
 }
 
-function PanelShell({
-  children,
-  accentBar,
-}: {
-  children: React.ReactNode;
-  accentBar?: boolean;
-}) {
+function PanelShell({ children }: { children: React.ReactNode }) {
   return (
     <section
       aria-label="Prihlásenie"
-      className="relative border border-rule/90 bg-card/90 p-6 shadow-[0_18px_40px_-28px_rgba(14,26,36,0.35)] backdrop-blur-[2px] sm:p-7 dark:border-white/10 dark:bg-paper-deep/50 dark:shadow-none"
+      className={cn(
+        "relative overflow-hidden border border-rule/90 bg-card/95 p-6 sm:p-7",
+        "shadow-[0_22px_50px_-34px_rgba(14,26,36,0.45)]",
+        "dark:border-white/12 dark:bg-paper-deep/55 dark:shadow-none",
+      )}
     >
-      {accentBar ? (
-        <div
-          aria-hidden
-          className="absolute top-0 left-0 h-full w-1 bg-gradient-to-b from-sage via-mint to-accent-deep dark:from-sage dark:via-accent dark:to-accent-deep"
-        />
-      ) : null}
-      <div className={accentBar ? "pl-2" : undefined}>{children}</div>
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sage via-mint to-accent-deep"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-8 -bottom-10 size-36 rounded-full bg-mint/30 blur-2xl dark:bg-sage/10"
+      />
+      <div className="relative">{children}</div>
     </section>
   );
 }
@@ -215,18 +220,18 @@ function LoadingState() {
     <div role="status" aria-live="polite" aria-busy="true" className="space-y-4">
       <span className="sr-only">Načítavam účet…</span>
       <div className="flex justify-between" aria-hidden>
-        <Skeleton className="size-12" />
+        <Skeleton className="size-14" />
         <Skeleton className="h-3 w-20" />
       </div>
       <Skeleton className="h-8 w-48" aria-hidden />
       <Skeleton className="h-4 w-56" aria-hidden />
       <Skeleton className="h-6 w-24" aria-hidden />
-      <div className="space-y-2 pt-2" aria-hidden>
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
+      <div className="space-y-1 border-t border-rule pt-3 dark:border-white/10" aria-hidden>
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
       </div>
-      <Skeleton className="h-10 w-full" aria-hidden />
+      <Skeleton className="h-11 w-full" aria-hidden />
     </div>
   );
 }
@@ -240,14 +245,14 @@ function RoleBadges({
 }) {
   return (
     <div className="mt-4 flex flex-wrap gap-2" aria-label="Role účtu">
-      <Badge className="rounded-none border border-sage/20 bg-mint/80 px-2.5 text-xs text-sage dark:border-transparent dark:bg-accent dark:text-accent-foreground">
+      <Badge className="rounded-none border border-sage/25 bg-mint/85 px-2.5 text-xs text-sage dark:border-transparent dark:bg-accent dark:text-accent-foreground">
         {primaryRole}
       </Badge>
       {roles.map((role) => (
         <Badge
           key={role}
           variant="outline"
-          className="rounded-none border-rule text-xs"
+          className="rounded-none border-rule text-xs dark:border-white/15"
         >
           {role}
         </Badge>
@@ -260,31 +265,38 @@ function QuickLink({
   href,
   icon: Icon,
   label,
+  hint,
 }: {
   href: string;
   icon: typeof BookOpen;
   label: string;
+  hint?: string;
 }) {
   return (
     <Link
       href={href}
       prefetch
       className={cn(
-        "group flex items-center justify-between gap-2 border border-transparent px-2 py-2 text-sm text-ink transition",
-        "hover:border-rule hover:bg-accent-soft/40 dark:hover:border-white/10 dark:hover:bg-paper/80",
+        "group flex items-center justify-between gap-3 border-b border-rule/70 py-3.5 text-sm text-ink last:border-b-0",
+        "transition hover:bg-mint/20 dark:border-white/10 dark:hover:bg-white/[0.03]",
       )}
     >
-      <span className="flex items-center gap-2">
-        <Icon
-          className="size-4 text-sage dark:text-accent"
-          strokeWidth={1.6}
-          aria-hidden
-        />
-        {label}
+      <span className="flex min-w-0 items-center gap-3">
+        <span className="grid size-8 shrink-0 place-items-center border border-sage/25 bg-mint/40 text-sage transition group-hover:border-sage/50 group-hover:bg-sage group-hover:text-paper dark:border-sage/40 dark:bg-transparent dark:group-hover:bg-sage dark:group-hover:text-ink">
+          <Icon className="size-3.5" strokeWidth={1.7} aria-hidden />
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate font-medium">{label}</span>
+          {hint ? (
+            <span className="block truncate text-xs text-muted-foreground">
+              {hint}
+            </span>
+          ) : null}
+        </span>
         <QuickLinkPending />
       </span>
       <ArrowRight
-        className="size-3.5 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-ink"
+        className="size-3.5 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-ink"
         aria-hidden
       />
     </Link>

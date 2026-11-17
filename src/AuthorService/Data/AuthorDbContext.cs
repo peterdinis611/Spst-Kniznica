@@ -11,6 +11,7 @@ public class AuthorDbContext(DbContextOptions<AuthorDbContext> options) : DbCont
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ConfigureSpstDbFunctions();
+        modelBuilder.ApplyLowercaseGuidText();
 
         modelBuilder.Entity<Author>(entity =>
         {

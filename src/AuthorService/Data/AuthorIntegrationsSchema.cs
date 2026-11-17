@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Data;
 
 namespace AuthorService.Data;
 
@@ -9,6 +10,11 @@ public static class AuthorIntegrationsSchema
         await EnsureColumnAsync(db, "WikidataId", """ALTER TABLE "Authors" ADD COLUMN "WikidataId" TEXT NULL;""", cancellationToken);
         await EnsureColumnAsync(db, "ViafId", """ALTER TABLE "Authors" ADD COLUMN "ViafId" TEXT NULL;""", cancellationToken);
         await EnsureColumnAsync(db, "ProfileUrl", """ALTER TABLE "Authors" ADD COLUMN "ProfileUrl" TEXT NULL;""", cancellationToken);
+
+        await SqliteGuidNormalize.LowerGuidColumnsAsync(
+            db,
+            [("Authors", "Id")],
+            cancellationToken);
     }
 
     private static async Task EnsureColumnAsync(

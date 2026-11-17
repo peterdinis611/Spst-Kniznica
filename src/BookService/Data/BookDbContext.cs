@@ -12,6 +12,7 @@ public class BookDbContext(DbContextOptions<BookDbContext> options) : DbContext(
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ConfigureSpstDbFunctions();
+        modelBuilder.ApplyLowercaseGuidText();
 
         modelBuilder.Entity<Book>(entity =>
         {

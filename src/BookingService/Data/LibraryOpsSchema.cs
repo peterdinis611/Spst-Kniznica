@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Data;
 
 namespace BookingService.Data;
 
@@ -74,6 +75,19 @@ public static class LibraryOpsSchema
         await TryAddColumnAsync(
             db,
             """ALTER TABLE "Bookings" ADD COLUMN "LastReminderAt" TEXT NULL;""",
+            cancellationToken);
+
+        await SqliteGuidNormalize.LowerGuidColumnsAsync(
+            db,
+            [
+                ("Bookings", "Id"),
+                ("Bookings", "BookId"),
+                ("Bookings", "BookCopyId"),
+                ("Waitlist", "Id"),
+                ("Waitlist", "BookId"),
+                ("Favorites", "Id"),
+                ("Favorites", "BookId"),
+            ],
             cancellationToken);
     }
 

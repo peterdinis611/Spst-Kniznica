@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Common.Data;
 
 namespace BookService.Data;
 
@@ -13,15 +14,15 @@ public static class BookIntegrationsSchema
                 cancellationToken);
         }
 
-        // Some seed/import paths wrote GUID TEXT in uppercase; normalize so lookups match Guid.ToString().
-        await db.Database.ExecuteSqlRawAsync(
-            """
-            UPDATE "Books" SET "Id" = lower("Id") WHERE "Id" != lower("Id");
-            UPDATE "Books" SET "AuthorId" = lower("AuthorId") WHERE "AuthorId" IS NOT NULL AND "AuthorId" != lower("AuthorId");
-            UPDATE "Books" SET "CategoryId" = lower("CategoryId") WHERE "CategoryId" IS NOT NULL AND "CategoryId" != lower("CategoryId");
-            UPDATE "BookCopies" SET "Id" = lower("Id") WHERE "Id" != lower("Id");
-            UPDATE "BookCopies" SET "BookId" = lower("BookId") WHERE "BookId" != lower("BookId");
-            """,
+        await SqliteGuidNormalize.LowerGuidColumnsAsync(
+            db,
+            [
+                ("Books", "Id"),
+                ("Books", "AuthorId"),
+                ("Books", "CategoryId"),
+                ("BookCopies", "Id"),
+                ("BookCopies", "BookId"),
+            ],
             cancellationToken);
     }
 
