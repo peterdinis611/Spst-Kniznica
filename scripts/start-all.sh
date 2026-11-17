@@ -18,12 +18,14 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [options]
 
-  Spustí Docker infra, všetky .NET mikroslužby, gateway a frontend.
+  Spustí Docker infra (compose up -d), všetky .NET mikroslužby, gateway a frontend.
+
+  Pred .NET vždy: docker compose up -d + wait na redis/kafka/rabbitmq.
 
 Options:
   --foreground, -f   nechaj skript bežať; Ctrl+C zastaví všetko (default)
   --detach, -d       spusti na pozadí a ukonči skript
-  --skip-docker      nespúšťaj docker compose
+  --skip-docker      nespúšťaj docker compose up -d
   --skip-build       nespúšťaj dotnet build (použi existujúci build)
   --no-stop          pred štartom nezastavuj bežiace procesy
   -h, --help         táto nápoveda
@@ -190,21 +192,67 @@ if [[ "$NO_STOP" -eq 0 ]]; then
   echo
 fi
 
+wait_docker_healthy() {
+  local service="$1"
+  local attempts="${2:-60}"
+  local i status
+
+  for ((i = 1; i <= attempts; i++)); do
+    status="$(
+      cd "$ROOT" && docker compose ps --format '{{.Service}} {{.Health}}' 2>/dev/null \
+        | awk -v s="$service" '$1 == s { print $2; exit }'
+    )"
+    if [[ "$status" == "healthy" ]]; then
+      echo "  ✓ $service healthy"
+      return 0
+    fi
+    # Services without a healthcheck report empty / starting — treat "running" as OK.
+    if [[ -z "$status" || "$status" == "none" ]]; then
+      local state
+      state="$(
+        cd "$ROOT" && docker compose ps --format '{{.Service}} {{.State}}' 2>/dev/null \
+          | awk -v s="$service" '$1 == s { print $2; exit }'
+      )"
+      if [[ "$state" == "running" ]]; then
+        echo "  ✓ $service running"
+        return 0
+      fi
+    fi
+    sleep 1
+  done
+
+  echo "  ! $service ešte nie je ready (status=${status:-unknown})"
+  return 1
+}
+
 if [[ "$SKIP_DOCKER" -eq 0 ]]; then
-  if command -v docker >/dev/null 2>&1; then
-    echo "==> Docker Compose (Redis / Kafka / RabbitMQ)"
-    if docker info >/dev/null 2>&1; then
-      if ! (cd "$ROOT" && docker compose up -d); then
-        echo "  ! docker compose zlyhalo – pokračujem bez infra"
-        echo "    Development appsettings majú Kafka/Cache/RabbitMQ vypnuté."
+  if ! command -v docker >/dev/null 2>&1; then
+    echo "==> Docker nie je nainštalovaný – infra sa preskakuje"
+    echo "    Bez Redis/Kafka/RabbitMQ služby bežia, messaging/cache majú degradáciu."
+    echo
+  elif ! docker info >/dev/null 2>&1; then
+    echo "==> Docker daemon nebeží – infra sa preskakuje"
+    echo "    Spusti Docker Desktop a znova ./start.sh, alebo použij --skip-docker."
+    echo
+  else
+    echo "==> Docker Compose up -d (Redis / Kafka / RabbitMQ)"
+    if (cd "$ROOT" && docker compose up -d); then
+      echo "  · čakám na healthchecky..."
+      DOCKER_FAILED=0
+      wait_docker_healthy "redis" 40 || DOCKER_FAILED=1
+      wait_docker_healthy "rabbitmq" 60 || DOCKER_FAILED=1
+      wait_docker_healthy "kafka" 90 || DOCKER_FAILED=1
+      if [[ "$DOCKER_FAILED" -ne 0 ]]; then
+        echo "  ! Niektoré kontajnery ešte nie sú healthy – pokračujem (log: docker compose ps)"
+      else
+        echo "  ✓ Infra ready"
       fi
     else
-      echo "  ! Docker daemon nebeží – infra sa preskakuje"
+      echo "  ! docker compose up -d zlyhalo – pokračujem bez infra"
+      echo "    Skontroluj: cd \"$ROOT\" && docker compose ps"
     fi
-  else
-    echo "==> Docker nie je nainštalovaný – infra sa preskakuje"
+    echo
   fi
-  echo
 else
   echo "==> Docker vynechaný (--skip-docker)"
   echo
@@ -282,6 +330,9 @@ cat <<EOF
   Admin        http://localhost:5211/swagger
   Booking      http://localhost:5208/swagger
   Ready        http://localhost:5200/health/ready
+
+  Infra        Redis :6379 · Kafka :9092 · RabbitMQ :5672
+  Rabbit UI    http://127.0.0.1:15672  (guest/guest)
 
   Logy         $LOG_DIR
   Stop         ./scripts/stop-all.sh

@@ -287,10 +287,13 @@ public class BookingAppService(
     {
         var booking = await GetRequiredAsync(id, tracked: true, cancellationToken);
         var bookId = booking.BookId;
+        var bookCopyId = booking.BookCopyId;
         unitOfWork.Bookings.Remove(booking);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await eventPublisher.PublishAsync(new BookingDeletedEvent(id, bookId), cancellationToken);
+        await eventPublisher.PublishAsync(
+            new BookingDeletedEvent(id, bookId, bookCopyId),
+            cancellationToken);
         await cache.RemoveAsync(CacheKeys.Booking(id), cancellationToken);
         await lifecycle.TryPromoteWaitlistAsync(bookId, cancellationToken);
         logger.LogInformation("Deleted booking {BookingId} for book {BookId}", id, bookId);

@@ -73,7 +73,10 @@ public sealed record BookingUpdatedEvent(
     string Status,
     DateTimeOffset DueDate) : IntegrationEvent;
 
-public sealed record BookingDeletedEvent(Guid BookingId, Guid BookId) : IntegrationEvent;
+public sealed record BookingDeletedEvent(
+    Guid BookingId,
+    Guid BookId,
+    Guid? BookCopyId = null) : IntegrationEvent;
 
 public sealed record LoanDueReminderEvent(
     Guid BookingId,

@@ -39,7 +39,7 @@ public sealed class BookingCopySyncHostedService(
                     GroupId = "book-service-booking-copy-sync",
                     ClientId = $"{kafka.ClientId}-booking-copy-sync",
                     AutoOffsetReset = AutoOffsetReset.Earliest,
-                    EnableAutoCommit = true,
+                    EnableAutoCommit = false,
                     SocketTimeoutMs = 10000
                 }).Build();
 
@@ -48,10 +48,19 @@ public sealed class BookingCopySyncHostedService(
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
+                    ConsumeResult<string, string>? result = null;
                     try
                     {
-                        var result = consumer.Consume(stoppingToken);
-                        if (result?.Message?.Value is null) continue;
+                        result = consumer.Consume(stoppingToken);
+                        if (result?.Message?.Value is null)
+                        {
+                            if (result is not null)
+                            {
+                                consumer.Commit(result);
+                            }
+
+                            continue;
+                        }
 
                         var eventType = result.Message.Headers?
                             .FirstOrDefault(h => h.Key == "event-type") is { } header
@@ -64,6 +73,7 @@ public sealed class BookingCopySyncHostedService(
                             or nameof(BookingUpdatedEvent)
                             or nameof(BookingDeletedEvent)))
                         {
+                            consumer.Commit(result);
                             continue;
                         }
 
@@ -73,6 +83,8 @@ public sealed class BookingCopySyncHostedService(
                         denorm.ApplyEventPayloadAsync(eventType, result.Message.Value, stoppingToken)
                             .GetAwaiter()
                             .GetResult();
+
+                        consumer.Commit(result);
                     }
                     catch (ConsumeException ex)
                     {
@@ -80,7 +92,10 @@ public sealed class BookingCopySyncHostedService(
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException)
                     {
-                        logger.LogError(ex, "Booking-copy sync failed to apply event");
+                        logger.LogError(
+                            ex,
+                            "Booking-copy sync failed at offset {Offset} — offset not committed",
+                            result?.Offset.Value);
                     }
                 }
 

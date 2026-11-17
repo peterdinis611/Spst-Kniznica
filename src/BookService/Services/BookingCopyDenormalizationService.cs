@@ -1,15 +1,18 @@
 using BookService.Data;
 using BookService.Models;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Caching;
 using SpstKniznica.Common.Messaging;
 
 namespace BookService.Services;
 
 /// <summary>
 /// Applies booking lifecycle events to <see cref="BookCopy"/> status (Kafka or HTTP).
+/// Requires an explicit <c>BookCopyId</c> — never picks an arbitrary copy.
 /// </summary>
 public sealed class BookingCopyDenormalizationService(
     BookDbContext db,
+    IAppCache cache,
     ILogger<BookingCopyDenormalizationService> logger)
 {
     public async Task ApplyEventPayloadAsync(
@@ -45,7 +48,7 @@ public sealed class BookingCopyDenormalizationService(
             {
                 var deleted = EventJson.Deserialize<BookingDeletedEvent>(payload);
                 if (deleted is null) return;
-                await ApplyStatusAsync(deleted.BookId, null, "Free", cancellationToken);
+                await ApplyStatusAsync(deleted.BookId, deleted.BookCopyId, "Free", cancellationToken);
                 return;
             }
         }
@@ -57,6 +60,15 @@ public sealed class BookingCopyDenormalizationService(
         string bookingStatus,
         CancellationToken cancellationToken = default)
     {
+        if (bookCopyId is null || bookCopyId == Guid.Empty)
+        {
+            logger.LogWarning(
+                "Booking-copy sync skipped for book {BookId} status {Status}: BookCopyId is required",
+                bookId,
+                bookingStatus);
+            return;
+        }
+
         var target = MapCopyStatus(bookingStatus);
 
         var book = await db.Books
@@ -69,29 +81,13 @@ public sealed class BookingCopyDenormalizationService(
             return;
         }
 
-        BookCopy? copy = null;
-        if (bookCopyId is { } copyId)
-        {
-            copy = book.Copies.FirstOrDefault(c => c.Id == copyId);
-        }
-
-        if (copy is null && target is BookCopyStatus.Reserved or BookCopyStatus.Borrowed)
-        {
-            copy = book.Copies.FirstOrDefault(c => c.Status == BookCopyStatus.Available);
-        }
-
-        if (copy is null && target == BookCopyStatus.Available && bookCopyId is null)
-        {
-            copy = book.Copies.FirstOrDefault(c =>
-                c.Status is BookCopyStatus.Reserved or BookCopyStatus.Borrowed);
-        }
-
+        var copy = book.Copies.FirstOrDefault(c => c.Id == bookCopyId.Value);
         if (copy is null)
         {
-            logger.LogDebug(
-                "Booking-copy sync: no copy to update for book {BookId} status {Status}",
-                bookId,
-                bookingStatus);
+            logger.LogWarning(
+                "Booking-copy sync: copy {CopyId} not found on book {BookId}",
+                bookCopyId,
+                bookId);
             return;
         }
 
@@ -104,6 +100,7 @@ public sealed class BookingCopyDenormalizationService(
         book.RecalculateCopyCounts();
         book.UpdatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync(cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Book(bookId), cancellationToken);
 
         logger.LogInformation(
             "Synced copy {CopyId} on book {BookId} → {CopyStatus} (from booking {BookingStatus})",

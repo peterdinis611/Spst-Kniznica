@@ -52,8 +52,9 @@ try
         client.Timeout = TimeSpan.FromSeconds(5);
     });
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-    builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "category-service");
+    builder.Services.AddSpstIntegrationMessaging(builder.Configuration, clientId: "category-service");
     builder.Services.AddBookServiceEventHttpFallback(builder.Configuration);
+
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
 
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "CategoryService");

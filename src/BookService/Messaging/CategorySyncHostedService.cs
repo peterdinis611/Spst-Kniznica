@@ -36,7 +36,7 @@ public sealed class CategorySyncHostedService(
                     GroupId = "book-service-catalog-sync",
                     ClientId = $"{kafka.ClientId}-catalog-sync",
                     AutoOffsetReset = AutoOffsetReset.Earliest,
-                    EnableAutoCommit = true,
+                    EnableAutoCommit = false,
                     SocketTimeoutMs = 10000
                 }).Build();
 
@@ -45,11 +45,17 @@ public sealed class CategorySyncHostedService(
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
+                    ConsumeResult<string, string>? result = null;
                     try
                     {
-                        var result = consumer.Consume(stoppingToken);
+                        result = consumer.Consume(stoppingToken);
                         if (result?.Message?.Value is null)
                         {
+                            if (result is not null)
+                            {
+                                consumer.Commit(result);
+                            }
+
                             continue;
                         }
 
@@ -63,6 +69,7 @@ public sealed class CategorySyncHostedService(
                             nameof(CategoryUpdatedEvent) or nameof(CategoryDeletedEvent)
                             or nameof(AuthorUpdatedEvent) or nameof(AuthorDeletedEvent)))
                         {
+                            consumer.Commit(result);
                             continue;
                         }
 
@@ -71,6 +78,8 @@ public sealed class CategorySyncHostedService(
                         denorm.ApplyEventPayloadAsync(eventType, result.Message.Value, stoppingToken)
                             .GetAwaiter()
                             .GetResult();
+
+                        consumer.Commit(result);
                     }
                     catch (ConsumeException ex)
                     {
@@ -78,7 +87,10 @@ public sealed class CategorySyncHostedService(
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException)
                     {
-                        logger.LogError(ex, "Category sync failed to apply event");
+                        logger.LogError(
+                            ex,
+                            "Category sync failed to apply event at offset {Offset} — offset not committed",
+                            result?.Offset.Value);
                     }
                 }
 

@@ -1,11 +1,13 @@
 using BookService.Data;
 using Microsoft.EntityFrameworkCore;
+using SpstKniznica.Caching;
 using SpstKniznica.Common.Messaging;
 
 namespace BookService.Services;
 
 public sealed class CatalogDenormalizationService(
     BookDbContext db,
+    IAppCache cache,
     ILogger<CatalogDenormalizationService> logger)
 {
     public Task ApplyCategoryUpdatedAsync(
@@ -111,6 +113,7 @@ public sealed class CatalogDenormalizationService(
         }
 
         await db.SaveChangesAsync(cancellationToken);
+        await InvalidateBooksAsync(books.Select(b => b.Id), cancellationToken);
         logger.LogInformation(
             deleted
                 ? "Cleared deleted category {CategoryId} from {Count} books"
@@ -150,11 +153,24 @@ public sealed class CatalogDenormalizationService(
         }
 
         await db.SaveChangesAsync(cancellationToken);
+        await InvalidateBooksAsync(books.Select(b => b.Id), cancellationToken);
         logger.LogInformation(
             deleted
                 ? "Cleared deleted author {AuthorId} from {Count} books"
                 : "Synced author name '{Name}' to {Count} books",
             deleted ? authorId : name,
             books.Count);
+    }
+
+    private async Task InvalidateBooksAsync(
+        IEnumerable<Guid> bookIds,
+        CancellationToken cancellationToken)
+    {
+        foreach (var id in bookIds.Distinct())
+        {
+            await cache.RemoveAsync(CacheKeys.Book(id), cancellationToken);
+        }
+
+        await cache.RemoveByPrefixAsync(CacheKeys.BookListPrefix, cancellationToken);
     }
 }

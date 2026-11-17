@@ -71,8 +71,9 @@ try
     builder.Services.AddScoped<LoanLifecycleService>();
     builder.Services.AddScoped<IBookingService, BookingAppService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-    builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "booking-service");
+    builder.Services.AddSpstIntegrationMessaging(builder.Configuration, clientId: "booking-service");
     builder.Services.AddBookServiceEventHttpFallback(builder.Configuration);
+
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
 
 

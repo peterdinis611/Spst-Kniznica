@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SpstKniznica.Common.Auth;
 using Yarp.ReverseProxy.Configuration;
 
 namespace GatewayService.Controllers;
@@ -11,6 +13,7 @@ public class GatewayController(
     IConfiguration configuration) : ControllerBase
 {
     [HttpGet("status")]
+    [Authorize(Policy = AuthPolicies.Staff)]
     public ActionResult<object> Status()
     {
         var config = proxyConfig.GetConfig();

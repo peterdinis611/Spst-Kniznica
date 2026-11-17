@@ -52,10 +52,13 @@ try
     builder.Services.AddScoped<CatalogDenormalizationService>();
     builder.Services.AddScoped<BookingCopyDenormalizationService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-    builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "book-service");
+    builder.Services.AddSpstIntegrationMessaging(builder.Configuration, clientId: "book-service");
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
     builder.Services.AddHostedService<CategorySyncHostedService>();
     builder.Services.AddHostedService<BookingCopySyncHostedService>();
+    builder.Services.AddHostedService<CatalogSyncRabbitHostedService>();
+    builder.Services.AddHostedService<BookingCopySyncRabbitHostedService>();
+
 
 
     builder.Services.AddHttpClient<ICategoryLookup, CategoryLookupClient>(client =>

@@ -36,7 +36,7 @@ public sealed class KafkaConsumerHostedService(
                     GroupId = kafka.GroupId,
                     ClientId = $"{kafka.ClientId}-consumer",
                     AutoOffsetReset = AutoOffsetReset.Earliest,
-                    EnableAutoCommit = true,
+                    EnableAutoCommit = false,
                     SocketTimeoutMs = 10000
                 }).Build();
 
@@ -45,11 +45,17 @@ public sealed class KafkaConsumerHostedService(
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
+                    ConsumeResult<string, string>? result = null;
                     try
                     {
-                        var result = consumer.Consume(stoppingToken);
+                        result = consumer.Consume(stoppingToken);
                         if (result?.Message?.Value is null)
                         {
+                            if (result is not null)
+                            {
+                                consumer.Commit(result);
+                            }
+
                             continue;
                         }
 
@@ -65,6 +71,8 @@ public sealed class KafkaConsumerHostedService(
                             .GetAwaiter()
                             .GetResult();
 
+                        consumer.Commit(result);
+
                         logger.LogInformation(
                             "Kafka event applied. EventType={EventType}, Key={Key}, Offset={Offset}",
                             eventType,
@@ -77,7 +85,10 @@ public sealed class KafkaConsumerHostedService(
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException)
                     {
-                        logger.LogError(ex, "Failed to apply Kafka event");
+                        logger.LogError(
+                            ex,
+                            "Failed to apply Kafka event at offset {Offset} — offset not committed",
+                            result?.Offset.Value);
                     }
                 }
 

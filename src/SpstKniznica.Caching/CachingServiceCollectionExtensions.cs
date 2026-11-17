@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
 namespace SpstKniznica.Caching;
@@ -18,7 +19,7 @@ public static class CachingServiceCollectionExtensions
             services.PostConfigure<CacheOptions>(options => options.InstanceName = instanceName);
         }
 
-        // Cache:Enabled=false → in-process memory (dev-friendly). true → Redis.
+        // Cache:Enabled=false → in-process memory (dev-friendly). true → Redis with memory fallback.
         var useRedis = configuration.GetValue($"{CacheOptions.SectionName}:Enabled", true);
         if (!useRedis)
         {
@@ -33,7 +34,32 @@ public static class CachingServiceCollectionExtensions
             connectionString += ",abortConnect=false,connectTimeout=5000";
         }
 
-        services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(connectionString));
+        IConnectionMultiplexer? multiplexer = null;
+        try
+        {
+            multiplexer = ConnectionMultiplexer.Connect(connectionString);
+            _ = multiplexer.GetDatabase().Ping();
+        }
+        catch (Exception)
+        {
+            multiplexer?.Dispose();
+            multiplexer = null;
+        }
+
+        if (multiplexer is null)
+        {
+            services.AddMemoryCache();
+            services.AddSingleton<IAppCache>(sp =>
+            {
+                sp.GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("SpstKniznica.Caching")
+                    .LogWarning("Redis unavailable at startup — using in-process MemoryAppCache");
+                return ActivatorUtilities.CreateInstance<MemoryAppCache>(sp);
+            });
+            return services;
+        }
+
+        services.AddSingleton<IConnectionMultiplexer>(multiplexer);
         services.AddSingleton<IAppCache, RedisAppCache>();
 
         return services;

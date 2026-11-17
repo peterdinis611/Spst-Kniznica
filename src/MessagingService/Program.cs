@@ -48,6 +48,8 @@ try
     var kafkaEnabled = builder.Configuration.GetValue("Kafka:Enabled", true);
     var rabbitEnabled = builder.Configuration.GetValue("RabbitMq:Enabled", true);
 
+    // Register each transport as IEventPublisher so /api/messaging/publish can target kafka|rabbit|all.
+    // Both consumers may apply the same event — LibraryRelationService upserts are idempotent.
     if (kafkaEnabled)
     {
         builder.Services.AddSingleton<KafkaEventPublisher>();
