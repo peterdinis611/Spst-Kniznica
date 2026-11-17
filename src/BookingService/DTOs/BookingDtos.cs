@@ -8,6 +8,8 @@ public class BookingDto
     public Guid Id { get; set; }
     public Guid BookId { get; set; }
     public Guid? BookCopyId { get; set; }
+    public string BookTitle { get; set; } = string.Empty;
+    public string BookAuthor { get; set; } = string.Empty;
     public string BorrowerName { get; set; } = string.Empty;
     public string BorrowerEmail { get; set; } = string.Empty;
     public BookingStatus Status { get; set; }

@@ -187,6 +187,10 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
                     <p className="mt-2 font-display text-2xl text-ink">
                       {book ? (
                         <Link href={`/books/${book.id}`}>{book.title}</Link>
+                      ) : booking.bookTitle ? (
+                        <Link href={`/books/${booking.bookId}`}>
+                          {booking.bookTitle}
+                        </Link>
                       ) : (
                         "Titul"
                       )}
@@ -341,6 +345,13 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
                 {book ? (
                   <Link href={`/books/${book.id}`} className="text-ink underline-offset-4 hover:underline">
                     {book.title}
+                  </Link>
+                ) : booking.bookTitle ? (
+                  <Link
+                    href={`/books/${booking.bookId}`}
+                    className="text-ink underline-offset-4 hover:underline"
+                  >
+                    {booking.bookTitle}
                   </Link>
                 ) : (
                   booking.bookId

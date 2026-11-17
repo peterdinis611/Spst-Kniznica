@@ -14,6 +14,7 @@ public sealed class LoanLifecycleService(
     ILoanPolicyProvider loanPolicy,
     WaitlistService waitlist,
     IBookCatalogLookup bookCatalog,
+    BookingDtoEnricher enricher,
     SchoolCalendarService schoolCalendar,
     ILogger<LoanLifecycleService> logger)
 {
@@ -206,6 +207,12 @@ public sealed class LoanLifecycleService(
             .OrderBy(b => b.DueDate)
             .Take(40)
             .ToList();
+        var dueSoonDtos = dueSoon.Take(40).Select(Map).ToList();
+        var pickupDtos = reserved.Items.Select(Map).Take(40).ToList();
+
+        await enricher.EnrichAsync(
+            overdueDtos.Concat(dueSoonDtos).Concat(pickupDtos).ToList(),
+            cancellationToken);
 
         var today = DateOnly.FromDateTime(now.UtcDateTime);
         var holidays = await schoolCalendar.GetHolidaysAroundAsync(
@@ -226,8 +233,8 @@ public sealed class LoanLifecycleService(
                 .Take(8)
                 .ToList(),
             Overdue = overdueDtos,
-            DueSoon = dueSoon.Take(40).Select(Map).ToList(),
-            PickupReady = reserved.Items.Select(Map).Take(40).ToList(),
+            DueSoon = dueSoonDtos,
+            PickupReady = pickupDtos,
         };
     }
 

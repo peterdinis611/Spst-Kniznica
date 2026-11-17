@@ -1,3 +1,4 @@
+using BookService.DTOs;
 using BookService.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,7 +49,7 @@ public class InternalBooksController(IBooksService books) : ControllerBase
         return Ok(items);
     }
 
-    private static BookCatalogSnapshot ToSnapshot(DTOs.BookDetailDto book) => new()
+    private static BookCatalogSnapshot ToSnapshot(BookDetailDto book) => new()
     {
         BookId = book.Id,
         Title = book.Title,
@@ -56,18 +57,4 @@ public class InternalBooksController(IBooksService books) : ControllerBase
         TotalCopies = book.TotalCopies,
         AvailableCopies = book.AvailableCopies,
     };
-}
-
-public sealed class BookSummariesRequest
-{
-    public List<Guid>? Ids { get; set; }
-}
-
-public sealed class BookCatalogSnapshot
-{
-    public Guid BookId { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public string Author { get; set; } = string.Empty;
-    public int TotalCopies { get; set; }
-    public int AvailableCopies { get; set; }
 }

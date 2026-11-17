@@ -70,6 +70,8 @@ export type DeskBooking = {
   id: string;
   bookId: string;
   bookCopyId: string | null;
+  bookTitle: string | null;
+  bookAuthor: string | null;
   borrowerName: string;
   borrowerEmail: string;
   status: number;
@@ -91,6 +93,8 @@ function mapBooking(booking: BookingDto): DeskBooking {
     id: booking.id,
     bookId: booking.bookId,
     bookCopyId: booking.bookCopyId ?? null,
+    bookTitle: booking.bookTitle?.trim() || null,
+    bookAuthor: booking.bookAuthor?.trim() || null,
     borrowerName: booking.borrowerName,
     borrowerEmail: booking.borrowerEmail,
     status: normalizeBookingStatus(booking.status),

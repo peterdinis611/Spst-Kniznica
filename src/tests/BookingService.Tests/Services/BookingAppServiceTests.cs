@@ -39,7 +39,15 @@ public class BookingAppServiceTests : IAsyncLifetime
         var transaction = Substitute.For<IDbContextTransaction>();
         _unitOfWork.BeginTransactionAsync(Arg.Any<CancellationToken>()).Returns(transaction);
         _bookCatalog.GetBookAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns(new BookAvailabilitySnapshot(3, 2));
+            .Returns(new BookAvailabilitySnapshot(3, 2, "Test Book", "Test Author"));
+        _bookCatalog.GetBooksAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var ids = callInfo.ArgAt<IEnumerable<Guid>>(0);
+                return (IReadOnlyDictionary<Guid, BookAvailabilitySnapshot>)ids
+                    .Distinct()
+                    .ToDictionary(id => id, _ => new BookAvailabilitySnapshot(3, 2, "Test Book", "Test Author"));
+            });
         _bookings.CountActiveBookingsForBookAsync(
                 Arg.Any<Guid>(),
                 Arg.Any<Guid?>(),
@@ -75,6 +83,7 @@ public class BookingAppServiceTests : IAsyncLifetime
         var loanPolicy = new LoanPolicyProvider(_db, _policy);
         var calendar = new SchoolCalendarService(nager, loanPolicy);
         var waitlist = new WaitlistService(_db, NullLogger<WaitlistService>.Instance);
+        var enricher = new BookingDtoEnricher(_bookCatalog);
         var lifecycle = new LoanLifecycleService(
             _unitOfWork,
             new NullAppCache(),
@@ -83,12 +92,14 @@ public class BookingAppServiceTests : IAsyncLifetime
             loanPolicy,
             waitlist,
             _bookCatalog,
+            enricher,
             calendar,
             NullLogger<LoanLifecycleService>.Instance);
 
         _sut = new BookingAppService(
             _unitOfWork,
             _bookCatalog,
+            enricher,
             new NullAppCache(),
             _events,
             new CreateBookingRequestValidator(),

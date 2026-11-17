@@ -88,6 +88,57 @@ public partial class BooksService(
             cancellationToken);
     }
 
+    public async Task<IReadOnlyList<BookCatalogSnapshot>> GetSummariesAsync(
+        IReadOnlyList<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        var books = await unitOfWork.Books.GetByIdsAsync(ids, includeCopies: false, cancellationToken);
+        return books
+            .Select(b => new BookCatalogSnapshot
+            {
+                BookId = b.Id,
+                Title = b.Title,
+                Author = b.Author,
+                TotalCopies = b.TotalCopies,
+                AvailableCopies = b.AvailableCopies,
+            })
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<BookListItemDto>> GetByIdsAsync(
+        IReadOnlyList<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        var books = await unitOfWork.Books.GetByIdsAsync(ids, includeCopies: false, cancellationToken);
+        return books
+            .Select(b => new BookListItemDto
+            {
+                Id = b.Id,
+                Title = b.Title,
+                Subtitle = b.Subtitle,
+                AuthorId = b.AuthorId,
+                Author = b.Author,
+                Publisher = b.Publisher,
+                Isbn = b.Isbn,
+                PublishedYear = b.PublishedYear,
+                Language = b.Language,
+                CategoryId = b.CategoryId,
+                CategoryName = b.CategoryName,
+                Format = b.Format,
+                CoverUrl = b.CoverUrl ?? OpenLibraryCovers.ForIsbn(b.Isbn),
+                ShelfLocation = b.ShelfLocation,
+                TotalCopies = b.TotalCopies,
+                AvailableCopies = b.AvailableCopies,
+                UpdatedAt = b.UpdatedAt,
+            })
+            .ToList();
+    }
+
+    private Task InvalidateBookCachesAsync(Guid bookId, CancellationToken cancellationToken) =>
+        Task.WhenAll(
+            cache.RemoveAsync(CacheKeys.Book(bookId), cancellationToken),
+            cache.RemoveByPrefixAsync(CacheKeys.BookListPrefix, cancellationToken));
+
     public async Task<BookCopyLookupDto> LookupCopyByCodeAsync(
         string code,
         CancellationToken cancellationToken = default)
@@ -241,6 +292,7 @@ public partial class BooksService(
 
         var detail = MapDetail(book);
         await cache.SetAsync(CacheKeys.Book(book.Id), detail, TimeSpan.FromMinutes(5), cancellationToken);
+        await cache.RemoveByPrefixAsync(CacheKeys.BookListPrefix, cancellationToken);
 
         logger.LogInformation(
             "Created book {BookId} titled '{Title}' with {CopyCount} copies and ISBN {Isbn}",
@@ -304,6 +356,7 @@ public partial class BooksService(
 
         var detail = MapDetail(book);
         await cache.SetAsync(CacheKeys.Book(book.Id), detail, TimeSpan.FromMinutes(5), cancellationToken);
+        await cache.RemoveByPrefixAsync(CacheKeys.BookListPrefix, cancellationToken);
 
         logger.LogInformation(
             "Updated book {BookId}. Title='{Title}', TotalCopies={TotalCopies}, AvailableCopies={AvailableCopies}",
@@ -338,7 +391,7 @@ public partial class BooksService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await eventPublisher.PublishAsync(new BookDeletedEvent(id), cancellationToken);
-        await cache.RemoveAsync(CacheKeys.Book(id), cancellationToken);
+        await InvalidateBookCachesAsync(id, cancellationToken);
         logger.LogInformation("Deleted book {BookId} titled '{Title}'", id, book.Title);
     }
 }

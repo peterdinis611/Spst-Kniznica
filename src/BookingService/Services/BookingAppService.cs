@@ -14,6 +14,7 @@ namespace BookingService.Services;
 public class BookingAppService(
     IUnitOfWork unitOfWork,
     IBookCatalogLookup bookCatalog,
+    BookingDtoEnricher enricher,
     IAppCache cache,
     IIntegrationEventPublisher eventPublisher,
     IValidator<CreateBookingRequest> createValidator,
@@ -36,12 +37,14 @@ public class BookingAppService(
             filter.BookId);
 
         var result = await unitOfWork.Bookings.FindAsync(filter, cancellationToken);
-        return result.Map(Map);
+        var mapped = result.Map(Map);
+        await enricher.EnrichAsync(mapped.Items, cancellationToken);
+        return mapped;
     }
 
     public async Task<BookingDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await cache.GetOrSetAsync(
+        var dto = await cache.GetOrSetAsync(
             CacheKeys.Booking(id),
             async ct =>
             {
@@ -50,6 +53,8 @@ public class BookingAppService(
             },
             TimeSpan.FromMinutes(10),
             cancellationToken);
+        await enricher.EnrichAsync(dto, cancellationToken);
+        return dto;
     }
 
     public async Task<BookingDto> CreateAsync(
@@ -110,6 +115,7 @@ public class BookingAppService(
             cancellationToken);
 
         var dto = Map(booking);
+        await enricher.EnrichAsync(dto, cancellationToken);
         await cache.SetAsync(CacheKeys.Booking(booking.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
 
         logger.LogInformation(
@@ -177,6 +183,7 @@ public class BookingAppService(
         }
 
         var dto = Map(booking);
+        await enricher.EnrichAsync(dto, cancellationToken);
         await cache.SetAsync(CacheKeys.Booking(booking.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
 
         logger.LogInformation(
@@ -266,6 +273,7 @@ public class BookingAppService(
             cancellationToken);
 
         var dto = Map(booking);
+        await enricher.EnrichAsync(dto, cancellationToken);
         await cache.SetAsync(CacheKeys.Booking(booking.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
         logger.LogInformation(
             "Renewed booking {BookingId} → due {DueDate:o} (#{RenewalCount})",

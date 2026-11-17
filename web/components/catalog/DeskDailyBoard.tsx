@@ -60,6 +60,8 @@ function DeskSection({
                   <p className="font-display text-lg text-ink">
                     {book ? (
                       <Link href={`/books/${book.id}`}>{book.title}</Link>
+                    ) : item.bookTitle ? (
+                      <Link href={`/books/${item.bookId}`}>{item.bookTitle}</Link>
                     ) : (
                       item.bookId
                     )}

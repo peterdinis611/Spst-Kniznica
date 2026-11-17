@@ -462,6 +462,13 @@ export function BookingsDesk({
                         >
                           {book.title}
                         </Link>
+                      ) : booking.bookTitle ? (
+                        <Link
+                          href={`/books/${booking.bookId}`}
+                          className="hover:text-ink/70"
+                        >
+                          {booking.bookTitle}
+                        </Link>
                       ) : (
                         "Titul mimo katalógu"
                       )}
@@ -470,10 +477,10 @@ export function BookingsDesk({
                       {booking.borrowerName}
                       <span className="px-1.5 text-ink/30">/</span>
                       {booking.borrowerEmail}
-                      {book ? (
+                      {book?.author || booking.bookAuthor ? (
                         <>
                           <span className="px-1.5 text-ink/30">/</span>
-                          {book.author}
+                          {book?.author ?? booking.bookAuthor}
                         </>
                       ) : null}
                     </p>

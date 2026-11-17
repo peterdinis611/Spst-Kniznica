@@ -67,11 +67,14 @@ try
     builder.Services.AddScoped<FavoritesService>();
     builder.Services.AddScoped<SchoolCalendarService>();
     builder.Services.AddSingleton<ILoanNotificationSender, LoggingLoanNotificationSender>();
+    builder.Services.AddScoped<BookingDtoEnricher>();
     builder.Services.AddScoped<LoanLifecycleService>();
     builder.Services.AddScoped<IBookingService, BookingAppService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
     builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "booking-service");
+    builder.Services.AddBookServiceEventHttpFallback(builder.Configuration);
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
+
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<BookingDbContext>("database");

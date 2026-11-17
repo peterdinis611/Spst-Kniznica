@@ -49,11 +49,14 @@ try
     builder.Services.AddScoped<IBookRepository, BookRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IBooksService, BooksService>();
+    builder.Services.AddScoped<CatalogDenormalizationService>();
+    builder.Services.AddScoped<BookingCopyDenormalizationService>();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
     builder.Services.AddKafkaIntegrationPublisher(builder.Configuration, clientId: "book-service");
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
     builder.Services.AddHostedService<CategorySyncHostedService>();
     builder.Services.AddHostedService<BookingCopySyncHostedService>();
+
 
     builder.Services.AddHttpClient<ICategoryLookup, CategoryLookupClient>(client =>
     {

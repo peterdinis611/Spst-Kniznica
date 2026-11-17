@@ -17,8 +17,11 @@ internal sealed class BookCatalogLookupClient(
     IOptions<InternalApiOptions> internalApi,
     ILogger<BookCatalogLookupClient> logger) : IBookCatalogLookup
 {
-    private sealed class BookAvailabilityResponse
+    private sealed class BookCatalogResponse
     {
+        public Guid BookId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Author { get; set; } = string.Empty;
         public int TotalCopies { get; set; }
         public int AvailableCopies { get; set; }
     }
@@ -33,11 +36,7 @@ internal sealed class BookCatalogLookupClient(
                 HttpMethod.Get,
                 $"api/internal/books/{bookId}/availability");
 
-            var key = internalApi.Value.SharedKey?.Trim();
-            if (!string.IsNullOrEmpty(key))
-            {
-                request.Headers.TryAddWithoutValidation(InternalApiOptions.HeaderName, key);
-            }
+            AttachInternalKey(request);
 
             using var response = await httpClient.SendAsync(request, cancellationToken);
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -55,7 +54,7 @@ internal sealed class BookCatalogLookupClient(
             }
 
             response.EnsureSuccessStatusCode();
-            var body = await response.Content.ReadFromJsonAsync<BookAvailabilityResponse>(
+            var body = await response.Content.ReadFromJsonAsync<BookCatalogResponse>(
                 cancellationToken: cancellationToken);
 
             if (body is null)
@@ -63,9 +62,7 @@ internal sealed class BookCatalogLookupClient(
                 return null;
             }
 
-            return new BookAvailabilitySnapshot(
-                Math.Max(body.TotalCopies, 1),
-                Math.Max(body.AvailableCopies, 0));
+            return ToSnapshot(body);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
@@ -73,4 +70,85 @@ internal sealed class BookCatalogLookupClient(
             return null;
         }
     }
+
+    public async Task<IReadOnlyDictionary<Guid, BookAvailabilitySnapshot>> GetBooksAsync(
+        IEnumerable<Guid> bookIds,
+        CancellationToken cancellationToken = default)
+    {
+        var ids = bookIds
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .Take(100)
+            .ToArray();
+
+        if (ids.Length == 0)
+        {
+            return new Dictionary<Guid, BookAvailabilitySnapshot>();
+        }
+
+        try
+        {
+            using var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "api/internal/books/summaries");
+
+            AttachInternalKey(request);
+            request.Content = JsonContent.Create(new { ids });
+
+            using var response = await httpClient.SendAsync(request, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogWarning(
+                    "Batch book lookup returned {Status} for {Count} ids",
+                    (int)response.StatusCode,
+                    ids.Length);
+                return await FallbackOneByOneAsync(ids, cancellationToken);
+            }
+
+            var body = await response.Content.ReadFromJsonAsync<List<BookCatalogResponse>>(
+                cancellationToken: cancellationToken);
+
+            return (body ?? [])
+                .Where(b => b.BookId != Guid.Empty)
+                .ToDictionary(b => b.BookId, ToSnapshot);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            logger.LogWarning(ex, "Batch book catalog lookup failed for {Count} ids", ids.Length);
+            return await FallbackOneByOneAsync(ids, cancellationToken);
+        }
+    }
+
+    private async Task<IReadOnlyDictionary<Guid, BookAvailabilitySnapshot>> FallbackOneByOneAsync(
+        IReadOnlyList<Guid> ids,
+        CancellationToken cancellationToken)
+    {
+        var map = new Dictionary<Guid, BookAvailabilitySnapshot>();
+        foreach (var id in ids)
+        {
+            var snap = await GetBookAsync(id, cancellationToken);
+            if (snap is not null)
+            {
+                map[id] = snap;
+            }
+        }
+
+        return map;
+    }
+
+    private void AttachInternalKey(HttpRequestMessage request)
+    {
+        var key = internalApi.Value.SharedKey?.Trim();
+        if (!string.IsNullOrEmpty(key))
+        {
+            request.Headers.TryAddWithoutValidation(InternalApiOptions.HeaderName, key);
+        }
+    }
+
+    private static BookAvailabilitySnapshot ToSnapshot(BookCatalogResponse body) =>
+        new(
+            Math.Max(body.TotalCopies, 1),
+            Math.Max(body.AvailableCopies, 0),
+            body.Title ?? string.Empty,
+            body.Author ?? string.Empty);
 }

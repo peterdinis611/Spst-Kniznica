@@ -1,7 +1,6 @@
 using System.Text;
-using BookService.Data;
+using BookService.Services;
 using Confluent.Kafka;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SpstKniznica.Common.Messaging;
 
@@ -17,9 +16,8 @@ public sealed class CategorySyncHostedService(
         var kafka = options.Value;
         if (!kafka.Enabled)
         {
-            logger.LogWarning(
-                "Kafka is disabled — category name denormalization will not sync. " +
-                "Enable Kafka:Enabled or refresh book CategoryName manually after category renames.");
+            logger.LogInformation(
+                "Kafka is disabled — category/author denormalization relies on HTTP fallback from Category/Author services.");
             return Task.CompletedTask;
         }
 
@@ -69,8 +67,8 @@ public sealed class CategorySyncHostedService(
                         }
 
                         using var scope = scopeFactory.CreateScope();
-                        var db = scope.ServiceProvider.GetRequiredService<BookDbContext>();
-                        ApplyAsync(db, eventType, result.Message.Value, stoppingToken)
+                        var denorm = scope.ServiceProvider.GetRequiredService<CatalogDenormalizationService>();
+                        denorm.ApplyEventPayloadAsync(eventType, result.Message.Value, stoppingToken)
                             .GetAwaiter()
                             .GetResult();
                     }
@@ -101,135 +99,6 @@ public sealed class CategorySyncHostedService(
                 {
                     break;
                 }
-            }
-        }
-    }
-
-    private async Task ApplyAsync(
-        BookDbContext db,
-        string eventType,
-        string payload,
-        CancellationToken cancellationToken)
-    {
-        switch (eventType)
-        {
-            case nameof(CategoryUpdatedEvent):
-            {
-                var updated = EventJson.Deserialize<CategoryUpdatedEvent>(payload);
-                if (updated is null)
-                {
-                    return;
-                }
-
-                var books = await db.Books
-                    .Where(b => b.CategoryId == updated.CategoryId)
-                    .ToListAsync(cancellationToken);
-
-                foreach (var book in books)
-                {
-                    book.CategoryName = updated.Name;
-                    book.UpdatedAt = DateTimeOffset.UtcNow;
-                }
-
-                if (books.Count > 0)
-                {
-                    await db.SaveChangesAsync(cancellationToken);
-                    logger.LogInformation(
-                        "Synced category name '{Name}' to {Count} books",
-                        updated.Name,
-                        books.Count);
-                }
-
-                return;
-            }
-            case nameof(CategoryDeletedEvent):
-            {
-                var deleted = EventJson.Deserialize<CategoryDeletedEvent>(payload);
-                if (deleted is null)
-                {
-                    return;
-                }
-
-                var linked = await db.Books
-                    .Where(b => b.CategoryId == deleted.CategoryId)
-                    .ToListAsync(cancellationToken);
-
-                foreach (var book in linked)
-                {
-                    book.CategoryId = null;
-                    book.CategoryName = null;
-                    book.UpdatedAt = DateTimeOffset.UtcNow;
-                }
-
-                if (linked.Count > 0)
-                {
-                    await db.SaveChangesAsync(cancellationToken);
-                    logger.LogInformation(
-                        "Cleared deleted category {CategoryId} from {Count} books",
-                        deleted.CategoryId,
-                        linked.Count);
-                }
-
-                return;
-            }
-            case nameof(AuthorUpdatedEvent):
-            {
-                var updated = EventJson.Deserialize<AuthorUpdatedEvent>(payload);
-                if (updated is null)
-                {
-                    return;
-                }
-
-                var books = await db.Books
-                    .Where(b => b.AuthorId == updated.AuthorId)
-                    .ToListAsync(cancellationToken);
-
-                foreach (var book in books)
-                {
-                    book.Author = updated.Name;
-                    book.UpdatedAt = DateTimeOffset.UtcNow;
-                }
-
-                if (books.Count > 0)
-                {
-                    await db.SaveChangesAsync(cancellationToken);
-                    logger.LogInformation(
-                        "Synced author name '{Name}' to {Count} books",
-                        updated.Name,
-                        books.Count);
-                }
-
-                return;
-            }
-            case nameof(AuthorDeletedEvent):
-            {
-                var deleted = EventJson.Deserialize<AuthorDeletedEvent>(payload);
-                if (deleted is null)
-                {
-                    return;
-                }
-
-                var linked = await db.Books
-                    .Where(b => b.AuthorId == deleted.AuthorId)
-                    .ToListAsync(cancellationToken);
-
-                foreach (var book in linked)
-                {
-                    book.AuthorId = null;
-                    book.Author = "Unknown";
-                    book.UpdatedAt = DateTimeOffset.UtcNow;
-                }
-
-                if (linked.Count > 0)
-                {
-                    await db.SaveChangesAsync(cancellationToken);
-                    logger.LogInformation(
-                        "Cleared deleted author {AuthorId} from {Count} books",
-                        deleted.AuthorId,
-                        linked.Count);
-                }
-
-                return;
             }
         }
     }

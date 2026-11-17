@@ -9,6 +9,10 @@ public interface IBookRepository
     Task<PagedResult<BookListItemDto>> FindAsync(BookQueryFilter filter, CancellationToken cancellationToken = default);
     Task<CursorPage<BookListItemDto>> FindByCursorAsync(BookCursorFilter filter, CancellationToken cancellationToken = default);
     Task<Book?> GetByIdAsync(Guid id, bool includeCopies = false, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Book>> GetByIdsAsync(
+        IReadOnlyList<Guid> ids,
+        bool includeCopies = false,
+        CancellationToken cancellationToken = default);
     Task AddAsync(Book book, CancellationToken cancellationToken = default);
     void Update(Book book);
     void Remove(Book book);

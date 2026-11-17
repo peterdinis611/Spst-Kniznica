@@ -2,6 +2,8 @@ export type BookingDto = {
   id: string;
   bookId: string;
   bookCopyId?: string | null;
+  bookTitle?: string | null;
+  bookAuthor?: string | null;
   borrowerName: string;
   borrowerEmail: string;
   status: number | string;

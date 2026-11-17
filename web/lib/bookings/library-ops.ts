@@ -19,6 +19,8 @@ function mapBooking(booking: BookingDto): DeskBooking {
     id: booking.id,
     bookId: booking.bookId,
     bookCopyId: booking.bookCopyId ?? null,
+    bookTitle: booking.bookTitle?.trim() || null,
+    bookAuthor: booking.bookAuthor?.trim() || null,
     borrowerName: booking.borrowerName,
     borrowerEmail: booking.borrowerEmail,
     status: normalizeBookingStatus(booking.status),

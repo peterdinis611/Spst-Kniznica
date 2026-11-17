@@ -143,18 +143,34 @@ public class BookRepository(BookDbContext db) : IBookRepository
     {
         EnsureValidId(id);
 
-        // SQLite stores GUIDs as TEXT. Some rows were written with uppercase hex; Guid.ToString()
-        // is lowercase — compare case-insensitively so GetById matches list/search results.
-        var idText = id.ToString().ToLowerInvariant();
+        // Value converter stores lowercase TEXT; equality compares converted values.
         IQueryable<Book> query = db.Books.AsNoTracking();
         if (includeCopies)
         {
             query = query.Include(b => b.Copies);
         }
 
-        return query.FirstOrDefaultAsync(
-            b => b.Id.ToString().ToLower() == idText,
-            cancellationToken);
+        return query.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Book>> GetByIdsAsync(
+        IReadOnlyList<Guid> ids,
+        bool includeCopies = false,
+        CancellationToken cancellationToken = default)
+    {
+        var distinct = ids.Where(id => id != Guid.Empty).Distinct().Take(100).ToArray();
+        if (distinct.Length == 0)
+        {
+            return [];
+        }
+
+        IQueryable<Book> query = db.Books.AsNoTracking().Where(b => distinct.Contains(b.Id));
+        if (includeCopies)
+        {
+            query = query.Include(b => b.Copies);
+        }
+
+        return await query.ToListAsync(cancellationToken);
     }
 
     public Task AddAsync(Book book, CancellationToken cancellationToken = default)
@@ -261,20 +277,14 @@ public class BookRepository(BookDbContext db) : IBookRepository
 
         if (filter.AuthorIds is { Count: > 0 })
         {
-            // SQLite stores GUIDs as TEXT — compare string form (same as GetByIdAsync).
-            var authorTexts = filter.AuthorIds
-                .Select(id => id.ToString())
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+            var authorIds = filter.AuthorIds.Distinct().ToArray();
             query = query.Where(b =>
-                b.AuthorId != null &&
-                authorTexts.Contains(b.AuthorId.ToString()));
+                b.AuthorId != null && authorIds.Contains(b.AuthorId.Value));
         }
         else if (filter.AuthorId.HasValue)
         {
-            var authorIdText = filter.AuthorId.Value.ToString();
-            query = query.Where(b =>
-                b.AuthorId != null && b.AuthorId.ToString() == authorIdText);
+            var authorId = filter.AuthorId.Value;
+            query = query.Where(b => b.AuthorId == authorId);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Author))
@@ -303,20 +313,14 @@ public class BookRepository(BookDbContext db) : IBookRepository
 
         if (filter.CategoryIds is { Count: > 0 })
         {
-            // SQLite stores GUIDs as TEXT — compare string form (same as GetByIdAsync).
-            var categoryTexts = filter.CategoryIds
-                .Select(id => id.ToString())
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+            var categoryIds = filter.CategoryIds.Distinct().ToArray();
             query = query.Where(b =>
-                b.CategoryId != null &&
-                categoryTexts.Contains(b.CategoryId.ToString()));
+                b.CategoryId != null && categoryIds.Contains(b.CategoryId.Value));
         }
         else if (filter.CategoryId.HasValue)
         {
-            var categoryIdText = filter.CategoryId.Value.ToString();
-            query = query.Where(b =>
-                b.CategoryId != null && b.CategoryId.ToString() == categoryIdText);
+            var categoryId = filter.CategoryId.Value;
+            query = query.Where(b => b.CategoryId == categoryId);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.CategoryName))

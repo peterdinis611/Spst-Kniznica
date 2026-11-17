@@ -45,6 +45,10 @@ try
         ?? "http://localhost:5203";
     var bookingBase = builder.Configuration["Services:BookingService"]?.TrimEnd('/')
         ?? "http://localhost:5208";
+    var authorBase = builder.Configuration["Services:AuthorService"]?.TrimEnd('/')
+        ?? "http://localhost:5207";
+    var categoryBase = builder.Configuration["Services:CategoryService"]?.TrimEnd('/')
+        ?? "http://localhost:5204";
 
     builder.Services.AddHealthChecks()
         .AddCheck("self", () => HealthCheckResult.Healthy("GatewayService"), tags: ["live"])
@@ -55,7 +59,7 @@ try
                 $"{bookBase}/health",
                 sp.GetRequiredService<IHttpClientFactory>()),
             failureStatus: HealthStatus.Unhealthy,
-            tags: ["ready"]))
+            tags: ["ready", "core"]))
         .Add(new HealthCheckRegistration(
             "booking",
             sp => new DownstreamReadyCheck(
@@ -63,7 +67,23 @@ try
                 $"{bookingBase}/health",
                 sp.GetRequiredService<IHttpClientFactory>()),
             failureStatus: HealthStatus.Unhealthy,
-            tags: ["ready"]));
+            tags: ["ready", "core"]))
+        .Add(new HealthCheckRegistration(
+            "author",
+            sp => new DownstreamReadyCheck(
+                "AuthorService",
+                $"{authorBase}/health",
+                sp.GetRequiredService<IHttpClientFactory>()),
+            failureStatus: HealthStatus.Degraded,
+            tags: ["ready", "catalog"]))
+        .Add(new HealthCheckRegistration(
+            "category",
+            sp => new DownstreamReadyCheck(
+                "CategoryService",
+                $"{categoryBase}/health",
+                sp.GetRequiredService<IHttpClientFactory>()),
+            failureStatus: HealthStatus.Degraded,
+            tags: ["ready", "catalog"]));
 
     var app = builder.Build();
 
@@ -102,10 +122,11 @@ try
         Predicate = check => check.Tags.Contains("live"),
     }).AllowAnonymous();
 
-    // Readiness: downstream catalog deps are reachable.
+    // Readiness: core deps must be up; author/category may degrade the status.
     app.MapHealthChecks("/health/ready", new HealthCheckOptions
     {
         Predicate = check => check.Tags.Contains("ready"),
+        ResponseWriter = WriteReadyResponseAsync,
     }).AllowAnonymous();
 
     if (app.Environment.ShouldExposeSwagger())
@@ -133,4 +154,39 @@ catch (Exception ex)
 finally
 {
     await Log.CloseAndFlushAsync();
+}
+
+static async Task WriteReadyResponseAsync(HttpContext context, HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+
+    var status = report.Status switch
+    {
+        HealthStatus.Healthy => "Healthy",
+        HealthStatus.Degraded => "Degraded",
+        _ => "Unhealthy",
+    };
+
+    context.Response.StatusCode = report.Status switch
+    {
+        HealthStatus.Healthy => StatusCodes.Status200OK,
+        HealthStatus.Degraded => StatusCodes.Status200OK,
+        _ => StatusCodes.Status503ServiceUnavailable,
+    };
+
+    var payload = new
+    {
+        status,
+        totalDurationMs = report.TotalDuration.TotalMilliseconds,
+        entries = report.Entries.ToDictionary(
+            e => e.Key,
+            e => new
+            {
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                durationMs = e.Value.Duration.TotalMilliseconds,
+            }),
+    };
+
+    await context.Response.WriteAsJsonAsync(payload);
 }

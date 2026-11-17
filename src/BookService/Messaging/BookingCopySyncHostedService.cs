@@ -1,15 +1,13 @@
 using System.Text;
-using BookService.Data;
-using BookService.Models;
+using BookService.Services;
 using Confluent.Kafka;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SpstKniznica.Common.Messaging;
 
 namespace BookService.Messaging;
 
 /// <summary>
-/// Applies booking lifecycle events to <see cref="BookCopy"/> status so catalog availability matches reality.
+/// Applies booking lifecycle events to book copy status so catalog availability matches reality.
 /// </summary>
 public sealed class BookingCopySyncHostedService(
     IServiceScopeFactory scopeFactory,
@@ -21,9 +19,8 @@ public sealed class BookingCopySyncHostedService(
         var kafka = options.Value;
         if (!kafka.Enabled)
         {
-            logger.LogWarning(
-                "Kafka is disabled — booking copy status will not sync into BookService. " +
-                "Enable Kafka:Enabled for denormalized availability updates.");
+            logger.LogInformation(
+                "Kafka is disabled — booking copy status relies on HTTP fallback from BookingService.");
             return Task.CompletedTask;
         }
 
@@ -71,8 +68,9 @@ public sealed class BookingCopySyncHostedService(
                         }
 
                         using var scope = scopeFactory.CreateScope();
-                        var db = scope.ServiceProvider.GetRequiredService<BookDbContext>();
-                        ApplyAsync(db, eventType, result.Message.Value, stoppingToken)
+                        var denorm = scope.ServiceProvider
+                            .GetRequiredService<BookingCopyDenormalizationService>();
+                        denorm.ApplyEventPayloadAsync(eventType, result.Message.Value, stoppingToken)
                             .GetAwaiter()
                             .GetResult();
                     }
@@ -106,135 +104,4 @@ public sealed class BookingCopySyncHostedService(
             }
         }
     }
-
-    private async Task ApplyAsync(
-        BookDbContext db,
-        string eventType,
-        string payload,
-        CancellationToken cancellationToken)
-    {
-        switch (eventType)
-        {
-            case nameof(BookingCreatedEvent):
-            {
-                var created = EventJson.Deserialize<BookingCreatedEvent>(payload);
-                if (created is null) return;
-                await ApplyStatusAsync(
-                    db,
-                    created.BookId,
-                    created.BookCopyId,
-                    created.Status,
-                    cancellationToken);
-                return;
-            }
-            case nameof(BookingUpdatedEvent):
-            {
-                var updated = EventJson.Deserialize<BookingUpdatedEvent>(payload);
-                if (updated is null) return;
-                await ApplyStatusAsync(
-                    db,
-                    updated.BookId,
-                    updated.BookCopyId,
-                    updated.Status,
-                    cancellationToken);
-                return;
-            }
-            case nameof(BookingDeletedEvent):
-            {
-                var deleted = EventJson.Deserialize<BookingDeletedEvent>(payload);
-                if (deleted is null) return;
-                // Without copy id, free one reserved/borrowed copy on the book if counts look off.
-                await ReleaseAnyBusyCopyAsync(db, deleted.BookId, cancellationToken);
-                return;
-            }
-        }
-    }
-
-    private async Task ApplyStatusAsync(
-        BookDbContext db,
-        Guid bookId,
-        Guid? bookCopyId,
-        string bookingStatus,
-        CancellationToken cancellationToken)
-    {
-        var target = MapCopyStatus(bookingStatus);
-        var bookIdText = bookId.ToString();
-
-        var book = await db.Books
-            .Include(b => b.Copies)
-            .FirstOrDefaultAsync(b => b.Id.ToString() == bookIdText, cancellationToken);
-
-        if (book is null)
-        {
-            logger.LogDebug("Booking-copy sync: book {BookId} not found", bookId);
-            return;
-        }
-
-        BookCopy? copy = null;
-        if (bookCopyId is { } copyId)
-        {
-            var copyText = copyId.ToString();
-            copy = book.Copies.FirstOrDefault(c => c.Id.ToString() == copyText);
-        }
-
-        if (copy is null && target is BookCopyStatus.Reserved or BookCopyStatus.Borrowed)
-        {
-            copy = book.Copies.FirstOrDefault(c => c.Status == BookCopyStatus.Available);
-        }
-
-        if (copy is null && target == BookCopyStatus.Available && bookCopyId is null)
-        {
-            copy = book.Copies.FirstOrDefault(c =>
-                c.Status is BookCopyStatus.Reserved or BookCopyStatus.Borrowed);
-        }
-
-        if (copy is null)
-        {
-            logger.LogDebug(
-                "Booking-copy sync: no copy to update for book {BookId} status {Status}",
-                bookId,
-                bookingStatus);
-            return;
-        }
-
-        if (copy.Status == target)
-        {
-            return;
-        }
-
-        copy.Status = target;
-        book.RecalculateCopyCounts();
-        book.UpdatedAt = DateTimeOffset.UtcNow;
-        await db.SaveChangesAsync(cancellationToken);
-
-        logger.LogInformation(
-            "Synced copy {CopyId} on book {BookId} → {CopyStatus} (from booking {BookingStatus})",
-            copy.Id,
-            bookId,
-            target,
-            bookingStatus);
-    }
-
-    private async Task ReleaseAnyBusyCopyAsync(
-        BookDbContext db,
-        Guid bookId,
-        CancellationToken cancellationToken)
-    {
-        await ApplyStatusAsync(db, bookId, null, nameof(BookingStatusFree), cancellationToken);
-    }
-
-    private static BookCopyStatus MapCopyStatus(string bookingStatus) =>
-        bookingStatus.Trim().ToLowerInvariant() switch
-        {
-            "reserved" => BookCopyStatus.Reserved,
-            "active" => BookCopyStatus.Borrowed,
-            "overdue" => BookCopyStatus.Borrowed,
-            "returned" => BookCopyStatus.Available,
-            "cancelled" => BookCopyStatus.Available,
-            "free" => BookCopyStatus.Available,
-            _ => BookCopyStatus.Available,
-        };
-
-    // Sentinel for delete path.
-    private const string BookingStatusFree = "Free";
 }

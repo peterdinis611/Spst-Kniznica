@@ -39,6 +39,16 @@ public class LoanLifecycleServiceTests : IAsyncLifetime
         _events = new RecordingEventPublisher();
         _notifications = new RecordingLoanNotificationSender();
         _bookCatalog = Substitute.For<IBookCatalogLookup>();
+        _bookCatalog.GetBookAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(new BookAvailabilitySnapshot(2, 1, "Test Book", "Test Author"));
+        _bookCatalog.GetBooksAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var ids = callInfo.ArgAt<IEnumerable<Guid>>(0);
+                return (IReadOnlyDictionary<Guid, BookAvailabilitySnapshot>)ids
+                    .Distinct()
+                    .ToDictionary(id => id, _ => new BookAvailabilitySnapshot(2, 1, "Test Book", "Test Author"));
+            });
         _sut = CreateSut(_db, _bookCatalog, _events, notifications: _notifications);
     }
 
@@ -236,6 +246,7 @@ public class LoanLifecycleServiceTests : IAsyncLifetime
             loanPolicy,
             waitlist,
             bookCatalog,
+            new BookingDtoEnricher(bookCatalog),
             calendar,
             NullLogger<LoanLifecycleService>.Instance);
     }

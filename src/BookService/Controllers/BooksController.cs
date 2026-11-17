@@ -31,8 +31,21 @@ public class BooksController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<BookListItemDto>>> Get(
         [FromQuery] BookQueryFilter filter,
+        [FromQuery] List<Guid>? ids,
         CancellationToken cancellationToken)
     {
+        if (ids is { Count: > 0 })
+        {
+            var batch = await books.GetByIdsAsync(ids, cancellationToken);
+            return Ok(new PagedResult<BookListItemDto>
+            {
+                Items = batch,
+                Page = 1,
+                PageSize = batch.Count,
+                TotalCount = batch.Count,
+            });
+        }
+
         logger.LogInformation(
             "Searching books. Page={Page}, PageSize={PageSize}, SortBy={SortBy}, SortDir={SortDir}, Search={Search}",
             filter.Page,

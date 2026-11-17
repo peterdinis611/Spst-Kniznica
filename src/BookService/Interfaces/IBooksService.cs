@@ -8,6 +8,12 @@ public interface IBooksService
     Task<PagedResult<BookListItemDto>> SearchAsync(BookQueryFilter filter, CancellationToken cancellationToken = default);
     Task<CursorPage<BookListItemDto>> SearchByCursorAsync(BookCursorFilter filter, CancellationToken cancellationToken = default);
     Task<BookDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<BookCatalogSnapshot>> GetSummariesAsync(
+        IReadOnlyList<Guid> ids,
+        CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<BookListItemDto>> GetByIdsAsync(
+        IReadOnlyList<Guid> ids,
+        CancellationToken cancellationToken = default);
     Task<BookDetailDto> CreateAsync(CreateBookRequest request, CancellationToken cancellationToken = default);
     Task<BookDetailDto> UpdateAsync(Guid id, UpdateBookRequest request, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);

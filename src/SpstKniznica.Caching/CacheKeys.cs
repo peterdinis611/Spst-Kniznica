@@ -16,6 +16,8 @@ public static class CacheKeys
     public const string CategoryPrefix = "category:";
     public const string AuthorPrefix = "author:";
     public const string BookPrefix = "book:";
+    /// <summary>Reserved for list/filter caches — details are cached; lists are not (invalidate on mutate).</summary>
+    public const string BookListPrefix = "books:list:";
     public const string BookingPrefix = "booking:";
     public const string RelationPrefix = "relation:";
 }
