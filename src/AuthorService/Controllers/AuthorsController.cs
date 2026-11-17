@@ -147,6 +147,7 @@ public class AuthorsController(
     {
         logger.LogInformation("Creating author '{Name}'", request.Name);
         var created = await authors.CreateAsync(request, cancellationToken);
+        audit.StaffAction(User, "author.create", "Author", created.Id.ToString(), new { created.Name });
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -165,7 +166,9 @@ public class AuthorsController(
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Updating author {AuthorId}", id);
-        return Ok(await authors.UpdateAsync(id, request, cancellationToken));
+        var updated = await authors.UpdateAsync(id, request, cancellationToken);
+        audit.StaffAction(User, "author.update", "Author", id.ToString(), new { updated.Name });
+        return Ok(updated);
     }
 
     [HttpDelete("{id:guid}")]
@@ -180,6 +183,7 @@ public class AuthorsController(
     {
         logger.LogWarning("Deleting author {AuthorId}", id);
         await authors.DeleteAsync(id, cancellationToken);
+        audit.StaffAction(User, "author.delete", "Author", id.ToString());
         return NoContent();
     }
 }

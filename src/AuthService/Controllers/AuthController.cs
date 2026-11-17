@@ -9,7 +9,7 @@ namespace AuthService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class AuthController(IAuthSettingsProvider settings) : ControllerBase
+public class AuthController(IAuthSettingsProvider settings, IAuditLogger audit) : ControllerBase
 {
     [HttpGet("config")]
     [AllowAnonymous]
@@ -33,7 +33,15 @@ public class AuthController(IAuthSettingsProvider settings) : ControllerBase
     {
         try
         {
-            return Ok(await settings.SaveOverridesAsync(request, cancellationToken));
+            var saved = await settings.SaveOverridesAsync(request, cancellationToken);
+            audit.StaffAction(User, "auth.settings.update", "AuthSettings", "singleton", new
+            {
+                saved.RedirectUriHint,
+                HasLoginNotice = !string.IsNullOrWhiteSpace(saved.LoginNotice),
+                saved.HasOverrides,
+                saved.UpdatedAt,
+            });
+            return Ok(saved);
         }
         catch (ArgumentException ex)
         {

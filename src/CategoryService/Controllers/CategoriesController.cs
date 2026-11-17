@@ -134,6 +134,7 @@ public class CategoriesController(
     {
         logger.LogInformation("Creating category '{Name}'", request.Name);
         var created = await categories.CreateAsync(request, cancellationToken);
+        audit.StaffAction(User, "category.create", "Category", created.Id.ToString(), new { created.Name });
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -152,7 +153,9 @@ public class CategoriesController(
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Updating category {CategoryId}", id);
-        return Ok(await categories.UpdateAsync(id, request, cancellationToken));
+        var updated = await categories.UpdateAsync(id, request, cancellationToken);
+        audit.StaffAction(User, "category.update", "Category", id.ToString(), new { updated.Name });
+        return Ok(updated);
     }
 
     [HttpDelete("{id:guid}")]
@@ -167,6 +170,7 @@ public class CategoriesController(
     {
         logger.LogWarning("Deleting category {CategoryId}", id);
         await categories.DeleteAsync(id, cancellationToken);
+        audit.StaffAction(User, "category.delete", "Category", id.ToString());
         return NoContent();
     }
 }

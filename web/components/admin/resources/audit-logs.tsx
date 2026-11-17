@@ -23,7 +23,14 @@ const ACTION_CHOICES = [
   { id: "book.delete", name: "book.delete" },
   { id: "book.import", name: "book.import" },
   { id: "book.export", name: "book.export" },
+  { id: "book.copy.status", name: "book.copy.status" },
+  { id: "author.create", name: "author.create" },
+  { id: "author.update", name: "author.update" },
+  { id: "author.delete", name: "author.delete" },
   { id: "author.export", name: "author.export" },
+  { id: "category.create", name: "category.create" },
+  { id: "category.update", name: "category.update" },
+  { id: "category.delete", name: "category.delete" },
   { id: "category.export", name: "category.export" },
   { id: "booking.update", name: "booking.update" },
   { id: "booking.delete", name: "booking.delete" },
@@ -31,14 +38,26 @@ const ACTION_CHOICES = [
   { id: "booking.renew", name: "booking.renew" },
   { id: "booking.export", name: "booking.export" },
   { id: "booking.desk.export", name: "booking.desk.export" },
+  { id: "booking.policy.update", name: "booking.policy.update" },
+  { id: "auth.settings.update", name: "auth.settings.update" },
+  { id: "email.send", name: "email.send" },
+  { id: "email.template.loan-due-reminder", name: "email.template.loan-due-reminder" },
+  {
+    id: "email.template.waitlist-promotion",
+    name: "email.template.waitlist-promotion",
+  },
   { id: "audit.export", name: "audit.export" },
 ];
 
 const ENTITY_CHOICES = [
   { id: "Book", name: "Book" },
+  { id: "BookCopy", name: "BookCopy" },
   { id: "Author", name: "Author" },
   { id: "Category", name: "Category" },
   { id: "Booking", name: "Booking" },
+  { id: "LoanPolicy", name: "LoanPolicy" },
+  { id: "AuthSettings", name: "AuthSettings" },
+  { id: "EmailMessage", name: "EmailMessage" },
   { id: "AuditLog", name: "AuditLog" },
 ];
 
@@ -47,6 +66,8 @@ const SOURCE_CHOICES = [
   { id: "AuthorService", name: "AuthorService" },
   { id: "CategoryService", name: "CategoryService" },
   { id: "BookingService", name: "BookingService" },
+  { id: "AuthService", name: "AuthService" },
+  { id: "EmailService", name: "EmailService" },
   { id: "AdminService", name: "AdminService" },
 ];
 

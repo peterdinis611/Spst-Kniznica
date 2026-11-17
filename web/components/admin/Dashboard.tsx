@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Title, useGetIdentity } from "react-admin";
+import { Title, useGetIdentity, usePermissions } from "react-admin";
 import { Link as RaLink } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import {
   fetchAdminOverview,
   type AdminOverview,
 } from "@/lib/admin/ops";
+import { hasAdminRole } from "@/lib/admin/roles";
 import {
   BOOKING_STATUS_LABEL,
   normalizeBookingStatus,
@@ -18,7 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const TOOL_LINKS = [
-  { to: "/audit-logs", label: "Denník" },
+  { to: "/audit-logs", label: "Denník", adminOnly: true },
   { to: "/tools/export", label: "Exportovať" },
   { to: "/tools/import", label: "Importovať" },
   { to: "/tools/gateway", label: "API brána" },
@@ -256,6 +257,8 @@ function AttentionList({ data }: { data: AdminOverview }) {
 
 export function AdminRaDashboard() {
   const { data: identity } = useGetIdentity();
+  const { permissions } = usePermissions();
+  const isAdmin = hasAdminRole(permissions);
   const [data, setData] = useState<AdminOverview | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -334,18 +337,20 @@ export function AdminRaDashboard() {
       </header>
 
       <nav className="flex flex-wrap gap-2" aria-label="Nástroje správy">
-        {TOOL_LINKS.map((item) => (
-          <Button
-            key={item.to}
-            component={RaLink}
-            to={item.to}
-            variant="outlined"
-            size="small"
-            sx={{ borderRadius: 0 }}
-          >
-            {item.label}
-          </Button>
-        ))}
+        {TOOL_LINKS.filter((item) => !("adminOnly" in item && item.adminOnly) || isAdmin).map(
+          (item) => (
+            <Button
+              key={item.to}
+              component={RaLink}
+              to={item.to}
+              variant="outlined"
+              size="small"
+              sx={{ borderRadius: 0 }}
+            >
+              {item.label}
+            </Button>
+          ),
+        )}
       </nav>
 
       {error ? (

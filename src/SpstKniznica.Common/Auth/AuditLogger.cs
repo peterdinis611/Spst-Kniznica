@@ -16,6 +16,15 @@ public interface IAuditLogger
         string entityType,
         string entityId,
         object? details = null);
+
+    /// <summary>
+    /// Audit an internal/service-originated action (no interactive user principal).
+    /// </summary>
+    void ServiceAction(
+        string action,
+        string entityType,
+        string entityId,
+        object? details = null);
 }
 
 public sealed class AuditLogger(
@@ -35,14 +44,50 @@ public sealed class AuditLogger(
         object? details = null)
     {
         var actorId = user.GetObjectId() ?? user.GetEmail();
-        var roles = string.Join(',', user.GetRoles());
+        Write(
+            action,
+            entityType,
+            entityId,
+            actorIdHash: LogRedaction.HashForLog(actorId),
+            actorEmail: user.GetEmail(),
+            actorName: user.GetDisplayName(),
+            roles: string.Join(',', user.GetRoles()),
+            details);
+    }
 
+    public void ServiceAction(
+        string action,
+        string entityType,
+        string entityId,
+        object? details = null)
+    {
+        Write(
+            action,
+            entityType,
+            entityId,
+            actorIdHash: LogRedaction.HashForLog("system"),
+            actorEmail: null,
+            actorName: "system",
+            roles: AuthPolicies.InternalService,
+            details);
+    }
+
+    private void Write(
+        string action,
+        string entityType,
+        string entityId,
+        string? actorIdHash,
+        string? actorEmail,
+        string? actorName,
+        string roles,
+        object? details)
+    {
         logger.LogInformation(
             "AUDIT action={Action} entity={EntityType}/{EntityId} actor={ActorHash} roles={Roles} details={@Details}",
             action,
             entityType,
             entityId,
-            LogRedaction.HashForLog(actorId),
+            actorIdHash,
             roles,
             details);
 
@@ -51,9 +96,9 @@ public sealed class AuditLogger(
             Action = action,
             EntityType = entityType,
             EntityId = entityId,
-            ActorIdHash = LogRedaction.HashForLog(actorId),
-            ActorEmail = user.GetEmail(),
-            ActorName = user.GetDisplayName(),
+            ActorIdHash = actorIdHash,
+            ActorEmail = actorEmail,
+            ActorName = actorName,
             Roles = roles,
             DetailsJson = details is null
                 ? null

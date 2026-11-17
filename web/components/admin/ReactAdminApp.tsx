@@ -10,6 +10,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import { adminAuthProvider } from "@/lib/admin/auth-provider";
 import { adminDataProvider } from "@/lib/admin/data-provider";
 import { adminI18nProvider } from "@/lib/admin/i18n";
+import { hasAdminRole } from "@/lib/admin/roles";
 import { adminDarkTheme, adminLightTheme } from "@/lib/admin/theme";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminLoginPage } from "@/components/admin/AdminLoginPage";
@@ -72,64 +73,70 @@ export default function ReactAdminApp() {
       requireAuth
       title="SPST správa"
     >
-      <Resource
-        name="books"
-        list={BookList}
-        show={BookShow}
-        edit={BookEdit}
-        create={BookCreate}
-        icon={BookIcon}
-        recordRepresentation="title"
-      />
-      <Resource
-        name="authors"
-        list={AuthorList}
-        show={AuthorShow}
-        edit={AuthorEdit}
-        create={AuthorCreate}
-        icon={PersonIcon}
-        recordRepresentation="name"
-      />
-      <Resource
-        name="categories"
-        list={CategoryList}
-        show={CategoryShow}
-        edit={CategoryEdit}
-        create={CategoryCreate}
-        icon={CategoryIcon}
-        recordRepresentation="name"
-      />
-      <Resource
-        name="bookings"
-        list={BookingList}
-        show={BookingShow}
-        edit={BookingEdit}
-        create={BookingCreate}
-        icon={AssignmentIcon}
-      />
-      <Resource
-        name="audit-logs"
-        list={AuditLogList}
-        show={AuditLogShow}
-        icon={HistoryIcon}
-        options={{ label: "Záznamy auditu" }}
-      />
-      <CustomRoutes>
-        <Route path="/tools/import" element={<BookImportPage />} />
-        <Route path="/tools/export" element={<DataExportPage />} />
-        <Route path="/tools/gateway" element={<GatewayToolsPage />} />
-        <Route path="/tools/health" element={<HealthToolsPage />} />
-        <Route path="/tools/services" element={<ServicesRegistryPage />} />
-        <Route path="/tools/cache" element={<CacheToolsPage />} />
-        <Route path="/tools/messaging" element={<MessagingToolsPage />} />
-        <Route path="/tools/relations" element={<RelationsPage />} />
-        <Route path="/tools/orders" element={<OrdersToolsPage />} />
-        <Route path="/tools/links" element={<LinksToolsPage />} />
-        <Route path="/tools/account" element={<AccountPage />} />
-        <Route path="/tools/auth-settings" element={<AuthSettingsPage />} />
-        <Route path="/tools/waitlist" element={<WaitlistToolsPage />} />
-        <Route path="/tools/loan-policy" element={<LoanPolicyPage />} />
-      </CustomRoutes>
+      {(permissions) => (
+        <>
+          <Resource
+            name="books"
+            list={BookList}
+            show={BookShow}
+            edit={BookEdit}
+            create={BookCreate}
+            icon={BookIcon}
+            recordRepresentation="title"
+          />
+          <Resource
+            name="authors"
+            list={AuthorList}
+            show={AuthorShow}
+            edit={AuthorEdit}
+            create={AuthorCreate}
+            icon={PersonIcon}
+            recordRepresentation="name"
+          />
+          <Resource
+            name="categories"
+            list={CategoryList}
+            show={CategoryShow}
+            edit={CategoryEdit}
+            create={CategoryCreate}
+            icon={CategoryIcon}
+            recordRepresentation="name"
+          />
+          <Resource
+            name="bookings"
+            list={BookingList}
+            show={BookingShow}
+            edit={BookingEdit}
+            create={BookingCreate}
+            icon={AssignmentIcon}
+          />
+          {hasAdminRole(permissions) ? (
+            <Resource
+              name="audit-logs"
+              list={AuditLogList}
+              show={AuditLogShow}
+              icon={HistoryIcon}
+              options={{ label: "Záznamy auditu" }}
+            />
+          ) : null}
+          <CustomRoutes>
+            <Route path="/tools/import" element={<BookImportPage />} />
+            <Route path="/tools/export" element={<DataExportPage />} />
+            <Route path="/tools/gateway" element={<GatewayToolsPage />} />
+            <Route path="/tools/health" element={<HealthToolsPage />} />
+            <Route path="/tools/services" element={<ServicesRegistryPage />} />
+            <Route path="/tools/cache" element={<CacheToolsPage />} />
+            <Route path="/tools/messaging" element={<MessagingToolsPage />} />
+            <Route path="/tools/relations" element={<RelationsPage />} />
+            <Route path="/tools/orders" element={<OrdersToolsPage />} />
+            <Route path="/tools/links" element={<LinksToolsPage />} />
+            <Route path="/tools/account" element={<AccountPage />} />
+            <Route path="/tools/auth-settings" element={<AuthSettingsPage />} />
+            <Route path="/tools/waitlist" element={<WaitlistToolsPage />} />
+            <Route path="/tools/loan-policy" element={<LoanPolicyPage />} />
+          </CustomRoutes>
+        </>
+      )}
     </Admin>
   );
 }

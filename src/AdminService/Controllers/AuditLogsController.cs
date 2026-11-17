@@ -13,7 +13,7 @@ namespace AdminService.Controllers;
 [ApiController]
 [Route("api/admin/audit-logs")]
 [Produces("application/json")]
-[Authorize(Policy = AuthPolicies.Staff)]
+[Authorize(Policy = AuthPolicies.AdminOnly)]
 public class AuditLogsController(AuditLogService auditLogs, IAuditLogger audit) : ControllerBase
 {
     [HttpGet]

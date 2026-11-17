@@ -57,6 +57,7 @@ try
     }
 
     builder.Services.AddScoped<IEmailDispatchService, EmailDispatchService>();
+    builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "EmailService");
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<EmailDbContext>("database");

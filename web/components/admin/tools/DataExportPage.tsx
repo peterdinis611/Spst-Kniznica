@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useNotify } from "react-admin";
+import { useNotify, usePermissions } from "react-admin";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import { adminHttpDownload } from "@/lib/admin/http";
+import { hasAdminRole } from "@/lib/admin/roles";
 import { withQuery } from "@/lib/api/client";
 import { ToolCard, ToolShell } from "@/components/admin/tools/ToolShell";
 
@@ -71,9 +72,12 @@ function triggerDownload(blob: Blob, fileName: string) {
 
 export function DataExportPage() {
   const notify = useNotify();
+  const { permissions } = usePermissions();
+  const isAdmin = hasAdminRole(permissions);
   const [format, setFormat] = useState<"csv" | "xml">("csv");
   const [take, setTake] = useState(2000);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const visibleTargets = TARGETS.filter((t) => !t.adminOnly || isAdmin);
 
   async function onExport(target: ExportTarget) {
     setBusyId(target.id);
@@ -135,7 +139,7 @@ export function DataExportPage() {
 
       <ToolCard title="Dátová sada">
         <ul className="space-y-3">
-          {TARGETS.map((target) => (
+          {visibleTargets.map((target) => (
             <li
               key={target.id}
               className="flex flex-col gap-2 border border-rule p-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10"

@@ -13,7 +13,7 @@ namespace EmailService.Controllers;
 [Route("api/internal/emails")]
 [Produces("application/json")]
 [Authorize(Policy = AuthPolicies.InternalService)]
-public class InternalEmailsController(IEmailDispatchService emails) : ControllerBase
+public class InternalEmailsController(IEmailDispatchService emails, IAuditLogger audit) : ControllerBase
 {
     [HttpPost("send")]
     [ProducesResponseType(typeof(EmailMessageDto), StatusCodes.Status200OK)]
@@ -24,7 +24,13 @@ public class InternalEmailsController(IEmailDispatchService emails) : Controller
     {
         try
         {
-            return Ok(await emails.SendAsync(request, cancellationToken));
+            var sent = await emails.SendAsync(request, cancellationToken);
+            audit.ServiceAction("email.send", "EmailMessage", sent.Id.ToString(), new
+            {
+                sent.TemplateKey,
+                Status = sent.Status.ToString(),
+            });
+            return Ok(sent);
         }
         catch (ArgumentException ex)
         {
@@ -45,7 +51,17 @@ public class InternalEmailsController(IEmailDispatchService emails) : Controller
     {
         try
         {
-            return Ok(await emails.SendLoanDueReminderAsync(request, cancellationToken));
+            var sent = await emails.SendLoanDueReminderAsync(request, cancellationToken);
+            audit.ServiceAction(
+                "email.template.loan-due-reminder",
+                "EmailMessage",
+                sent.Id.ToString(),
+                new
+                {
+                    sent.TemplateKey,
+                    Status = sent.Status.ToString(),
+                });
+            return Ok(sent);
         }
         catch (ArgumentException ex)
         {
@@ -66,7 +82,17 @@ public class InternalEmailsController(IEmailDispatchService emails) : Controller
     {
         try
         {
-            return Ok(await emails.SendWaitlistPromotionAsync(request, cancellationToken));
+            var sent = await emails.SendWaitlistPromotionAsync(request, cancellationToken);
+            audit.ServiceAction(
+                "email.template.waitlist-promotion",
+                "EmailMessage",
+                sent.Id.ToString(),
+                new
+                {
+                    sent.TemplateKey,
+                    Status = sent.Status.ToString(),
+                });
+            return Ok(sent);
         }
         catch (ArgumentException ex)
         {

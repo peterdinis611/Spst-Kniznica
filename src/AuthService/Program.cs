@@ -41,6 +41,7 @@ try
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<IAuthSettingsProvider, AuthSettingsProvider>();
+    builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "AuthService");
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<AuthDbContext>("database");
