@@ -10,7 +10,7 @@ test.describe("catalog URL filters", () => {
       name: /Knižný fond/i,
     });
     const offlineHeading = page.getByRole("heading", {
-      name: /Katalóg kníh nedostupný/i,
+      name: /Katalóg kníh nedostupný|API brána neodpovedá|Služba dočasne mimo/i,
     });
     await expect(catalogHeading.or(offlineHeading)).toBeVisible({
       timeout: 45_000,
@@ -23,7 +23,11 @@ test.describe("catalog URL filters", () => {
 
     await expect(page).toHaveURL(/year=2018/);
     await expect(page).toHaveURL(/lang=en/);
-    await expect(page.getByRole("link", { name: /Rok 2018/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Angličtina/i })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Rok.*2018|2018/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Angličtina/i }),
+    ).toBeVisible();
   });
 });

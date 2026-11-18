@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useQueryStates } from "nuqs";
 import { ArrowUpRight } from "@/components/icons";
 import { ResultsStatus } from "@/components/a11y/ResultsStatus";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
@@ -15,6 +15,7 @@ import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useCatalogLaneCount } from "@/hooks/use-catalog-lane-count";
 import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
+import { categoriesCatalogParsers } from "@/lib/catalog/catalog-url";
 import { searchCategoriesCursorAction } from "@/lib/catalog/actions";
 import type { CatalogCategory } from "@/lib/catalog";
 import {
@@ -33,8 +34,11 @@ type CategoriesCatalogProps = {
 export function CategoriesCatalog({
   initialCategories,
 }: CategoriesCatalogProps) {
-  const searchParams = useSearchParams();
-  const urlQuery = searchParams.get("q") ?? "";
+  const [urlState] = useQueryStates(categoriesCatalogParsers, {
+    history: "push",
+    scroll: false,
+  });
+  const urlQuery = urlState.q ?? "";
   const [liveQuery, setLiveQuery] = useState(urlQuery);
 
   useEffect(() => {

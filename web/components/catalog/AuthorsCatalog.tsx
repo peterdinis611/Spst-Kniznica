@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useQueryStates } from "nuqs";
 import { ArrowUpRight } from "@/components/icons";
 import { ResultsStatus } from "@/components/a11y/ResultsStatus";
 import { CatalogBreadcrumb } from "@/components/catalog/CatalogBreadcrumb";
@@ -14,6 +14,7 @@ import { CatalogLoadMore } from "@/components/catalog/CatalogLoadMore";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
 import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
+import { authorsCatalogParsers } from "@/lib/catalog/catalog-url";
 import { searchAuthorsCursorAction } from "@/lib/catalog/actions";
 import type { CatalogAuthor } from "@/lib/catalog";
 import {
@@ -45,9 +46,12 @@ export function AuthorsCatalog({
   initialAuthors,
   initials,
 }: AuthorsCatalogProps) {
-  const searchParams = useSearchParams();
-  const urlQuery = searchParams.get("q") ?? "";
-  const letter = searchParams.get("letter") ?? "";
+  const [urlState] = useQueryStates(authorsCatalogParsers, {
+    history: "push",
+    scroll: false,
+  });
+  const urlQuery = urlState.q ?? "";
+  const letter = urlState.letter ?? "";
   const [liveQuery, setLiveQuery] = useState(urlQuery);
 
   useEffect(() => {

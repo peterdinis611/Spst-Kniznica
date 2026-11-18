@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useQueryStates } from "nuqs";
 import { ArrowRight, Search } from "@/components/icons";
 import { useAbility } from "@/components/auth/AbilityProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -15,6 +15,7 @@ import { DeskScanPanel } from "@/components/catalog/DeskScanPanel";
 import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
+import { bookingsDeskParsers } from "@/lib/catalog/catalog-url";
 import { VirtualList, VirtualRow } from "@/components/styled/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -77,10 +78,12 @@ export function BookingsDesk({
   initialTotal,
   catalog,
 }: BookingsDeskProps) {
-  const searchParams = useSearchParams();
-  const bookId = searchParams.get("book") ?? "";
-  const scanFocus =
-    searchParams.get("scan") === "1" || searchParams.has("code");
+  const [deskQuery] = useQueryStates(bookingsDeskParsers, {
+    history: "replace",
+    scroll: false,
+  });
+  const bookId = deskQuery.book ?? "";
+  const scanFocus = Boolean(deskQuery.scan) || Boolean(deskQuery.code);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | BookingStatusCode>("all");
   const [page, setPage] = useState(1);

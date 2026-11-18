@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Sora, IBM_Plex_Mono } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { LiveAnnouncerProvider } from "@/components/a11y/LiveAnnouncer";
 import { SkipToContent } from "@/components/a11y/SkipToContent";
 import { AbilityProvider } from "@/components/auth/AbilityProvider";
@@ -137,24 +138,26 @@ export default function RootLayout({
         <SkipToContent />
         <JsonLd data={[libraryJsonLd(), websiteJsonLd()]} />
         <StyledComponentsRegistry>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <AuthProvider>
-              <AbilityProvider>
-                <LiveAnnouncerProvider>
-                  <NavigationProgress />
-                  <ServerStatusBanner />
-                  {children}
-                  <ScrollToTopLazy />
-                  <SileoToaster />
-                </LiveAnnouncerProvider>
-              </AbilityProvider>
-            </AuthProvider>
-          </ThemeProvider>
+          <NuqsAdapter>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <AuthProvider>
+                <AbilityProvider>
+                  <LiveAnnouncerProvider>
+                    <NavigationProgress />
+                    <ServerStatusBanner />
+                    {children}
+                    <ScrollToTopLazy />
+                    <SileoToaster />
+                  </LiveAnnouncerProvider>
+                </AbilityProvider>
+              </AuthProvider>
+            </ThemeProvider>
+          </NuqsAdapter>
         </StyledComponentsRegistry>
       </body>
     </html>

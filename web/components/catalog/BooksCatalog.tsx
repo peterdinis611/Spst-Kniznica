@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { X } from "@/components/icons";
 import { ResultsStatus } from "@/components/a11y/ResultsStatus";
@@ -14,13 +12,12 @@ import { CatalogEmpty } from "@/components/catalog/CatalogEmpty";
 import { CatalogLoadMore } from "@/components/catalog/CatalogLoadMore";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { CatalogTopBar } from "@/components/catalog/CatalogTopBar";
+import { useBooksCatalogQuery } from "@/hooks/use-books-catalog-query";
 import { useCatalogColumnCount } from "@/hooks/use-catalog-column-count";
 import { useCursorCatalog } from "@/hooks/use-cursor-catalog";
 import { useWindowScrollMargin } from "@/hooks/use-window-scroll-margin";
 import {
-  buildBooksCatalogHref,
   languageFilterLabel,
-  parseBooksCatalogFilters,
   type BooksCatalogFilters,
 } from "@/lib/catalog/catalog-url";
 import { searchBooksCursorAction } from "@/lib/catalog/actions";
@@ -50,11 +47,7 @@ export function BooksCatalog({
   initialAuthors,
   shelfZones,
 }: BooksCatalogProps) {
-  const searchParams = useSearchParams();
-  const filters = useMemo(
-    () => parseBooksCatalogFilters(searchParams),
-    [searchParams],
-  );
+  const { filters, setFilters } = useBooksCatalogQuery();
   const urlQuery = filters.q ?? "";
   const [liveQuery, setLiveQuery] = useState(urlQuery);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -199,13 +192,9 @@ export function BooksCatalog({
           <ul className="flex flex-wrap items-center gap-2 px-0.5">
             {activeTags.map((tag) => (
               <li key={tag.key}>
-                <Link
-                  href={buildBooksCatalogHref({
-                    ...filters,
-                    ...tag.clear,
-                    q: liveQuery.trim() || undefined,
-                  })}
-                  scroll={false}
+                <button
+                  type="button"
+                  onClick={() => void setFilters(tag.clear, { history: "push" })}
                   className="group inline-flex items-center gap-1.5 border border-rule/90 bg-card/70 py-1 pr-1.5 pl-2.5 text-xs text-ink transition hover:border-sage/45 dark:border-white/12"
                 >
                   <span className="font-mono text-[10px] tracking-[0.12em] text-sage uppercase">
@@ -221,7 +210,7 @@ export function BooksCatalog({
                     aria-hidden
                   />
                   <span className="sr-only">Odstrániť filter</span>
-                </Link>
+                </button>
               </li>
             ))}
           </ul>
@@ -255,13 +244,26 @@ export function BooksCatalog({
           )}
 
           {hasAnyFilter ? (
-            <Link
-              href="/books"
-              scroll={false}
+            <button
+              type="button"
+              onClick={() =>
+                void setFilters(
+                  {
+                    q: undefined,
+                    categories: undefined,
+                    authors: undefined,
+                    shelf: undefined,
+                    available: false,
+                    year: undefined,
+                    language: undefined,
+                  },
+                  { history: "push" },
+                )
+              }
               className="font-mono text-[11px] tracking-[0.14em] text-sage uppercase underline-offset-4 hover:underline"
             >
               Zrušiť všetko
-            </Link>
+            </button>
           ) : null}
         </div>
       </div>

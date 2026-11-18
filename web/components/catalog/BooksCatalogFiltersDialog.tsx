@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { SlidersHorizontal } from "@/components/icons";
+import { useBooksCatalogQuery } from "@/hooks/use-books-catalog-query";
 import {
-  buildBooksCatalogHref,
   languageFilterLabel,
   type BooksCatalogFilters,
 } from "@/lib/catalog/catalog-url";
@@ -80,7 +79,7 @@ export function BooksCatalogFiltersDialog({
   shelfZones,
   searchQuery,
 }: BooksCatalogFiltersDialogProps) {
-  const router = useRouter();
+  const { setFilters } = useBooksCatalogQuery();
   const [draft, setDraft] = useState<BooksCatalogFilters>(applied);
   const [customLanguage, setCustomLanguage] = useState("");
   const [yearDraft, setYearDraft] = useState("");
@@ -110,14 +109,14 @@ export function BooksCatalogFiltersDialog({
         ? yearParsed
         : undefined;
 
-    router.push(
-      buildBooksCatalogHref({
-        ...applied,
+    void setFilters(
+      {
         shelf: draft.shelf,
         year,
         language,
         q: searchQuery?.trim() || undefined,
-      }),
+      },
+      { history: "push" },
     );
     onOpenChange(false);
   }

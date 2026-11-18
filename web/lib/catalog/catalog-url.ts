@@ -1,3 +1,12 @@
+import {
+  createLoader,
+  createParser,
+  createSerializer,
+  parseAsInteger,
+  parseAsString,
+  type inferParserType,
+} from "nuqs/server";
+
 export type BooksCatalogFilters = {
   q?: string;
   /** Selected category ids (multi). */
@@ -35,68 +44,153 @@ function normalizeIds(ids: string[] | undefined): string[] {
   return out;
 }
 
-function setIdListParam(
-  params: URLSearchParams,
-  key: string,
-  ids: string[] | undefined,
-) {
-  const normalized = normalizeIds(ids);
-  if (normalized.length === 1) {
-    params.set(key, normalized[0]!);
-  } else if (normalized.length > 1) {
-    params.set(key, normalized.join(","));
-  }
+/** Comma-separated ids (`c1,c2`), deduped — matches historical catalog URLs. */
+export const parseAsIdList = createParser({
+  parse(queryValue) {
+    return normalizeIds(queryValue.split(/[,\s]+/).filter(Boolean));
+  },
+  serialize(value) {
+    return normalizeIds(value).join(",");
+  },
+  eq(a, b) {
+    const left = normalizeIds(a);
+    const right = normalizeIds(b);
+    return (
+      left.length === right.length && left.every((id, i) => id === right[i])
+    );
+  },
+}).withDefault([]);
+
+/** Shelf / tract codes are stored uppercased (`e-12` → `E-12`). */
+export const parseAsShelfCode = createParser({
+  parse(queryValue) {
+    const trimmed = queryValue.trim();
+    return trimmed ? trimmed.toUpperCase() : null;
+  },
+  serialize(value) {
+    return value;
+  },
+});
+
+/** Boolean flag encoded as `available=1` (absent / default = false). */
+export const parseAsOneFlag = createParser({
+  parse(queryValue) {
+    if (queryValue === "1" || queryValue === "true") return true;
+    if (queryValue === "0" || queryValue === "false") return false;
+    return null;
+  },
+  serialize(value) {
+    return value ? "1" : "0";
+  },
+}).withDefault(false);
+
+export const booksCatalogParsers = {
+  q: parseAsString,
+  category: parseAsIdList,
+  author: parseAsIdList,
+  shelf: parseAsShelfCode,
+  available: parseAsOneFlag,
+  year: parseAsInteger,
+  lang: parseAsString,
+};
+
+export const authorsCatalogParsers = {
+  q: parseAsString,
+  letter: parseAsString,
+};
+
+export const categoriesCatalogParsers = {
+  q: parseAsString,
+};
+
+export const bookingsDeskParsers = {
+  book: parseAsString,
+  scan: parseAsOneFlag,
+  code: parseAsString,
+};
+
+export type BooksCatalogQuery = inferParserType<typeof booksCatalogParsers>;
+
+const loadBooksCatalog = createLoader(booksCatalogParsers);
+const serializeBooksCatalog = createSerializer(booksCatalogParsers);
+
+export function booksFiltersFromQuery(
+  state: BooksCatalogQuery,
+): BooksCatalogFilters {
+  const categories = normalizeIds(state.category);
+  const authors = normalizeIds(state.author);
+  const q = state.q?.trim();
+  const language = state.lang?.trim();
+
+  return {
+    q: q || undefined,
+    categories: categories.length ? categories : undefined,
+    authors: authors.length ? authors : undefined,
+    shelf: state.shelf ?? undefined,
+    available: state.available,
+    year: state.year ?? undefined,
+    language: language || undefined,
+  };
 }
 
-function parseIdListParam(
-  searchParams: URLSearchParams,
-  key: string,
-): string[] {
-  const raw = searchParams.get(key) ?? "";
-  return normalizeIds(
-    raw
-      ? raw.split(/[,\s]+/).filter(Boolean)
-      : searchParams.getAll(key),
-  );
+export type BooksCatalogQueryPatch = {
+  q?: string | null;
+  category?: string[] | null;
+  author?: string[] | null;
+  shelf?: string | null;
+  available?: boolean | null;
+  year?: number | null;
+  lang?: string | null;
+};
+
+/** Partial nuqs patch from filter fields (null clears the URL key). */
+export function booksQueryPatchFromFilters(
+  filters: Partial<BooksCatalogFilters>,
+): BooksCatalogQueryPatch {
+  const patch: BooksCatalogQueryPatch = {};
+
+  if ("q" in filters) {
+    const q = filters.q?.trim();
+    patch.q = q || null;
+  }
+  if ("categories" in filters) {
+    const ids = normalizeIds(filters.categories);
+    patch.category = ids.length ? ids : null;
+  }
+  if ("authors" in filters) {
+    const ids = normalizeIds(filters.authors);
+    patch.author = ids.length ? ids : null;
+  }
+  if ("shelf" in filters) {
+    patch.shelf = filters.shelf?.trim()
+      ? filters.shelf.trim().toUpperCase()
+      : null;
+  }
+  if ("available" in filters) {
+    patch.available = filters.available ? true : null;
+  }
+  if ("year" in filters) {
+    patch.year =
+      filters.year != null && Number.isFinite(filters.year)
+        ? filters.year
+        : null;
+  }
+  if ("language" in filters) {
+    const lang = filters.language?.trim();
+    patch.lang = lang || null;
+  }
+
+  return patch;
 }
 
 export function buildBooksCatalogHref(filters: BooksCatalogFilters): string {
-  const params = new URLSearchParams();
-  const q = filters.q?.trim();
-  if (q) params.set("q", q);
-  setIdListParam(params, "category", filters.categories);
-  setIdListParam(params, "author", filters.authors);
-  if (filters.shelf) params.set("shelf", filters.shelf);
-  if (filters.available) params.set("available", "1");
-  if (filters.year != null && Number.isFinite(filters.year)) {
-    params.set("year", String(filters.year));
-  }
-  const lang = filters.language?.trim();
-  if (lang) params.set("lang", lang);
-  const qs = params.toString();
-  return qs ? `/books?${qs}` : "/books";
+  return serializeBooksCatalog("/books", booksQueryPatchFromFilters(filters));
 }
 
 export function parseBooksCatalogFilters(
   searchParams: URLSearchParams,
 ): BooksCatalogFilters {
-  const categories = parseIdListParam(searchParams, "category");
-  const authors = parseIdListParam(searchParams, "author");
-
-  return {
-    q: searchParams.get("q") ?? undefined,
-    categories: categories.length ? categories : undefined,
-    authors: authors.length ? authors : undefined,
-    shelf: searchParams.get("shelf")?.toUpperCase() ?? undefined,
-    available: searchParams.get("available") === "1",
-    year: (() => {
-      const raw = searchParams.get("year");
-      if (!raw) return undefined;
-      const value = Number.parseInt(raw, 10);
-      return Number.isFinite(value) ? value : undefined;
-    })(),
-    language: searchParams.get("lang")?.trim() || undefined,
-  };
+  return booksFiltersFromQuery(loadBooksCatalog(searchParams));
 }
 
 export function shelfZonesFromShelfCodes(

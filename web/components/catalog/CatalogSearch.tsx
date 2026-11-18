@@ -1,12 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
+import { useQueryStates } from "nuqs";
+import { parseAsString } from "nuqs";
 import { Search } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { parseAsIdList } from "@/lib/catalog/catalog-url";
 
 type CatalogSearchCategory = {
   id: string;
@@ -21,9 +24,16 @@ type CatalogSearchProps = {
   placeholder?: string;
   showCategory?: boolean;
   categories?: CatalogSearchCategory[];
+  /** Extra query keys to preserve/set (e.g. authors `letter`). */
   hiddenFields?: Record<string, string>;
   onQueryChange?: (query: string) => void;
   debounceMs?: number;
+};
+
+const searchParsers = {
+  q: parseAsString,
+  category: parseAsIdList,
+  letter: parseAsString,
 };
 
 export function CatalogSearch({
@@ -39,11 +49,16 @@ export function CatalogSearch({
 }: CatalogSearchProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const basePath = action ?? pathname;
+  const samePath = basePath === pathname;
+
+  const [urlState, setUrlState] = useQueryStates(searchParsers, {
+    history: "replace",
+    scroll: false,
+  });
+
   const [query, setQuery] = useState(defaultQuery);
   const [category, setCategory] = useState(defaultCategory);
-  const basePath = action ?? pathname;
 
   useEffect(() => {
     setQuery(defaultQuery);
@@ -53,35 +68,41 @@ export function CatalogSearch({
     setCategory(defaultCategory);
   }, [defaultCategory]);
 
-  const syncUrl = useCallback(
-    (nextQuery: string, nextCategory: string, replace: boolean) => {
-      const params = new URLSearchParams(searchParams.toString());
+  const syncUrl = (nextQuery: string, nextCategory: string, replace: boolean) => {
+    const trimmed = nextQuery.trim();
+    const letter = hiddenFields?.letter?.trim() || null;
+    const categoryIds = showCategory
+      ? nextCategory
+        ? [nextCategory]
+        : null
+      : undefined;
 
-      const trimmed = nextQuery.trim();
-      if (trimmed) params.set("q", trimmed);
-      else params.delete("q");
+    if (samePath) {
+      void setUrlState(
+        {
+          q: trimmed || null,
+          ...(showCategory ? { category: categoryIds } : {}),
+          ...(hiddenFields && "letter" in hiddenFields ? { letter } : {}),
+        },
+        { history: replace ? "replace" : "push", scroll: false },
+      );
+      return;
+    }
 
-      if (showCategory) {
-        if (nextCategory) params.set("category", nextCategory);
-        else params.delete("category");
+    const params = new URLSearchParams();
+    if (trimmed) params.set("q", trimmed);
+    if (showCategory && nextCategory) params.set("category", nextCategory);
+    if (hiddenFields) {
+      for (const [key, value] of Object.entries(hiddenFields)) {
+        if (value) params.set(key, value);
       }
-
-      if (hiddenFields) {
-        for (const [key, value] of Object.entries(hiddenFields)) {
-          if (value) params.set(key, value);
-          else params.delete(key);
-        }
-      }
-
-      const qs = params.toString();
-      const href = qs ? `${basePath}?${qs}` : basePath;
-      startTransition(() => {
-        if (replace) router.replace(href, { scroll: false });
-        else router.push(href, { scroll: false });
-      });
-    },
-    [basePath, hiddenFields, router, searchParams, showCategory, startTransition],
-  );
+    }
+    // Preserve other current params when leaving? Cross-route: only explicit fields.
+    const qs = params.toString();
+    const href = qs ? `${basePath}?${qs}` : basePath;
+    if (replace) router.replace(href, { scroll: false });
+    else router.push(href, { scroll: false });
+  };
 
   const debouncedSync = useDebouncedCallback(
     (value: string, nextCategory: string) => {
@@ -101,6 +122,15 @@ export function CatalogSearch({
     onQueryChange?.(query);
     syncUrl(query, category, false);
   };
+
+  // Keep local draft aligned when URL changes from facets/chips (same path).
+  useEffect(() => {
+    if (!samePath) return;
+    const fromUrl = urlState.q ?? "";
+    if (fromUrl !== query && document.activeElement?.id !== "catalog-q") {
+      setQuery(fromUrl);
+    }
+  }, [samePath, urlState.q, query]);
 
   return (
     <form

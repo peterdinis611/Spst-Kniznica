@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  booksFiltersFromQuery,
+  booksQueryPatchFromFilters,
   buildBooksCatalogHref,
   languageFilterLabel,
+  parseAsIdList,
+  parseAsOneFlag,
+  parseAsShelfCode,
   parseBooksCatalogFilters,
   shelfZonesFromShelfCodes,
 } from "@/lib/catalog/catalog-url";
@@ -28,7 +33,7 @@ describe("buildBooksCatalogHref", () => {
       buildBooksCatalogHref({
         categories: ["c1", "c2", "c1"],
       }),
-    ).toBe("/books?category=c1%2Cc2");
+    ).toBe("/books?category=c1,c2");
   });
 
   it("joins multiple authors", () => {
@@ -36,7 +41,7 @@ describe("buildBooksCatalogHref", () => {
       buildBooksCatalogHref({
         authors: ["a1", "a2", "a1"],
       }),
-    ).toBe("/books?author=a1%2Ca2");
+    ).toBe("/books?author=a1,a2");
   });
 
   it("encodes year and language", () => {
@@ -112,5 +117,61 @@ describe("shelfZonesFromShelfCodes", () => {
       { id: "B", label: "Trakt B" },
       { id: "E", label: "Trakt E" },
     ]);
+  });
+});
+
+describe("nuqs catalog parsers", () => {
+  it("parseAsIdList dedupes comma-separated values", () => {
+    expect(parseAsIdList.parse("c1,c2,c1")).toEqual(["c1", "c2"]);
+    expect(parseAsIdList.serialize(["a1", "a1", "a2"])).toBe("a1,a2");
+  });
+
+  it("parseAsShelfCode uppercases", () => {
+    expect(parseAsShelfCode.parse("e-12")).toBe("E-12");
+    expect(parseAsShelfCode.serialize("E")).toBe("E");
+  });
+
+  it("parseAsOneFlag uses available=1 encoding", () => {
+    expect(parseAsOneFlag.parse("1")).toBe(true);
+    expect(parseAsOneFlag.parse("0")).toBe(false);
+    expect(parseAsOneFlag.serialize(true)).toBe("1");
+  });
+
+  it("booksQueryPatchFromFilters clears empty values with null", () => {
+    expect(
+      booksQueryPatchFromFilters({
+        q: "  ",
+        categories: [],
+        available: false,
+        year: undefined,
+      }),
+    ).toEqual({
+      q: null,
+      category: null,
+      available: null,
+      year: null,
+    });
+  });
+
+  it("booksFiltersFromQuery maps url keys to filter shape", () => {
+    expect(
+      booksFiltersFromQuery({
+        q: " motor ",
+        category: ["c1"],
+        author: [],
+        shelf: "E",
+        available: true,
+        year: 2018,
+        lang: "en",
+      }),
+    ).toEqual({
+      q: "motor",
+      categories: ["c1"],
+      authors: undefined,
+      shelf: "E",
+      available: true,
+      year: 2018,
+      language: "en",
+    });
   });
 });

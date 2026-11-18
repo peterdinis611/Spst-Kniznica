@@ -1,13 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Check, ChevronsUpDown, SlidersHorizontal, X } from "@/components/icons";
-import {
-  buildBooksCatalogHref,
-  type BooksCatalogFilters,
-} from "@/lib/catalog/catalog-url";
+import { useBooksCatalogQuery } from "@/hooks/use-books-catalog-query";
+import type { BooksCatalogFilters } from "@/lib/catalog/catalog-url";
 import type { CatalogAuthor, CatalogCategory } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import {
@@ -249,9 +245,7 @@ export function BooksCatalogFacets({
   onOpenAdvanced,
   filtersOpen = false,
 }: BooksCatalogFacetsProps) {
-  const router = useRouter();
-  const q = liveQuery.trim() || undefined;
-  const base = { ...filters, q };
+  const { setFilters } = useBooksCatalogQuery();
   const selectedCategoryIds = filters.categories ?? [];
   const selectedAuthorIds = filters.authors ?? [];
   const activePickCount =
@@ -261,9 +255,13 @@ export function BooksCatalogFacets({
     filterCount;
 
   function push(next: Partial<BooksCatalogFilters>) {
-    router.push(buildBooksCatalogHref({ ...base, ...next }), {
-      scroll: false,
-    });
+    void setFilters(
+      {
+        q: liveQuery.trim() || undefined,
+        ...next,
+      },
+      { history: "push" },
+    );
   }
 
   return (
@@ -341,12 +339,11 @@ export function BooksCatalogFacets({
       </div>
 
       <div className="relative flex flex-wrap items-center gap-2 border-t border-rule/80 px-4 py-3.5 sm:px-5 dark:border-white/10">
-        <Link
-          href={buildBooksCatalogHref({
-            ...base,
-            available: filters.available ? undefined : true,
-          })}
-          scroll={false}
+        <button
+          type="button"
+          onClick={() =>
+            push({ available: filters.available ? false : true })
+          }
           className={cn(
             "inline-flex h-10 items-center gap-2.5 border px-3 text-sm transition",
             filters.available
@@ -374,7 +371,7 @@ export function BooksCatalogFacets({
             ) : null}
           </span>
           Len dostupné
-        </Link>
+        </button>
 
         <Button
           type="button"
