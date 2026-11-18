@@ -8,12 +8,13 @@ namespace EmailService.Controllers;
 
 /// <summary>
 /// Service-to-service send endpoints — requires <c>X-Internal-Api-Key</c>.
+/// Audit for send/fail is written inside <see cref="IEmailDispatchService"/>.
 /// </summary>
 [ApiController]
 [Route("api/internal/emails")]
 [Produces("application/json")]
 [Authorize(Policy = AuthPolicies.InternalService)]
-public class InternalEmailsController(IEmailDispatchService emails, IAuditLogger audit) : ControllerBase
+public class InternalEmailsController(IEmailDispatchService emails) : ControllerBase
 {
     [HttpPost("send")]
     [ProducesResponseType(typeof(EmailMessageDto), StatusCodes.Status200OK)]
@@ -25,11 +26,6 @@ public class InternalEmailsController(IEmailDispatchService emails, IAuditLogger
         try
         {
             var sent = await emails.SendAsync(request, cancellationToken);
-            audit.ServiceAction("email.send", "EmailMessage", sent.Id.ToString(), new
-            {
-                sent.TemplateKey,
-                Status = sent.Status.ToString(),
-            });
             return Ok(sent);
         }
         catch (ArgumentException ex)
@@ -52,15 +48,6 @@ public class InternalEmailsController(IEmailDispatchService emails, IAuditLogger
         try
         {
             var sent = await emails.SendLoanDueReminderAsync(request, cancellationToken);
-            audit.ServiceAction(
-                "email.template.loan-due-reminder",
-                "EmailMessage",
-                sent.Id.ToString(),
-                new
-                {
-                    sent.TemplateKey,
-                    Status = sent.Status.ToString(),
-                });
             return Ok(sent);
         }
         catch (ArgumentException ex)
@@ -83,15 +70,6 @@ public class InternalEmailsController(IEmailDispatchService emails, IAuditLogger
         try
         {
             var sent = await emails.SendWaitlistPromotionAsync(request, cancellationToken);
-            audit.ServiceAction(
-                "email.template.waitlist-promotion",
-                "EmailMessage",
-                sent.Id.ToString(),
-                new
-                {
-                    sent.TemplateKey,
-                    Status = sent.Status.ToString(),
-                });
             return Ok(sent);
         }
         catch (ArgumentException ex)

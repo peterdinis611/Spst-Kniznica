@@ -74,6 +74,63 @@ public class CategoryAppServiceTests
     }
 
     [Fact]
+    public async Task SearchAsync_maps_paged_categories()
+    {
+        var category = new Category
+        {
+            Id = Guid.NewGuid(),
+            Name = "Programovanie",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        _categories.FindAsync(Arg.Any<CategoryQueryFilter>(), Arg.Any<CancellationToken>())
+            .Returns(new SpstKniznica.Common.Pagination.PagedResult<Category>
+            {
+                Items = [category],
+                Page = 1,
+                PageSize = 10,
+                TotalCount = 1,
+            });
+
+        var result = await _sut.SearchAsync(new CategoryQueryFilter
+        {
+            Page = 1,
+            PageSize = 10,
+            Search = "Prog",
+        });
+
+        result.TotalCount.Should().Be(1);
+        result.Items.Should().ContainSingle().Which.Name.Should().Be("Programovanie");
+    }
+
+    [Fact]
+    public async Task SearchByCursorAsync_maps_cursor_page()
+    {
+        var category = new Category
+        {
+            Id = Guid.NewGuid(),
+            Name = "Sci-fi",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        _categories.FindByCursorAsync(Arg.Any<CategoryCursorFilter>(), Arg.Any<CancellationToken>())
+            .Returns(new SpstKniznica.Common.Pagination.CursorPage<Category>
+            {
+                Items = [category],
+                NextCursor = "c2",
+                HasMore = false,
+            });
+
+        var result = await _sut.SearchByCursorAsync(new CategoryCursorFilter { Limit = 20 });
+
+        result.HasMore.Should().BeFalse();
+        result.NextCursor.Should().Be("c2");
+        result.Items.Should().ContainSingle().Which.Name.Should().Be("Sci-fi");
+    }
+
+    [Fact]
     public async Task GetByIdAsync_throws_when_missing()
     {
         var id = Guid.NewGuid();

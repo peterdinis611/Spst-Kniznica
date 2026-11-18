@@ -48,6 +48,7 @@ const ACTION_CHOICES = [
   { id: "booking.lifecycle.due-reminders", name: "booking.lifecycle.due-reminders" },
   { id: "auth.settings.update", name: "auth.settings.update" },
   { id: "email.send", name: "email.send" },
+  { id: "email.failed", name: "email.failed" },
   { id: "email.template.loan-due-reminder", name: "email.template.loan-due-reminder" },
   {
     id: "email.template.waitlist-promotion",

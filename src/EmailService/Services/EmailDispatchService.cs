@@ -4,6 +4,7 @@ using EmailService.Models;
 using EmailService.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Text;
 
 namespace EmailService.Services;
@@ -13,6 +14,7 @@ public sealed class EmailDispatchService(
     IEmailTransport transport,
     IOptions<SmtpOptions> smtpOptions,
     IOptions<EmailDispatchOptions> dispatchOptions,
+    IAuditLogger audit,
     ILogger<EmailDispatchService> logger) : IEmailDispatchService
 {
     public async Task<EmailMessageDto> SendAsync(
@@ -75,6 +77,7 @@ public sealed class EmailDispatchService(
                 : EmailDeliveryStatus.LoggedOnly;
             log.SentAt = DateTimeOffset.UtcNow;
             await db.SaveChangesAsync(cancellationToken);
+            WriteSendAudit(log, failed: false);
         }
         catch (Exception ex)
         {
@@ -82,6 +85,7 @@ public sealed class EmailDispatchService(
             log.Status = EmailDeliveryStatus.Failed;
             log.Error = Truncate(ex.Message, 2000);
             await db.SaveChangesAsync(cancellationToken);
+            WriteSendAudit(log, failed: true);
             throw;
         }
 
@@ -142,12 +146,13 @@ public sealed class EmailDispatchService(
         CancellationToken cancellationToken = default)
     {
         var limit = Math.Clamp(take, 1, 100);
-        var items = await db.Messages
-            .AsNoTracking()
+        // SQLite EF cannot translate DateTimeOffset ORDER BY — sort/take on the client.
+        var items = await db.Messages.AsNoTracking().ToListAsync(cancellationToken);
+        return items
             .OrderByDescending(x => x.CreatedAt)
             .Take(limit)
-            .ToListAsync(cancellationToken);
-        return items.Select(ToDto).ToList();
+            .Select(ToDto)
+            .ToList();
     }
 
     public async Task<EmailMessageDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -168,6 +173,41 @@ public sealed class EmailDispatchService(
             Port = smtp.Port,
             RecentCount = recent,
         };
+    }
+
+    private void WriteSendAudit(EmailMessageLog log, bool failed)
+    {
+        var action = failed
+            ? "email.failed"
+            : ResolveSuccessAction(log.TemplateKey);
+
+        audit.ServiceAction(
+            action,
+            "EmailMessage",
+            log.Id.ToString(),
+            new
+            {
+                log.TemplateKey,
+                Status = log.Status.ToString(),
+                log.CorrelationId,
+                ToDomain = RecipientDomain(log.ToAddress),
+                Subject = Truncate(log.Subject, 120),
+                DeliveryMode = transport.IsLive ? "smtp" : "log-only",
+                Error = failed ? Truncate(log.Error ?? string.Empty, 240) : null,
+            });
+    }
+
+    private static string ResolveSuccessAction(string? templateKey) => templateKey switch
+    {
+        "loan-due-reminder" => "email.template.loan-due-reminder",
+        "waitlist-promotion" => "email.template.waitlist-promotion",
+        _ => "email.send",
+    };
+
+    private static string? RecipientDomain(string to)
+    {
+        var at = to.LastIndexOf('@');
+        return at < 0 || at >= to.Length - 1 ? null : to[(at + 1)..];
     }
 
     private static EmailMessageDto ToDto(EmailMessageLog log) => new()
@@ -214,7 +254,9 @@ public sealed class EmailDispatchService(
     {
         var limit = Math.Max(1, policy.MaxSendsPerMinute);
         var since = DateTimeOffset.UtcNow.AddMinutes(-1);
-        var recent = await db.Messages.CountAsync(m => m.CreatedAt >= since, cancellationToken);
+        // SQLite EF cannot translate DateTimeOffset comparisons — evaluate on the client.
+        var recent = (await db.Messages.AsNoTracking().ToListAsync(cancellationToken))
+            .Count(m => m.CreatedAt >= since);
         if (recent >= limit)
         {
             throw new InvalidOperationException(

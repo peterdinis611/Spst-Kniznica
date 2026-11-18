@@ -80,6 +80,70 @@ public class AuthorAppServiceTests
     }
 
     [Fact]
+    public async Task SearchAsync_maps_paged_authors()
+    {
+        var author = new Author
+        {
+            Id = Guid.NewGuid(),
+            Name = "Ján Kováč",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        _authors.FindAsync(Arg.Any<AuthorQueryFilter>(), Arg.Any<CancellationToken>())
+            .Returns(new SpstKniznica.Common.Pagination.PagedResult<Author>
+            {
+                Items = [author],
+                Page = 1,
+                PageSize = 10,
+                TotalCount = 1,
+            });
+
+        var result = await _sut.SearchAsync(new AuthorQueryFilter
+        {
+            Page = 1,
+            PageSize = 10,
+            Search = "Kováč",
+        });
+
+        result.TotalCount.Should().Be(1);
+        result.Items.Should().ContainSingle().Which.Name.Should().Be("Ján Kováč");
+        await _authors.Received(1).FindAsync(
+            Arg.Is<AuthorQueryFilter>(f => f.Search == "Kováč"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SearchByCursorAsync_maps_cursor_page()
+    {
+        var author = new Author
+        {
+            Id = Guid.NewGuid(),
+            Name = "Cursor Autor",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        _authors.FindByCursorAsync(Arg.Any<AuthorCursorFilter>(), Arg.Any<CancellationToken>())
+            .Returns(new SpstKniznica.Common.Pagination.CursorPage<Author>
+            {
+                Items = [author],
+                NextCursor = "next-token",
+                HasMore = true,
+            });
+
+        var result = await _sut.SearchByCursorAsync(new AuthorCursorFilter
+        {
+            Limit = 5,
+            Cursor = "prev",
+        });
+
+        result.HasMore.Should().BeTrue();
+        result.NextCursor.Should().Be("next-token");
+        result.Items.Should().ContainSingle().Which.Name.Should().Be("Cursor Autor");
+    }
+
+    [Fact]
     public async Task GetByIdAsync_throws_when_missing()
     {
         var id = Guid.NewGuid();
