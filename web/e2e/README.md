@@ -4,14 +4,15 @@ Lightweight smoke tests against the Next.js app. They intentionally **do not** r
 
 ## What is covered
 
-- `/books` — catalog heading and search (when Book API responds)
-- `/401`, `/404`, `/429` — Slovak status copy
-- Optional gateway probe (`/health`, `/health/ready`) when the stack is up
+- `/`, `/books`, `/authors`, `/categories`, `/bookings` — public chrome (or offline Slovak copy)
+- Catalog URL filters (`?year=` / `?lang=`)
+- `/401`, `/404`, `/429`, `/500` — Slovak status copy
+- Optional gateway API (`/health`, `/api/books`, `/api/authors`, `/api/categories`, `/api/auth/config`, unauthorized export)
 - Mobile Chrome project runs the smoke suite on a Pixel 7 viewport
 
 ## Gaps (documented)
 
-CI runs **Next-only** smoke (Playwright starts `npm run dev`). It does **not** boot the .NET gateway or microservices. Catalog data may show the offline error page.
+CI runs **Next-only** smoke (Playwright starts `npm run dev`). It does **not** boot the .NET gateway or microservices. Catalog data may show the offline error page; gateway specs **skip** unless `PLAYWRIGHT_REQUIRE_GATEWAY=1`.
 
 Full-stack checks locally:
 

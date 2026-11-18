@@ -165,12 +165,13 @@ public sealed class AuditLogService(AdminDbContext db, ILogger<AuditLogService> 
                 (x.SourceService != null && EF.Functions.Like(x.SourceService, $"%{search}%")));
         }
 
-        var items = await q
+        // SQLite EF cannot translate DateTimeOffset ORDER BY — sort/take on the client.
+        var items = await q.ToListAsync(cancellationToken);
+        return items
             .OrderByDescending(x => x.OccurredAt)
             .Take(take)
-            .ToListAsync(cancellationToken);
-
-        return items.Select(Map).ToList();
+            .Select(Map)
+            .ToList();
     }
 
     private static List<AuditLog> Sort(IReadOnlyList<AuditLog> items, string sortBy, bool desc)

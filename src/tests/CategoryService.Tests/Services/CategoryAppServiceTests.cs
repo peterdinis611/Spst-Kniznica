@@ -107,6 +107,56 @@ public class CategoryAppServiceTests
         dto.BookCount.Should().Be(11);
     }
 
+    [Fact]
+    public async Task UpdateAsync_trims_fields_and_publishes_event()
+    {
+        var id = Guid.NewGuid();
+        var category = new Category
+        {
+            Id = id,
+            Name = "Old",
+            Color = "#000000",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+        };
+        _categories.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(category);
+        _categories.NameExistsAsync("Nová kategória", id, Arg.Any<CancellationToken>()).Returns(false);
+
+        var dto = await _sut.UpdateAsync(id, new UpdateCategoryRequest
+        {
+            Name = "  Nová kategória  ",
+            Color = "#ABCDEF",
+            IsActive = true,
+        });
+
+        category.Name.Should().Be("Nová kategória");
+        category.Color.Should().Be("#ABCDEF");
+        dto.Name.Should().Be("Nová kategória");
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        _events.Events.Should().ContainSingle(e => e is CategoryUpdatedEvent);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_removes_category_and_publishes_event()
+    {
+        var id = Guid.NewGuid();
+        _categories.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(new Category
+        {
+            Id = id,
+            Name = "Mazateľ",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+
+        await _sut.DeleteAsync(id);
+
+        _categories.Received(1).Remove(Arg.Is<Category>(c => c.Id == id));
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        _events.Events.Should().ContainSingle(e => e is CategoryDeletedEvent);
+    }
+
     private sealed class RecordingEventPublisher : IIntegrationEventPublisher
     {
         public List<object> Events { get; } = [];

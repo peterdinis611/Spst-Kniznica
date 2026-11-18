@@ -135,6 +135,19 @@ dotnet test SpstKniznica.sln
 
 Ak `dotnet build` hlási `FAILED` s **0 chýbami**, ide typicky o zamknuté DLL (bežiace služby) — najprv `./stop.sh`.
 
+## Záťažové testy
+
+k6 scenáre proti gateway (`load/`, vyžaduje `brew install k6` + bežiaci stack):
+
+```bash
+./start.sh --detach
+./scripts/load-test.sh          # smoke
+./scripts/load-test.sh catalog  # browse load
+./scripts/load-test.sh stress   # vysoká záťaž
+```
+
+Detaily: [`load/README.md`](load/README.md).
+
 ## CI
 
 GitHub Actions (`.github/workflows/ci.yml`) na `push` / PR:

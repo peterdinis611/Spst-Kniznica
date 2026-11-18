@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiGet, apiUrl, withQuery } from "@/lib/api/client";
+import { ApiHttpError } from "@/lib/api/errors";
+import { apiGet, apiPost, apiUrl, withQuery } from "@/lib/api/client";
 
 describe("apiUrl", () => {
   it("joins base and absolute path", () => {
@@ -79,5 +80,63 @@ describe("apiGet", () => {
     await expect(apiGet("/api/bookings")).rejects.toThrow(
       "BorrowerEmail is invalid",
     );
+  });
+
+  it("maps network failures to 502 Slovak error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
+    );
+
+    await expect(
+      apiGet("/api/books", undefined, undefined, { skipStatusRedirect: true }),
+    ).rejects.toSatisfy(
+      (err: unknown) =>
+        err instanceof ApiHttpError &&
+        err.status === 502 &&
+        /nedostupné \(sieť \/ gateway\)/i.test(err.message),
+    );
+  });
+
+  it("maps invalid JSON body to 502", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response("not-json", {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    await expect(
+      apiGet("/api/books", undefined, undefined, { skipStatusRedirect: true }),
+    ).rejects.toSatisfy(
+      (err: unknown) =>
+        err instanceof ApiHttpError &&
+        err.status === 502 &&
+        /invalid JSON/i.test(err.message),
+    );
+  });
+
+  it("reads first validation error field from errors object", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            title: "Validation",
+            errors: { Email: ["Email is invalid."] },
+          }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+
+    await expect(
+      apiPost("/api/bookings", {}, undefined, undefined, {
+        skipStatusRedirect: true,
+      }),
+    ).rejects.toThrow("Email is invalid.");
   });
 });

@@ -22,8 +22,12 @@ public sealed class FavoritesService(BookingDbContext db, ILogger<FavoritesServi
             query = query.Where(f => f.ListName == name);
         }
 
-        var items = await query.OrderByDescending(f => f.CreatedAt).ToListAsync(cancellationToken);
-        return items.Select(Map).ToList();
+        // SQLite EF cannot translate DateTimeOffset ORDER BY — sort on the client.
+        var items = await query.ToListAsync(cancellationToken);
+        return items
+            .OrderByDescending(f => f.CreatedAt)
+            .Select(Map)
+            .ToList();
     }
 
     public async Task<FavoriteBookDto> AddAsync(

@@ -132,6 +132,54 @@ public class AuthorAppServiceTests
         dto.BookCount.Should().Be(0);
     }
 
+    [Fact]
+    public async Task UpdateAsync_trims_fields_and_publishes_event()
+    {
+        var id = Guid.NewGuid();
+        var author = new Author
+        {
+            Id = id,
+            Name = "Old",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+        };
+        _authors.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(author);
+        _authors.NameExistsAsync("Nový Autor", id, Arg.Any<CancellationToken>()).Returns(false);
+
+        var dto = await _sut.UpdateAsync(id, new UpdateAuthorRequest
+        {
+            Name = "  Nový Autor  ",
+            Nationality = " SK ",
+            IsActive = true,
+        });
+
+        author.Name.Should().Be("Nový Autor");
+        author.Nationality.Should().Be("SK");
+        dto.Name.Should().Be("Nový Autor");
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        _events.Events.Should().ContainSingle(e => e is AuthorUpdatedEvent);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_removes_author_and_publishes_event()
+    {
+        var id = Guid.NewGuid();
+        _authors.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(new Author
+        {
+            Id = id,
+            Name = "Mazateľ",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+
+        await _sut.DeleteAsync(id);
+
+        _authors.Received(1).Remove(Arg.Is<Author>(a => a.Id == id));
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        _events.Events.Should().ContainSingle(e => e is AuthorDeletedEvent);
+    }
 
     private sealed class RecordingEventPublisher : IIntegrationEventPublisher
     {

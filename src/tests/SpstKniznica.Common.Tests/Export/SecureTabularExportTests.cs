@@ -101,4 +101,36 @@ public class SecureTabularExportTests
         var head = System.Text.Encoding.ASCII.GetString(bytes.AsSpan(0, 5));
         head.Should().Be("%PDF-");
     }
+
+    [Theory]
+    [InlineData("", "export")]
+    [InlineData("  ", "export")]
+    [InlineData("books export!.csv", "books-export--csv")]
+    [InlineData("../etc/passwd", "etc-passwd")]
+    public void SanitizeFileName_strips_unsafe_characters(string input, string expected)
+    {
+        SecureTabularExport.SanitizeFileName(input).Should().Be(expected);
+    }
+
+    [Fact]
+    public void Cell_formats_null_bool_guid_and_datetime_offset()
+    {
+        SecureTabularExport.Cell(null).Should().BeEmpty();
+        SecureTabularExport.Cell(true).Should().Be("true");
+        SecureTabularExport.Cell(false).Should().Be("false");
+
+        var id = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+        SecureTabularExport.Cell(id).Should().Be("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+
+        var dto = DateTimeOffset.Parse("2024-06-01T12:00:00Z");
+        SecureTabularExport.Cell(dto).Should().Be("2024-06-01T12:00:00.0000000+00:00");
+    }
+
+    [Fact]
+    public void Cell_stringifies_plain_text_without_formula_prefix()
+    {
+        // Cell is for typed values; formula neutralization happens in CsvCell/SpreadsheetText.
+        SecureTabularExport.Cell("=CMD()").Should().Be("=CMD()");
+        SecureTabularExport.Cell(42).Should().Be("42");
+    }
 }

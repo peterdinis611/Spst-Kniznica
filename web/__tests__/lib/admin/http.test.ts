@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { HttpError } from "react-admin";
 import {
+  adminHttp,
   adminHttpDownload,
+  adminQuery,
   parseContentDispositionFileName,
 } from "@/lib/admin/http";
 
@@ -68,5 +71,61 @@ describe("adminHttpDownload", () => {
     await expect(
       adminHttpDownload("/api/books/export", "x.csv"),
     ).rejects.toThrow("Forbidden export");
+  });
+});
+
+describe("adminHttp", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("parses JSON body on success", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ ok: true, count: 2 }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    await expect(adminHttp<{ ok: boolean; count: number }>("/api/admin/ping")).resolves.toEqual({
+      ok: true,
+      count: 2,
+    });
+  });
+
+  it("returns undefined on 204", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response(null, { status: 204 })),
+    );
+
+    await expect(adminHttp("/api/admin/x")).resolves.toBeUndefined();
+  });
+
+  it("throws HttpError with detail from JSON error body", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ detail: "Staff only" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    await expect(adminHttp("/api/admin/overview")).rejects.toSatisfy(
+      (err: unknown) => err instanceof HttpError && err.message === "Staff only",
+    );
+  });
+});
+
+describe("adminQuery", () => {
+  it("appends export format and take", () => {
+    expect(
+      adminQuery("/api/books/export", { format: "xlsx", take: 500 }),
+    ).toBe("/api/books/export?format=xlsx&take=500");
   });
 });
