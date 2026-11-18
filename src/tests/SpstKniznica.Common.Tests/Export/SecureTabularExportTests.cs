@@ -55,4 +55,50 @@ public class SecureTabularExportTests
         q.Take.Should().Be(ExportLimits.MaxTake);
         q.ResolvedFormat.Should().Be(ExportFormat.Xml);
     }
+
+    [Theory]
+    [InlineData("xlsx", ExportFormat.Xlsx, "xlsx")]
+    [InlineData("excel", ExportFormat.Xlsx, "xlsx")]
+    [InlineData("pdf", ExportFormat.Pdf, "pdf")]
+    [InlineData("CSV", ExportFormat.Csv, "csv")]
+    public void ExportQuery_resolves_formats(string input, ExportFormat expected, string normalised)
+    {
+        var q = new ExportQuery { Format = input, Take = 10 };
+        q.Normalize();
+        q.ResolvedFormat.Should().Be(expected);
+        q.Format.Should().Be(normalised);
+    }
+
+    [Fact]
+    public void SpreadsheetText_prefixes_formula_injection()
+    {
+        SecureTabularExport.SpreadsheetText("=CMD()").Should().Be("'=CMD()");
+        SecureTabularExport.SpreadsheetText("ok").Should().Be("ok");
+    }
+
+    [Fact]
+    public void ToXlsx_produces_openxml_package()
+    {
+        var bytes = SecureTabularExport.ToXlsx(
+            "books",
+            ["title"],
+            [["=1+1"], ["Kniha"]]);
+
+        bytes.Length.Should().BeGreaterThan(64);
+        // ZIP/OpenXML local file header
+        bytes[0].Should().Be(0x50);
+        bytes[1].Should().Be(0x4B);
+    }
+
+    [Fact]
+    public void ToPdf_produces_pdf_bytes()
+    {
+        var bytes = SecureTabularExport.ToPdf(
+            "books",
+            ["title", "author"],
+            [["Kniha", "Autor"], ["=CMD()", "X"]]);
+
+        var head = System.Text.Encoding.ASCII.GetString(bytes.AsSpan(0, 5));
+        head.Should().Be("%PDF-");
+    }
 }

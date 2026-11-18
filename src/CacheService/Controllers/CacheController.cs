@@ -11,7 +11,7 @@ namespace CacheService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class CacheController(IAppCache cache) : ControllerBase
+public class CacheController(IAppCache cache, IAuditLogger audit) : ControllerBase
 {
     [HttpGet("status")]
     [Authorize(Policy = AuthPolicies.Staff)]
@@ -65,6 +65,7 @@ public class CacheController(IAppCache cache) : ControllerBase
             : (TimeSpan?)null;
 
         await cache.SetAsync(key, request.Value, ttl, cancellationToken);
+        audit.StaffAction(User, "cache.set", "CacheKey", key, new { request.TtlSeconds });
         return Accepted(new { key, stored = true, ttlSeconds = request.TtlSeconds });
     }
 
@@ -75,6 +76,7 @@ public class CacheController(IAppCache cache) : ControllerBase
     public async Task<IActionResult> Remove(string key, CancellationToken cancellationToken)
     {
         await cache.RemoveAsync(key, cancellationToken);
+        audit.StaffAction(User, "cache.remove", "CacheKey", key);
         return NoContent();
     }
 
@@ -92,6 +94,7 @@ public class CacheController(IAppCache cache) : ControllerBase
         }
 
         await cache.RemoveByPrefixAsync(prefix, cancellationToken);
+        audit.StaffAction(User, "cache.remove.prefix", "CacheKey", prefix);
         return NoContent();
     }
 }

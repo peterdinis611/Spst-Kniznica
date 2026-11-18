@@ -110,7 +110,7 @@ public class BooksController(
     [HttpGet("export")]
     [Authorize(Policy = AuthPolicies.Staff)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.DataExportPolicy)]
-    [Produces("text/csv", "application/xml")]
+    [Produces("text/csv", "application/xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/pdf")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

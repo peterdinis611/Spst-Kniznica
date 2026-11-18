@@ -14,6 +14,7 @@ namespace WorkersService.Controllers;
 [Produces("application/json")]
 public class OrdersController(
     IOrderJobQueue queue,
+    IAuditLogger audit,
     ILogger<OrdersController> logger) : ControllerBase
 {
     [HttpPost("enqueue")]
@@ -44,6 +45,12 @@ public class OrdersController(
             "Enqueued order job {JobId} for order {OrderId}",
             job.JobId,
             job.OrderId);
+
+        audit.StaffAction(User, "order.enqueue", "OrderJob", job.JobId.ToString(), new
+        {
+            job.OrderId,
+            Queue = OrderProcessingHostedService.QueueName,
+        });
 
         return Accepted(new EnqueueOrderResponse
         {

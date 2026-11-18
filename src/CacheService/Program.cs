@@ -27,6 +27,7 @@ try
     builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
     builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
+    builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "CacheService");
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
 
     var cacheEnabled = builder.Configuration.GetValue("Cache:Enabled", true);

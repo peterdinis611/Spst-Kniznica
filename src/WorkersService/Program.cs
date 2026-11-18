@@ -32,6 +32,7 @@ try
         builder.Environment,
         requireAuthenticatedByDefault: true);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
+    builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "WorkersService");
 
     builder.Services.Configure<LoanLifecycleOptions>(
         builder.Configuration.GetSection(LoanLifecycleOptions.SectionName));

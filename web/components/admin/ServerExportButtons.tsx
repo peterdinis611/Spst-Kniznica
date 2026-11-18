@@ -6,6 +6,10 @@ import Button from "@mui/material/Button";
 import { adminHttpDownload } from "@/lib/admin/http";
 import { withQuery } from "@/lib/api/client";
 
+type ExportFormat = "csv" | "xml" | "xlsx" | "pdf";
+
+const FORMATS: ExportFormat[] = ["csv", "xml", "xlsx", "pdf"];
+
 function triggerDownload(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -26,9 +30,9 @@ export function ServerExportButtons({
   fileStem: string;
 }) {
   const notify = useNotify();
-  const [busy, setBusy] = useState<"csv" | "xml" | null>(null);
+  const [busy, setBusy] = useState<ExportFormat | null>(null);
 
-  async function download(format: "csv" | "xml") {
+  async function download(format: ExportFormat) {
     setBusy(format);
     try {
       const url = withQuery(path, { format, take: 2000 });
@@ -49,22 +53,17 @@ export function ServerExportButtons({
 
   return (
     <>
-      <Button
-        size="small"
-        disabled={busy !== null}
-        onClick={() => void download("csv")}
-        sx={{ borderRadius: 0 }}
-      >
-        {busy === "csv" ? "CSV…" : "CSV"}
-      </Button>
-      <Button
-        size="small"
-        disabled={busy !== null}
-        onClick={() => void download("xml")}
-        sx={{ borderRadius: 0 }}
-      >
-        {busy === "xml" ? "XML…" : "XML"}
-      </Button>
+      {FORMATS.map((format) => (
+        <Button
+          key={format}
+          size="small"
+          disabled={busy !== null}
+          onClick={() => void download(format)}
+          sx={{ borderRadius: 0 }}
+        >
+          {busy === format ? `${format.toUpperCase()}…` : format.toUpperCase()}
+        </Button>
+      ))}
     </>
   );
 }

@@ -16,6 +16,7 @@ namespace MessagingService.Controllers;
 [Produces("application/json")]
 public class MessagingController(
     IEnumerable<IEventPublisher> publishers,
+    IAuditLogger audit,
     ILogger<MessagingController> logger) : ControllerBase
 {
     /// <summary>
@@ -52,6 +53,7 @@ public class MessagingController(
             });
         }
 
+        var transports = selected.Select(p => p.TransportName).ToArray();
         foreach (var publisher in selected)
         {
             await publisher.PublishAsync(ping, cancellationToken);
@@ -61,11 +63,18 @@ public class MessagingController(
                 ping.Source);
         }
 
+        audit.StaffAction(User, "messaging.publish", "PingEvent", ping.EventId.ToString(), new
+        {
+            ping.Source,
+            Target = target,
+            Transports = transports,
+        });
+
         return Accepted(new
         {
             eventId = ping.EventId,
             eventType = ping.EventType,
-            transports = selected.Select(p => p.TransportName).ToArray()
+            transports
         });
     }
 

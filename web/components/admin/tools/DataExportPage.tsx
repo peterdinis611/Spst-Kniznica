@@ -10,6 +10,8 @@ import { hasAdminRole } from "@/lib/admin/roles";
 import { withQuery } from "@/lib/api/client";
 import { ToolCard, ToolShell } from "@/components/admin/tools/ToolShell";
 
+type ExportFormat = "csv" | "xml" | "xlsx" | "pdf";
+
 type ExportTarget = {
   id: string;
   label: string;
@@ -70,11 +72,22 @@ function triggerDownload(blob: Blob, fileName: string) {
   URL.revokeObjectURL(url);
 }
 
+function formatLabel(format: ExportFormat) {
+  switch (format) {
+    case "xlsx":
+      return "Excel";
+    case "pdf":
+      return "PDF";
+    default:
+      return format.toUpperCase();
+  }
+}
+
 export function DataExportPage() {
   const notify = useNotify();
   const { permissions } = usePermissions();
   const isAdmin = hasAdminRole(permissions);
-  const [format, setFormat] = useState<"csv" | "xml">("csv");
+  const [format, setFormat] = useState<ExportFormat>("csv");
   const [take, setTake] = useState(2000);
   const [busyId, setBusyId] = useState<string | null>(null);
   const visibleTargets = TARGETS.filter((t) => !t.adminOnly || isAdmin);
@@ -105,8 +118,8 @@ export function DataExportPage() {
   return (
     <ToolShell
       title="Export dát"
-      eyebrow="CSV · XML · pripravené na penetračné testy"
-      lead="Serverové exporty s oprávnením personálu/administrátora, obmedzením frekvencie (data-export), denníkom auditu a ochranou proti CSV formula injection. Max 5000 riadkov na požiadavku."
+      eyebrow="CSV · XML · Excel · PDF"
+      lead="Serverové exporty s oprávnením personálu/administrátora, obmedzením frekvencie (data-export), denníkom auditu a ochranou proti formula injection. Max 5000 riadkov na požiadavku."
     >
       <ToolCard title="Formát">
         <div className="flex flex-wrap gap-3">
@@ -115,11 +128,13 @@ export function DataExportPage() {
             label="Formát"
             size="small"
             value={format}
-            onChange={(e) => setFormat(e.target.value as "csv" | "xml")}
-            sx={{ minWidth: 140 }}
+            onChange={(e) => setFormat(e.target.value as ExportFormat)}
+            sx={{ minWidth: 160 }}
           >
             <MenuItem value="csv">CSV</MenuItem>
             <MenuItem value="xml">XML</MenuItem>
+            <MenuItem value="xlsx">Excel (.xlsx)</MenuItem>
+            <MenuItem value="pdf">PDF</MenuItem>
           </TextField>
           <TextField
             type="number"
@@ -159,7 +174,7 @@ export function DataExportPage() {
               >
                 {busyId === target.id
                   ? "Sťahujem…"
-                  : `Stiahnuť ${target.id === "desk" ? "CSV" : format.toUpperCase()}`}
+                  : `Stiahnuť ${target.id === "desk" ? "CSV" : formatLabel(format)}`}
               </Button>
             </li>
           ))}

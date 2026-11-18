@@ -164,6 +164,10 @@ public class LibraryOpsController(
         if (!string.IsNullOrWhiteSpace(name)) request.BorrowerName = name;
 
         var entry = await waitlist.JoinAsync(request, cancellationToken);
+        audit.StaffAction(User, "booking.waitlist.join", "WaitlistEntry", entry.Id.ToString(), new
+        {
+            entry.BookId,
+        });
         return Created($"/api/bookings/waitlist/{entry.Id}", entry);
     }
 
@@ -201,6 +205,7 @@ public class LibraryOpsController(
     public async Task<IActionResult> LeaveWaitlist(Guid id, CancellationToken cancellationToken)
     {
         await waitlist.LeaveAsync(id, User.GetEmail(), User.IsStaff(), cancellationToken);
+        audit.StaffAction(User, "booking.waitlist.leave", "WaitlistEntry", id.ToString());
         return NoContent();
     }
 
@@ -227,6 +232,11 @@ public class LibraryOpsController(
         var email = User.GetEmail();
         if (string.IsNullOrWhiteSpace(email)) return Unauthorized();
         var created = await favorites.AddAsync(email, request, cancellationToken);
+        audit.StaffAction(User, "booking.favorite.add", "FavoriteBook", created.Id.ToString(), new
+        {
+            created.BookId,
+            created.ListName,
+        });
         return Created($"/api/bookings/favorites/{created.Id}", created);
     }
 
@@ -239,6 +249,7 @@ public class LibraryOpsController(
         var email = User.GetEmail();
         if (string.IsNullOrWhiteSpace(email)) return Unauthorized();
         await favorites.RemoveAsync(id, email, cancellationToken);
+        audit.StaffAction(User, "booking.favorite.remove", "FavoriteBook", id.ToString());
         return NoContent();
     }
 
@@ -254,6 +265,11 @@ public class LibraryOpsController(
         var email = User.GetEmail();
         if (string.IsNullOrWhiteSpace(email)) return Unauthorized();
         await favorites.RemoveByBookAsync(bookId, email, listName, cancellationToken);
+        audit.StaffAction(User, "booking.favorite.remove", "FavoriteBook", bookId.ToString(), new
+        {
+            BookId = bookId,
+            ListName = listName,
+        });
         return NoContent();
     }
 

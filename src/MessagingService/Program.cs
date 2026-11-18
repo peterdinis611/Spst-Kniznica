@@ -37,6 +37,7 @@ try
     builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
     builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
+    builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "MessagingService");
 
     builder.Services.AddDbContext<MessagingDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
