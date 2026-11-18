@@ -89,6 +89,32 @@ public class BooksController(
     }
 
     /// <summary>
+    /// Batch title/availability snapshots by book ids (public, capped at 100).
+    /// </summary>
+    [HttpPost("summaries")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
+    [ProducesResponseType(typeof(IReadOnlyList<BookCatalogSnapshot>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<BookCatalogSnapshot>>> GetSummaries(
+        [FromBody] BookSummariesRequest request,
+        CancellationToken cancellationToken)
+    {
+        var ids = (request.Ids ?? [])
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .Take(100)
+            .ToArray();
+
+        if (ids.Length == 0)
+        {
+            return Ok(Array.Empty<BookCatalogSnapshot>());
+        }
+
+        var items = await books.GetSummariesAsync(ids, cancellationToken);
+        return Ok(items);
+    }
+
+    /// <summary>
     /// ISBN metadata lookup via Open Library (WorldCat fallback when configured).
     /// </summary>
     [HttpGet("lookup/isbn/{isbn}")]

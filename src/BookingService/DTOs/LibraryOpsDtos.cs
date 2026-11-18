@@ -86,3 +86,14 @@ public sealed class RenewBookingRequest
 {
     public int? ExtraDays { get; set; }
 }
+
+public sealed class CheckoutBookingRequest
+{
+    public Guid? BookCopyId { get; set; }
+}
+
+public sealed class PromoteWaitlistResult
+{
+    public bool Promoted { get; init; }
+    public BookingDto? Booking { get; init; }
+}

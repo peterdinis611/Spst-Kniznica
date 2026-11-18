@@ -48,4 +48,16 @@ public class ChannelOrderJobQueueTests
 
         jobs.Should().Equal("one", "two");
     }
+
+    [Fact]
+    public async Task PendingCount_reflects_queued_jobs()
+    {
+        var queue = new ChannelOrderJobQueue();
+        queue.PendingCount.Should().Be(0);
+
+        await queue.EnqueueAsync("one");
+        await queue.EnqueueAsync("two");
+
+        queue.PendingCount.Should().Be(2);
+    }
 }

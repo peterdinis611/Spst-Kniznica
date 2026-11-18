@@ -43,6 +43,9 @@ public sealed class AuthSettingsProvider(
             Authority = entra.Enabled ? entra.Authority : string.Empty,
             RedirectUriHint = snap.RedirectUriHint,
             LoginNotice = snap.LoginNotice,
+            HasLoginNotice = !string.IsNullOrWhiteSpace(snap.LoginNotice),
+            PresentationUpdatedAt = snap.UpdatedAt,
+            KnownRoles = [AppRoles.Reader, AppRoles.Librarian, AppRoles.Admin],
         };
     }
 

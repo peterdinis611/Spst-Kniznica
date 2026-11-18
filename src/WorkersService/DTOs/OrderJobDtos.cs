@@ -13,3 +13,10 @@ public sealed class EnqueueOrderResponse
     public required string Queue { get; init; }
     public required string Name { get; init; }
 }
+
+public sealed class OrderQueueStatusDto
+{
+    public int PendingCount { get; init; }
+    public required string Queue { get; init; }
+    public required string JobName { get; init; }
+}

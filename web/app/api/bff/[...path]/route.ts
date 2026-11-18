@@ -19,6 +19,9 @@ const ALLOWED_PREFIXES = [
   "api/cache",
   "api/messaging",
   "api/workers",
+  "api/emails",
+  "api/gateway",
+  "api/relations",
 ] as const;
 
 const UPSTREAM_TIMEOUT_MS = 25_000;

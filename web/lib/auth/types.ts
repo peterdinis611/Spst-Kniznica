@@ -7,6 +7,9 @@ export type AuthConfig = {
   authority: string;
   redirectUriHint: string;
   loginNotice?: string | null;
+  hasLoginNotice?: boolean;
+  presentationUpdatedAt?: string | null;
+  knownRoles?: string[];
 };
 
 export type AuthUser = {

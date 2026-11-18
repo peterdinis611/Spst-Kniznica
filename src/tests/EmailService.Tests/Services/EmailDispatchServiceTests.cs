@@ -179,6 +179,29 @@ public class EmailDispatchServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ResendAsync_creates_new_message_from_existing()
+    {
+        var original = await _sut.SendAsync(ValidRequest(templateKey: "ops.notice"));
+        _audit.ServiceActions.Clear();
+
+        var resent = await _sut.ResendAsync(original.Id);
+
+        resent.Id.Should().NotBe(original.Id);
+        resent.ToAddress.Should().Be(original.ToAddress);
+        resent.Subject.Should().Be(original.Subject);
+        resent.TemplateKey.Should().Be("ops.notice");
+        _audit.ServiceActions.Should().ContainSingle(a => a.Action == "email.send");
+    }
+
+    [Fact]
+    public async Task ResendAsync_throws_when_missing()
+    {
+        var act = async () => await _sut.ResendAsync(Guid.NewGuid());
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
     public async Task ListRecentAsync_returns_newest_first_within_take()
     {
         _db.Messages.AddRange(

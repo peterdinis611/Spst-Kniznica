@@ -102,6 +102,86 @@ public class LibraryOpsController(
             "row");
     }
 
+    [HttpPost("lifecycle/mark-overdue")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(typeof(LifecycleBatchResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<LifecycleBatchResult>> MarkOverdue(CancellationToken cancellationToken)
+    {
+        var result = await lifecycle.MarkOverdueAsync(cancellationToken);
+        audit.StaffAction(User, "booking.lifecycle.mark-overdue", "Booking", "batch", new
+        {
+            result.MarkedOverdue,
+            Count = result.OverdueIds.Count,
+        });
+        return Ok(result);
+    }
+
+    [HttpPost("lifecycle/due-reminders")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(typeof(LifecycleBatchResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<LifecycleBatchResult>> DueReminders(CancellationToken cancellationToken)
+    {
+        var result = await lifecycle.QueueDueRemindersAsync(cancellationToken);
+        audit.StaffAction(User, "booking.lifecycle.due-reminders", "Booking", "batch", new
+        {
+            result.RemindersQueued,
+            Count = result.ReminderBookingIds.Count,
+        });
+        return Ok(result);
+    }
+
+    [HttpPost("waitlist/book/{bookId:guid}/promote")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(typeof(PromoteWaitlistResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PromoteWaitlistResult>> PromoteWaitlist(
+        Guid bookId,
+        CancellationToken cancellationToken)
+    {
+        var booking = await lifecycle.PromoteWaitlistAsync(bookId, cancellationToken);
+        audit.StaffAction(User, "booking.waitlist.promote", "WaitlistEntry", bookId.ToString(), new
+        {
+            Promoted = booking is not null,
+            BookingId = booking?.Id,
+        });
+        return Ok(new PromoteWaitlistResult
+        {
+            Promoted = booking is not null,
+            Booking = booking,
+        });
+    }
+
+    [HttpPost("{id:guid}/checkout")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(typeof(BookingDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<BookingDto>> Checkout(
+        Guid id,
+        [FromBody] CheckoutBookingRequest? request,
+        CancellationToken cancellationToken)
+    {
+        var updated = await bookings.CheckoutAsync(id, request?.BookCopyId, cancellationToken);
+        audit.StaffAction(User, "booking.checkout", "Booking", id.ToString(), new
+        {
+            updated.Status,
+            updated.BookCopyId,
+        });
+        return Ok(updated);
+    }
+
+    [HttpPost("{id:guid}/return")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(typeof(BookingDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<BookingDto>> Return(Guid id, CancellationToken cancellationToken)
+    {
+        var updated = await bookings.ReturnAsync(id, cancellationToken);
+        audit.StaffAction(User, "booking.return", "Booking", id.ToString(), new { updated.Status });
+        return Ok(updated);
+    }
+
     [HttpPost("{id:guid}/cancel")]
     [Authorize(Policy = AuthPolicies.Authenticated)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]

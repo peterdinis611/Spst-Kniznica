@@ -66,4 +66,10 @@ public class AuthController(IAuthSettingsProvider settings, IAuditLogger audit) 
             IsAdmin = roles.Contains(AppRoles.Admin, StringComparer.OrdinalIgnoreCase),
         });
     }
+
+    [HttpGet("roles")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<string>), StatusCodes.Status200OK)]
+    public ActionResult<IReadOnlyList<string>> Roles()
+        => Ok(new[] { AppRoles.Reader, AppRoles.Librarian, AppRoles.Admin });
 }

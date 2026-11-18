@@ -220,6 +220,61 @@ public class BookingAppService(
             cancellationToken);
     }
 
+    public async Task<BookingDto> CheckoutAsync(
+        Guid id,
+        Guid? bookCopyId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var booking = await GetRequiredAsync(id, tracked: true, cancellationToken);
+        if (booking.Status != BookingStatus.Reserved)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Status"] = ["Vydanie je možné len z rezervácie."]
+            });
+        }
+
+        return await UpdateAsync(
+            id,
+            new UpdateBookingRequest
+            {
+                BookId = booking.BookId,
+                BookCopyId = bookCopyId ?? booking.BookCopyId,
+                BorrowerName = booking.BorrowerName,
+                BorrowerEmail = booking.BorrowerEmail,
+                Status = BookingStatus.Active,
+                DueDate = booking.DueDate,
+                Notes = booking.Notes,
+            },
+            cancellationToken);
+    }
+
+    public async Task<BookingDto> ReturnAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var booking = await GetRequiredAsync(id, tracked: true, cancellationToken);
+        if (booking.Status is not (BookingStatus.Active or BookingStatus.Overdue))
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Status"] = ["Vrátiť môžeš len aktívnu alebo oneskorenú výpožičku."]
+            });
+        }
+
+        return await UpdateAsync(
+            id,
+            new UpdateBookingRequest
+            {
+                BookId = booking.BookId,
+                BookCopyId = booking.BookCopyId,
+                BorrowerName = booking.BorrowerName,
+                BorrowerEmail = booking.BorrowerEmail,
+                Status = BookingStatus.Returned,
+                DueDate = booking.DueDate,
+                Notes = booking.Notes,
+            },
+            cancellationToken);
+    }
+
     public async Task<BookingDto> RenewAsync(
         Guid id,
         int? extraDays = null,

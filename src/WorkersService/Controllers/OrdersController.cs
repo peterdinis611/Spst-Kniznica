@@ -17,6 +17,17 @@ public class OrdersController(
     IAuditLogger audit,
     ILogger<OrdersController> logger) : ControllerBase
 {
+    [HttpGet("queue")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [ProducesResponseType(typeof(OrderQueueStatusDto), StatusCodes.Status200OK)]
+    public ActionResult<OrderQueueStatusDto> QueueStatus()
+        => Ok(new OrderQueueStatusDto
+        {
+            PendingCount = queue.PendingCount,
+            Queue = OrderProcessingHostedService.QueueName,
+            JobName = OrderProcessingHostedService.JobName,
+        });
+
     [HttpPost("enqueue")]
     [Authorize(Policy = AuthPolicies.Authenticated)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]

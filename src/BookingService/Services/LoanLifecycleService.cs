@@ -113,6 +113,12 @@ public sealed class LoanLifecycleService(
     }
 
     public async Task TryPromoteWaitlistAsync(Guid bookId, CancellationToken cancellationToken = default)
+        => _ = await PromoteWaitlistAsync(bookId, cancellationToken);
+
+    /// <summary>
+    /// Staff/manual promote: dequeue next waiter into a Reserved booking, or null if none/capacity full.
+    /// </summary>
+    public async Task<BookingDto?> PromoteWaitlistAsync(Guid bookId, CancellationToken cancellationToken = default)
     {
         var snapshot = await bookCatalog.GetBookAsync(bookId, cancellationToken);
         var capacity = snapshot?.TotalCopies ?? 1;
@@ -120,10 +126,10 @@ public sealed class LoanLifecycleService(
             bookId,
             excludeId: null,
             cancellationToken);
-        if (activeCount >= capacity) return;
+        if (activeCount >= capacity) return null;
 
         var next = await waitlist.DequeueNextAsync(bookId, cancellationToken);
-        if (next is null) return;
+        if (next is null) return null;
 
         var policy = await loanPolicy.GetEffectiveAsync(cancellationToken);
         var due = await schoolCalendar.AdjustDueDateAsync(
@@ -180,6 +186,10 @@ public sealed class LoanLifecycleService(
             bookId,
             next.BorrowerEmail,
             booking.Id);
+
+        var dto = Map(booking);
+        await enricher.EnrichAsync(dto, cancellationToken);
+        return dto;
     }
 
     public async Task<DeskDailyDto> GetDailyBoardAsync(CancellationToken cancellationToken = default)

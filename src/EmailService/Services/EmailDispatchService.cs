@@ -161,6 +161,26 @@ public sealed class EmailDispatchService(
         return item is null ? null : ToDto(item);
     }
 
+    public async Task<EmailMessageDto> ResendAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var existing = await db.Messages.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException($"Email message '{id}' was not found.");
+
+        return await SendAsync(
+            new SendEmailRequest
+            {
+                To = existing.ToAddress,
+                ToName = existing.ToName,
+                Subject = existing.Subject,
+                BodyText = existing.BodyText,
+                BodyHtml = existing.BodyHtml,
+                TemplateKey = existing.TemplateKey ?? "resend",
+                CorrelationId = existing.CorrelationId ?? existing.Id.ToString("N"),
+            },
+            cancellationToken);
+    }
+
     public async Task<EmailServiceStatusDto> GetStatusAsync(CancellationToken cancellationToken = default)
     {
         var smtp = smtpOptions.Value;

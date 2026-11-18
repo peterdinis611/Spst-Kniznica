@@ -10,6 +10,9 @@ public sealed class AuthConfigDto
     public string Authority { get; init; } = string.Empty;
     public string RedirectUriHint { get; init; } = "http://localhost:3000/login";
     public string? LoginNotice { get; init; }
+    public bool HasLoginNotice { get; init; }
+    public DateTimeOffset? PresentationUpdatedAt { get; init; }
+    public IReadOnlyList<string> KnownRoles { get; init; } = [];
 }
 
 public sealed class AuthUserDto

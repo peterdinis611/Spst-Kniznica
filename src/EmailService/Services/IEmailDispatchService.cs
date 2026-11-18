@@ -18,5 +18,7 @@ public interface IEmailDispatchService
 
     Task<EmailMessageDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    Task<EmailMessageDto> ResendAsync(Guid id, CancellationToken cancellationToken = default);
+
     Task<EmailServiceStatusDto> GetStatusAsync(CancellationToken cancellationToken = default);
 }

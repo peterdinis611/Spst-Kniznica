@@ -30,4 +30,6 @@ public sealed class ChannelOrderJobQueue : IOrderJobQueue
 
     public IAsyncEnumerable<ProcessOrderJob> ReadAllAsync(CancellationToken cancellationToken)
         => _channel.Reader.ReadAllAsync(cancellationToken);
+
+    public int PendingCount => _channel.Reader.Count;
 }
