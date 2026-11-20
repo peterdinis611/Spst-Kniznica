@@ -27,4 +27,8 @@
     <ProjectReference Include="..\SpstKniznica.Caching\SpstKniznica.Caching.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="BookingService.Tests" />
+  </ItemGroup>
+
 </Project>

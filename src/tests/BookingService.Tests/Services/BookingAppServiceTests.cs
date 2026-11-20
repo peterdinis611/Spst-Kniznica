@@ -512,6 +512,107 @@ public class BookingAppServiceTests : IAsyncLifetime
         _events.Events.Should().ContainSingle(e => e is BookingDeletedEvent);
     }
 
+    [Fact]
+    public async Task CheckoutAsync_activates_reserved_booking()
+    {
+        var id = Guid.NewGuid();
+        var copyId = Guid.NewGuid();
+        var booking = new Booking
+        {
+            Id = id,
+            BookId = Guid.NewGuid(),
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            Status = BookingStatus.Reserved,
+            ReservedAt = DateTimeOffset.UtcNow,
+            DueDate = DateTimeOffset.UtcNow.AddDays(14),
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        _bookings.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(booking);
+        _bookings.HasActiveBookingForCopyAsync(copyId, id, Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        var result = await _sut.CheckoutAsync(id, copyId);
+
+        result.Status.Should().Be(BookingStatus.Active);
+        booking.Status.Should().Be(BookingStatus.Active);
+        booking.BookCopyId.Should().Be(copyId);
+        booking.BorrowedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CheckoutAsync_rejects_non_reserved()
+    {
+        var id = Guid.NewGuid();
+        _bookings.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(new Booking
+        {
+            Id = id,
+            BookId = Guid.NewGuid(),
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            Status = BookingStatus.Active,
+            ReservedAt = DateTimeOffset.UtcNow,
+            BorrowedAt = DateTimeOffset.UtcNow,
+            DueDate = DateTimeOffset.UtcNow.AddDays(7),
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+
+        var act = async () => await _sut.CheckoutAsync(id);
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("Status"));
+    }
+
+    [Fact]
+    public async Task ReturnAsync_closes_active_loan()
+    {
+        var id = Guid.NewGuid();
+        var booking = new Booking
+        {
+            Id = id,
+            BookId = Guid.NewGuid(),
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            Status = BookingStatus.Active,
+            ReservedAt = DateTimeOffset.UtcNow.AddDays(-2),
+            BorrowedAt = DateTimeOffset.UtcNow.AddDays(-2),
+            DueDate = DateTimeOffset.UtcNow.AddDays(5),
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-2),
+            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-2),
+        };
+        _bookings.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(booking);
+
+        var result = await _sut.ReturnAsync(id);
+
+        result.Status.Should().Be(BookingStatus.Returned);
+        booking.ReturnedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ReturnAsync_rejects_reserved()
+    {
+        var id = Guid.NewGuid();
+        _bookings.GetTrackedByIdAsync(id, Arg.Any<CancellationToken>()).Returns(new Booking
+        {
+            Id = id,
+            BookId = Guid.NewGuid(),
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            Status = BookingStatus.Reserved,
+            ReservedAt = DateTimeOffset.UtcNow,
+            DueDate = DateTimeOffset.UtcNow.AddDays(7),
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+
+        var act = async () => await _sut.ReturnAsync(id);
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("Status"));
+    }
+
     private sealed class EmptyJsonHandler : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(

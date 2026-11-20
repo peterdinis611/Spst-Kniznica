@@ -1,10 +1,13 @@
+using System.Security.Claims;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using SpstKniznica.Common.Auth;
 using WorkersService.Controllers;
 using WorkersService.DTOs;
+using WorkersService.Jobs;
 using WorkersService.Queue;
 
 namespace WorkersService.Tests.Controllers;
@@ -39,5 +42,40 @@ public class OrdersControllerTests
 
         result.Result.Should().BeOfType<BadRequestObjectResult>();
         await queue.DidNotReceiveWithAnyArgs().EnqueueAsync(default!, default);
+    }
+
+    [Fact]
+    public async Task Enqueue_accepts_job_and_audits()
+    {
+        var queue = Substitute.For<IOrderJobQueue>();
+        var audit = Substitute.For<IAuditLogger>();
+        queue.EnqueueAsync("ord-1", Arg.Any<CancellationToken>())
+            .Returns(new ProcessOrderJob("job-1", "ord-1"));
+        var sut = new OrdersController(queue, audit, NullLogger<OrdersController>.Instance)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(
+                        [new Claim(ClaimTypes.Role, "Admin")],
+                        authenticationType: "test")),
+                },
+            },
+        };
+
+        var result = await sut.Enqueue(new EnqueueOrderRequest { OrderId = "ord-1" }, CancellationToken.None);
+
+        var accepted = result.Result.Should().BeOfType<AcceptedResult>().Subject;
+        var dto = accepted.Value.Should().BeOfType<EnqueueOrderResponse>().Subject;
+        dto.Accepted.Should().BeTrue();
+        dto.JobId.Should().Be("job-1");
+        dto.OrderId.Should().Be("ord-1");
+        audit.Received(1).StaffAction(
+            Arg.Any<ClaimsPrincipal>(),
+            "order.enqueue",
+            "OrderJob",
+            "job-1",
+            Arg.Any<object?>());
     }
 }
