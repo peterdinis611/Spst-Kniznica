@@ -44,9 +44,11 @@ import {
   CategoryShow,
 } from "@/components/admin/resources/categories";
 import { AccountPage } from "@/components/admin/tools/AccountPage";
+import { BarcodeToolsPage } from "@/components/admin/tools/BarcodeToolsPage";
 import { BookImportPage } from "@/components/admin/tools/BookImportPage";
 import { DataExportPage } from "@/components/admin/tools/DataExportPage";
 import { CacheToolsPage } from "@/components/admin/tools/CacheToolsPage";
+import { DeskToolsPage } from "@/components/admin/tools/DeskToolsPage";
 import { GatewayToolsPage } from "@/components/admin/tools/GatewayToolsPage";
 import { HealthToolsPage } from "@/components/admin/tools/HealthToolsPage";
 import { LinksToolsPage } from "@/components/admin/tools/LinksToolsPage";
@@ -124,6 +126,8 @@ export default function ReactAdminApp() {
           <CustomRoutes>
             <Route path="/tools/import" element={<BookImportPage />} />
             <Route path="/tools/export" element={<DataExportPage />} />
+            <Route path="/tools/desk" element={<DeskToolsPage />} />
+            <Route path="/tools/barcode" element={<BarcodeToolsPage />} />
             <Route path="/tools/gateway" element={<GatewayToolsPage />} />
             <Route path="/tools/health" element={<HealthToolsPage />} />
             <Route path="/tools/services" element={<ServicesRegistryPage />} />

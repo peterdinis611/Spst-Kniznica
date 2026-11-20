@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Link as RaLink } from "react-router-dom";
 import { ToolCard, ToolShell } from "@/components/admin/tools/ToolShell";
 
 const FRONTEND = [
@@ -8,8 +9,19 @@ const FRONTEND = [
   { href: "/books", label: "Katalóg kníh" },
   { href: "/authors", label: "Autori" },
   { href: "/categories", label: "Kategórie" },
-  { href: "/bookings", label: "Pult výpožičiek" },
+  { href: "/library", label: "Moja knižnica" },
+  { href: "/bookings", label: "Pult výpožičiek (web)" },
+  { href: "/desk", label: "Denný pult (web)" },
   { href: "/login", label: "Prihlásenie" },
+] as const;
+
+const ADMIN_TOOLS = [
+  { to: "/tools/desk", label: "Denný pult (admin)" },
+  { to: "/tools/barcode", label: "Skener / čiarový kód" },
+  { to: "/tools/waitlist", label: "Čakací zoznam" },
+  { to: "/tools/emails", label: "E-maily" },
+  { to: "/tools/export", label: "Export dát" },
+  { to: "/tools/lifecycle", label: "Životný cyklus" },
 ] as const;
 
 const SWAGGER = [
@@ -46,6 +58,24 @@ export function LinksToolsPage() {
                     {item.href}
                   </span>
                 </Link>
+              </li>
+            ))}
+          </ul>
+        </ToolCard>
+
+        <ToolCard title="Admin nástroje">
+          <ul className="space-y-1">
+            {ADMIN_TOOLS.map((item) => (
+              <li key={item.to}>
+                <RaLink
+                  to={item.to}
+                  className="block border border-transparent px-2 py-2 text-sm text-ink transition hover:border-rule hover:bg-mint/20 dark:hover:border-white/10"
+                >
+                  {item.label}
+                  <span className="ml-2 font-mono text-[11px] text-muted-foreground">
+                    {item.to}
+                  </span>
+                </RaLink>
               </li>
             ))}
           </ul>

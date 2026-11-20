@@ -2,6 +2,7 @@
 
 import { Menu, usePermissions } from "react-admin";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
+import DownloadIcon from "@mui/icons-material/Download";
 import StorageIcon from "@mui/icons-material/Storage";
 import HubIcon from "@mui/icons-material/Hub";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
@@ -16,6 +17,8 @@ import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 import LockIcon from "@mui/icons-material/Lock";
 import EmailIcon from "@mui/icons-material/Email";
 import ReplayIcon from "@mui/icons-material/Replay";
+import DeskIcon from "@mui/icons-material/DesktopWindows";
+import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import { hasAdminRole } from "@/lib/admin/roles";
 
 export function AdminMenu() {
@@ -27,9 +30,24 @@ export function AdminMenu() {
       <Menu.DashboardItem />
       <Menu.ResourceItems />
       <Menu.Item
+        to="/tools/desk"
+        primaryText="Denný pult"
+        leftIcon={<DeskIcon />}
+      />
+      <Menu.Item
+        to="/tools/barcode"
+        primaryText="Skener / kód"
+        leftIcon={<QrCodeScannerIcon />}
+      />
+      <Menu.Item
         to="/tools/import"
         primaryText="Import kníh"
         leftIcon={<UploadFileIcon />}
+      />
+      <Menu.Item
+        to="/tools/export"
+        primaryText="Export dát"
+        leftIcon={<DownloadIcon />}
       />
       <Menu.Item
         to="/tools/gateway"

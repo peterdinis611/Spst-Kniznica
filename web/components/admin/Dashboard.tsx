@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils";
 
 const TOOL_LINKS = [
   { to: "/audit-logs", label: "Denník", adminOnly: true },
+  { to: "/tools/desk", label: "Denný pult" },
+  { to: "/tools/barcode", label: "Skener" },
   { to: "/tools/export", label: "Exportovať" },
   { to: "/tools/import", label: "Importovať" },
   { to: "/tools/gateway", label: "API brána" },
@@ -327,13 +329,22 @@ export function AdminRaDashboard() {
             Katalóg
           </Button>
           <Button
-            component={Link}
-            href="/bookings"
+            component={RaLink}
+            to="/tools/desk"
             variant="contained"
             color="secondary"
             sx={{ borderRadius: 0, px: 2.5 }}
           >
-            Pult výpožičiek
+            Denný pult
+          </Button>
+          <Button
+            component={Link}
+            href="/bookings"
+            variant="outlined"
+            color="primary"
+            sx={{ borderRadius: 0, px: 2.5 }}
+          >
+            Webový pult
           </Button>
         </div>
       </header>

@@ -29,6 +29,9 @@ export function CacheToolsPage() {
   const [selectedKey, setSelectedKey] = useState("");
   const [entry, setEntry] = useState<CacheEntry | null>(null);
   const [prefix, setPrefix] = useState("books:");
+  const [setKey, setSetKey] = useState("");
+  const [setValue, setSetValue] = useState('{"ok":true}');
+  const [setTtl, setSetTtl] = useState("60");
   const [busy, setBusy] = useState(false);
 
   const loadStatus = useCallback(async () => {
@@ -108,6 +111,38 @@ export function CacheToolsPage() {
     }
   }
 
+  async function writeKey() {
+    if (!setKey.trim()) {
+      notify("Zadaj kľúč", { type: "warning" });
+      return;
+    }
+    let parsed: unknown = setValue;
+    try {
+      parsed = JSON.parse(setValue);
+    } catch {
+      // store as raw string
+      parsed = setValue;
+    }
+    const ttl = Number.parseInt(setTtl, 10);
+    try {
+      await adminHttp(
+        `/api/cache/${encodeURIComponent(setKey.trim())}`,
+        { method: "PUT" },
+        {
+          value: parsed,
+          ttlSeconds: Number.isFinite(ttl) && ttl > 0 ? ttl : null,
+        },
+      );
+      notify(`Kľúč „${setKey.trim()}“ uložený`, { type: "success" });
+      await loadKeys();
+      await inspectKey(setKey.trim());
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Uloženie zlyhalo", {
+        type: "error",
+      });
+    }
+  }
+
   return (
     <ToolShell
       title="Vyrovnávacia pamäť"
@@ -167,6 +202,43 @@ export function CacheToolsPage() {
           </Button>
         </ToolCard>
       </div>
+
+      <ToolCard title="Nastaviť kľúč">
+        <TextField
+          size="small"
+          fullWidth
+          label="Kľúč"
+          value={setKey}
+          onChange={(e) => setSetKey(e.target.value)}
+          sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 0 } }}
+        />
+        <TextField
+          size="small"
+          fullWidth
+          multiline
+          minRows={3}
+          label="Hodnota (JSON alebo text)"
+          value={setValue}
+          onChange={(e) => setSetValue(e.target.value)}
+          sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 0 } }}
+        />
+        <TextField
+          size="small"
+          fullWidth
+          label="TTL (sekundy)"
+          value={setTtl}
+          onChange={(e) => setSetTtl(e.target.value)}
+          sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 0 } }}
+        />
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => void writeKey()}
+          sx={{ borderRadius: 0 }}
+        >
+          Uložiť
+        </Button>
+      </ToolCard>
 
       <ToolCard title="Kľúče">
         <div className="flex flex-col gap-2 sm:flex-row">
