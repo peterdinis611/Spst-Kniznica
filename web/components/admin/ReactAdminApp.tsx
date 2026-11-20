@@ -127,8 +127,12 @@ export default function ReactAdminApp() {
             <Route path="/tools/gateway" element={<GatewayToolsPage />} />
             <Route path="/tools/health" element={<HealthToolsPage />} />
             <Route path="/tools/services" element={<ServicesRegistryPage />} />
-            <Route path="/tools/cache" element={<CacheToolsPage />} />
-            <Route path="/tools/messaging" element={<MessagingToolsPage />} />
+            {hasAdminRole(permissions) ? (
+              <Route path="/tools/cache" element={<CacheToolsPage />} />
+            ) : null}
+            {hasAdminRole(permissions) ? (
+              <Route path="/tools/messaging" element={<MessagingToolsPage />} />
+            ) : null}
             <Route path="/tools/relations" element={<RelationsPage />} />
             <Route path="/tools/orders" element={<OrdersToolsPage />} />
             <Route path="/tools/emails" element={<EmailsToolsPage />} />

@@ -14,7 +14,7 @@ namespace CacheService.Controllers;
 public class CacheController(IAppCache cache, IAuditLogger audit) : ControllerBase
 {
     [HttpGet("status")]
-    [Authorize(Policy = AuthPolicies.Staff)]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     public ActionResult<object> Status([FromServices] IConfiguration configuration)
     {
@@ -28,7 +28,7 @@ public class CacheController(IAppCache cache, IAuditLogger audit) : ControllerBa
     }
 
     [HttpGet("keys")]
-    [Authorize(Policy = AuthPolicies.Staff)]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     public async Task<ActionResult<IReadOnlyList<string>>> ListKeys(
         [FromQuery] string? pattern,
@@ -38,7 +38,7 @@ public class CacheController(IAppCache cache, IAuditLogger audit) : ControllerBa
     }
 
     [HttpGet("{*key}")]
-    [Authorize(Policy = AuthPolicies.Staff)]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     public async Task<IActionResult> Get(string key, CancellationToken cancellationToken)
     {
@@ -52,7 +52,7 @@ public class CacheController(IAppCache cache, IAuditLogger audit) : ControllerBa
     }
 
     [HttpPut("{*key}")]
-    [Authorize(Policy = AuthPolicies.Staff)]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Set(
@@ -70,7 +70,7 @@ public class CacheController(IAppCache cache, IAuditLogger audit) : ControllerBa
     }
 
     [HttpDelete("{*key}")]
-    [Authorize(Policy = AuthPolicies.Staff)]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Remove(string key, CancellationToken cancellationToken)
@@ -81,7 +81,7 @@ public class CacheController(IAppCache cache, IAuditLogger audit) : ControllerBa
     }
 
     [HttpDelete]
-    [Authorize(Policy = AuthPolicies.Staff)]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RemoveByPrefix(

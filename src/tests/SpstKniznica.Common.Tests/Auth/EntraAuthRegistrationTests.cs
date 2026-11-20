@@ -94,6 +94,55 @@ public class EntraAuthRegistrationTests
             .WithMessage("*InternalApi:SharedKey*");
     }
 
+    [Fact]
+    public void Rejects_grant_staff_in_development_outside_Development()
+    {
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Entra:Enabled"] = "true",
+                ["Entra:TenantId"] = "tenant",
+                ["Entra:ClientId"] = "client",
+                ["Entra:Audience"] = "api://client",
+                ["Entra:GrantStaffInDevelopment"] = "true",
+                ["InternalApi:SharedKey"] = "production-grade-internal-api-key-32",
+            })
+            .Build();
+
+        var act = () => services.AddSpstEntraAuthentication(
+            config,
+            new FakeHostEnvironment(Environments.Production));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*GrantStaffInDevelopment*");
+    }
+
+    [Fact]
+    public void Rejects_short_internal_key_outside_Development()
+    {
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Entra:Enabled"] = "true",
+                ["Entra:TenantId"] = "tenant",
+                ["Entra:ClientId"] = "client",
+                ["Entra:Audience"] = "api://client",
+                ["InternalApi:SharedKey"] = "too-short-key",
+            })
+            .Build();
+
+        var act = () => services.AddSpstEntraAuthentication(
+            config,
+            new FakeHostEnvironment(Environments.Production));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*32 characters*");
+    }
+
     private sealed class FakeHostEnvironment(string environmentName) : IHostEnvironment
     {
         public string EnvironmentName { get; set; } = environmentName;

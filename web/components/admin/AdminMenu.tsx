@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu } from "react-admin";
+import { Menu, usePermissions } from "react-admin";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import StorageIcon from "@mui/icons-material/Storage";
 import HubIcon from "@mui/icons-material/Hub";
@@ -16,8 +16,12 @@ import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 import LockIcon from "@mui/icons-material/Lock";
 import EmailIcon from "@mui/icons-material/Email";
 import ReplayIcon from "@mui/icons-material/Replay";
+import { hasAdminRole } from "@/lib/admin/roles";
 
 export function AdminMenu() {
+  const { permissions } = usePermissions();
+  const isAdmin = hasAdminRole(permissions);
+
   return (
     <Menu>
       <Menu.DashboardItem />
@@ -42,16 +46,20 @@ export function AdminMenu() {
         primaryText="Služby"
         leftIcon={<DnsIcon />}
       />
-      <Menu.Item
-        to="/tools/cache"
-        primaryText="Vyrovnávacia pamäť"
-        leftIcon={<StorageIcon />}
-      />
-      <Menu.Item
-        to="/tools/messaging"
-        primaryText="Správy"
-        leftIcon={<HubIcon />}
-      />
+      {isAdmin ? (
+        <Menu.Item
+          to="/tools/cache"
+          primaryText="Vyrovnávacia pamäť"
+          leftIcon={<StorageIcon />}
+        />
+      ) : null}
+      {isAdmin ? (
+        <Menu.Item
+          to="/tools/messaging"
+          primaryText="Správy"
+          leftIcon={<HubIcon />}
+        />
+      ) : null}
       <Menu.Item
         to="/tools/relations"
         primaryText="Relácie"

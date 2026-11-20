@@ -44,5 +44,26 @@ public class InternalApiKeyAuthorizationTests
 
         await handler.HandleAsync(authContext);
         authContext.HasSucceeded.Should().BeFalse();
+        authContext.HasFailed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Fails_closed_when_shared_key_empty()
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Headers[InternalApiOptions.HeaderName] = "anything";
+        var accessor = new HttpContextAccessor { HttpContext = http };
+        var handler = new InternalApiKeyAuthorizationHandler(
+            Options.Create(new InternalApiOptions { SharedKey = "" }),
+            accessor);
+
+        var authContext = new AuthorizationHandlerContext(
+            [new InternalApiKeyRequirement()],
+            new System.Security.Claims.ClaimsPrincipal(),
+            resource: null);
+
+        await handler.HandleAsync(authContext);
+        authContext.HasSucceeded.Should().BeFalse();
+        authContext.HasFailed.Should().BeTrue();
     }
 }

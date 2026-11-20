@@ -13,11 +13,14 @@ describe("isBffAllowedPath", () => {
     expect(isBffAllowedPath("health")).toBe(true);
   });
 
-  it("rejects empty, traversal, and unknown prefixes", () => {
+  it("rejects empty, traversal, unknown, dead, and internal paths", () => {
     expect(isBffAllowedPath("")).toBe(false);
     expect(isBffAllowedPath("api/../secret")).toBe(false);
     expect(isBffAllowedPath("api/internal/emails")).toBe(false);
     expect(isBffAllowedPath("api/secrets")).toBe(false);
+    expect(isBffAllowedPath("api/library-ops")).toBe(false);
+    expect(isBffAllowedPath("api/workers")).toBe(false);
+    expect(isBffAllowedPath("api/bookings/internal/foo")).toBe(false);
   });
 
   it("exposes the staff tooling prefixes", () => {
@@ -28,7 +31,10 @@ describe("isBffAllowedPath", () => {
         "api/bookings",
         "api/gateway",
         "api/relations",
+        "api/cache",
       ]),
     );
+    expect(BFF_ALLOWED_PREFIXES).not.toContain("api/library-ops");
+    expect(BFF_ALLOWED_PREFIXES).not.toContain("api/workers");
   });
 });

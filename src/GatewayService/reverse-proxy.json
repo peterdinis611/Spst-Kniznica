@@ -244,7 +244,7 @@
       },
       "orders-api": {
         "ClusterId": "workers",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 1,
         "Match": {
           "Path": "/api/orders/{**catch-all}"
@@ -252,7 +252,7 @@
       },
       "orders-api-root": {
         "ClusterId": "workers",
-        "AuthorizationPolicy": "Authenticated",
+        "AuthorizationPolicy": "Staff",
         "Order": 2,
         "Match": {
           "Path": "/api/orders"
@@ -271,7 +271,7 @@
       },
       "messaging-api-write": {
         "ClusterId": "messaging",
-        "AuthorizationPolicy": "Staff",
+        "AuthorizationPolicy": "AdminOnly",
         "Order": 0,
         "Match": {
           "Path": "/api/messaging/{**catch-all}",
@@ -352,7 +352,7 @@
       },
       "cache-api-write": {
         "ClusterId": "cache",
-        "AuthorizationPolicy": "Staff",
+        "AuthorizationPolicy": "AdminOnly",
         "Order": 0,
         "Match": {
           "Path": "/api/cache/{**catch-all}",
@@ -366,7 +366,7 @@
       },
       "cache-api-root-write": {
         "ClusterId": "cache",
-        "AuthorizationPolicy": "Staff",
+        "AuthorizationPolicy": "AdminOnly",
         "Order": 0,
         "Match": {
           "Path": "/api/cache",
@@ -380,6 +380,7 @@
       },
       "cache-api": {
         "ClusterId": "cache",
+        "AuthorizationPolicy": "AdminOnly",
         "Order": 1,
         "Match": {
           "Path": "/api/cache/{**catch-all}"
@@ -387,6 +388,7 @@
       },
       "cache-api-root": {
         "ClusterId": "cache",
+        "AuthorizationPolicy": "AdminOnly",
         "Order": 2,
         "Match": {
           "Path": "/api/cache"

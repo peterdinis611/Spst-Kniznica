@@ -25,8 +25,8 @@ const TOOL_LINKS = [
   { to: "/tools/gateway", label: "API brána" },
   { to: "/tools/health", label: "Zdravie" },
   { to: "/tools/services", label: "Služby" },
-  { to: "/tools/cache", label: "Vyrovnávacia pamäť" },
-  { to: "/tools/messaging", label: "Správy" },
+  { to: "/tools/cache", label: "Vyrovnávacia pamäť", adminOnly: true },
+  { to: "/tools/messaging", label: "Správy", adminOnly: true },
   { to: "/tools/relations", label: "Relácie" },
   { to: "/tools/orders", label: "Fronta úloh" },
   { to: "/tools/emails", label: "E-maily" },
@@ -35,7 +35,7 @@ const TOOL_LINKS = [
   { to: "/tools/account", label: "Účet" },
   { to: "/tools/waitlist", label: "Čakací zoznam" },
   { to: "/tools/loan-policy", label: "Pravidlá výpožičiek" },
-  { to: "/tools/auth-settings", label: "Prihlasovanie" },
+  { to: "/tools/auth-settings", label: "Prihlasovanie", adminOnly: true },
 ] as const;
 
 const ATTENTION_SECTION_LABEL: Record<

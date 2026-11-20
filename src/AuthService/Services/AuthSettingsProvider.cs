@@ -29,17 +29,19 @@ public sealed class AuthSettingsProvider(
     {
         var snap = await GetSnapshotAsync(cancellationToken);
         var entra = entraOptions.Value;
+        // Public surface: ClientId + Authority/ApiScope for MSAL.
+        // TenantId/Audience stay off the anonymous payload (Authority already embeds tenant).
         return new AuthConfigDto
         {
             Enabled = entra.Enabled,
-            TenantId = entra.TenantId ?? string.Empty,
-            ClientId = entra.ClientId ?? string.Empty,
-            Audience = string.IsNullOrWhiteSpace(entra.Audience)
-                ? (string.IsNullOrWhiteSpace(entra.ClientId) ? string.Empty : $"api://{entra.ClientId}")
-                : entra.Audience,
-            ApiScope = string.IsNullOrWhiteSpace(entra.ApiScope) && !string.IsNullOrWhiteSpace(entra.ClientId)
-                ? $"api://{entra.ClientId}/access_as_user"
-                : entra.ApiScope ?? string.Empty,
+            TenantId = string.Empty,
+            ClientId = entra.Enabled ? (entra.ClientId ?? string.Empty) : string.Empty,
+            Audience = string.Empty,
+            ApiScope = entra.Enabled
+                ? (string.IsNullOrWhiteSpace(entra.ApiScope) && !string.IsNullOrWhiteSpace(entra.ClientId)
+                    ? $"api://{entra.ClientId}/access_as_user"
+                    : entra.ApiScope ?? string.Empty)
+                : string.Empty,
             Authority = entra.Enabled ? entra.Authority : string.Empty,
             RedirectUriHint = snap.RedirectUriHint,
             LoginNotice = snap.LoginNotice,

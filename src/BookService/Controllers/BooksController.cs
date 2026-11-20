@@ -254,6 +254,22 @@ public class BooksController(
     {
         logger.LogDebug("Getting book {BookId}", id);
         var book = await books.GetByIdAsync(id, cancellationToken);
+
+        // Inventory numbers / barcodes are staff-only (desk / admin).
+        if (!User.IsStaff())
+        {
+            book.Copies = book.Copies
+                .Select(c => new BookCopyDto
+                {
+                    Id = c.Id,
+                    InventoryNumber = string.Empty,
+                    Barcode = null,
+                    Status = c.Status,
+                    ShelfLocation = c.ShelfLocation,
+                })
+                .ToList();
+        }
+
         return Ok(book);
     }
 
@@ -339,7 +355,7 @@ public class BooksController(
         [FromForm] string? turnstileToken,
         CancellationToken cancellationToken)
     {
-        if (!IsValidUpload(file))
+        if (!IsValidUpload(file, ".csv", ".xml", ".xlsx"))
         {
             return InvalidFile(".csv, .xml or .xlsx");
         }
@@ -377,11 +393,22 @@ public class BooksController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<ActionResult<BulkImportResult>> ImportCsv(IFormFile file, CancellationToken cancellationToken)
+    public async Task<ActionResult<BulkImportResult>> ImportCsv(
+        IFormFile file,
+        [FromForm] string? turnstileToken,
+        CancellationToken cancellationToken)
     {
-        if (!IsValidUpload(file))
+        if (!IsValidUpload(file, ".csv"))
         {
             return InvalidFile(".csv");
+        }
+
+        if (!await turnstile.VerifyAsync(turnstileToken, HttpContext.Connection.RemoteIpAddress?.ToString(), cancellationToken))
+        {
+            return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
+            {
+                ["turnstileToken"] = ["Cloudflare Turnstile overenie zlyhalo."]
+            }));
         }
 
         logger.LogInformation("Starting CSV import. File={FileName}, Size={Size}", file.FileName, file.Length);
@@ -410,11 +437,22 @@ public class BooksController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<ActionResult<BulkImportResult>> ImportXml(IFormFile file, CancellationToken cancellationToken)
+    public async Task<ActionResult<BulkImportResult>> ImportXml(
+        IFormFile file,
+        [FromForm] string? turnstileToken,
+        CancellationToken cancellationToken)
     {
-        if (!IsValidUpload(file))
+        if (!IsValidUpload(file, ".xml"))
         {
             return InvalidFile(".xml");
+        }
+
+        if (!await turnstile.VerifyAsync(turnstileToken, HttpContext.Connection.RemoteIpAddress?.ToString(), cancellationToken))
+        {
+            return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
+            {
+                ["turnstileToken"] = ["Cloudflare Turnstile overenie zlyhalo."]
+            }));
         }
 
         logger.LogInformation("Starting XML import. File={FileName}, Size={Size}", file.FileName, file.Length);
@@ -449,8 +487,23 @@ public class BooksController(
         }
     }
 
-    private static bool IsValidUpload(IFormFile? file)
-        => file is not null && file.Length > 0;
+    private static bool IsValidUpload(IFormFile? file, params string[] allowedExtensions)
+    {
+        if (file is null || file.Length <= 0)
+        {
+            return false;
+        }
+
+        if (allowedExtensions.Length == 0)
+        {
+            return true;
+        }
+
+        var name = file.FileName ?? string.Empty;
+        var ext = Path.GetExtension(name);
+        return allowedExtensions.Any(a =>
+            ext.Equals(a, StringComparison.OrdinalIgnoreCase));
+    }
 
     private BadRequestObjectResult InvalidFile(string formats)
         => BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>

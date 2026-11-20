@@ -47,6 +47,23 @@ try
             .ConfigureSpstMigrations());
 
     var smtpEnabled = builder.Configuration.GetValue("Smtp:Enabled", false);
+    var dispatch = builder.Configuration.GetSection(EmailDispatchOptions.SectionName)
+        .Get<EmailDispatchOptions>() ?? new EmailDispatchOptions();
+    if (!builder.Environment.IsDevelopment())
+    {
+        if (dispatch.AllowedRecipientDomains is not { Length: > 0 })
+        {
+            throw new InvalidOperationException(
+                "EmailDispatch:AllowedRecipientDomains must be non-empty outside Development.");
+        }
+
+        if (!dispatch.RequireTemplateKeyForRawSend)
+        {
+            throw new InvalidOperationException(
+                "EmailDispatch:RequireTemplateKeyForRawSend must be true outside Development.");
+        }
+    }
+
     if (smtpEnabled)
     {
         builder.Services.AddSingleton<IEmailTransport, SmtpEmailTransport>();

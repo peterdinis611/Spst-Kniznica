@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -9,12 +10,22 @@ namespace SpstKniznica.Common.Auth;
 public sealed class DevelopmentAuthHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory logger,
-    UrlEncoder encoder) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+    UrlEncoder encoder,
+    IHostEnvironment environment) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
     public const string SchemeName = "Development";
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        // Hard stop: never elevate (or even succeed as a synthetic principal) outside Development.
+        if (!environment.IsDevelopment())
+        {
+            Logger.LogError(
+                "DevelopmentAuthHandler invoked outside Development ({Environment}) — rejecting.",
+                environment.EnvironmentName);
+            return Task.FromResult(AuthenticateResult.Fail("Development auth is not available."));
+        }
+
         // Default local principal is a reader. Opt into staff with SPST_DEV_ADMIN=1.
         var elevate =
             string.Equals(
@@ -37,6 +48,8 @@ public sealed class DevelopmentAuthHandler(
 
         if (elevate)
         {
+            Logger.LogWarning(
+                "SPST_DEV_ADMIN is set — issuing Development Admin+Librarian principal.");
             claims.Add(new Claim(ClaimTypes.Role, AppRoles.Librarian));
             claims.Add(new Claim(ClaimTypes.Role, AppRoles.Admin));
         }

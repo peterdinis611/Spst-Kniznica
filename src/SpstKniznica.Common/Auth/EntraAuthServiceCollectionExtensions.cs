@@ -21,6 +21,12 @@ public static class EntraAuthServiceCollectionExtensions
         var entra = configuration.GetSection(EntraOptions.SectionName).Get<EntraOptions>()
             ?? new EntraOptions();
 
+        if (entra.GrantStaffInDevelopment && !environment.IsDevelopment())
+        {
+            throw new InvalidOperationException(
+                "Entra:GrantStaffInDevelopment is only allowed when ASPNETCORE_ENVIRONMENT=Development.");
+        }
+
         if (entra.Enabled)
         {
             if (string.IsNullOrWhiteSpace(entra.TenantId) ||
@@ -29,6 +35,13 @@ public static class EntraAuthServiceCollectionExtensions
             {
                 throw new InvalidOperationException(
                     "Entra is enabled but TenantId/ClientId/Audience are missing.");
+            }
+
+            if (entra.GrantStaffInDevelopment)
+            {
+                Console.Error.WriteLine(
+                    "[SECURITY] Entra:GrantStaffInDevelopment elevates every authenticated user to Admin+Librarian. " +
+                    "Development only — never enable outside local loopback.");
             }
 
             services
@@ -78,6 +91,10 @@ public static class EntraAuthServiceCollectionExtensions
                     "Entra authentication is disabled. DevelopmentAuthHandler is only allowed " +
                     "when ASPNETCORE_ENVIRONMENT=Development. Enable Entra:Enabled for other environments.");
             }
+
+            Console.Error.WriteLine(
+                "[SECURITY] Entra:Enabled=false — DevelopmentAuthHandler is active. " +
+                "SPST_DEV_ADMIN elevates to Admin only in Development.");
 
             services
                 .AddAuthentication(DevelopmentAuthHandler.SchemeName)
@@ -139,6 +156,12 @@ public static class EntraAuthServiceCollectionExtensions
                 throw new InvalidOperationException(
                     "InternalApi:SharedKey must be set to a strong non-default secret outside Development. " +
                     "Refuse to start with an empty or known-insecure key.");
+            }
+
+            if (key.Length < 32)
+            {
+                throw new InvalidOperationException(
+                    "InternalApi:SharedKey must be at least 32 characters outside Development.");
             }
 
             return;

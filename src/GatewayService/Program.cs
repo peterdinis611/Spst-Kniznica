@@ -199,12 +199,6 @@ static async Task WriteReadyResponseAsync(HttpContext context, HealthReport repo
         _ => StatusCodes.Status503ServiceUnavailable,
     };
 
-    // Public readiness: aggregate only — no per-service descriptions/URLs.
-    await context.Response.WriteAsJsonAsync(new
-    {
-        status,
-        checks = report.Entries.Count,
-        unhealthy = report.Entries.Count(e => e.Value.Status == HealthStatus.Unhealthy),
-        degraded = report.Entries.Count(e => e.Value.Status == HealthStatus.Degraded),
-    });
+    // Public readiness: status only — no check counts / topology (Staff: /api/gateway/status).
+    await context.Response.WriteAsJsonAsync(new { status });
 }

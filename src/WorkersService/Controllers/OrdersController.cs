@@ -29,7 +29,7 @@ public class OrdersController(
         });
 
     [HttpPost("enqueue")]
-    [Authorize(Policy = AuthPolicies.Authenticated)]
+    [Authorize(Policy = AuthPolicies.Staff)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(typeof(EnqueueOrderResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

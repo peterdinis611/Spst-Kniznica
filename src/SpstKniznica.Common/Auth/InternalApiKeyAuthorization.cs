@@ -17,20 +17,24 @@ public sealed class InternalApiKeyAuthorizationHandler(
         InternalApiKeyRequirement requirement)
     {
         var configured = options.Value.SharedKey?.Trim() ?? string.Empty;
+        // Empty SharedKey → fail closed (no internal callers succeed).
         if (configured.Length == 0)
         {
+            context.Fail();
             return Task.CompletedTask;
         }
 
         var http = httpContextAccessor.HttpContext;
         if (http is null)
         {
+            context.Fail();
             return Task.CompletedTask;
         }
 
         if (!http.Request.Headers.TryGetValue(InternalApiOptions.HeaderName, out var provided)
             || string.IsNullOrWhiteSpace(provided))
         {
+            context.Fail();
             return Task.CompletedTask;
         }
 
@@ -40,6 +44,10 @@ public sealed class InternalApiKeyAuthorizationHandler(
             && CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes))
         {
             context.Succeed(requirement);
+        }
+        else
+        {
+            context.Fail();
         }
 
         return Task.CompletedTask;
