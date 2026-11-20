@@ -32,6 +32,16 @@
 - [Node.js 22+](https://nodejs.org/) + npm
 - Docker Desktop (voliteľné — Redis/Kafka/RabbitMQ; bez neho stack beží s vypnutými brokerami)
 
+## Premenné prostredia
+
+```bash
+cp .env.example .env          # backend + Docker + FE (načíta ./start.sh)
+cp web/.env.example web/.env  # keď bežíš Next samostatne (npm run dev)
+```
+
+ASP.NET mapuje nested config cez `__` (napr. `Entra__Enabled`, `InternalApi__SharedKey`, `Smtp__Host`).  
+Frontend používa `NEXT_PUBLIC_*` (API URL, Entra override, Turnstile, adresa knižnice).
+
 ## Rýchly štart
 
 ```bash

@@ -21,15 +21,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useBookSummaries } from "@/hooks/use-book-summaries";
 import {
   BOOKING_STATUS,
   BOOKING_STATUS_LABEL,
   cancelBookingAction,
+  checkoutBookingAction,
   duePhrase,
   formatDeskDate,
   renewBookingAction,
+  returnBookingAction,
   searchBookingsAction,
-  updateBookingAction,
   type BookingStatusCode,
   type DeskBooking,
 } from "@/lib/bookings";
@@ -44,7 +46,8 @@ type CatalogRef = {
 type BookingsDeskProps = {
   initialBookings: DeskBooking[];
   initialTotal: number;
-  catalog: CatalogRef[];
+  /** Optional seed; titles otherwise come from POST /api/books/summaries. */
+  catalog?: CatalogRef[];
 };
 
 const FILTERS: Array<{ id: "all" | BookingStatusCode; label: string }> = [
@@ -76,7 +79,7 @@ function openCount(items: DeskBooking[]): number {
 export function BookingsDesk({
   initialBookings,
   initialTotal,
-  catalog,
+  catalog = [],
 }: BookingsDeskProps) {
   const [deskQuery] = useQueryStates(bookingsDeskParsers, {
     history: "replace",
@@ -104,6 +107,18 @@ export function BookingsDesk({
   const search = useAction(searchBookingsAction);
   const cancelMine = useAction(cancelBookingAction);
   const renewMine = useAction(renewBookingAction);
+  const refreshAfterMutation = {
+    onSuccess() {
+      setPendingId(null);
+      search.execute(filtersRef.current);
+    },
+    onError() {
+      setPendingId(null);
+    },
+  };
+  const checkout = useAction(checkoutBookingAction, refreshAfterMutation);
+  const returnLoan = useAction(returnBookingAction, refreshAfterMutation);
+  const cancelStaff = useAction(cancelBookingAction, refreshAfterMutation);
   const filtersRef = useRef({
     search: undefined as string | undefined,
     borrowerEmail: undefined as string | undefined,
@@ -112,23 +127,6 @@ export function BookingsDesk({
     page: 1,
     pageSize: 40,
   });
-  const update = useAction(updateBookingAction, {
-    onSuccess() {
-      setPendingId(null);
-      search.execute(filtersRef.current);
-    },
-    onError() {
-      setPendingId(null);
-    },
-  });
-
-  const titles = useMemo(() => {
-    const map = new Map<string, CatalogRef>();
-    for (const book of catalog) map.set(book.id, book);
-    return map;
-  }, [catalog]);
-
-  const focusedBook = bookId ? titles.get(bookId) : undefined;
 
   const effectiveMineOnly = canManageDesk ? mineOnly : true;
 
@@ -187,6 +185,22 @@ export function BookingsDesk({
     (item) => item.status === BOOKING_STATUS.overdue,
   ).length;
 
+  const summaryIds = useMemo(() => {
+    const ids = items.map((item) => item.bookId);
+    if (bookId) ids.push(bookId);
+    return ids;
+  }, [items, bookId]);
+  const { catalog: summaryCatalog } = useBookSummaries(summaryIds);
+
+  const titles = useMemo(() => {
+    const map = new Map<string, CatalogRef>();
+    for (const book of catalog) map.set(book.id, book);
+    for (const book of summaryCatalog) map.set(book.id, book);
+    return map;
+  }, [catalog, summaryCatalog]);
+
+  const focusedBook = bookId ? titles.get(bookId) : undefined;
+
   const listRef = useRef<HTMLUListElement>(null);
   const scrollMargin = useWindowScrollMargin(listRef, [items.length, status, page]);
   const virtualizer = useWindowVirtualizer({
@@ -196,7 +210,7 @@ export function BookingsDesk({
     scrollMargin,
   });
 
-  async function changeStatus(booking: DeskBooking, next: BookingStatusCode) {
+  async function checkoutBooking(booking: DeskBooking) {
     setDeskError(null);
     setPendingId(booking.id);
     try {
@@ -204,17 +218,41 @@ export function BookingsDesk({
         entraEnabled,
         getAccessToken,
       });
-      update.execute({
+      checkout.execute({
         accessToken,
         id: booking.id,
-        bookId: booking.bookId,
         bookCopyId: booking.bookCopyId,
-        borrowerName: booking.borrowerName,
-        borrowerEmail: booking.borrowerEmail,
-        status: next,
-        dueDate: booking.dueDate,
-        notes: booking.notes,
       });
+    } catch (err) {
+      setPendingId(null);
+      setDeskError(err instanceof Error ? err.message : "Akcia zlyhala.");
+    }
+  }
+
+  async function returnBooking(booking: DeskBooking) {
+    setDeskError(null);
+    setPendingId(booking.id);
+    try {
+      const accessToken = await resolveActionAccessToken({
+        entraEnabled,
+        getAccessToken,
+      });
+      returnLoan.execute({ accessToken, id: booking.id });
+    } catch (err) {
+      setPendingId(null);
+      setDeskError(err instanceof Error ? err.message : "Akcia zlyhala.");
+    }
+  }
+
+  async function cancelBooking(booking: DeskBooking) {
+    setDeskError(null);
+    setPendingId(booking.id);
+    try {
+      const accessToken = await resolveActionAccessToken({
+        entraEnabled,
+        getAccessToken,
+      });
+      cancelStaff.execute({ accessToken, id: booking.id });
     } catch (err) {
       setPendingId(null);
       setDeskError(err instanceof Error ? err.message : "Akcia zlyhala.");
@@ -392,9 +430,13 @@ export function BookingsDesk({
           {deskError}
         </p>
       ) : null}
-      {update.result.serverError ? (
+      {checkout.result.serverError ||
+      returnLoan.result.serverError ||
+      cancelStaff.result.serverError ? (
         <p className="mt-4 text-sm text-stair-2" role="alert">
-          {update.result.serverError}
+          {checkout.result.serverError ??
+            returnLoan.result.serverError ??
+            cancelStaff.result.serverError}
         </p>
       ) : null}
       {search.result.serverError ? (
@@ -429,7 +471,11 @@ export function BookingsDesk({
             if (!booking) return null;
             const book = titles.get(booking.bookId);
             const statusCode = booking.status as BookingStatusCode;
-            const busy = pendingId === booking.id && update.isPending;
+            const busy =
+              pendingId === booking.id &&
+              (checkout.isPending ||
+                returnLoan.isPending ||
+                cancelStaff.isPending);
             return (
               <VirtualRow
                 key={booking.id}
@@ -506,9 +552,7 @@ export function BookingsDesk({
                             type="button"
                             disabled={busy}
                             className="h-10 rounded-none bg-ink px-4 text-paper hover:bg-ink/85"
-                            onClick={() =>
-                              changeStatus(booking, BOOKING_STATUS.active)
-                            }
+                            onClick={() => void checkoutBooking(booking)}
                           >
                             {busy ? "Ukladám…" : "Vydať"}
                           </Button>
@@ -517,9 +561,7 @@ export function BookingsDesk({
                             variant="outline"
                             disabled={busy}
                             className="h-10 rounded-none border-ink"
-                            onClick={() =>
-                              changeStatus(booking, BOOKING_STATUS.cancelled)
-                            }
+                            onClick={() => void cancelBooking(booking)}
                           >
                             Zrušiť
                           </Button>
@@ -532,9 +574,7 @@ export function BookingsDesk({
                           type="button"
                           disabled={busy}
                           className="h-10 rounded-none bg-accent px-4 text-accent-foreground hover:bg-accent-deep"
-                          onClick={() =>
-                            changeStatus(booking, BOOKING_STATUS.returned)
-                          }
+                          onClick={() => void returnBooking(booking)}
                         >
                           {busy ? "Ukladám…" : "Vrátiť"}
                           <ArrowRight className="size-4" aria-hidden />

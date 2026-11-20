@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminService.Tests", "tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService.Tests", "tests\EmailService.Tests\EmailService.Tests.csproj", "{5169E6E9-83E3-40C6-9896-B4817454961E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Tests", "tests\AuthService.Tests\AuthService.Tests.csproj", "{09C02B8D-4849-45D4-8098-5BD933262447}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -309,6 +311,18 @@ Global
 		{5169E6E9-83E3-40C6-9896-B4817454961E}.Release|x64.Build.0 = Release|Any CPU
 		{5169E6E9-83E3-40C6-9896-B4817454961E}.Release|x86.ActiveCfg = Release|Any CPU
 		{5169E6E9-83E3-40C6-9896-B4817454961E}.Release|x86.Build.0 = Release|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Debug|x64.Build.0 = Debug|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Debug|x86.Build.0 = Debug|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Release|x64.ActiveCfg = Release|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Release|x64.Build.0 = Release|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Release|x86.ActiveCfg = Release|Any CPU
+		{09C02B8D-4849-45D4-8098-5BD933262447}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -322,5 +336,6 @@ Global
 		{7096A7C5-4DE4-4E8B-AB5E-BBFD30BE6738} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{4193BC34-3856-459C-9F36-6E3175900625} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{5169E6E9-83E3-40C6-9896-B4817454961E} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{09C02B8D-4849-45D4-8098-5BD933262447} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

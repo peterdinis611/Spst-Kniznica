@@ -5,12 +5,10 @@ import { useAbility } from "@/components/auth/AbilityProvider";
 import { AuthRequiredGate } from "@/components/auth/AuthRequiredGate";
 import { BookingsDesk } from "@/components/catalog/BookingsDesk";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
-import { useCatalogRefs } from "@/hooks/use-catalog-refs";
 
 export function BookingsAccessGate() {
   const { ready, entraEnabled } = useAuth();
   const ability = useAbility();
-  const { catalog } = useCatalogRefs();
 
   return (
     <AuthRequiredGate
@@ -24,11 +22,7 @@ export function BookingsAccessGate() {
           : "Výpožičky a vlastné lístky sú dostupné až po prihlásení. Cudzie rezervácie nie sú verejné."
       }
     >
-      <BookingsDesk
-        initialBookings={[]}
-        initialTotal={0}
-        catalog={catalog}
-      />
+      <BookingsDesk initialBookings={[]} initialTotal={0} />
     </AuthRequiredGate>
   );
 }

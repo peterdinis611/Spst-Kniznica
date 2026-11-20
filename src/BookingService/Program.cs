@@ -50,6 +50,8 @@ try
 
     builder.Services.Configure<BookCatalogOptions>(
         builder.Configuration.GetSection(BookCatalogOptions.SectionName));
+    builder.Services.Configure<EmailServiceOptions>(
+        builder.Configuration.GetSection(EmailServiceOptions.SectionName));
     builder.Services.Configure<LoanPolicyOptions>(
         builder.Configuration.GetSection(LoanPolicyOptions.SectionName));
     builder.Services.AddHttpClient<IBookCatalogLookup, BookCatalogLookupClient>((sp, client) =>
@@ -59,6 +61,13 @@ try
         client.BaseAddress = new Uri(bookServiceUrl.TrimEnd('/') + "/");
         client.Timeout = TimeSpan.FromSeconds(3);
     });
+    builder.Services.AddHttpClient<ILoanNotificationSender, HttpLoanNotificationSender>((sp, client) =>
+    {
+        var emailServiceUrl = sp.GetRequiredService<
+            Microsoft.Extensions.Options.IOptions<EmailServiceOptions>>().Value.EmailService;
+        client.BaseAddress = new Uri(emailServiceUrl.TrimEnd('/') + "/");
+        client.Timeout = TimeSpan.FromSeconds(5);
+    });
 
     builder.Services.AddScoped<IBookingRepository, BookingRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -66,7 +75,6 @@ try
     builder.Services.AddScoped<WaitlistService>();
     builder.Services.AddScoped<FavoritesService>();
     builder.Services.AddScoped<SchoolCalendarService>();
-    builder.Services.AddSingleton<ILoanNotificationSender, LoggingLoanNotificationSender>();
     builder.Services.AddScoped<BookingDtoEnricher>();
     builder.Services.AddScoped<LoanLifecycleService>();
     builder.Services.AddScoped<IBookingService, BookingAppService>();

@@ -55,6 +55,8 @@ import { OrdersToolsPage } from "@/components/admin/tools/OrdersToolsPage";
 import { RelationsPage } from "@/components/admin/tools/RelationsPage";
 import { ServicesRegistryPage } from "@/components/admin/tools/ServicesRegistryPage";
 import { AuthSettingsPage } from "@/components/admin/tools/AuthSettingsPage";
+import { EmailsToolsPage } from "@/components/admin/tools/EmailsToolsPage";
+import { LifecycleToolsPage } from "@/components/admin/tools/LifecycleToolsPage";
 import { LoanPolicyPage } from "@/components/admin/tools/LoanPolicyPage";
 import { WaitlistToolsPage } from "@/components/admin/tools/WaitlistToolsPage";
 
@@ -129,6 +131,8 @@ export default function ReactAdminApp() {
             <Route path="/tools/messaging" element={<MessagingToolsPage />} />
             <Route path="/tools/relations" element={<RelationsPage />} />
             <Route path="/tools/orders" element={<OrdersToolsPage />} />
+            <Route path="/tools/emails" element={<EmailsToolsPage />} />
+            <Route path="/tools/lifecycle" element={<LifecycleToolsPage />} />
             <Route path="/tools/links" element={<LinksToolsPage />} />
             <Route path="/tools/account" element={<AccountPage />} />
             <Route path="/tools/auth-settings" element={<AuthSettingsPage />} />

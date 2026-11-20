@@ -178,6 +178,110 @@ export const renewBookingAction = actionClient
     return mapBooking(updated);
   });
 
+export const checkoutBookingAction = actionClient
+  .inputSchema(
+    tokenSchema.extend({
+      id: z.string().trim().min(1),
+      bookCopyId: z
+        .string()
+        .trim()
+        .optional()
+        .nullable()
+        .transform((value) => {
+          if (!value) return null;
+          return z.string().uuid().parse(value);
+        }),
+    }),
+  )
+  .action(async ({ parsedInput }): Promise<DeskBooking> => {
+    const token = await resolveServerToken(parsedInput.accessToken);
+    const updated = await runOps(() =>
+      apiPost<BookingDto>(
+        `/api/bookings/${parsedInput.id}/checkout`,
+        { bookCopyId: parsedInput.bookCopyId },
+        undefined,
+        token,
+      ),
+    );
+    return mapBooking(updated);
+  });
+
+export const returnBookingAction = actionClient
+  .inputSchema(
+    tokenSchema.extend({
+      id: z.string().trim().min(1),
+    }),
+  )
+  .action(async ({ parsedInput }): Promise<DeskBooking> => {
+    const token = await resolveServerToken(parsedInput.accessToken);
+    const updated = await runOps(() =>
+      apiPost<BookingDto>(
+        `/api/bookings/${parsedInput.id}/return`,
+        {},
+        undefined,
+        token,
+      ),
+    );
+    return mapBooking(updated);
+  });
+
+export const promoteWaitlistAction = actionClient
+  .inputSchema(
+    tokenSchema.extend({
+      bookId: z.string().trim().min(1),
+    }),
+  )
+  .action(
+    async ({
+      parsedInput,
+    }): Promise<{ promoted: boolean; booking: DeskBooking | null }> => {
+      const token = await resolveServerToken(parsedInput.accessToken);
+      const result = await runOps(() =>
+        apiPost<{
+          promoted: boolean;
+          booking: BookingDto | null;
+        }>(
+          `/api/bookings/waitlist/book/${parsedInput.bookId}/promote`,
+          {},
+          undefined,
+          token,
+        ),
+      );
+      return {
+        promoted: result.promoted,
+        booking: result.booking ? mapBooking(result.booking) : null,
+      };
+    },
+  );
+
+export const markOverdueBatchAction = actionClient
+  .inputSchema(tokenSchema)
+  .action(async ({ parsedInput }) => {
+    const token = await resolveServerToken(parsedInput.accessToken);
+    return runOps(() =>
+      apiPost<{
+        markedOverdue: number;
+        remindersQueued: number;
+        overdueIds: string[];
+        reminderBookingIds: string[];
+      }>("/api/bookings/lifecycle/mark-overdue", {}, undefined, token),
+    );
+  });
+
+export const queueDueRemindersAction = actionClient
+  .inputSchema(tokenSchema)
+  .action(async ({ parsedInput }) => {
+    const token = await resolveServerToken(parsedInput.accessToken);
+    return runOps(() =>
+      apiPost<{
+        markedOverdue: number;
+        remindersQueued: number;
+        overdueIds: string[];
+        reminderBookingIds: string[];
+      }>("/api/bookings/lifecycle/due-reminders", {}, undefined, token),
+    );
+  });
+
 export const joinWaitlistAction = actionClient
   .inputSchema(
     tokenSchema.extend({

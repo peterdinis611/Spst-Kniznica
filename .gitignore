@@ -21,3 +21,8 @@ web/.DS_Store
 
 # Local run artifacts (start-all.sh)
 .run/
+
+# Env (secrets / local overrides) — keep .env.example committed
+.env
+.env.local
+!.env.example

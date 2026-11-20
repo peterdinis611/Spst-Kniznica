@@ -1,29 +1,39 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAction } from "next-safe-action/hooks";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";
-import { leaveWaitlistAction, listStaffWaitlistAction, type WaitlistEntry } from "@/lib/bookings";
+import { useBookSummaries } from "@/hooks/use-book-summaries";
+import {
+  leaveWaitlistAction,
+  listStaffWaitlistAction,
+  promoteWaitlistAction,
+  type WaitlistEntry,
+} from "@/lib/bookings";
 import { Button } from "@/components/ui/button";
 
 type CatalogRef = { id: string; title: string; author?: string };
 
 export function WaitlistBoard({
-  titles,
+  titles: seedTitles,
   getAccessToken,
   entraEnabled,
   heading = "Fronta čakateľov",
+  allowPromote = true,
 }: {
-  titles: Map<string, CatalogRef>;
+  titles?: Map<string, CatalogRef>;
   getAccessToken: () => Promise<string | null | undefined>;
   entraEnabled: boolean;
   heading?: string;
+  allowPromote?: boolean;
 }) {
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [promotingBookId, setPromotingBookId] = useState<string | null>(null);
   const load = useAction(listStaffWaitlistAction);
   const leave = useAction(leaveWaitlistAction);
+  const promote = useAction(promoteWaitlistAction);
 
   const tokenGetter = useCallback(
     async () => (await getAccessToken()) ?? null,
@@ -43,6 +53,18 @@ export function WaitlistBoard({
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  const summaryIds = useMemo(
+    () => entries.map((entry) => entry.bookId),
+    [entries],
+  );
+  const { catalog: summaryCatalog } = useBookSummaries(summaryIds);
+
+  const titles = useMemo(() => {
+    const map = new Map<string, CatalogRef>(seedTitles ?? []);
+    for (const book of summaryCatalog) map.set(book.id, book);
+    return map;
+  }, [seedTitles, summaryCatalog]);
 
   const headingId = "staff-waitlist-heading";
 
@@ -86,6 +108,8 @@ export function WaitlistBoard({
         ) : (
           entries.map((entry) => {
             const book = titles.get(entry.bookId);
+            const isFirst =
+              entries.find((e) => e.bookId === entry.bookId)?.id === entry.id;
             return (
               <li
                 key={entry.id}
@@ -107,23 +131,62 @@ export function WaitlistBoard({
                     {new Date(entry.createdAt).toLocaleString("sk-SK")}
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="rounded-none"
-                  disabled={leave.isPending}
-                  onClick={async () => {
-                    const accessToken = await resolveActionAccessToken({
-                      entraEnabled,
-                      getAccessToken: tokenGetter,
-                    });
-                    await leave.executeAsync({ id: entry.id, accessToken });
-                    setEntries((prev) => prev.filter((e) => e.id !== entry.id));
-                  }}
-                >
-                  Odstrániť
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {allowPromote && isFirst ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="rounded-none"
+                      disabled={
+                        promote.isPending && promotingBookId === entry.bookId
+                      }
+                      onClick={async () => {
+                        setError(null);
+                        setPromotingBookId(entry.bookId);
+                        const accessToken = await resolveActionAccessToken({
+                          entraEnabled,
+                          getAccessToken: tokenGetter,
+                        });
+                        const result = await promote.executeAsync({
+                          bookId: entry.bookId,
+                          accessToken,
+                        });
+                        setPromotingBookId(null);
+                        if (result?.serverError) {
+                          setError(result.serverError);
+                          return;
+                        }
+                        if (result?.data && !result.data.promoted) {
+                          setError(
+                            "Promote neprebehlo (žiadny čakateľ alebo plná kapacita).",
+                          );
+                        }
+                        await refresh();
+                      }}
+                    >
+                      Promote
+                    </Button>
+                  ) : null}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-none"
+                    disabled={leave.isPending}
+                    onClick={async () => {
+                      const accessToken = await resolveActionAccessToken({
+                        entraEnabled,
+                        getAccessToken: tokenGetter,
+                      });
+                      await leave.executeAsync({ id: entry.id, accessToken });
+                      setEntries((prev) =>
+                        prev.filter((e) => e.id !== entry.id),
+                      );
+                    }}
+                  >
+                    Odstrániť
+                  </Button>
+                </div>
               </li>
             );
           })

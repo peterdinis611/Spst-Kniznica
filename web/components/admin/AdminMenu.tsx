@@ -14,6 +14,8 @@ import LinkIcon from "@mui/icons-material/Link";
 import PolicyIcon from "@mui/icons-material/Policy";
 import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 import LockIcon from "@mui/icons-material/Lock";
+import EmailIcon from "@mui/icons-material/Email";
+import ReplayIcon from "@mui/icons-material/Replay";
 
 export function AdminMenu() {
   return (
@@ -59,6 +61,16 @@ export function AdminMenu() {
         to="/tools/orders"
         primaryText="Fronta úloh"
         leftIcon={<QueueIcon />}
+      />
+      <Menu.Item
+        to="/tools/emails"
+        primaryText="E-maily"
+        leftIcon={<EmailIcon />}
+      />
+      <Menu.Item
+        to="/tools/lifecycle"
+        primaryText="Životný cyklus"
+        leftIcon={<ReplayIcon />}
       />
       <Menu.Item
         to="/tools/waitlist"

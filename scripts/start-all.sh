@@ -54,6 +54,17 @@ done
 mkdir -p "$LOG_DIR" "$PID_DIR"
 PIDS=()
 
+# Root .env → ASP.NET (__ keys) + Docker Compose + NEXT_PUBLIC_* pre web.
+if [[ -f "$ROOT/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$ROOT/.env"
+  set +a
+  echo "==> Načítané $ROOT/.env"
+elif [[ -f "$ROOT/.env.example" ]]; then
+  echo "==> Tip: skopíruj .env.example → .env (lokálne overrides)"
+fi
+
 need_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
     echo "Chýba príkaz: $1" >&2

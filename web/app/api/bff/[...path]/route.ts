@@ -1,45 +1,17 @@
 import { NextResponse } from "next/server";
+import { isBffAllowedPath } from "@/lib/api/bff-allowlist";
 import { SESSION_COOKIE } from "@/lib/auth/session-constants";
 
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5200"
 ).replace(/\/$/, "");
 
-/** Only these gateway prefixes may be proxied from the browser BFF. */
-const ALLOWED_PREFIXES = [
-  "health",
-  "api/auth",
-  "api/books",
-  "api/authors",
-  "api/categories",
-  "api/bookings",
-  "api/library-ops",
-  "api/admin",
-  "api/orders",
-  "api/cache",
-  "api/messaging",
-  "api/workers",
-  "api/emails",
-  "api/gateway",
-  "api/relations",
-] as const;
-
 const UPSTREAM_TIMEOUT_MS = 25_000;
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
 
-function isAllowedPath(path: string): boolean {
-  const normalized = path.replace(/^\/+/, "").toLowerCase();
-  if (!normalized) return false;
-  if (normalized.includes("..")) return false;
-  return ALLOWED_PREFIXES.some(
-    (prefix) =>
-      normalized === prefix || normalized.startsWith(`${prefix}/`),
-  );
-}
-
 async function proxy(request: Request, pathParts: string[]) {
   const path = pathParts.join("/");
-  if (!isAllowedPath(path)) {
+  if (!isBffAllowedPath(path)) {
     return NextResponse.json(
       {
         title: "Forbidden",

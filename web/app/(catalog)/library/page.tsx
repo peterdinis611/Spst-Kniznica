@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { MyLibrary } from "@/components/catalog/MyLibrary";
-import { searchBooksAction } from "@/lib/catalog/actions";
+import { fetchBookSummaries } from "@/lib/catalog/book-summaries";
 import { searchBookingsAction } from "@/lib/bookings";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
@@ -16,20 +16,13 @@ export const metadata: Metadata = buildPageMetadata({
 
 async function LibraryContent() {
   await connection();
-  const [bookingsResult, booksResult] = await Promise.all([
-    searchBookingsAction({ page: 1, pageSize: 24 }),
-    searchBooksAction({ page: 1, pageSize: 24 }),
-  ]);
-
-  const catalog = (booksResult?.data?.items ?? []).map((item) => ({
-    id: item.id,
-    title: item.title,
-    author: item.author,
-  }));
+  const bookingsResult = await searchBookingsAction({ page: 1, pageSize: 24 });
+  const bookings = bookingsResult?.data?.items ?? [];
+  const catalog = await fetchBookSummaries(bookings.map((item) => item.bookId));
 
   return (
     <MyLibrary
-      initialBookings={bookingsResult?.data?.items ?? []}
+      initialBookings={bookings}
       catalog={catalog}
     />
   );

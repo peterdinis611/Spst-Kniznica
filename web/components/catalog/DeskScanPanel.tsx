@@ -8,8 +8,9 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { resolveActionAccessToken } from "@/lib/auth/access-token";
 import {
   BOOKING_STATUS,
+  checkoutBookingAction,
+  returnBookingAction,
   searchBookingsAction,
-  updateBookingAction,
   type DeskBooking,
 } from "@/lib/bookings";
 import {
@@ -61,7 +62,8 @@ export function DeskScanPanel({
   const lookupCopy = useAction(lookupBookCopyAction);
   const updateCopyStatus = useAction(updateBookCopyStatusAction);
   const search = useAction(searchBookingsAction);
-  const update = useAction(updateBookingAction);
+  const checkout = useAction(checkoutBookingAction);
+  const returnLoan = useAction(returnBookingAction);
 
   useEffect(() => {
     if (scanFocus) inputRef.current?.focus();
@@ -125,16 +127,10 @@ export function DeskScanPanel({
         setError("Pre tento titul nie je rezervácia bez priradeného výtlačku.");
         return;
       }
-      const result = await update.executeAsync({
+      const result = await checkout.executeAsync({
         accessToken: accessToken ?? undefined,
         id: booking.id,
-        bookId: booking.bookId,
         bookCopyId: lookup.copyId,
-        borrowerName: booking.borrowerName,
-        borrowerEmail: booking.borrowerEmail,
-        status: BOOKING_STATUS.active,
-        dueDate: booking.dueDate,
-        notes: booking.notes,
       });
       if (result?.serverError) {
         setError(result.serverError);
@@ -175,16 +171,9 @@ export function DeskScanPanel({
         setError("Pre tento výtlačok nie je aktívna výpožička.");
         return;
       }
-      const result = await update.executeAsync({
+      const result = await returnLoan.executeAsync({
         accessToken: accessToken ?? undefined,
         id: booking.id,
-        bookId: booking.bookId,
-        bookCopyId: lookup.copyId,
-        borrowerName: booking.borrowerName,
-        borrowerEmail: booking.borrowerEmail,
-        status: BOOKING_STATUS.returned,
-        dueDate: booking.dueDate,
-        notes: booking.notes,
       });
       if (result?.serverError) {
         setError(result.serverError);
@@ -324,7 +313,7 @@ export function DeskScanPanel({
           <div className="mt-4 flex flex-wrap gap-2">
             <Button
               type="button"
-              disabled={busy || update.isPending}
+              disabled={busy || checkout.isPending}
               className="h-10 rounded-none bg-ink px-4 text-paper hover:bg-ink/85"
               onClick={() => void issueCopy()}
             >
@@ -333,7 +322,7 @@ export function DeskScanPanel({
             <Button
               type="button"
               variant="outline"
-              disabled={busy || update.isPending}
+              disabled={busy || returnLoan.isPending}
               className="h-10 rounded-none border-ink"
               onClick={() => void returnCopy()}
             >

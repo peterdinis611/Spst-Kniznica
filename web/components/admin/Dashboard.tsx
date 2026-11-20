@@ -29,6 +29,8 @@ const TOOL_LINKS = [
   { to: "/tools/messaging", label: "Správy" },
   { to: "/tools/relations", label: "Relácie" },
   { to: "/tools/orders", label: "Fronta úloh" },
+  { to: "/tools/emails", label: "E-maily" },
+  { to: "/tools/lifecycle", label: "Životný cyklus" },
   { to: "/tools/links", label: "Odkazy" },
   { to: "/tools/account", label: "Účet" },
   { to: "/tools/waitlist", label: "Čakací zoznam" },

@@ -20,7 +20,7 @@ import { apiUrl } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { WaitlistBoard } from "@/components/catalog/WaitlistBoard";
-import { useCatalogRefs } from "@/hooks/use-catalog-refs";
+import { useBookSummaries } from "@/hooks/use-book-summaries";
 
 type CatalogRef = { id: string; title: string; author: string };
 
@@ -89,11 +89,19 @@ export function DeskDailyBoard() {
   const { user, getAccessToken, ready, entraEnabled } = useAuth();
   const ability = useAbility();
   const canManage = ability.can("manage", "BookingsDesk");
-  const { catalog } = useCatalogRefs();
   const [board, setBoard] = useState<DeskDaily | null>(null);
   const [error, setError] = useState<string | null>(null);
   const load = useAction(getDeskDailyAction);
 
+  const summaryIds = useMemo(() => {
+    if (!board) return [] as string[];
+    return [
+      ...board.overdue,
+      ...board.dueSoon,
+      ...board.pickupReady,
+    ].map((item) => item.bookId);
+  }, [board]);
+  const { catalog } = useBookSummaries(summaryIds);
   const titles = useMemo(
     () => new Map(catalog.map((item) => [item.id, item])),
     [catalog],
