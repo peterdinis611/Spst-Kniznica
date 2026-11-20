@@ -1,25 +1,35 @@
 /**
- * Frontend smoke load — Next.js pages (SSR/assets).
+ * Frontend smoke load — Next.js pages (SSR/assets) + BFF probe.
  *
  *   k6 run load/k6/web.js
  */
 import http from "k6/http";
 import { check, sleep } from "k6";
-import { WEB_URL } from "./lib/config.js";
+import { WEB_URL, webThresholds, think } from "./lib/config.js";
+import { bffGet } from "./lib/http.js";
 
 export const options = {
-  vus: 5,
-  duration: "1m",
-  thresholds: {
-    http_req_failed: ["rate<0.05"],
-    http_req_duration: ["p(95)<2000"],
-    checks: ["rate>0.95"],
+  scenarios: {
+    pages: {
+      executor: "constant-vus",
+      vus: 5,
+      duration: "1m",
+      exec: "pageFlow",
+    },
+    bff: {
+      executor: "constant-vus",
+      vus: 2,
+      duration: "1m",
+      exec: "bffFlow",
+      startTime: "5s",
+    },
   },
+  thresholds: webThresholds,
 };
 
-const PATHS = ["/", "/books", "/authors", "/categories", "/bookings"];
+const PATHS = ["/", "/books", "/authors", "/categories", "/library", "/bookings"];
 
-export default function () {
+export function pageFlow() {
   const path = PATHS[Math.floor(Math.random() * PATHS.length)];
   const res = http.get(`${WEB_URL}${path}`, {
     tags: { name: `web_${path === "/" ? "home" : path.slice(1)}` },
@@ -28,5 +38,19 @@ export default function () {
   check(res, {
     "web 2xx": (r) => r.status >= 200 && r.status < 400,
   });
-  sleep(0.5 + Math.random());
+  sleep(think(0.5, 1.2));
 }
+
+export function bffFlow() {
+  const res = bffGet("/api/books?page=1&pageSize=10", "bff_books");
+  check(res, {
+    "bff books ok": (r) => r.status === 200,
+  });
+  const denied = bffGet("/api/internal/emails/send", "bff_denied_internal");
+  check(denied, {
+    "bff blocks internal": (r) => r.status === 403 || r.status === 404,
+  });
+  sleep(think(0.8, 1.5));
+}
+
+export default pageFlow;

@@ -2,17 +2,16 @@
  * Smoke — krátky sanity check gateway + katalóg (1 VU, ~30s).
  *
  *   k6 run load/k6/smoke.js
+ *   PROFILE=smoke k6 run load/k6/smoke.js
  */
 import { sleep } from "k6";
-import { apiThresholds } from "./lib/config.js";
+import { apiThresholds, think } from "./lib/config.js";
 import {
-  getHealth,
-  getBooksPage,
-  getBooksCursor,
-  getAuthorsPage,
-  getCategoriesPage,
-  getRelationsSummary,
+  getReady,
   getAuthConfig,
+  warmCatalogBatch,
+  getBooksCursor,
+  getRelationsSummary,
 } from "./lib/catalog.js";
 
 export const options = {
@@ -22,12 +21,10 @@ export const options = {
 };
 
 export default function () {
-  getHealth();
+  warmCatalogBatch();
+  getReady();
   getAuthConfig();
-  getBooksPage(1, 20);
   getBooksCursor(10);
-  getAuthorsPage(1, 20);
-  getCategoriesPage(1, 20);
   getRelationsSummary();
-  sleep(1);
+  sleep(think(0.5, 1));
 }

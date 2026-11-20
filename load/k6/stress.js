@@ -2,9 +2,10 @@
  * Stress — vyššia záťaž na katalóg (nájdenie limitu / degradácie).
  *
  *   k6 run load/k6/stress.js
+ *   PROFILE=stress k6 run load/k6/stress.js
  */
 import { sleep } from "k6";
-import { stressThresholds } from "./lib/config.js";
+import { stressThresholds, think } from "./lib/config.js";
 import { browseCatalog } from "./lib/catalog.js";
 
 export const options = {
@@ -30,5 +31,5 @@ export const options = {
 
 export default function () {
   browseCatalog();
-  sleep(0.05);
+  sleep(think(0.02, 0.08));
 }

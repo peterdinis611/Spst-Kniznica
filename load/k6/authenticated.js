@@ -1,19 +1,20 @@
 /**
- * Authenticated — výpožičky + staff export (vyžaduje TOKEN).
- *
- * Predpoklad:
- *   - stack beží
- *   - export TOKEN=<Entra JWT>  ALEBO Entra:Enabled=false + DevelopmentAuth
- *     (pri Entra:Enabled=false stačí spustiť služby s SPST_DEV_ADMIN=1;
- *      DevelopmentAuthHandler autentifikuje bez Beareru, TOKEN nechaj prázdny)
+ * Authenticated — výpožičky + staff export / desk (vyžaduje TOKEN alebo DevAuth).
  *
  *   TOKEN=… k6 run load/k6/authenticated.js
- *   k6 run load/k6/authenticated.js   # len DevelopmentAuth
+ *   SPST_DEV_ADMIN=1 + Entra:Enabled=false → TOKEN môže byť prázdny
  */
+import { sleep } from "k6";
 import http from "k6/http";
-import { check, sleep } from "k6";
-import { BASE_URL, TOKEN, authHeaders, apiThresholds } from "./lib/config.js";
-import { browseCatalog, getBooksPage } from "./lib/catalog.js";
+import { BASE_URL, TOKEN, authHeaders, apiThresholds, think } from "./lib/config.js";
+import { browseCatalog } from "./lib/catalog.js";
+import {
+  readerOpsFlow,
+  staffOpsFlow,
+  booksExport,
+  emailsStatus,
+  ordersQueue,
+} from "./lib/ops.js";
 
 export const options = {
   scenarios: {
@@ -27,18 +28,18 @@ export const options = {
       ],
       exec: "readerFlow",
     },
-    staff_export: {
+    staff_ops: {
       executor: "constant-vus",
-      vus: 2,
+      vus: 3,
       duration: "1m",
-      exec: "staffExport",
+      exec: "staffFlow",
       startTime: "10s",
     },
   },
   thresholds: {
     ...apiThresholds,
-    // 401 without proper auth should fail the run loudly
     "http_req_failed{name:bookings_list}": ["rate<0.05"],
+    "http_req_duration{name:desk_daily}": ["p(95)<1000"],
   },
 };
 
@@ -48,60 +49,26 @@ export function setup() {
   });
   if (probe.status === 401 || probe.status === 403) {
     console.warn(
-      `WARN: /api/bookings → ${probe.status}. Set TOKEN=… or run with Entra:Enabled=false and SPST_DEV_ADMIN=1.`,
+      `WARN: /api/bookings → ${probe.status}. Set TOKEN=… or Entra:Enabled=false + SPST_DEV_ADMIN=1.`,
     );
   } else {
-    console.log(`Auth probe /api/bookings → ${probe.status} (TOKEN ${TOKEN ? "set" : "empty"})`);
+    console.log(
+      `Auth probe /api/bookings → ${probe.status} (TOKEN ${TOKEN ? "set" : "empty"})`,
+    );
   }
   return {};
 }
 
 export function readerFlow() {
   browseCatalog();
-
-  const list = http.get(`${BASE_URL}/api/bookings?page=1&pageSize=10`, {
-    headers: authHeaders(),
-    tags: { name: "bookings_list" },
-  });
-  check(list, {
-    "bookings list ok": (r) => r.status === 200,
-  });
-
-  // Soft create attempt — may 400 if catalog empty / policy freeze; still counts as auth path
-  const books = getBooksPage(1, 5);
-  let bookId = null;
-  try {
-    const body = books.json();
-    const items = body.items || body.Items || [];
-    if (items.length > 0) bookId = items[0].id || items[0].Id;
-  } catch {
-    /* ignore */
-  }
-
-  if (bookId) {
-    const created = http.post(
-      `${BASE_URL}/api/bookings`,
-      JSON.stringify({ bookId }),
-      { headers: authHeaders(), tags: { name: "bookings_create" } },
-    );
-    check(created, {
-      "bookings create 2xx/4xx (not 401)": (r) =>
-        r.status !== 401 && r.status !== 403 && r.status < 500,
-    });
-  }
-
-  sleep(0.5 + Math.random());
+  readerOpsFlow();
+  sleep(think(0.5, 1.2));
 }
 
-export function staffExport() {
-  const res = http.get(`${BASE_URL}/api/books/export?format=csv&take=50`, {
-    headers: authHeaders(),
-    tags: { name: "books_export" },
-  });
-  check(res, {
-    "export not unauthorized": (r) => r.status !== 401 && r.status !== 403,
-    "export ok or rate-limited": (r) =>
-      r.status === 200 || r.status === 429 || r.status === 403,
-  });
-  sleep(2);
+export function staffFlow() {
+  staffOpsFlow();
+  booksExport(50);
+  emailsStatus();
+  ordersQueue();
+  sleep(think(1.5, 2.5));
 }

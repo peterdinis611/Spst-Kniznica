@@ -5,14 +5,20 @@
 #   ./scripts/load-test.sh                  # smoke
 #   ./scripts/load-test.sh catalog
 #   ./scripts/load-test.sh stress
+#   ./scripts/load-test.sh spike
+#   ./scripts/load-test.sh soak
+#   ./scripts/load-test.sh summaries
 #   ./scripts/load-test.sh authenticated
+#   ./scripts/load-test.sh desk
 #   ./scripts/load-test.sh web
 #   ./scripts/load-test.sh smoke http://127.0.0.1:5200
 #
 # Env:
-#   BASE_URL  gateway (default http://127.0.0.1:5200)
-#   WEB_URL   Next.js (default http://127.0.0.1:3000)
-#   TOKEN     Bearer JWT for authenticated scenario
+#   BASE_URL      gateway (default http://127.0.0.1:5200)
+#   WEB_URL       Next.js (default http://127.0.0.1:3000)
+#   TOKEN         Bearer JWT for authenticated / desk
+#   PROFILE       smoke | load | stress (thresholds)
+#   SOAK_MINUTES  soak duration (default 10)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -21,18 +27,25 @@ BASE_URL="${2:-${BASE_URL:-http://127.0.0.1:5200}}"
 WEB_URL="${WEB_URL:-http://127.0.0.1:3000}"
 
 SCRIPT=""
+DEFAULT_PROFILE="load"
 case "$SCENARIO" in
-  smoke) SCRIPT="$ROOT/load/k6/smoke.js" ;;
+  smoke) SCRIPT="$ROOT/load/k6/smoke.js"; DEFAULT_PROFILE=smoke ;;
   catalog) SCRIPT="$ROOT/load/k6/catalog.js" ;;
-  stress) SCRIPT="$ROOT/load/k6/stress.js" ;;
+  stress) SCRIPT="$ROOT/load/k6/stress.js"; DEFAULT_PROFILE=stress ;;
+  spike) SCRIPT="$ROOT/load/k6/spike.js"; DEFAULT_PROFILE=stress ;;
+  soak) SCRIPT="$ROOT/load/k6/soak.js" ;;
+  summaries|summary) SCRIPT="$ROOT/load/k6/summaries.js" ;;
   authenticated|auth) SCRIPT="$ROOT/load/k6/authenticated.js" ;;
+  desk) SCRIPT="$ROOT/load/k6/desk.js" ;;
   web) SCRIPT="$ROOT/load/k6/web.js" ;;
+  mixed) SCRIPT="$ROOT/load/k6/mixed.js" ;;
   *)
     echo "Unknown scenario: $SCENARIO"
-    echo "Use: smoke | catalog | stress | authenticated | web"
+    echo "Use: smoke | catalog | stress | spike | soak | summaries | authenticated | desk | web | mixed"
     exit 1
     ;;
 esac
+PROFILE="${PROFILE:-$DEFAULT_PROFILE}"
 
 if ! command -v k6 >/dev/null 2>&1; then
   echo "k6 is not installed. Install: brew install k6"
@@ -56,10 +69,13 @@ else
   echo "  ✓ live"
 fi
 
-echo "==> k6 ${SCENARIO} → ${SCRIPT}"
-export BASE_URL WEB_URL
+echo "==> k6 ${SCENARIO} (PROFILE=${PROFILE}) → ${SCRIPT}"
+export BASE_URL WEB_URL PROFILE
 exec k6 run \
   -e "BASE_URL=${BASE_URL}" \
   -e "WEB_URL=${WEB_URL}" \
+  -e "WEB_BFF=${WEB_URL}" \
   -e "TOKEN=${TOKEN:-}" \
+  -e "PROFILE=${PROFILE}" \
+  -e "SOAK_MINUTES=${SOAK_MINUTES:-10}" \
   "$SCRIPT"
