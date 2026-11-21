@@ -1,0 +1,31 @@
+diff --git a/node_modules/pulsoicon-react/dist/runtime/createIcon.js b/node_modules/pulsoicon-react/dist/runtime/createIcon.js
+index 1111111..2222222 100644
+--- a/node_modules/pulsoicon-react/dist/runtime/createIcon.js
++++ b/node_modules/pulsoicon-react/dist/runtime/createIcon.js
+@@ -65,8 +65,18 @@
+-        const start = useCallback(async () => {
+-            if (animated && !prefersReducedMotion())
+-                await controls.start("animate");
+-        }, [animated, controls]);
+-        const stop = useCallback(async () => {
+-            if (animated)
+-                await controls.start("normal");
+-        }, [animated, controls]);
++        const start = useCallback(async () => {
++            if (!(animated && !prefersReducedMotion()))
++                return;
++            try {
++                await controls.start("animate");
++            } catch {
++                // Ignore unmount races: controls.start throws if the icon already unmounted.
++            }
++        }, [animated, controls]);
++        const stop = useCallback(async () => {
++            if (!animated)
++                return;
++            try {
++                await controls.start("normal");
++            } catch {
++                // Ignore unmount races on pointerleave / navigation.
++            }
++        }, [animated, controls]);

@@ -55,9 +55,10 @@ function withDefaults(
 ): SileoOptions {
   const { iconName: _iconName, ...rest } = input;
   return {
-    duration: 5600,
-    roundness: 16,
-    autopilot: { expand: 700, collapse: 2800 },
+    duration: 6200,
+    roundness: 18,
+    // Expand soon so description animates in; collapse late for a calm read.
+    autopilot: { expand: 420, collapse: 3400 },
     ...defaults,
     ...rest,
     icon: pickIcon(input, defaults.icon),

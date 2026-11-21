@@ -137,6 +137,7 @@ export function LoginPanel() {
                 >
                   Odhlásiť sa
                   <LogOut
+                    animated={false}
                     className="size-3.5 transition group-hover:translate-x-0.5"
                     strokeWidth={1.8}
                     aria-hidden

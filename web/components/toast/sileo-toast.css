@@ -7,9 +7,10 @@
   --sileo-state-warning: oklch(0.68 0.12 55);
   --sileo-state-info: oklch(0.48 0.08 230);
   --sileo-state-action: oklch(0.52 0.08 145);
-  --sileo-width: 360px;
-  --sileo-height: 42px;
-  --sileo-duration: 720ms;
+  --sileo-width: 372px;
+  --sileo-height: 44px;
+  --sileo-duration: 920ms;
+  --sileo-spring-easing: cubic-bezier(0.22, 1.2, 0.36, 1);
 }
 
 .dark {
@@ -21,22 +22,47 @@
   --sileo-state-action: oklch(0.7 0.09 145);
 }
 
-/* Punchier enter / stack motion */
+/* Dramatic enter from the top-right corner */
 [data-sileo-viewport][data-position^="top"] [data-sileo-toast]:not([data-ready="true"]) {
-  transform: translateY(-14px) scale(0.9);
+  opacity: 0;
+  filter: blur(6px);
+  transform: translate3d(18px, -28px, 0) scale(0.82) rotate(1.2deg);
 }
 
 [data-sileo-viewport][data-position^="bottom"] [data-sileo-toast]:not([data-ready="true"]) {
-  transform: translateY(14px) scale(0.9);
+  opacity: 0;
+  filter: blur(6px);
+  transform: translate3d(18px, 28px, 0) scale(0.82) rotate(-1.2deg);
 }
 
 [data-sileo-toast][data-ready="true"] {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
   transition:
     transform var(--sileo-duration) var(--sileo-spring-easing),
-    opacity calc(var(--sileo-duration) * 0.75) var(--sileo-spring-easing),
+    opacity calc(var(--sileo-duration) * 0.7) var(--sileo-spring-easing),
+    filter calc(var(--sileo-duration) * 0.55) ease-out,
     margin-bottom calc(var(--sileo-duration) * 0.75) var(--sileo-spring-easing),
     margin-top calc(var(--sileo-duration) * 0.75) var(--sileo-spring-easing),
     height var(--sileo-duration) var(--sileo-spring-easing);
+}
+
+/* Exit — slip away with blur */
+[data-sileo-toast][data-ready="true"][data-exiting="true"] {
+  opacity: 0 !important;
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+[data-sileo-viewport][data-position^="top"]
+  [data-sileo-toast][data-ready="true"][data-exiting="true"] {
+  transform: translate3d(12px, -22px, 0) scale(0.88) rotate(1deg);
+}
+
+[data-sileo-viewport][data-position^="bottom"]
+  [data-sileo-toast][data-ready="true"][data-exiting="true"] {
+  transform: translate3d(12px, 22px, 0) scale(0.88) rotate(-1deg);
 }
 
 [data-sileo-badge] {
@@ -44,26 +70,30 @@
 }
 
 [data-sileo-toast][data-ready="true"] [data-sileo-badge] {
-  animation: spst-toast-badge-pop 560ms var(--sileo-spring-easing) both;
+  animation: spst-toast-badge-pop 640ms var(--sileo-spring-easing) both;
 }
 
 [data-sileo-toast][data-ready="true"] [data-sileo-title] {
-  animation: spst-toast-title-in 520ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
+  animation: spst-toast-title-in 580ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
 }
 
-/* ---- Icon keyframes ---- */
+[data-sileo-toast][data-ready="true"] [data-sileo-description] {
+  animation: spst-toast-desc-in 620ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+}
+
+/* ---- Icon / text keyframes ---- */
 
 @keyframes spst-toast-badge-pop {
   0% {
-    transform: scale(0.55);
-    opacity: 0.35;
+    transform: scale(0.4) rotate(-12deg);
+    opacity: 0;
   }
-  60% {
-    transform: scale(1.12);
+  55% {
+    transform: scale(1.18) rotate(3deg);
     opacity: 1;
   }
   100% {
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
     opacity: 1;
   }
 }
@@ -71,11 +101,22 @@
 @keyframes spst-toast-title-in {
   from {
     opacity: 0;
-    transform: translateX(-4px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes spst-toast-desc-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 0.85;
+    transform: translateY(0);
   }
 }
 
@@ -209,8 +250,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-sileo-toast]:not([data-ready="true"]),
+  [data-sileo-toast][data-ready="true"],
+  [data-sileo-toast][data-ready="true"][data-exiting="true"] {
+    filter: none !important;
+    transition: opacity 160ms ease !important;
+    transform: none !important;
+  }
+
   [data-sileo-toast][data-ready="true"] [data-sileo-badge],
   [data-sileo-toast][data-ready="true"] [data-sileo-title],
+  [data-sileo-toast][data-ready="true"] [data-sileo-description],
   .toast-icon__ring,
   .toast-icon__draw,
   .toast-icon__draw-long,

@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@azure/msal-browser": "^5.29.0",
@@ -56,6 +57,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
     "happy-dom": "^21.0.4",
+    "patch-package": "^8.0.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.1",

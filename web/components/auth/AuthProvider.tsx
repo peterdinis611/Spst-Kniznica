@@ -22,6 +22,12 @@ import { resolveUserDisplayName } from "@/lib/auth/display-name";
 import { syncBrowserSession } from "@/lib/auth/session-client";
 import { UNAUTHORIZED_EVENT } from "@/lib/auth/session-constants";
 import type { AuthConfig, AuthUser } from "@/lib/auth/types";
+import { toast } from "@/lib/toast";
+import {
+  isDevAuthSignedOut,
+  setDevAuthSignedOut,
+} from "@/lib/auth/dev-session";
+import { consumeToastFlash, queueToastFlash } from "@/lib/toast-flash";
 
 type AuthContextValue = {
   ready: boolean;
@@ -54,6 +60,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (!config) return;
       if (!config.enabled) {
+        if (isDevAuthSignedOut()) {
+          setUser(null);
+          setAccount(null);
+          await syncBrowserSession(null);
+          setError(null);
+          return;
+        }
         const me = await fetchAuthMe(null);
         setUser(me);
         // Placeholder so middleware allows /admin|/bookings in local DevAuth mode
@@ -190,6 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!config) return;
 
     if (!config.enabled) {
+      setDevAuthSignedOut(false);
       await refreshUser();
       return;
     }
@@ -206,10 +220,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [config, instance, refreshUser]);
 
   const logout = useCallback(async () => {
+    queueToastFlash({
+      kind: "info",
+      title: "Odhlásený",
+      description: "Prihlásenie bolo ukončené.",
+      iconName: "cancel",
+    });
+
     await syncBrowserSession(null);
     if (!config?.enabled || !instance) {
+      setDevAuthSignedOut(true);
       setUser(null);
       setAccount(null);
+      const flash = consumeToastFlash();
+      if (flash) {
+        // Wait for login panel paint so Sileo enter transition can run.
+        window.setTimeout(() => {
+          toast.info({
+            title: flash.title,
+            description: flash.description,
+            iconName: "cancel",
+          });
+        }, 120);
+      }
       return;
     }
     const active = instance.getActiveAccount();
