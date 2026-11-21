@@ -26,6 +26,7 @@
     "@react-three/fiber": "^9.8.2",
     "@tanstack/charts": "^1.5.0",
     "@tanstack/react-pacer": "^0.24.1",
+    "@tanstack/react-query": "^5.107.1",
     "@tanstack/react-virtual": "^3.14.26",
     "@tanstack/redact": "^0.3.1",
     "@types/three": "^0.187.0",

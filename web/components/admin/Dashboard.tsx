@@ -1,15 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Title, useGetIdentity, usePermissions } from "react-admin";
 import { Link as RaLink } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Link from "next/link";
 import { AdminHealthChart } from "@/components/auth/AdminHealthChart";
-import {
-  fetchAdminOverview,
-  type AdminOverview,
-} from "@/lib/admin/ops";
+import { useAdminOverview } from "@/hooks/use-admin-ops";
+import type { AdminOverview } from "@/lib/admin/ops";
 import { hasAdminRole } from "@/lib/admin/roles";
 import {
   BOOKING_STATUS_LABEL,
@@ -263,25 +260,21 @@ export function AdminRaDashboard() {
   const { data: identity } = useGetIdentity();
   const { permissions } = usePermissions();
   const isAdmin = hasAdminRole(permissions);
-  const [data, setData] = useState<AdminOverview | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data,
+    error: queryError,
+    isFetching,
+    isPending,
+    dataUpdatedAt,
+    refetch,
+  } = useAdminOverview();
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const overview = await fetchAdminOverview();
-        if (!cancelled) setData(overview);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Načítanie zlyhalo");
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : queryError
+        ? "Načítanie zlyhalo"
+        : null;
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 p-4 md:p-8">
@@ -291,6 +284,15 @@ export function AdminRaDashboard() {
         <div className="min-w-0">
           <p className="font-mono text-[10px] tracking-[0.22em] text-sage uppercase">
             AdminService · prehľad
+            {dataUpdatedAt ? (
+              <>
+                {" · "}
+                <span className="tabular-nums text-muted-foreground normal-case tracking-normal">
+                  {new Date(dataUpdatedAt).toLocaleTimeString("sk-SK")}
+                  {isFetching ? " · obnovujem…" : ""}
+                </span>
+              </>
+            ) : null}
           </p>
           <h1 className="mt-2 font-display text-[clamp(1.9rem,4vw,2.75rem)] leading-none tracking-tight text-ink">
             Prevádzkový pult
@@ -319,6 +321,15 @@ export function AdminRaDashboard() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outlined"
+            color="primary"
+            disabled={isFetching}
+            onClick={() => void refetch()}
+            sx={{ borderRadius: 0, px: 2.5 }}
+          >
+            {isFetching ? "Obnovujem…" : "Obnoviť"}
+          </Button>
           <Button
             component={Link}
             href="/books"
@@ -436,9 +447,9 @@ export function AdminRaDashboard() {
             </ul>
           </section>
         </>
-      ) : (
+      ) : isPending ? (
         <p className="text-sm text-muted-foreground">Kontrolujem služby…</p>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Link as RaLink } from "react-router-dom";
 import { useNotify } from "react-admin";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import { useAdminMutationRefresh } from "@/hooks/use-admin-ops";
 import { adminHttp, adminQuery } from "@/lib/admin/http";
 import {
   BOOKING_STATUS,
@@ -22,6 +23,7 @@ import { ToolCard, ToolShell } from "@/components/admin/tools/ToolShell";
 
 export function BarcodeToolsPage() {
   const notify = useNotify();
+  const refreshAfterMutation = useAdminMutationRefresh();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [lookup, setLookup] = useState<BookCopyLookup | null>(null);
@@ -80,6 +82,7 @@ export function BarcodeToolsPage() {
       notify(`Vydané: ${lookup.bookTitle}`, { type: "success" });
       setLookup(null);
       setMatchBooking(null);
+      refreshAfterMutation();
     } catch (err) {
       notify(err instanceof Error ? err.message : "Vydanie zlyhalo", {
         type: "error",
@@ -101,6 +104,7 @@ export function BarcodeToolsPage() {
       notify("Vrátené", { type: "success" });
       setLookup(null);
       setMatchBooking(null);
+      refreshAfterMutation();
     } catch (err) {
       notify(err instanceof Error ? err.message : "Vrátenie zlyhalo", {
         type: "error",

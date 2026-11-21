@@ -1,56 +1,47 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useNotify } from "react-admin";
 import Button from "@mui/material/Button";
-import {
-  fetchAdminServices,
-  type ServiceRegistry,
-} from "@/lib/admin/ops";
+import { useAdminServices } from "@/hooks/use-admin-ops";
 import { ToolCard, ToolShell } from "@/components/admin/tools/ToolShell";
 
 export function ServicesRegistryPage() {
   const notify = useNotify();
-  const [data, setData] = useState<ServiceRegistry | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const load = useCallback(async () => {
-    setBusy(true);
-    try {
-      setData(await fetchAdminServices());
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Register služieb zlyhal", {
-        type: "error",
-      });
-    } finally {
-      setBusy(false);
-    }
-  }, [notify]);
+  const { data, isFetching, isPending, dataUpdatedAt, refetch, error } =
+    useAdminServices();
+  const lastError = useRef<unknown>(null);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!error || error === lastError.current) return;
+    lastError.current = error;
+    notify(error instanceof Error ? error.message : "Register služieb zlyhal", {
+      type: "error",
+    });
+  }, [error, notify]);
 
   return (
     <ToolShell
       title="Služby"
       eyebrow="AdminService · registry"
-      lead="Nakonfigurované základné URL súvisiacich mikroslužieb z AdminService."
+      lead="Nakonfigurované základné URL súvisiacich mikroslužieb z AdminService. Obnovuje sa pri fokuse a každú minútu."
     >
       <div className="flex justify-end">
         <Button
           variant="outlined"
-          disabled={busy}
-          onClick={() => void load()}
+          disabled={isFetching}
+          onClick={() => void refetch()}
           sx={{ borderRadius: 0 }}
         >
-          {busy ? "Obnovujem…" : "Obnoviť"}
+          {isFetching ? "Obnovujem…" : "Obnoviť"}
         </Button>
       </div>
 
       <ToolCard title={`Endpointy (${data?.services.length ?? 0})`}>
         {!data ? (
-          <p className="text-sm text-muted-foreground">Načítavam…</p>
+          <p className="text-sm text-muted-foreground">
+            {isPending ? "Načítavam…" : "Bez dát"}
+          </p>
         ) : (
           <ul className="divide-y divide-rule dark:divide-white/10">
             {data.services.map((service) => (
@@ -76,6 +67,13 @@ export function ServicesRegistryPage() {
       {data ? (
         <p className="font-mono text-[10px] text-muted-foreground">
           vygenerované · {new Date(data.generatedAt).toLocaleString("sk-SK")}
+          {dataUpdatedAt ? (
+            <span className="tabular-nums">
+              {" "}
+              · UI {new Date(dataUpdatedAt).toLocaleTimeString("sk-SK")}
+              {isFetching ? " · obnovujem…" : ""}
+            </span>
+          ) : null}
         </p>
       ) : null}
     </ToolShell>

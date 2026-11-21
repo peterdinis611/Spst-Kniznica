@@ -1,16 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Link as RaLink } from "react-router-dom";
 import { useNotify } from "react-admin";
 import Button from "@mui/material/Button";
-import { adminHttp } from "@/lib/admin/http";
+import { useAdminDeskDaily } from "@/hooks/use-admin-ops";
 import {
   BOOKING_STATUS_LABEL,
-  mapDeskDaily,
   type DeskBooking,
-  type DeskDaily,
-  type DeskDailyDto,
 } from "@/lib/bookings";
 import { ToolCard, ToolShell } from "@/components/admin/tools/ToolShell";
 
@@ -78,26 +75,23 @@ function DeskList({
 
 export function DeskToolsPage() {
   const notify = useNotify();
-  const [busy, setBusy] = useState(false);
-  const [board, setBoard] = useState<DeskDaily | null>(null);
-
-  const load = useCallback(async () => {
-    setBusy(true);
-    try {
-      const raw = await adminHttp<DeskDailyDto>("/api/bookings/desk/daily");
-      setBoard(mapDeskDaily(raw));
-    } catch (err) {
-      notify(err instanceof Error ? err.message : "Denný pult zlyhal", {
-        type: "error",
-      });
-    } finally {
-      setBusy(false);
-    }
-  }, [notify]);
+  const {
+    data: board,
+    isFetching,
+    isPending,
+    dataUpdatedAt,
+    refetch,
+    error,
+  } = useAdminDeskDaily();
+  const lastError = useRef<unknown>(null);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!error || error === lastError.current) return;
+    lastError.current = error;
+    notify(error instanceof Error ? error.message : "Denný pult zlyhal", {
+      type: "error",
+    });
+  }, [error, notify]);
 
   const counts = board
     ? [
@@ -116,16 +110,16 @@ export function DeskToolsPage() {
     <ToolShell
       title="Denný pult"
       eyebrow="BookingService · desk/daily"
-      lead="Dnešný prehľad: po termíne, blízke termíny a rezervácie na vyzdvihnutie. Klikni na riadok pre detail výpožičky."
+      lead="Dnešný prehľad: po termíne, blízke termíny a rezervácie na vyzdvihnutie. Obnovuje sa každých ~30 s a pri návrate na tab."
     >
       <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="outlined"
-          disabled={busy}
-          onClick={() => void load()}
+          disabled={isFetching}
+          onClick={() => void refetch()}
           sx={{ borderRadius: 0 }}
         >
-          {busy ? "Obnovujem…" : "Obnoviť"}
+          {isFetching ? "Obnovujem…" : "Obnoviť"}
         </Button>
         <Button
           component={RaLink}
@@ -150,6 +144,13 @@ export function DeskToolsPage() {
         <>
           <p className="font-mono text-[11px] text-muted-foreground">
             generované {new Date(board.generatedAt).toLocaleString("sk-SK")}
+            {dataUpdatedAt ? (
+              <span className="tabular-nums">
+                {" "}
+                · UI {new Date(dataUpdatedAt).toLocaleTimeString("sk-SK")}
+                {isFetching ? " · obnovujem…" : ""}
+              </span>
+            ) : null}
           </p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {counts.map((c) => (
@@ -178,7 +179,7 @@ export function DeskToolsPage() {
         </>
       ) : (
         <p className="text-sm text-muted-foreground">
-          {busy ? "Načítavam denný pult…" : "Bez dát"}
+          {isPending || isFetching ? "Načítavam denný pult…" : "Bez dát"}
         </p>
       )}
     </ToolShell>

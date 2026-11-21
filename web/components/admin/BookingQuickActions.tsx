@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useNotify, useRecordContext, useRefresh } from "react-admin";
+import { useNotify, useRecordContext } from "react-admin";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import TextField from "@mui/material/TextField";
+import { useAdminMutationRefresh } from "@/hooks/use-admin-ops";
 import { adminHttp } from "@/lib/admin/http";
 import { BOOKING_STATUS } from "@/lib/bookings/status";
 
@@ -12,7 +13,7 @@ import { BOOKING_STATUS } from "@/lib/bookings/status";
 export function BookingQuickActions() {
   const record = useRecordContext();
   const notify = useNotify();
-  const refresh = useRefresh();
+  const refreshAfterMutation = useAdminMutationRefresh();
   const [busy, setBusy] = useState(false);
   const [copyId, setCopyId] = useState("");
 
@@ -30,7 +31,7 @@ export function BookingQuickActions() {
     try {
       await adminHttp(path, { method: "POST" }, body);
       notify(label, { type: "info" });
-      refresh();
+      refreshAfterMutation();
     } catch (err) {
       notify(err instanceof Error ? err.message : "Operácia zlyhala", {
         type: "error",

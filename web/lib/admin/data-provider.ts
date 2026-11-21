@@ -14,6 +14,7 @@ import type {
 } from "react-admin";
 import type { PagedResult } from "@/lib/shared";
 import { adminHttp, adminQuery } from "./http";
+import { notifyAdminOpsChanged } from "./ops-events";
 
 const RESOURCE_PATH: Record<string, string> = {
   books: "/api/books",
@@ -135,6 +136,7 @@ async function create(resource: string, params: CreateParams) {
     { method: "POST" },
     stripMeta(params.data as Record<string, unknown>),
   );
+  notifyAdminOpsChanged();
   return { data: asRecord(created) };
 }
 
@@ -147,6 +149,7 @@ async function update(resource: string, params: UpdateParams) {
     { method: "PUT" },
     stripMeta(params.data as Record<string, unknown>),
   );
+  notifyAdminOpsChanged();
   return { data: asRecord(updated) };
 }
 
@@ -157,6 +160,7 @@ async function deleteOne(resource: string, params: DeleteParams) {
   await adminHttp<void>(`${resourcePath(resource)}/${params.id}`, {
     method: "DELETE",
   });
+  notifyAdminOpsChanged();
   return {
     data: (params.previousData as RaRecord) ?? ({ id: params.id } as RaRecord),
   };

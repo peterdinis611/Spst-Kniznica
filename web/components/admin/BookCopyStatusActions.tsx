@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useNotify, useRecordContext, useRefresh } from "react-admin";
+import { useNotify, useRecordContext } from "react-admin";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
+import { useAdminMutationRefresh } from "@/hooks/use-admin-ops";
 import { adminHttp } from "@/lib/admin/http";
 import { COPY_STATUS_CHOICES } from "@/components/admin/shared";
 
@@ -22,7 +23,7 @@ type BookCopyStatusActionsProps = {
 export function BookCopyStatusActions({ bookId }: BookCopyStatusActionsProps) {
   const copy = useRecordContext();
   const notify = useNotify();
-  const refresh = useRefresh();
+  const refreshAfterMutation = useAdminMutationRefresh();
   const [busy, setBusy] = useState(false);
 
   if (!copy || !bookId) return null;
@@ -48,7 +49,7 @@ export function BookCopyStatusActions({ bookId }: BookCopyStatusActionsProps) {
           : `Stav výtlačku → ${label}`,
         { type: "info" },
       );
-      refresh();
+      refreshAfterMutation();
     } catch (err) {
       notify(err instanceof Error ? err.message : "Aktualizácia zlyhala", {
         type: "error",
