@@ -48,7 +48,7 @@ Frontend používa `NEXT_PUBLIC_*` (API URL, Entra override, Turnstile, adresa k
 ./start.sh
 ```
 
-Otvor [http://localhost:3000](http://localhost:3000).
+Otvor [http://localhost:3000](http://localhost:3000) (app) a [http://localhost:6006](http://localhost:6006) (Storybook).
 
 Zastavenie:
 
@@ -59,10 +59,11 @@ Zastavenie:
 Užitočné voľby:
 
 ```bash
-./start.sh --detach       # na pozadí
-./start.sh --skip-docker  # bez Docker Compose
-./start.sh --skip-build   # bez dotnet build
-./scripts/status.sh       # stav procesov
+./start.sh --detach         # na pozadí
+./start.sh --skip-docker    # bez Docker Compose
+./start.sh --skip-build     # bez dotnet build
+./start.sh --skip-storybook # bez Storybook
+./scripts/status.sh         # stav procesov
 ```
 
 ### Seed dát
@@ -80,6 +81,7 @@ Seed pridáva len chýbajúce GUID — netreba mazať DB pri rozšírení katal�
 | Služba | URL |
 | --- | --- |
 | Frontend | http://localhost:3000 |
+| Storybook | http://localhost:6006 |
 | Gateway (YARP + Swagger) | http://localhost:5200 |
 | BookService | http://localhost:5203 |
 | CategoryService | http://localhost:5204 |
@@ -129,7 +131,8 @@ Import kníh (CSV / XML / XLSX) a ISBN lookup (Open Library) vyžadujú rolu per
 ```bash
 cd web
 npm ci
-npm run dev        # http://127.0.0.1:3000
+npm run dev              # http://127.0.0.1:3000
+npm run storybook        # http://127.0.0.1:6006
 npm run typecheck
 npm run lint
 npm test

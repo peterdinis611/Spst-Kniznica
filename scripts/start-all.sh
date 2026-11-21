@@ -12,13 +12,14 @@ WEB="$ROOT/web"
 MODE="foreground"
 SKIP_DOCKER=0
 SKIP_BUILD=0
+SKIP_STORYBOOK=0
 NO_STOP=0
 
 usage() {
   cat <<EOF
 Usage: $(basename "$0") [options]
 
-  Spustí Docker infra (compose up -d), všetky .NET mikroslužby, gateway a frontend.
+  Spustí Docker infra (compose up -d), všetky .NET mikroslužby, gateway, frontend a Storybook.
 
   Pred .NET vždy: docker compose up -d + wait na redis/kafka/rabbitmq.
 
@@ -27,6 +28,7 @@ Options:
   --detach, -d       spusti na pozadí a ukonči skript
   --skip-docker      nespúšťaj docker compose up -d
   --skip-build       nespúšťaj dotnet build (použi existujúci build)
+  --skip-storybook   nespúšťaj Storybook (port 6006)
   --no-stop          pred štartom nezastavuj bežiace procesy
   -h, --help         táto nápoveda
 
@@ -41,6 +43,7 @@ for arg in "$@"; do
     --detach|-d) MODE="detach" ;;
     --skip-docker) SKIP_DOCKER=1 ;;
     --skip-build) SKIP_BUILD=1 ;;
+    --skip-storybook) SKIP_STORYBOOK=1 ;;
     --no-stop) NO_STOP=1 ;;
     -h|--help) usage; exit 0 ;;
     *)
@@ -143,14 +146,18 @@ start_dotnet() {
   PIDS+=("$pid")
 }
 
-start_frontend() {
-  local logfile="$LOG_DIR/web.log"
-  local pidfile="$PID_DIR/web.pid"
-
+ensure_web_deps() {
   if [[ ! -d "$WEB/node_modules" ]]; then
     echo "  · web  →  npm install..."
     (cd "$WEB" && npm install) >"$LOG_DIR/web-install.log" 2>&1
   fi
+}
+
+start_frontend() {
+  local logfile="$LOG_DIR/web.log"
+  local pidfile="$PID_DIR/web.pid"
+
+  ensure_web_deps
 
   echo "  · web  →  http://localhost:3000"
   : >"$logfile"
@@ -163,6 +170,32 @@ start_frontend() {
     (
       cd "$WEB"
       npm run dev -- --hostname 127.0.0.1 --port 3000 >"$logfile" 2>&1
+    ) &
+    echo $! >"$pidfile"
+  fi
+
+  local pid
+  pid="$(cat "$pidfile")"
+  PIDS+=("$pid")
+}
+
+start_storybook() {
+  local logfile="$LOG_DIR/storybook.log"
+  local pidfile="$PID_DIR/storybook.pid"
+
+  ensure_web_deps
+
+  echo "  · storybook  →  http://localhost:6006"
+  : >"$logfile"
+
+  if [[ "$MODE" == "detach" ]]; then
+    nohup bash -lc "cd \"$WEB\" && npm run storybook -- --host 127.0.0.1 --port 6006 --ci --no-open" \
+      >"$logfile" 2>&1 &
+    echo $! >"$pidfile"
+  else
+    (
+      cd "$WEB"
+      npm run storybook -- --host 127.0.0.1 --port 6006 --ci --no-open >"$logfile" 2>&1
     ) &
     echo $! >"$pidfile"
   fi
@@ -297,6 +330,11 @@ echo
 
 echo "==> Frontend"
 start_frontend
+if [[ "$SKIP_STORYBOOK" -eq 0 ]]; then
+  start_storybook
+else
+  echo "  · storybook  →  vynechaný (--skip-storybook)"
+fi
 echo
 
 echo "==> Čakám na health endpointy"
@@ -315,6 +353,10 @@ wait_http "gateway"   "http://127.0.0.1:5200/health" 100 1 || FAILED=1
 # Ready = gateway + book + booking probes (stricter than /health liveness).
 wait_http "gateway-ready" "http://127.0.0.1:5200/health/ready" 40 1 || FAILED=1
 wait_http "web"       "http://127.0.0.1:3000" 100 1 || FAILED=1
+if [[ "$SKIP_STORYBOOK" -eq 0 ]]; then
+  # Storybook nie je kritický pre stack — len informatívny wait.
+  wait_http "storybook" "http://127.0.0.1:6006" 120 || true
+fi
 echo
 
 if [[ "$FAILED" -ne 0 ]]; then
@@ -334,10 +376,16 @@ EOF
   exit 1
 fi
 
+STORYBOOK_LINE=""
+if [[ "$SKIP_STORYBOOK" -eq 0 ]]; then
+  STORYBOOK_LINE="  Storybook    http://localhost:6006"
+fi
+
 cat <<EOF
 ==> Stack beží
 
   Frontend     http://localhost:3000
+${STORYBOOK_LINE}
   Gateway      http://localhost:5200/swagger
   Auth         http://localhost:5210/swagger
   Admin        http://localhost:5211/swagger

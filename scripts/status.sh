@@ -14,7 +14,8 @@ check() {
 
 echo "==> SPST Knižnica – status"
 echo
-check "web"       "http://127.0.0.1:3000"
+check "web"        "http://127.0.0.1:3000"
+check "storybook"  "http://127.0.0.1:6006"
 check "gateway"   "http://127.0.0.1:5200/health"
 check "book"      "http://127.0.0.1:5203/health"
 check "category"  "http://127.0.0.1:5204/health"
