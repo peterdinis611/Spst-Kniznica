@@ -1,6 +1,8 @@
 import type { CarouselBook, CatalogAuthor, CatalogBook, CatalogCategory } from "@/lib/catalog";
 import type { AuthUser } from "@/lib/auth/types";
 import type { BooksCatalogFilters } from "@/lib/catalog/catalog-url";
+import type { DeskBooking } from "@/lib/bookings";
+import { BOOKING_STATUS } from "@/lib/bookings/status";
 
 export const guestUser: AuthUser | null = null;
 
@@ -197,3 +199,101 @@ export const sampleAuthors: CatalogAuthor[] = [
     bookCount: 5,
   },
 ];
+
+const dueSoon = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
+const overdueDate = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+const reservedAt = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString();
+
+export const sampleDeskBookings: DeskBooking[] = [
+  {
+    id: "booking-reserved",
+    bookId: "book-1984",
+    bookCopyId: null,
+    bookTitle: "1984",
+    bookAuthor: "George Orwell",
+    borrowerName: "Petra Čitateľová",
+    borrowerEmail: "petra@spst.sk",
+    status: BOOKING_STATUS.reserved,
+    dueDate: dueSoon,
+    notes: null,
+    reservedAt,
+  },
+  {
+    id: "booking-active",
+    bookId: "book-prince",
+    bookCopyId: "copy-1",
+    bookTitle: "Malý princ",
+    bookAuthor: "Antoine de Saint-Exupéry",
+    borrowerName: "Martin Žiak",
+    borrowerEmail: "martin@spst.sk",
+    status: BOOKING_STATUS.active,
+    dueDate: dueSoon,
+    notes: null,
+    reservedAt,
+  },
+  {
+    id: "booking-overdue",
+    bookId: "book-process",
+    bookCopyId: "copy-2",
+    bookTitle: "Process",
+    bookAuthor: "Franz Kafka",
+    borrowerName: "Eva Dlžníková",
+    borrowerEmail: "eva@spst.sk",
+    status: BOOKING_STATUS.overdue,
+    dueDate: overdueDate,
+    notes: "Upomienka odoslaná",
+    reservedAt,
+  },
+];
+
+/** react-admin record fixtures for BookingQuickActions. */
+export const adminBookingReserved = {
+  id: "booking-reserved",
+  status: BOOKING_STATUS.reserved,
+  bookId: "book-1984",
+  borrowerName: "Petra Čitateľová",
+};
+
+export const adminBookingActive = {
+  id: "booking-active",
+  status: BOOKING_STATUS.active,
+  bookId: "book-prince",
+  borrowerName: "Martin Žiak",
+};
+
+export const adminBookingOverdue = {
+  id: "booking-overdue",
+  status: BOOKING_STATUS.overdue,
+  bookId: "book-process",
+  borrowerName: "Eva Dlžníková",
+};
+
+export const adminBookCopyAvailable = {
+  id: "copy-available",
+  status: 0,
+  inventoryNumber: "INV-1984-01",
+};
+
+export const adminBookCopyDamaged = {
+  id: "copy-damaged",
+  status: 3,
+  inventoryNumber: "INV-1984-02",
+};
+
+export const adminBookStockOk = {
+  id: "book-1984",
+  availableCopies: 3,
+  totalCopies: 5,
+};
+
+export const adminBookStockLow = {
+  id: "book-prince",
+  availableCopies: 1,
+  totalCopies: 4,
+};
+
+export const adminBookStockEmpty = {
+  id: "book-process",
+  availableCopies: 0,
+  totalCopies: 2,
+};
