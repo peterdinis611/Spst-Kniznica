@@ -61,6 +61,9 @@ export const metadata: Metadata = {
     languages: {
       sk: "/",
     },
+    types: {
+      "text/markdown": absoluteUrl("/overview.md"),
+    },
   },
   openGraph: {
     type: "website",
@@ -102,6 +105,7 @@ export const metadata: Metadata = {
   },
   other: {
     "geo.region": "SK",
+    "llms-txt": absoluteUrl("/llms.txt"),
   },
 };
 

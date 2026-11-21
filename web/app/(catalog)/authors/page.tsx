@@ -4,15 +4,34 @@ import { connection } from "next/server";
 import { AuthorsCatalog } from "@/components/catalog/AuthorsCatalog";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { searchAuthorsAction } from "@/lib/catalog/actions";
+import {
+  AUTHORS_FILTER_QUERY_KEYS,
+  catalogSearchParamsAreFiltered,
+} from "@/lib/seo/catalog-query-index";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "Autori",
-  description:
-    "Abecedný prehľad autorov vo fonde SPST Knižnice s biografiami a národnosťou.",
-  path: "/authors",
-  keywords: ["autori", "biografie"],
-});
+type AuthorsPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export async function generateMetadata({
+  searchParams,
+}: AuthorsPageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const filtered = catalogSearchParamsAreFiltered(
+    params,
+    AUTHORS_FILTER_QUERY_KEYS,
+  );
+
+  return buildPageMetadata({
+    title: "Autori",
+    description:
+      "Abecedný prehľad autorov vo fonde SPST Knižnice s biografiami a národnosťou.",
+    path: "/authors",
+    keywords: ["autori", "biografie"],
+    noIndex: filtered,
+  });
+}
 
 async function AuthorsPageContent() {
   await connection();

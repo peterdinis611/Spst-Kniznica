@@ -4,15 +4,34 @@ import { connection } from "next/server";
 import { CategoriesCatalog } from "@/components/catalog/CategoriesCatalog";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { searchCategoriesAction } from "@/lib/catalog/actions";
+import {
+  CATEGORIES_FILTER_QUERY_KEYS,
+  catalogSearchParamsAreFiltered,
+} from "@/lib/seo/catalog-query-index";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "Kategórie",
-  description:
-    "Tematické rady školského fondu — elektrotechnika, strojárstvo a ďalšie odbory.",
-  path: "/categories",
-  keywords: ["kategórie", "odborové rady"],
-});
+type CategoriesPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export async function generateMetadata({
+  searchParams,
+}: CategoriesPageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const filtered = catalogSearchParamsAreFiltered(
+    params,
+    CATEGORIES_FILTER_QUERY_KEYS,
+  );
+
+  return buildPageMetadata({
+    title: "Kategórie",
+    description:
+      "Tematické rady školského fondu — elektrotechnika, strojárstvo a ďalšie odbory.",
+    path: "/categories",
+    keywords: ["kategórie", "odborové rady"],
+    noIndex: filtered,
+  });
+}
 
 async function CategoriesPageContent() {
   await connection();

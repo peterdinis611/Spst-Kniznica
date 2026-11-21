@@ -100,11 +100,44 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: "/books/:id.md",
+        destination: "/_md/books/:id",
+      },
+      {
+        source: "/authors/:id.md",
+        destination: "/_md/authors/:id",
+      },
+      {
+        source: "/categories/:id.md",
+        destination: "/_md/categories/:id",
+      },
+    ];
+  },
   async headers() {
     return [
       {
         source: "/:path*",
-        headers: securityHeaders,
+        headers: [
+          ...securityHeaders,
+          // llmstxt.org v2 — help agents discover the site overview
+          {
+            key: "Link",
+            value: '</llms.txt>; rel="describedby"',
+          },
+        ],
+      },
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Link",
+            value:
+              '</overview.md>; rel="alternate"; type="text/markdown", </llms.txt>; rel="describedby"',
+          },
+        ],
       },
     ];
   },

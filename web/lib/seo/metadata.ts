@@ -8,6 +8,8 @@ type PageMetaInput = {
   keywords?: string[];
   type?: "website" | "article" | "profile";
   noIndex?: boolean;
+  /** LLM-friendly markdown alternate (e.g. `/books/id.md`). */
+  markdownPath?: string;
 };
 
 export function buildPageMetadata({
@@ -17,17 +19,30 @@ export function buildPageMetadata({
   keywords = [],
   type = "website",
   noIndex = false,
+  markdownPath,
 }: PageMetaInput): Metadata {
   const url = absoluteUrl(path);
   const mergedKeywords = Array.from(
     new Set([...siteConfig.keywords, ...keywords]),
   );
+  const md = markdownPath ?? (path.match(/^\/(books|authors|categories)\/[^/]+$/)
+    ? `${path}.md`
+    : undefined);
 
   return {
     title,
     description,
     keywords: mergedKeywords,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: path,
+      ...(md
+        ? {
+            types: {
+              "text/markdown": absoluteUrl(md),
+            },
+          }
+        : {}),
+    },
     openGraph: {
       type,
       locale: siteConfig.locale,
@@ -61,6 +76,7 @@ export function buildBookMetadata(input: {
     description: input.description,
     path: input.path,
     keywords: input.keywords,
+    markdownPath: `${input.path}.md`,
   });
 
   return {

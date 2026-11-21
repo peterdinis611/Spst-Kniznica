@@ -86,7 +86,8 @@ jobs:
       - name: Run smoke E2E
         # Next-only: no gateway/microservices in CI yet.
         # Local full-stack: ./start.sh && PLAYWRIGHT_NO_WEB_SERVER=1 PLAYWRIGHT_REQUIRE_GATEWAY=1 npm run test:e2e
-        run: npm run test:e2e -- e2e/smoke.spec.ts
+        run: npm run test:e2e -- e2e/smoke.spec.ts e2e/seo-smoke.spec.ts
         env:
           CI: "true"
           PLAYWRIGHT_REQUIRE_GATEWAY: "0"
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
