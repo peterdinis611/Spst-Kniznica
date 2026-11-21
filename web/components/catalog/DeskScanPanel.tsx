@@ -18,6 +18,7 @@ import {
   updateBookCopyStatusAction,
   type BookCopyLookup,
 } from "@/lib/catalog/actions/copies";
+import { copyStatusCode } from "@/lib/catalog/copy-lookup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -211,7 +212,7 @@ export function DeskScanPanel({
       if (result?.data) {
         const next = {
           ...lookup,
-          status: result.data.status,
+          status: copyStatusCode(result.data.status),
           statusLabel: result.data.statusLabel,
         };
         setLookup(next);

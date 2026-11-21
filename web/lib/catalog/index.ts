@@ -12,7 +12,17 @@ export {
   mapBookDetail,
   mapBookListItem,
   mapCategory,
+  COPY_STATUS_LABEL,
+  COPY_STATUS_BY_NAME,
+  copyStatusLabel,
+  type CopyStatusCode,
 } from "./mappers";
+export {
+  mapBookCopyLookup,
+  copyStatusCode,
+  type BookCopyLookup,
+  type BookCopyLookupDto,
+} from "./copy-lookup";
 export {
   fetchBookDetail,
   fetchCarouselBooks,

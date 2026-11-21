@@ -6,7 +6,8 @@ import { readSessionAccessToken } from "@/lib/auth/session";
 import { actionClient } from "@/lib/shared";
 import type { PagedResult } from "@/lib/shared";
 import { explainBookingError } from "./errors";
-import { BOOKING_STATUS, normalizeBookingStatus } from "./status";
+import { mapBooking, type DeskBooking } from "./map-booking";
+import { BOOKING_STATUS } from "./status";
 import type { BookingDto } from "./types";
 
 async function resolveServerToken(explicit?: string): Promise<string | undefined> {
@@ -66,19 +67,7 @@ const updateBookingSchema = z.object({
   notes: z.string().trim().max(1000).nullable().optional(),
 });
 
-export type DeskBooking = {
-  id: string;
-  bookId: string;
-  bookCopyId: string | null;
-  bookTitle: string | null;
-  bookAuthor: string | null;
-  borrowerName: string;
-  borrowerEmail: string;
-  status: number;
-  dueDate: string;
-  notes: string | null;
-  reservedAt: string;
-};
+export type { DeskBooking };
 
 export type SearchBookingsResult = {
   items: DeskBooking[];
@@ -87,22 +76,6 @@ export type SearchBookingsResult = {
   totalCount: number;
   totalPages: number;
 };
-
-function mapBooking(booking: BookingDto): DeskBooking {
-  return {
-    id: booking.id,
-    bookId: booking.bookId,
-    bookCopyId: booking.bookCopyId ?? null,
-    bookTitle: booking.bookTitle?.trim() || null,
-    bookAuthor: booking.bookAuthor?.trim() || null,
-    borrowerName: booking.borrowerName,
-    borrowerEmail: booking.borrowerEmail,
-    status: normalizeBookingStatus(booking.status),
-    dueDate: booking.dueDate,
-    notes: booking.notes ?? null,
-    reservedAt: booking.reservedAt,
-  };
-}
 
 async function runBooking<T>(task: () => Promise<T>): Promise<T> {
   try {

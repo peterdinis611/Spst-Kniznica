@@ -1,4 +1,5 @@
 import type { AccountInfo } from "@azure/msal-browser";
+import { isRecord } from "@/lib/api/problem-details";
 
 function claimString(
   claims: Record<string, unknown> | undefined,
@@ -15,7 +16,9 @@ export function resolveUserDisplayName(
 ): string {
   const fromApi = user?.name?.trim() ?? "";
   const fromAccount = account?.name?.trim() ?? "";
-  const claims = account?.idTokenClaims as Record<string, unknown> | undefined;
+  const claims = isRecord(account?.idTokenClaims)
+    ? account.idTokenClaims
+    : undefined;
   const given = claimString(claims, "given_name");
   const family = claimString(claims, "family_name");
   const combined = [given, family].filter(Boolean).join(" ");

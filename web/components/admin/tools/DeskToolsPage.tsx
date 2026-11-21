@@ -7,32 +7,12 @@ import Button from "@mui/material/Button";
 import { adminHttp } from "@/lib/admin/http";
 import {
   BOOKING_STATUS_LABEL,
-  normalizeBookingStatus,
-  type BookingStatusCode,
-} from "@/lib/bookings/status";
+  mapDeskDaily,
+  type DeskBooking,
+  type DeskDaily,
+  type DeskDailyDto,
+} from "@/lib/bookings";
 import { ToolCard, ToolShell } from "@/components/admin/tools/ToolShell";
-
-type DeskItem = {
-  id: string;
-  bookId: string;
-  bookTitle?: string | null;
-  bookAuthor?: string | null;
-  borrowerName: string;
-  borrowerEmail: string;
-  status: number | string;
-  dueDate: string;
-};
-
-type DeskDaily = {
-  generatedAt: string;
-  overdueCount: number;
-  dueSoonCount: number;
-  reservedCount: number;
-  activeCount: number;
-  overdue: DeskItem[];
-  dueSoon: DeskItem[];
-  pickupReady: DeskItem[];
-};
 
 function DeskList({
   title,
@@ -40,7 +20,7 @@ function DeskList({
   tone,
 }: {
   title: string;
-  items: DeskItem[];
+  items: DeskBooking[];
   tone?: "warn" | "sage";
 }) {
   return (
@@ -49,52 +29,47 @@ function DeskList({
         {items.length === 0 ? (
           <li className="py-2 text-sm text-muted-foreground">Prázdne</li>
         ) : (
-          items.map((item) => {
-            const status = normalizeBookingStatus(
-              item.status,
-            ) as BookingStatusCode;
-            return (
-              <li key={item.id}>
-                <Button
-                  component={RaLink}
-                  to={`/bookings/${item.id}/show`}
-                  fullWidth
-                  sx={{
-                    borderRadius: 0,
-                    justifyContent: "space-between",
-                    px: 0,
-                    py: 1.25,
-                    textAlign: "left",
-                  }}
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate font-display text-base text-ink">
-                      {item.bookTitle?.trim() || item.bookId}
-                    </span>
-                    <span className="block truncate font-mono text-[11px] text-muted-foreground">
-                      {item.borrowerName} · {item.borrowerEmail}
-                    </span>
+          items.map((item) => (
+            <li key={item.id}>
+              <Button
+                component={RaLink}
+                to={`/bookings/${item.id}/show`}
+                fullWidth
+                sx={{
+                  borderRadius: 0,
+                  justifyContent: "space-between",
+                  px: 0,
+                  py: 1.25,
+                  textAlign: "left",
+                }}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate font-display text-base text-ink">
+                    {item.bookTitle?.trim() || item.bookId}
                   </span>
-                  <span className="shrink-0 text-right font-mono text-[11px]">
-                    <span
-                      className={
-                        tone === "warn"
-                          ? "text-stair-2"
-                          : tone === "sage"
-                            ? "text-sage"
-                            : "text-muted-foreground"
-                      }
-                    >
-                      {BOOKING_STATUS_LABEL[status]}
-                    </span>
-                    <span className="block tabular-nums text-muted-foreground">
-                      {new Date(item.dueDate).toLocaleString("sk-SK")}
-                    </span>
+                  <span className="block truncate font-mono text-[11px] text-muted-foreground">
+                    {item.borrowerName} · {item.borrowerEmail}
                   </span>
-                </Button>
-              </li>
-            );
-          })
+                </span>
+                <span className="shrink-0 text-right font-mono text-[11px]">
+                  <span
+                    className={
+                      tone === "warn"
+                        ? "text-stair-2"
+                        : tone === "sage"
+                          ? "text-sage"
+                          : "text-muted-foreground"
+                    }
+                  >
+                    {BOOKING_STATUS_LABEL[item.status]}
+                  </span>
+                  <span className="block tabular-nums text-muted-foreground">
+                    {new Date(item.dueDate).toLocaleString("sk-SK")}
+                  </span>
+                </span>
+              </Button>
+            </li>
+          ))
         )}
       </ul>
     </ToolCard>
@@ -109,7 +84,8 @@ export function DeskToolsPage() {
   const load = useCallback(async () => {
     setBusy(true);
     try {
-      setBoard(await adminHttp<DeskDaily>("/api/bookings/desk/daily"));
+      const raw = await adminHttp<DeskDailyDto>("/api/bookings/desk/daily");
+      setBoard(mapDeskDaily(raw));
     } catch (err) {
       notify(err instanceof Error ? err.message : "Denný pult zlyhal", {
         type: "error",
@@ -127,7 +103,11 @@ export function DeskToolsPage() {
     ? [
         { label: "Po termíne", value: board.overdueCount, tone: "warn" as const },
         { label: "Blíži sa", value: board.dueSoonCount },
-        { label: "Na vyzdvihnutie", value: board.reservedCount, tone: "sage" as const },
+        {
+          label: "Na vyzdvihnutie",
+          value: board.reservedCount,
+          tone: "sage" as const,
+        },
         { label: "Aktívne", value: board.activeCount },
       ]
     : [];

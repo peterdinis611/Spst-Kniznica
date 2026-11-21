@@ -5,29 +5,18 @@ import { apiDelete, apiGet, apiPost, apiPut, withQuery } from "@/lib/api";
 import { readSessionAccessToken } from "@/lib/auth/session";
 import { actionClient } from "@/lib/shared";
 import { explainBookingError } from "./errors";
-import { normalizeBookingStatus } from "./status";
+import {
+  mapBooking,
+  mapDeskDaily,
+  type DeskBooking,
+  type DeskDaily,
+  type DeskDailyDto,
+} from "./map-booking";
 import type { BookingDto } from "./types";
-import type { DeskBooking } from "./actions";
 
 async function resolveServerToken(explicit?: string): Promise<string | undefined> {
   const fromCookie = await readSessionAccessToken();
   return fromCookie ?? explicit?.trim() ?? undefined;
-}
-
-function mapBooking(booking: BookingDto): DeskBooking {
-  return {
-    id: booking.id,
-    bookId: booking.bookId,
-    bookCopyId: booking.bookCopyId ?? null,
-    bookTitle: booking.bookTitle?.trim() || null,
-    bookAuthor: booking.bookAuthor?.trim() || null,
-    borrowerName: booking.borrowerName,
-    borrowerEmail: booking.borrowerEmail,
-    status: normalizeBookingStatus(booking.status),
-    dueDate: booking.dueDate,
-    notes: booking.notes ?? null,
-    reservedAt: booking.reservedAt,
-  };
 }
 
 async function runOps<T>(task: () => Promise<T>): Promise<T> {
@@ -80,16 +69,7 @@ export type FavoriteBook = {
   createdAt: string;
 };
 
-export type DeskDaily = {
-  generatedAt: string;
-  overdueCount: number;
-  dueSoonCount: number;
-  reservedCount: number;
-  activeCount: number;
-  overdue: DeskBooking[];
-  dueSoon: DeskBooking[];
-  pickupReady: DeskBooking[];
-};
+export type { DeskDaily };
 
 const tokenSchema = z.object({
   accessToken: z.string().trim().optional(),
@@ -431,26 +411,7 @@ export const getDeskDailyAction = actionClient
   .action(async ({ parsedInput }): Promise<DeskDaily> => {
     const token = await resolveServerToken(parsedInput.accessToken);
     const board = await runOps(() =>
-      apiGet<{
-        generatedAt: string;
-        overdueCount: number;
-        dueSoonCount: number;
-        reservedCount: number;
-        activeCount: number;
-        overdue: BookingDto[];
-        dueSoon: BookingDto[];
-        pickupReady: BookingDto[];
-      }>("/api/bookings/desk/daily", undefined, token),
+      apiGet<DeskDailyDto>("/api/bookings/desk/daily", undefined, token),
     );
-
-    return {
-      generatedAt: board.generatedAt,
-      overdueCount: board.overdueCount,
-      dueSoonCount: board.dueSoonCount,
-      reservedCount: board.reservedCount,
-      activeCount: board.activeCount,
-      overdue: board.overdue.map(mapBooking),
-      dueSoon: board.dueSoon.map(mapBooking),
-      pickupReady: board.pickupReady.map(mapBooking),
-    };
+    return mapDeskDaily(board);
   });

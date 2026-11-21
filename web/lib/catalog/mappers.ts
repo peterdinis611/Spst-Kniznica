@@ -33,13 +33,30 @@ const FORMAT_LABELS: Record<number, string> = {
   3: "Iné",
 };
 
-export const COPY_STATUS_LABEL: Record<number, string> = {
+export const COPY_STATUS_LABEL = {
   0: "Dostupný",
   1: "Požičaný",
   2: "Rezervovaný",
   3: "Stratený",
   4: "Údržba",
+} as const;
+
+export type CopyStatusCode = keyof typeof COPY_STATUS_LABEL;
+
+export const COPY_STATUS_BY_NAME: Record<string, CopyStatusCode> = {
+  Available: 0,
+  Borrowed: 1,
+  Reserved: 2,
+  Lost: 3,
+  Maintenance: 4,
 };
+
+export function copyStatusLabel(status: number): string {
+  if (status in COPY_STATUS_LABEL) {
+    return COPY_STATUS_LABEL[status as CopyStatusCode];
+  }
+  return "Neznámy";
+}
 
 function formatLabelFrom(book: BookDetail | BookListItem): string | null {
   if ("formatLabel" in book && book.formatLabel?.trim()) {

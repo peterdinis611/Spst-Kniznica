@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
-import { MyLibrary } from "@/components/catalog/MyLibrary";
+import { MyLibraryLazy } from "@/components/catalog/MyLibraryLazy";
 import { fetchBookSummaries } from "@/lib/catalog/book-summaries";
 import { searchBookingsAction } from "@/lib/bookings";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -21,7 +21,7 @@ async function LibraryContent() {
   const catalog = await fetchBookSummaries(bookings.map((item) => item.bookId));
 
   return (
-    <MyLibrary
+    <MyLibraryLazy
       initialBookings={bookings}
       catalog={catalog}
     />

@@ -1,4 +1,4 @@
-import { COPY_STATUS_LABEL } from "@/lib/catalog/mappers";
+import { copyStatusLabel } from "@/lib/catalog/mappers";
 import type { CatalogBook } from "@/lib/catalog/mappers";
 
 type BookBiblioFactsProps = {
@@ -104,7 +104,9 @@ export function BookBiblioFacts({ book }: BookBiblioFactsProps) {
                   ? copy.status
                   : Number.parseInt(String(copy.status), 10);
               const statusLabel =
-                COPY_STATUS_LABEL[statusNum] ?? String(copy.status);
+                Number.isFinite(statusNum)
+                  ? copyStatusLabel(statusNum)
+                  : String(copy.status);
               return (
                 <li
                   key={copy.id}

@@ -11,7 +11,7 @@ import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 import { AuthorMoreBooks } from "@/components/catalog/AuthorMoreBooks";
 import { BookOpenTickets } from "@/components/catalog/BookOpenTickets";
 import { CategoryMoreBooks } from "@/components/catalog/CategoryMoreBooks";
-import { ReserveSlip } from "@/components/catalog/ReserveSlip";
+import { ReserveSlipLazy } from "@/components/catalog/ReserveSlipLazy";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -182,7 +182,7 @@ async function BookDetailContent({
             </div>
           ) : null}
 
-          <ReserveSlip
+          <ReserveSlipLazy
             bookId={book.id}
             title={book.title}
             available={available}

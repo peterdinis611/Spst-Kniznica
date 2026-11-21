@@ -6,6 +6,14 @@ export {
   type BookingStatusCode,
 } from "./status";
 export {
+  mapBooking,
+  mapDeskDaily,
+  bookingItemsOf,
+  type DeskBooking,
+  type DeskDaily,
+  type DeskDailyDto,
+} from "./map-booking";
+export {
   daysUntil,
   duePhrase,
   formatDeskDate,
@@ -23,7 +31,6 @@ export {
   createBookingAction,
   searchBookingsAction,
   updateBookingAction,
-  type DeskBooking,
   type SearchBookingsResult,
 } from "./actions";
 export {
@@ -45,7 +52,6 @@ export {
   renewBookingAction,
   returnBookingAction,
   updateLoanPolicyAction,
-  type DeskDaily,
   type FavoriteBook,
   type LoanPolicy,
   type UpdateLoanPolicyInput,

@@ -26,21 +26,21 @@ export function useDebouncedCatalogAction<TInput extends object, TData>(
   );
   const first = useRef(true);
   const inputKey = JSON.stringify(input);
+  const inputRef = useRef(input);
+  inputRef.current = input;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const payload = JSON.parse(inputKey) as TInput;
+    const run = () => execute(inputRef.current);
 
     if (first.current) {
       first.current = false;
-      execute(payload);
+      run();
       return;
     }
 
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      execute(payload);
-    }, delayMs);
+    timerRef.current = setTimeout(run, delayMs);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);

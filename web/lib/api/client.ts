@@ -1,5 +1,10 @@
 import { UNAUTHORIZED_EVENT } from "@/lib/auth/session-constants";
 import { ApiHttpError } from "@/lib/api/errors";
+import { parseJsonText } from "@/lib/api/parse-json";
+import {
+  messageFromProblemDetails,
+  parseProblemDetails,
+} from "@/lib/api/problem-details";
 import {
   redirectToStatusPage,
   serverRedirectToStatusPage,
@@ -75,53 +80,20 @@ async function readErrorMessage(
   const text = await response.text();
   if (!text) return fallback;
 
-  try {
-    const body = JSON.parse(text) as {
-      title?: string;
-      detail?: string;
-      errors?: Record<string, string[] | string>;
-    };
-    const errors = body.errors;
-    if (errors && typeof errors === "object") {
-      for (const value of Object.values(errors)) {
-        const message = Array.isArray(value) ? value[0] : value;
-        if (typeof message === "string" && message.trim()) {
-          return sanitizeErrorText(message);
-        }
-      }
-    }
-    if (
-      typeof body.detail === "string" &&
-      body.detail.trim() &&
-      body.detail !== body.title
-    ) {
-      return sanitizeErrorText(body.detail);
-    }
-    if (typeof body.title === "string" && body.title.trim()) {
-      return sanitizeErrorText(body.title);
-    }
-  } catch {
-    return sanitizeErrorText(text);
+  const body = parseProblemDetails(text);
+  if (body) {
+    return sanitizeErrorText(messageFromProblemDetails(body, fallback));
   }
 
-  return fallback;
+  return sanitizeErrorText(text);
 }
 
 async function parseJson<T>(response: Response, path: string): Promise<T> {
   if (response.status === 204) {
     return undefined as T;
   }
-
   const text = await response.text();
-  if (!text) {
-    return undefined as T;
-  }
-
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    throw new ApiHttpError(502, path, `API invalid JSON: ${path}`);
-  }
+  return parseJsonText<T>(text, path, undefined as T);
 }
 
 function resolveAccessToken(accessToken?: string | null): string | undefined {
@@ -166,12 +138,14 @@ async function apiRequest<T>(
   const token = resolveAccessToken(accessToken);
   const skipStatusRedirect = Boolean(options?.skipStatusRedirect);
 
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-    ...(hasBody ? { "Content-Type": "application/json" } : {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(init?.headers as Record<string, string> | undefined),
-  };
+  const headers = new Headers(init?.headers);
+  headers.set("Accept", "application/json");
+  if (hasBody && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
 
   let response: Response;
   try {

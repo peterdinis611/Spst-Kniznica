@@ -1,54 +1,30 @@
-import { apiGet, apiUrl } from "@/lib/api";
+import { apiGet } from "@/lib/api";
+import type { AdminDashboard } from "@/lib/admin/ops";
 import type { AuthConfig, AuthUser } from "./types";
 
 export async function fetchAuthConfig(): Promise<AuthConfig> {
   return apiGet<AuthConfig>("/api/auth/config");
 }
 
-export async function fetchAuthMe(accessToken?: string | null): Promise<AuthUser> {
+export async function fetchAuthMe(
+  accessToken?: string | null,
+): Promise<AuthUser> {
   // Prefer BFF cookie; explicit token still supported during login bootstrap.
-  const response = await fetch(apiUrl("/api/auth/me"), {
-    headers: {
-      Accept: "application/json",
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    },
-    cache: "no-store",
-    credentials: "same-origin",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Auth me failed: ${response.status}`);
-  }
-
-  return (await response.json()) as AuthUser;
+  return apiGet<AuthUser>(
+    "/api/auth/me",
+    undefined,
+    accessToken,
+    { skipStatusRedirect: true },
+  );
 }
 
-export async function fetchAdminDashboard(accessToken?: string | null) {
-  const response = await fetch(apiUrl("/api/admin/dashboard"), {
-    headers: {
-      Accept: "application/json",
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    },
-    cache: "no-store",
-    credentials: "same-origin",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Admin dashboard failed: ${response.status}`);
-  }
-
-  return response.json() as Promise<{
-    generatedAt: string;
-    actor: string;
-    roles: string[];
-    services: Array<{
-      name: string;
-      url: string;
-      healthy: boolean;
-      status: string;
-      latencyMs?: number | null;
-    }>;
-    healthyCount: number;
-    unhealthyCount: number;
-  }>;
+export async function fetchAdminDashboard(
+  accessToken?: string | null,
+): Promise<AdminDashboard> {
+  return apiGet<AdminDashboard>(
+    "/api/admin/dashboard",
+    undefined,
+    accessToken,
+    { skipStatusRedirect: true },
+  );
 }

@@ -1,3 +1,5 @@
+import { isRecord } from "@/lib/api/problem-details";
+
 const READER_KEY = "spst-reader";
 
 export type ReaderCard = {
@@ -15,12 +17,20 @@ function storage(): Storage | null {
   return window.sessionStorage;
 }
 
+function isReaderCard(value: unknown): value is ReaderCard {
+  if (!isRecord(value)) return false;
+  return typeof value.name === "string" && typeof value.email === "string";
+}
+
 function parseReader(raw: string | null): ReaderCard | null {
   if (!raw) return null;
   try {
-    const parsed = JSON.parse(raw) as Partial<ReaderCard>;
-    if (!parsed.name?.trim() || !parsed.email?.trim()) return null;
-    return { name: parsed.name.trim(), email: parsed.email.trim() };
+    const parsed: unknown = JSON.parse(raw);
+    if (!isReaderCard(parsed)) return null;
+    const name = parsed.name.trim();
+    const email = parsed.email.trim();
+    if (!name || !email) return null;
+    return { name, email };
   } catch {
     return null;
   }

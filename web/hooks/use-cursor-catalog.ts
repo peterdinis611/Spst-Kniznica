@@ -33,6 +33,8 @@ export function useCursorCatalog<
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const filterKey = JSON.stringify(baseInput);
+  const baseInputRef = useRef(baseInput);
+  baseInputRef.current = baseInput;
   const first = useRef(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inFlight = useRef(false);
@@ -42,15 +44,14 @@ export function useCursorCatalog<
   }, [initialItems]);
 
   useEffect(() => {
-    const payload = {
-      ...(JSON.parse(filterKey) as Omit<TInput, "cursor">),
-      cursor: undefined,
-    } as TInput;
-
     const run = async () => {
       if (inFlight.current) return;
       inFlight.current = true;
       try {
+        const payload = {
+          ...baseInputRef.current,
+          cursor: undefined,
+        } as TInput;
         const result = (await executeAsync(payload)) as
           | { data?: CursorResult<TItem> }
           | undefined;
@@ -88,7 +89,7 @@ export function useCursorCatalog<
     setLoadingMore(true);
     try {
       const payload = {
-        ...(JSON.parse(filterKey) as Omit<TInput, "cursor">),
+        ...baseInputRef.current,
         cursor: nextCursor,
       } as TInput;
       const result = (await executeAsync(payload)) as
@@ -107,14 +108,7 @@ export function useCursorCatalog<
       inFlight.current = false;
       setLoadingMore(false);
     }
-  }, [
-    executeAsync,
-    filterKey,
-    hasMore,
-    isPending,
-    loadingMore,
-    nextCursor,
-  ]);
+  }, [executeAsync, hasMore, isPending, loadingMore, nextCursor]);
 
   return {
     items,

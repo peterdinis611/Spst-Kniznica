@@ -3,7 +3,14 @@
  * Queue before navigation; ToastFlashListener plays them after mount.
  */
 
-export type ToastFlashKind = "success" | "error" | "warning" | "info" | "library";
+import { isRecord } from "@/lib/api/problem-details";
+
+export type ToastFlashKind =
+  | "success"
+  | "error"
+  | "warning"
+  | "info"
+  | "library";
 
 export type ToastFlashPayload = {
   kind: ToastFlashKind;
@@ -13,6 +20,38 @@ export type ToastFlashPayload = {
 };
 
 const STORAGE_KEY = "spst.toast.flash";
+const KINDS = new Set<ToastFlashKind>([
+  "success",
+  "error",
+  "warning",
+  "info",
+  "library",
+]);
+
+function isToastFlashKind(value: unknown): value is ToastFlashKind {
+  return typeof value === "string" && KINDS.has(value as ToastFlashKind);
+}
+
+function parseToastFlash(raw: string): ToastFlashPayload | null {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isRecord(parsed)) return null;
+    if (!isToastFlashKind(parsed.kind)) return null;
+    if (typeof parsed.title !== "string" || !parsed.title.trim()) return null;
+    return {
+      kind: parsed.kind,
+      title: parsed.title.trim(),
+      description:
+        typeof parsed.description === "string"
+          ? parsed.description
+          : undefined,
+      iconName:
+        typeof parsed.iconName === "string" ? parsed.iconName : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
 
 export function queueToastFlash(payload: ToastFlashPayload): void {
   if (typeof window === "undefined") return;
@@ -29,9 +68,7 @@ export function consumeToastFlash(): ToastFlashPayload | null {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     window.sessionStorage.removeItem(STORAGE_KEY);
-    const parsed = JSON.parse(raw) as ToastFlashPayload;
-    if (!parsed?.kind || !parsed?.title) return null;
-    return parsed;
+    return parseToastFlash(raw);
   } catch {
     try {
       window.sessionStorage.removeItem(STORAGE_KEY);

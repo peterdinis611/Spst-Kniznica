@@ -12,4 +12,11 @@ export {
   type ApiRequestOptions,
 } from "./client";
 export { ApiHttpError, isApiHttpError } from "./errors";
+export {
+  isRecord,
+  messageFromProblemDetails,
+  parseProblemDetails,
+  type ProblemDetails,
+} from "./problem-details";
+export { parseJsonText } from "./parse-json";
 

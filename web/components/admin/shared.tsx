@@ -10,28 +10,30 @@ import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
-export const FORMAT_CHOICES = [
-  { id: 0, name: "Brožovaná" },
-  { id: 1, name: "Viazaná" },
-  { id: 2, name: "E-kniha" },
-  { id: 3, name: "Iné" },
-];
+import { BOOKING_STATUS_LABEL } from "@/lib/bookings/status";
+import { COPY_STATUS_LABEL } from "@/lib/catalog/mappers";
 
-export const COPY_STATUS_CHOICES = [
-  { id: 0, name: "Dostupný" },
-  { id: 1, name: "Požičaný" },
-  { id: 2, name: "Rezervovaný" },
-  { id: 3, name: "Stratený" },
-  { id: 4, name: "Údržba" },
-];
+const FORMAT_LABELS = {
+  0: "Brožovaná",
+  1: "Viazaná",
+  2: "E-kniha",
+  3: "Iné",
+} as const;
 
-export const BOOKING_STATUS_CHOICES = [
-  { id: 0, name: "Rezervované" },
-  { id: 1, name: "Požičané" },
-  { id: 2, name: "Vrátené" },
-  { id: 3, name: "Zrušené" },
-  { id: 4, name: "Po termíne" },
-];
+function choicesFromLabels(
+  labels: Record<number, string> | Readonly<Record<number, string>>,
+): Array<{ id: number; name: string }> {
+  return Object.entries(labels).map(([key, name]) => ({
+    id: Number(key),
+    name,
+  }));
+}
+
+export const FORMAT_CHOICES = choicesFromLabels(FORMAT_LABELS);
+
+export const COPY_STATUS_CHOICES = choicesFromLabels(COPY_STATUS_LABEL);
+
+export const BOOKING_STATUS_CHOICES = choicesFromLabels(BOOKING_STATUS_LABEL);
 
 export const ACTIVE_CHOICES = [
   { id: true, name: "Aktívne" },

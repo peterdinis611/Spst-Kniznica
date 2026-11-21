@@ -144,6 +144,8 @@ export function BookingsDesk({
   );
 
   const inputKey = JSON.stringify(input);
+  const inputRef = useRef(input);
+  inputRef.current = input;
   const executeSearch = search.execute;
   const searchGeneration = useRef(0);
 
@@ -171,7 +173,7 @@ export function BookingsDesk({
   );
 
   useEffect(() => {
-    const payload = JSON.parse(inputKey) as typeof input;
+    const payload = inputRef.current;
     filtersRef.current = payload;
     runDebouncedSearch(payload);
   }, [inputKey, runDebouncedSearch]);

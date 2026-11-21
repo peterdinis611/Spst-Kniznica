@@ -1,5 +1,28 @@
 import { HttpError } from "react-admin";
 import { apiUrl, withQuery, type ApiQuery } from "@/lib/api/client";
+import { ApiHttpError } from "@/lib/api/errors";
+import { parseJsonText } from "@/lib/api/parse-json";
+import {
+  messageFromProblemDetails,
+  parseProblemDetails,
+} from "@/lib/api/problem-details";
+
+function readAdminErrorMessage(text: string, fallback: string): string {
+  const body = parseProblemDetails(text);
+  if (body) return messageFromProblemDetails(body, fallback).slice(0, 180);
+  return text.slice(0, 180) || fallback;
+}
+
+function parseAdminJson<T>(text: string, path: string): T {
+  try {
+    return parseJsonText<T>(text, path, undefined as T);
+  } catch (error) {
+    if (error instanceof ApiHttpError) {
+      throw new HttpError(error.message, 502);
+    }
+    throw error;
+  }
+}
 
 export async function adminHttp<T>(
   path: string,
@@ -7,13 +30,14 @@ export async function adminHttp<T>(
   body?: unknown,
 ): Promise<T> {
   const hasBody = body !== undefined;
+  const headers = new Headers(init?.headers);
+  headers.set("Accept", "application/json");
+  if (hasBody && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
   const response = await fetch(apiUrl(path), {
     ...init,
-    headers: {
-      Accept: "application/json",
-      ...(hasBody ? { "Content-Type": "application/json" } : {}),
-      ...(init?.headers as Record<string, string> | undefined),
-    },
+    headers,
     body: hasBody ? JSON.stringify(body) : init?.body,
     cache: "no-store",
     credentials: "same-origin",
@@ -24,15 +48,7 @@ export async function adminHttp<T>(
     try {
       const text = await response.text();
       if (text) {
-        try {
-          const json = JSON.parse(text) as {
-            detail?: string;
-            title?: string;
-          };
-          message = json.detail || json.title || text.slice(0, 180);
-        } catch {
-          message = text.slice(0, 180);
-        }
+        message = readAdminErrorMessage(text, message);
       }
     } catch {
       // keep statusText
@@ -45,8 +61,7 @@ export async function adminHttp<T>(
   }
 
   const text = await response.text();
-  if (!text) return undefined as T;
-  return JSON.parse(text) as T;
+  return parseAdminJson<T>(text, path);
 }
 
 export function adminQuery(path: string, query?: ApiQuery) {
@@ -84,14 +99,7 @@ export async function adminHttpDownload(
     let message = response.statusText || `HTTP ${response.status}`;
     try {
       const text = await response.text();
-      if (text) {
-        try {
-          const json = JSON.parse(text) as { detail?: string; title?: string };
-          message = json.detail || json.title || text.slice(0, 180);
-        } catch {
-          message = text.slice(0, 180);
-        }
-      }
+      if (text) message = readAdminErrorMessage(text, message);
     } catch {
       // keep statusText
     }
@@ -124,14 +132,7 @@ export async function adminHttpForm<T>(
     let message = response.statusText || `HTTP ${response.status}`;
     try {
       const text = await response.text();
-      if (text) {
-        try {
-          const json = JSON.parse(text) as { detail?: string; title?: string };
-          message = json.detail || json.title || text.slice(0, 180);
-        } catch {
-          message = text.slice(0, 180);
-        }
-      }
+      if (text) message = readAdminErrorMessage(text, message);
     } catch {
       // keep statusText
     }
@@ -140,6 +141,5 @@ export async function adminHttpForm<T>(
 
   if (response.status === 204) return undefined as T;
   const text = await response.text();
-  if (!text) return undefined as T;
-  return JSON.parse(text) as T;
+  return parseAdminJson<T>(text, path);
 }

@@ -3,7 +3,7 @@
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useAbility } from "@/components/auth/AbilityProvider";
 import { AuthRequiredGate } from "@/components/auth/AuthRequiredGate";
-import { BookingsDesk } from "@/components/catalog/BookingsDesk";
+import { BookingsDeskLazy } from "@/components/catalog/BookingsDeskLazy";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
 
 export function BookingsAccessGate() {
@@ -22,7 +22,7 @@ export function BookingsAccessGate() {
           : "Výpožičky a vlastné lístky sú dostupné až po prihlásení. Cudzie rezervácie nie sú verejné."
       }
     >
-      <BookingsDesk initialBookings={[]} initialTotal={0} />
+      <BookingsDeskLazy initialBookings={[]} initialTotal={0} />
     </AuthRequiredGate>
   );
 }
