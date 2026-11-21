@@ -18,7 +18,7 @@ export function BrandLogo({
       data-tour="brand"
       aria-label="SPST Knižnica — domov"
       className={cn(
-        "shrink-0 text-[1.05rem] font-semibold tracking-tight text-ink sm:text-lg",
+        "text-[0.95rem] font-semibold tracking-tight text-ink min-[380px]:text-[1.05rem] sm:text-lg",
         className,
       )}
     >

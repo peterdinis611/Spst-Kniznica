@@ -183,7 +183,7 @@ export function HttpStatusPanel({
   return (
     <motion.section
       className={cn(
-        "relative isolate mx-auto w-full max-w-2xl overflow-hidden border border-rule bg-card/55 px-7 py-16 text-center shadow-[0_32px_80px_-48px_rgba(14,26,36,0.38)] sm:px-11 sm:py-[4.75rem] dark:border-white/12 dark:bg-surface-3/45 dark:shadow-[0_40px_100px_-60px_rgba(0,0,0,0.7)]",
+        "relative isolate mx-auto w-full max-w-2xl overflow-hidden border border-rule bg-card/55 px-4 py-14 text-center shadow-[0_32px_80px_-48px_rgba(14,26,36,0.38)] sm:px-8 sm:py-16 md:px-11 md:py-[4.75rem] dark:border-white/12 dark:bg-surface-3/45 dark:shadow-[0_40px_100px_-60px_rgba(0,0,0,0.7)]",
         className,
       )}
       aria-labelledby={titleId}

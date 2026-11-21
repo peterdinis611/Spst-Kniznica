@@ -71,14 +71,16 @@ export function BookCard({ book, index = 0 }: BookCardProps) {
             </div>
           </div>
 
-          <CardHeader className="gap-1.5 px-4 pt-3 pb-0 sm:px-5">
-            <CardTitle className="font-display text-lg leading-snug text-ink sm:text-xl">
+          <CardHeader className="gap-1 px-3 pt-3 pb-0 sm:gap-1.5 sm:px-5">
+            <CardTitle className="line-clamp-2 min-h-[2.5em] font-display text-base leading-snug text-ink sm:min-h-0 sm:text-xl">
               {book.title}
             </CardTitle>
-            <CardDescription>{book.author}</CardDescription>
+            <CardDescription className="line-clamp-1 text-xs sm:text-sm">
+              {book.author}
+            </CardDescription>
           </CardHeader>
 
-          <CardFooter className="mt-auto justify-between gap-2 border-t-0 bg-transparent px-4 pt-3 pb-4 text-xs sm:px-5 sm:pb-5">
+          <CardFooter className="mt-auto justify-between gap-2 border-t-0 bg-transparent px-3 pt-2.5 pb-3.5 text-[10px] sm:px-5 sm:pt-3 sm:pb-5 sm:text-xs">
             <span className="truncate tracking-[0.1em] text-muted-foreground uppercase">
               {book.categoryName ?? "Katalóg"}
             </span>

@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@azure/msal-browser": "^5.29.0",
@@ -50,16 +52,23 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
+    "@storybook/addon-a11y": "^10.6.8",
+    "@storybook/addon-docs": "^10.6.8",
+    "@storybook/nextjs-vite": "^10.6.8",
     "@tailwindcss/turbopack": "^4",
+    "@tailwindcss/vite": "^4.3.5",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
+    "eslint-plugin-storybook": "^10.6.8",
     "happy-dom": "^21.0.4",
     "patch-package": "^8.0.1",
+    "storybook": "^10.6.8",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vite": "^6.4.6",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.4"
   }

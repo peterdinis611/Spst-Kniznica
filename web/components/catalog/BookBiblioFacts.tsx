@@ -18,7 +18,9 @@ function Fact({
       <dt className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
         {label}
       </dt>
-      <dd className="mt-1 text-sm text-ink sm:text-[15px]">{value}</dd>
+      <dd className="mt-1 break-words text-sm text-ink sm:text-[15px]">
+        {value}
+      </dd>
     </div>
   );
 }
@@ -36,7 +38,7 @@ export function BookBiblioFacts({ book }: BookBiblioFactsProps) {
 
   return (
     <div className="mt-8 space-y-8">
-      <dl className="grid max-w-2xl grid-cols-2 gap-x-8 gap-y-5 border-y border-rule py-6 sm:grid-cols-3 dark:border-white/10">
+      <dl className="grid max-w-2xl grid-cols-2 gap-x-3 gap-y-4 border-y border-rule py-5 sm:grid-cols-3 sm:gap-x-8 sm:gap-y-5 sm:py-6 dark:border-white/10">
         <Fact label="Rok" value={book.year} />
         <Fact label="Vydavateľ" value={book.publisher} />
         <Fact label="Jazyk" value={book.language} />

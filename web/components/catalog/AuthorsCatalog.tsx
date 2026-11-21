@@ -153,10 +153,10 @@ export function AuthorsCatalog({
             href={letterHref("", liveQuery)}
             scroll={false}
             className={cn(
-              "shrink-0 border-b-2 px-1 pb-2 text-sm transition",
+              "snap-start shrink-0 rounded-full border px-3.5 py-2 text-sm transition",
               !letter
-                ? "border-accent font-semibold text-ink"
-                : "border-transparent text-muted-foreground hover:text-ink",
+                ? "border-accent bg-accent font-semibold text-accent-foreground"
+                : "border-rule bg-paper-deep text-muted-foreground hover:border-ink/25 hover:text-ink dark:border-white/12",
             )}
             aria-current={!letter ? "true" : undefined}
           >
@@ -170,10 +170,10 @@ export function AuthorsCatalog({
                 href={letterHref(item, liveQuery)}
                 scroll={false}
                 className={cn(
-                  "shrink-0 border-b-2 px-1.5 pb-2 font-mono text-sm transition",
+                  "snap-start shrink-0 rounded-full border px-3 py-2 font-mono text-sm transition",
                   active
-                    ? "border-accent font-semibold text-ink"
-                    : "border-transparent text-muted-foreground hover:text-ink",
+                    ? "border-accent bg-accent font-semibold text-accent-foreground"
+                    : "border-rule bg-paper-deep text-muted-foreground hover:border-ink/25 hover:text-ink dark:border-white/12",
                 )}
                 aria-current={active ? "true" : undefined}
               >

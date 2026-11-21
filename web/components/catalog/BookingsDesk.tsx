@@ -283,19 +283,19 @@ export function BookingsDesk({
         </div>
 
         <div className="reveal reveal-delay-3 grid grid-cols-2 border border-rule dark:border-white/10">
-          <div className="border-r border-rule px-4 py-5 dark:border-white/10">
+          <div className="border-r border-rule px-3 py-4 sm:px-4 sm:py-5 dark:border-white/10">
             <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
               Otvorené
             </p>
-            <p className="mt-2 font-display text-5xl leading-none text-ink">
+            <p className="mt-2 font-display text-[clamp(1.75rem,6vw,3rem)] leading-none text-ink">
               {String(live).padStart(2, "0")}
             </p>
           </div>
-          <div className="bg-accent px-4 py-5 text-accent-foreground">
+          <div className="bg-accent px-3 py-4 text-accent-foreground sm:px-4 sm:py-5">
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase">
               Po termíne
             </p>
-            <p className="mt-2 font-display text-5xl leading-none">
+            <p className="mt-2 font-display text-[clamp(1.75rem,6vw,3rem)] leading-none">
               {String(late).padStart(2, "0")}
             </p>
           </div>
@@ -384,7 +384,7 @@ export function BookingsDesk({
       </div>
 
       <div
-        className="mt-4 flex gap-2 overflow-x-auto pb-1"
+        className="mt-4 flex flex-wrap gap-1.5 sm:gap-2"
         role="group"
         aria-label="Filtrovať podľa stavu lístka"
       >
@@ -398,7 +398,7 @@ export function BookingsDesk({
               variant={active ? "default" : "outline"}
               aria-pressed={active}
               className={cn(
-                "rounded-full",
+                "h-9 rounded-full px-3 text-xs sm:h-8 sm:text-sm",
                 active
                   ? "bg-accent text-accent-foreground hover:bg-accent-deep"
                   : "border-rule bg-paper-deep text-muted-foreground dark:border-white/10",
@@ -486,13 +486,13 @@ export function BookingsDesk({
                 className="absolute inset-x-0 top-0"
                 $start={virtualRow.start - scrollMargin}
               >
-                <div className="relative grid gap-5 border-b border-rule py-7 md:grid-cols-[1fr_auto] md:items-center dark:border-white/10">
+                <div className="relative grid gap-4 border-b border-rule py-6 sm:gap-5 sm:py-7 md:grid-cols-[1fr_auto] md:items-center dark:border-white/10">
                   <span
                     aria-hidden
-                    className="absolute top-7 bottom-7 left-0 border-l border-dashed border-ink/20"
+                    className="absolute top-6 bottom-6 left-0 border-l border-dashed border-ink/20 sm:top-7 sm:bottom-7"
                   />
-                  <div className="min-w-0 pl-5">
-                    <div className="flex flex-wrap items-center gap-3">
+                  <div className="min-w-0 pl-4 sm:pl-5">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                       <span
                         className={cn(
                           "inline-flex -rotate-3 border-2 px-2 py-0.5 font-display text-[11px] tracking-[0.18em] uppercase",
@@ -501,11 +501,11 @@ export function BookingsDesk({
                       >
                         {BOOKING_STATUS_LABEL[statusCode]}
                       </span>
-                      <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+                      <span className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase sm:text-[11px]">
                         {duePhrase(booking.dueDate, statusCode)}
                       </span>
                     </div>
-                    <h2 className="mt-3 font-display text-3xl leading-none tracking-tight text-ink">
+                    <h2 className="mt-3 font-display text-[clamp(1.35rem,4.5vw,1.875rem)] leading-[1.15] tracking-tight text-balance text-ink">
                       {book ? (
                         <Link
                           href={`/books/${book.id}`}
@@ -524,36 +524,47 @@ export function BookingsDesk({
                         "Titul mimo katalógu"
                       )}
                     </h2>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {booking.borrowerName}
-                      <span className="px-1.5 text-ink/30">/</span>
-                      {booking.borrowerEmail}
+                    <dl className="mt-2.5 space-y-1 text-sm">
+                      <div className="min-w-0">
+                        <dt className="sr-only">Čitateľ</dt>
+                        <dd className="truncate font-medium text-ink/85">
+                          {booking.borrowerName}
+                        </dd>
+                      </div>
+                      <div className="min-w-0">
+                        <dt className="sr-only">Email</dt>
+                        <dd className="truncate font-mono text-[12px] tracking-tight text-muted-foreground">
+                          {booking.borrowerEmail}
+                        </dd>
+                      </div>
                       {book?.author || booking.bookAuthor ? (
-                        <>
-                          <span className="px-1.5 text-ink/30">/</span>
-                          {book?.author ?? booking.bookAuthor}
-                        </>
+                        <div className="min-w-0">
+                          <dt className="sr-only">Autor</dt>
+                          <dd className="truncate text-muted-foreground">
+                            {book?.author ?? booking.bookAuthor}
+                          </dd>
+                        </div>
                       ) : null}
-                    </p>
+                    </dl>
                     {booking.notes ? (
-                      <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+                      <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
                         {booking.notes}
                       </p>
                     ) : null}
                   </div>
 
-                  <div className="flex flex-col items-start gap-3 pl-5 md:items-end md:pl-0">
-                    <p className="font-display text-4xl leading-none tracking-tight text-ink">
+                  <div className="flex flex-col items-stretch gap-3 pl-4 sm:pl-5 md:items-end md:pl-0">
+                    <p className="font-display text-[clamp(1.5rem,5vw,2.25rem)] leading-none tracking-tight text-ink md:text-right">
                       {formatDeskDate(booking.dueDate)}
                     </p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap md:justify-end">
                       {canManageDesk &&
                       statusCode === BOOKING_STATUS.reserved ? (
                         <>
                           <Button
                             type="button"
                             disabled={busy}
-                            className="h-10 rounded-none bg-ink px-4 text-paper hover:bg-ink/85"
+                            className="h-11 rounded-none bg-ink px-4 text-paper hover:bg-ink/85 sm:h-10"
                             onClick={() => void checkoutBooking(booking)}
                           >
                             {busy ? "Ukladám…" : "Vydať"}
@@ -562,7 +573,7 @@ export function BookingsDesk({
                             type="button"
                             variant="outline"
                             disabled={busy}
-                            className="h-10 rounded-none border-ink"
+                            className="h-11 rounded-none border-ink sm:h-10"
                             onClick={() => void cancelBooking(booking)}
                           >
                             Zrušiť
@@ -575,7 +586,7 @@ export function BookingsDesk({
                         <Button
                           type="button"
                           disabled={busy}
-                          className="h-10 rounded-none bg-accent px-4 text-accent-foreground hover:bg-accent-deep"
+                          className="col-span-2 h-11 rounded-none bg-accent px-4 text-accent-foreground hover:bg-accent-deep sm:col-span-1 sm:h-10"
                           onClick={() => void returnBooking(booking)}
                         >
                           {busy ? "Ukladám…" : "Vrátiť"}
@@ -588,7 +599,7 @@ export function BookingsDesk({
                           type="button"
                           variant="outline"
                           disabled={busy || cancelMine.isPending}
-                          className="h-10 rounded-none border-ink"
+                          className="col-span-2 h-11 rounded-none border-ink sm:col-span-1 sm:h-10"
                           onClick={async () => {
                             setPendingId(booking.id);
                             setDeskError(null);
@@ -618,7 +629,7 @@ export function BookingsDesk({
                         <Button
                           type="button"
                           disabled={busy || renewMine.isPending}
-                          className="h-10 rounded-none bg-accent px-4 text-accent-foreground hover:bg-accent-deep"
+                          className="col-span-2 h-11 rounded-none bg-accent px-4 text-accent-foreground hover:bg-accent-deep sm:col-span-1 sm:h-10"
                           onClick={async () => {
                             setPendingId(booking.id);
                             setDeskError(null);
@@ -653,13 +664,13 @@ export function BookingsDesk({
 
       {totalPages > 1 ? (
         <nav
-          className="mt-8 flex items-center justify-between gap-3"
+          className="mt-8 flex items-center justify-between gap-2 sm:gap-3"
           aria-label="Stránkovanie lístkov"
         >
           <Button
             type="button"
             variant="outline"
-            className="rounded-none border-ink"
+            className="min-w-0 flex-1 rounded-none border-ink sm:flex-none"
             disabled={page <= 1 || search.isPending}
             aria-label="Predošlá stránka"
             onClick={() => setPage((value) => Math.max(1, value - 1))}
@@ -667,7 +678,7 @@ export function BookingsDesk({
             Predošlé
           </Button>
           <p
-            className="font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase"
+            className="shrink-0 font-mono text-[11px] tracking-[0.16em] text-muted-foreground uppercase sm:text-xs"
             aria-live="polite"
           >
             <span className="sr-only">Stránka </span>
@@ -676,7 +687,7 @@ export function BookingsDesk({
           <Button
             type="button"
             variant="outline"
-            className="rounded-none border-ink"
+            className="min-w-0 flex-1 rounded-none border-ink sm:flex-none"
             disabled={page >= totalPages || search.isPending}
             aria-label="Ďalšia stránka"
             onClick={() => setPage((value) => value + 1)}

@@ -83,7 +83,7 @@ function SlipPanel({
           aria-hidden
         />
       ) : null}
-      <div className="relative p-6 sm:p-8">{children}</div>
+      <div className="relative p-4 sm:p-6 md:p-8">{children}</div>
     </div>
   );
 }
@@ -287,15 +287,16 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
             <p className="mt-4 inline-flex -rotate-3 border border-accent-foreground/50 bg-accent-foreground/10 px-3 py-1 font-display text-sm tracking-[0.18em] uppercase print:rotate-0">
               Rezervované
             </p>
-            <h2 className="mt-5 font-display text-4xl leading-none tracking-tight">
+            <h2 className="mt-5 font-display text-3xl leading-none tracking-tight sm:text-4xl">
               {formatDeskDate(issued.dueDate)}
             </h2>
-            <p className="mt-3 max-w-md text-sm leading-relaxed opacity-85">
-              {issued.borrowerName} · {issued.borrowerEmail}
+            <p className="mt-3 max-w-md text-sm leading-relaxed break-words opacity-85">
+              {issued.borrowerName} ·{" "}
+              <span className="break-all">{issued.borrowerEmail}</span>
             </p>
-            <p className="mt-1 max-w-md text-sm leading-relaxed opacity-85">
+            <p className="mt-1 max-w-md text-sm leading-relaxed break-words opacity-85">
               {title} — rezervované do tohto termínu. Lístok ID{" "}
-              <span className="font-mono text-xs">{issued.id}</span>
+              <span className="font-mono text-xs break-all">{issued.id}</span>
             </p>
             <p className="mt-4 font-mono text-[10px] tracking-[0.2em] uppercase opacity-70">
               *{issued.id.replace(/-/g, "").slice(0, 12)}*
@@ -411,11 +412,11 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
             </p>
           ) : null}
 
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="outline"
-              className="h-11 rounded-none border-rule"
+              className="h-11 w-full rounded-none border-rule sm:w-auto"
               onClick={() => setOpen(false)}
             >
               Zrušiť
@@ -424,7 +425,7 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
               <Button
                 type="button"
                 disabled={waitlist.isPending || waitlistJoined}
-                className="h-11 min-w-[14rem] rounded-none bg-ink px-5 text-paper hover:bg-ink/90"
+                className="h-11 w-full whitespace-normal rounded-none bg-ink px-4 text-sm leading-snug text-paper hover:bg-ink/90 sm:min-w-[14rem] sm:px-5 sm:whitespace-nowrap"
                 onClick={async () => {
                   setClientError(null);
                   try {
@@ -459,7 +460,7 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
               <Button
                 type="submit"
                 disabled={isPending || policy.result.data?.freezeNewLoans}
-                className="group h-11 min-w-[14rem] rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
+                className="group h-11 w-full rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep sm:w-auto sm:min-w-[14rem]"
               >
                 {isPending ? "Vystavujem…" : "Vystaviť lístok"}
                 <ArrowRight
@@ -475,18 +476,18 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
   }
 
   return (
-    <div className="reveal mt-10 max-w-2xl">
-      <div className="flex flex-col gap-3 border border-rule bg-card/60 p-5 dark:border-white/12 dark:bg-surface-3/50 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+    <div className="reveal mt-8 max-w-2xl sm:mt-10">
+      <div className="flex flex-col gap-4 border border-rule bg-card/60 p-4 dark:border-white/12 dark:bg-surface-3/50 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-6">
         <div className="min-w-0">
           <p className="text-eyebrow font-mono text-[11px] font-semibold tracking-[0.22em] uppercase">
             Výpožička
           </p>
-          <p className="mt-1 font-display text-xl text-ink sm:text-2xl">
+          <p className="mt-1 font-display text-lg leading-snug text-ink sm:text-2xl">
             {existingOpen
               ? "Máš aktívny lístok na tento titul"
               : "Chceš si knihu rezervovať?"}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             {existingOpen
               ? `Termín ${formatDeskDate(existingOpen.dueDate)} · otvor detail lístka`
               : available
@@ -494,12 +495,12 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
                 : "Fond je momentálne obsadený, server rezerváciu aj tak odmietne."}
           </p>
         </div>
-        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+        <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <FavoriteToggle bookId={bookId} />
           <Button
             type="button"
             disabled={!ready}
-            className="h-12 shrink-0 rounded-none bg-accent px-5 text-accent-foreground hover:bg-accent-deep"
+            className="h-12 w-full rounded-none bg-accent px-4 text-accent-foreground hover:bg-accent-deep sm:w-auto sm:px-5"
             onClick={() => setOpen(true)}
           >
             <Ticket className="size-4" strokeWidth={1.6} aria-hidden />
@@ -510,7 +511,7 @@ export function ReserveSlip({ bookId, title, available }: ReserveSlipProps) {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-h-[min(92vh,40rem)] gap-0 overflow-hidden border-rule bg-card p-0 dark:bg-surface-3"
+          className="max-h-[min(92dvh,40rem)] w-[calc(100%-1rem)] max-w-[calc(100%-1rem)] gap-0 overflow-hidden rounded-lg border-rule bg-card p-0 sm:w-full sm:max-w-lg sm:rounded-xl dark:bg-surface-3"
           aria-describedby={undefined}
         >
           <div className="sr-only">

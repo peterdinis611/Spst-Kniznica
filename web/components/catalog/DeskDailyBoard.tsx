@@ -240,12 +240,12 @@ export function DeskDailyBoard() {
             ].map((tile) => (
               <div
                 key={tile.label}
-                className="border border-rule px-4 py-3 dark:border-white/10"
+                className="border border-rule px-3 py-3 sm:px-4 dark:border-white/10"
               >
-                <p className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
+                <p className="font-mono text-[10px] leading-tight tracking-[0.12em] text-muted-foreground uppercase">
                   {tile.label}
                 </p>
-                <p className="mt-1 font-display text-3xl tabular-nums text-ink">
+                <p className="mt-1 font-display text-[clamp(1.5rem,5vw,1.875rem)] tabular-nums text-ink">
                   {tile.value}
                 </p>
               </div>

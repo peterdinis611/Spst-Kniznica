@@ -70,30 +70,32 @@ export function PopularShelf({ books }: PopularShelfProps) {
         </div>
 
         <ul
-          className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5 md:gap-7"
+          className="mt-10 grid grid-cols-2 gap-3 sm:mt-12 sm:grid-cols-4 sm:gap-5 md:gap-7"
           aria-label="Obľúbené tituly"
         >
           {items.map((book, index) => (
             <li key={book.id} className={`reveal reveal-delay-${(index % 4) + 1}`}>
-              <Link href={`/books/${book.id}`} className="group block">
+              <Link href={`/books/${book.id}`} className="group block min-w-0">
                 <AccentGradient165
                   $from={book.accent}
                   $to={shade(book.accent, -30)}
                   className="aspect-[2/3] rounded-[0.65rem] shadow-[0_18px_40px_rgba(26,23,20,0.14)] transition duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_28px_55px_rgba(26,23,20,0.18)]"
                 >
-                  <div className="flex h-full flex-col justify-between p-4 text-[color:var(--paper)]">
-                    <p className="font-display text-lg leading-tight md:text-xl">
+                  <div className="flex h-full flex-col justify-between p-3 text-[color:var(--paper)] sm:p-4">
+                    <p className="line-clamp-3 font-display text-[0.95rem] leading-tight sm:line-clamp-4 sm:text-lg md:text-xl">
                       {book.title}
                     </p>
-                    <p className="text-xs tracking-[0.04em] opacity-80">
+                    <p className="truncate text-[11px] tracking-[0.04em] opacity-80 sm:text-xs">
                       {book.author}
                     </p>
                   </div>
                 </AccentGradient165>
-                <p className="mt-3 font-display text-lg text-ink transition group-hover:text-accent-deep dark:group-hover:text-accent">
+                <p className="mt-2.5 line-clamp-2 font-display text-sm leading-snug text-ink transition group-hover:text-accent-deep sm:mt-3 sm:text-lg dark:group-hover:text-accent">
                   {book.title}
                 </p>
-                <p className="text-sm text-muted-foreground">{book.author}</p>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground sm:text-sm">
+                  {book.author}
+                </p>
               </Link>
             </li>
           ))}

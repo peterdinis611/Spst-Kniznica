@@ -296,3 +296,36 @@ export function useAuth() {
   }
   return ctx;
 }
+
+const noopAsync = async () => {};
+const noopToken = async () => null;
+
+/** Storybook / tests — inject a fixed auth context without MSAL. */
+export function MockAuthProvider({
+  value,
+  children,
+}: {
+  value: Partial<AuthContextValue>;
+  children: ReactNode;
+}) {
+  const merged = useMemo<AuthContextValue>(
+    () => ({
+      ready: true,
+      entraEnabled: false,
+      config: null,
+      user: null,
+      account: null,
+      error: null,
+      login: noopAsync,
+      logout: noopAsync,
+      getAccessToken: noopToken,
+      refreshUser: noopAsync,
+      ...value,
+    }),
+    [value],
+  );
+
+  return (
+    <AuthContext.Provider value={merged}>{children}</AuthContext.Provider>
+  );
+}

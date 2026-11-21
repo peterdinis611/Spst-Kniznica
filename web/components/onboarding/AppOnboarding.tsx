@@ -94,23 +94,26 @@ export function AppOnboarding({ className }: { className?: string }) {
         </button>
       </header>
 
-      <ol className="grid grid-cols-2 gap-px border-b border-rule bg-rule lg:grid-cols-4">
+      <ol className="grid grid-cols-1 gap-px border-b border-rule bg-rule sm:grid-cols-2 lg:grid-cols-4">
         {steps.map((step, index) => (
           <AnimationDelayedLi
             key={step.n}
-            className="reveal flex min-h-40 flex-col bg-paper p-4 sm:min-h-44 sm:p-6"
+            className={cn(
+              "reveal flex flex-col bg-paper p-4 sm:p-6",
+              open ? "min-h-44 sm:min-h-48" : "min-h-[7.5rem] sm:min-h-40",
+            )}
             $delay={`${0.05 + index * 0.07}s`}
           >
             <div className="flex items-start justify-between gap-3">
               <span
-                className="font-display text-[clamp(2.4rem,4vw,3.5rem)] leading-none tracking-tight text-ink/15 tabular-nums"
+                className="font-display text-[clamp(2rem,4vw,3.5rem)] leading-none tracking-tight text-ink/15 tabular-nums"
                 aria-hidden
               >
                 {step.n}
               </span>
               <step.Icon className="mt-1 size-4 text-sage" strokeWidth={1.7} aria-hidden />
             </div>
-            <p className="mt-4 font-display text-[1.35rem] leading-none tracking-tight text-ink sm:text-2xl">
+            <p className="mt-3 font-display text-xl leading-none tracking-tight text-ink sm:mt-4 sm:text-2xl">
               {step.title}
             </p>
             {open ? (

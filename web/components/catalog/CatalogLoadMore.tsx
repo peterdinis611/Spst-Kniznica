@@ -46,7 +46,7 @@ export function CatalogLoadMore({
         <Button
           type="button"
           variant="outline"
-          className="min-w-[12rem] rounded-none border-ink px-6"
+          className="mx-auto w-full max-w-xs rounded-none border-ink px-6 sm:w-auto sm:min-w-[12rem]"
           disabled={loadingMore}
           aria-label={ariaLabel}
           onClick={() => onLoadMore()}

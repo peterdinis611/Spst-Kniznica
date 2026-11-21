@@ -148,7 +148,7 @@ async function BookDetailContent({
             ) : null}
           </div>
 
-          <h1 className="mt-5 font-display text-[clamp(2rem,6vw,3.4rem)] leading-[1.05] tracking-tight text-ink">
+          <h1 className="mt-5 break-words font-display text-[clamp(1.85rem,6vw,3.4rem)] leading-[1.05] tracking-tight text-ink">
             {book.title}
           </h1>
           {book.subtitle ? (

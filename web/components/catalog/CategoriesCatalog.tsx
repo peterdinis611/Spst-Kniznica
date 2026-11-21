@@ -142,7 +142,7 @@ export function CategoriesCatalog({
             <Link
               key={item.id}
               href={`/categories/${item.id}`}
-              className="shrink-0 border-b-2 border-transparent px-1 pb-2 text-sm text-muted-foreground transition hover:border-accent/50 hover:text-ink"
+              className="snap-start shrink-0 rounded-full border border-rule bg-paper-deep px-3.5 py-2 text-sm text-muted-foreground transition hover:border-ink/25 hover:bg-paper hover:text-ink dark:border-white/12"
             >
               {item.name}
             </Link>

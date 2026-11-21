@@ -305,7 +305,7 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
             <div
               key={stat.label}
               className={cn(
-                "px-4 py-4",
+                "px-3 py-3.5 sm:px-4 sm:py-4",
                 index % 2 === 0 && "border-r border-rule dark:border-white/10",
                 index < 2 && "border-b border-rule dark:border-white/10",
                 stat.tone === "accent" && "bg-accent text-accent-foreground",
@@ -313,7 +313,7 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
             >
               <p
                 className={cn(
-                  "font-mono text-[10px] tracking-[0.18em] uppercase",
+                  "font-mono text-[10px] leading-tight tracking-[0.14em] uppercase sm:tracking-[0.18em]",
                   stat.tone === "accent"
                     ? "text-accent-foreground/80"
                     : "text-muted-foreground",
@@ -321,7 +321,7 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
               >
                 {stat.label}
               </p>
-              <p className="mt-2 font-display text-4xl leading-none tabular-nums">
+              <p className="mt-2 font-display text-[clamp(1.75rem,5vw,2.25rem)] leading-none tabular-nums">
                 {padCount(stat.value)}
               </p>
             </div>
@@ -390,7 +390,7 @@ export function MyLibrary({ initialBookings, catalog }: MyLibraryProps) {
                       >
                         {BOOKING_STATUS_LABEL[booking.status as 0 | 1 | 2 | 3 | 4]}
                       </Badge>
-                      <p className="mt-2 font-display text-2xl text-ink transition-colors hover:text-sage">
+                      <p className="mt-2 line-clamp-2 font-display text-[clamp(1.15rem,3.5vw,1.5rem)] leading-snug text-ink transition-colors hover:text-sage">
                         {book ? (
                           <Link href={`/books/${book.id}`}>{book.title}</Link>
                         ) : booking.bookTitle ? (

@@ -102,7 +102,7 @@ export function LoginPanel() {
             </p>
 
             <div className="relative">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                 <p className="font-mono text-[11px] font-medium tracking-[0.22em] text-sage uppercase">
                   Čitateľský preukaz
                 </p>
@@ -114,35 +114,39 @@ export function LoginPanel() {
 
               <h1
                 id="login-panel-heading"
-                className="mt-6 font-display text-[clamp(3.6rem,8.5vw,6.75rem)] leading-[0.84] font-medium tracking-[-0.035em] text-ink"
+                className="mt-5 max-w-full font-display text-[clamp(2.15rem,1.1rem+6.5vw,6.75rem)] leading-[0.92] font-medium tracking-[-0.035em] text-ink sm:mt-6 sm:leading-[0.84]"
               >
-                <span className="block">{first}</span>
+                <span className="block break-words hyphens-auto">{first}</span>
                 {rest ? (
-                  <span className="mt-1 block text-sage">{rest}</span>
+                  <span className="mt-1 block break-words hyphens-auto text-sage">
+                    {rest}
+                  </span>
                 ) : null}
               </h1>
 
-              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-rule pt-5">
-                <p className="min-w-0 text-sm break-all text-muted-foreground">
+              <div className="mt-6 flex flex-col gap-3 border-t border-rule pt-4 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-3 sm:pt-5">
+                <p className="min-w-0 truncate text-sm text-muted-foreground sm:max-w-[min(100%,22rem)]">
                   {user.email ?? "bez emailu"}
                 </p>
-                <span className="inline-flex -rotate-2 border border-sage px-2.5 py-1 font-mono text-[10px] tracking-[0.16em] text-sage uppercase">
-                  <span className="sr-only">Rola: </span>
-                  {primaryRole}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => void logout()}
-                  className="group inline-flex items-center gap-2 text-sm font-medium text-ink underline decoration-rule underline-offset-4 transition hover:decoration-ink"
-                >
-                  Odhlásiť sa
-                  <LogOut
-                    animated={false}
-                    className="size-3.5 transition group-hover:translate-x-0.5"
-                    strokeWidth={1.8}
-                    aria-hidden
-                  />
-                </button>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="inline-flex -rotate-2 border border-sage px-2.5 py-1 font-mono text-[10px] tracking-[0.16em] text-sage uppercase">
+                    <span className="sr-only">Rola: </span>
+                    {primaryRole}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void logout()}
+                    className="group inline-flex items-center gap-2 text-sm font-medium text-ink underline decoration-rule underline-offset-4 transition hover:decoration-ink"
+                  >
+                    Odhlásiť sa
+                    <LogOut
+                      animated={false}
+                      className="size-3.5 transition group-hover:translate-x-0.5"
+                      strokeWidth={1.8}
+                      aria-hidden
+                    />
+                  </button>
+                </div>
               </div>
 
               {wantsAdmin && !user.isStaff ? (
@@ -206,7 +210,7 @@ export function LoginPanel() {
           </p>
           <h1
             id="login-panel-heading"
-            className="mt-5 max-w-[12ch] font-display text-[clamp(3.4rem,8vw,6.2rem)] leading-[0.86] font-medium tracking-[-0.035em] text-ink"
+            className="mt-5 max-w-[12ch] font-display text-[clamp(2.15rem,1.05rem+6.5vw,6.2rem)] leading-[0.92] font-medium tracking-[-0.035em] text-balance text-ink sm:leading-[0.86]"
           >
             {entraEnabled ? "Prihlás sa" : "Vývojový režim"}
             <span className="text-sage">.</span>

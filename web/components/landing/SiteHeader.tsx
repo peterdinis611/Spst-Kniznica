@@ -3,13 +3,16 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, LogIn, Menu, X } from "@/components/icons";
+import { ArrowRight, KeyRound, LogIn, Menu, Sparkles, X } from "@/components/icons";
 import { useAbility } from "@/components/auth/AbilityProvider";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { AuthNavCluster } from "@/components/auth/AuthNavCluster";
 import { BrandLogo } from "@/components/brand-logo";
 import { AppTourTrigger } from "@/components/onboarding/AppTourTrigger";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { startAppTour } from "@/lib/tour/app-tour";
+import { resolveUserDisplayName } from "@/lib/auth/display-name";
 import {
   Sheet,
   SheetClose,
@@ -76,7 +79,11 @@ const ActionsCluster = styled.div`
   flex-shrink: 0;
   margin-left: auto;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
+
+  @media (min-width: 640px) {
+    gap: 0.5rem;
+  }
 `;
 
 const MenuTriggerButton = styled(Button)`
@@ -246,6 +253,9 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const { ready, user, account } = useAuth();
+  const authenticated = Boolean(ready && user?.isAuthenticated);
+  const displayName = resolveUserDisplayName(user, account);
 
   return (
     <HeaderBar role="banner" className="reveal">
@@ -330,28 +340,74 @@ export function SiteHeader() {
                 <MobileNav onNavigate={() => setOpen(false)} />
               </Suspense>
 
-              <div className="mt-auto space-y-3 border-t border-rule p-5 dark:border-white/10">
-                <Link
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                  className="split-cta group w-full border border-ink bg-paper text-ink transition hover:-translate-y-0.5"
-                >
-                  <span className="flex items-center px-4 py-3.5 text-sm font-semibold tracking-wide">
-                    Prihlásiť sa
-                  </span>
-                  <span className="flex items-center justify-center bg-ink px-3.5 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground">
-                    <LogIn className="size-4" strokeWidth={1.8} aria-hidden />
-                  </span>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="h-11 w-full rounded-none border-ink"
-                  render={<Link href="/books" />}
-                  onClick={() => setOpen(false)}
-                >
-                  Do katalógu
-                  <ArrowRight className="size-4" strokeWidth={1.8} aria-hidden />
-                </Button>
+              <div className="mt-auto space-y-2.5 border-t border-rule p-4 sm:p-5 dark:border-white/10">
+                {authenticated ? (
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="split-cta group w-full border border-ink bg-paper text-ink transition hover:-translate-y-0.5"
+                  >
+                    <span className="flex min-w-0 flex-col justify-center gap-0.5 px-4 py-3 text-left">
+                      <span className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
+                        Účet
+                      </span>
+                      <span className="truncate text-sm font-semibold tracking-wide">
+                        {displayName || "Môj účet"}
+                      </span>
+                    </span>
+                    <span className="flex items-center justify-center bg-ink px-3.5 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground">
+                      <KeyRound
+                        className="size-4"
+                        strokeWidth={1.8}
+                        aria-hidden
+                      />
+                    </span>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="split-cta group w-full border border-ink bg-paper text-ink transition hover:-translate-y-0.5"
+                  >
+                    <span className="flex items-center px-4 py-3.5 text-sm font-semibold tracking-wide">
+                      Prihlásiť sa
+                    </span>
+                    <span className="flex items-center justify-center bg-ink px-3.5 text-paper transition group-hover:bg-accent group-hover:text-accent-foreground">
+                      <LogIn
+                        className="size-4"
+                        strokeWidth={1.8}
+                        aria-hidden
+                      />
+                    </span>
+                  </Link>
+                )}
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 rounded-none border-ink"
+                    onClick={() => {
+                      setOpen(false);
+                      startAppTour();
+                    }}
+                  >
+                    <Sparkles className="size-3.5 text-sage" aria-hidden />
+                    Tour
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-11 rounded-none border-ink"
+                    render={<Link href="/books" />}
+                    onClick={() => setOpen(false)}
+                  >
+                    Katalóg
+                    <ArrowRight
+                      className="size-3.5"
+                      strokeWidth={1.8}
+                      aria-hidden
+                    />
+                  </Button>
+                </div>
               </div>
             </div>
           </SheetContent>
