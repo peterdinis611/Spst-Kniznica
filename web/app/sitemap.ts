@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
+import { headers } from "next/headers";
 import { absoluteUrl } from "@/lib/site";
+import { recordDiscoveryHit } from "@/lib/seo/discovery-monitor";
 import { fetchSitemapCatalog } from "@/lib/seo/sitemap-data";
 
 export const revalidate = 3600;
@@ -23,6 +25,18 @@ function entry(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  try {
+    const h = await headers();
+    recordDiscoveryHit({
+      kind: "sitemap.xml",
+      path: "/sitemap.xml",
+      userAgent: h.get("user-agent"),
+      referer: h.get("referer"),
+    });
+  } catch {
+    /* headers() unavailable outside request context */
+  }
+
   const now = new Date();
   const staticEntries: MetadataRoute.Sitemap = [
     entry("/", { lastModified: now, changeFrequency: "weekly", priority: 1 }),

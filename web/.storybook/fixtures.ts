@@ -274,10 +274,22 @@ export const adminBookCopyAvailable = {
   inventoryNumber: "INV-1984-01",
 };
 
-export const adminBookCopyDamaged = {
-  id: "copy-damaged",
+export const adminBookCopyLost = {
+  id: "copy-lost",
   status: 3,
   inventoryNumber: "INV-1984-02",
+};
+
+export const adminBookCopyMaintenance = {
+  id: "copy-maintenance",
+  status: 4,
+  inventoryNumber: "INV-1984-03",
+};
+
+export const adminBookCopyBorrowed = {
+  id: "copy-borrowed",
+  status: 1,
+  inventoryNumber: "INV-1984-04",
 };
 
 export const adminBookStockOk = {

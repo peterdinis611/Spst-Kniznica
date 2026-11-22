@@ -46,4 +46,9 @@ test.describe("SEO / AI discovery smoke", () => {
     const body = await res.text();
     expect(body.startsWith("# SPST Knižnica")).toBe(true);
   });
+
+  test("seo-discovery API rejects anonymous", async ({ request }) => {
+    const res = await request.get("/api/seo-discovery");
+    expect([401, 403]).toContain(res.status());
+  });
 });

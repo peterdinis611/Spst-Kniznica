@@ -4,7 +4,10 @@ namespace BookService.DTOs;
 
 public class UpdateBookCopyStatusRequest
 {
-    public BookCopyStatus Status { get; set; }
+    /// <summary>
+    /// Nullable so a missing JSON field is rejected. A non-nullable enum would deserialize as Available.
+    /// </summary>
+    public BookCopyStatus? Status { get; set; }
 }
 
 public class UpdateBookCopyStatusResult

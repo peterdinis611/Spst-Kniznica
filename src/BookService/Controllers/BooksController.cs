@@ -209,7 +209,8 @@ public class BooksController(
     }
 
     /// <summary>
-    /// Staff: set copy status to available, lost, or maintenance (not borrowed/reserved).
+    /// Staff: set an idle copy to available, lost, or maintenance.
+    /// Borrowed and reserved copies stay under the loan workflow.
     /// </summary>
     [HttpPatch("{bookId:guid}/copies/{copyId:guid}")]
     [Authorize(Policy = AuthPolicies.Staff)]

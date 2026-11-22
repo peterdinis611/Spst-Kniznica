@@ -2,6 +2,7 @@ import {
   getCategoryAction,
   searchBooksAction,
 } from "@/lib/catalog/actions";
+import { recordDiscoveryFromRequest } from "@/lib/seo/discovery-monitor";
 import { buildCategoryMarkdown } from "@/lib/seo/entity-markdown";
 import { LLM_TXT_HEADERS } from "@/lib/seo/llms-txt";
 
@@ -9,7 +10,7 @@ export const revalidate = 3600;
 
 type Props = { params: Promise<{ id: string }> };
 
-export async function GET(_request: Request, { params }: Props) {
+export async function GET(request: Request, { params }: Props) {
   const { id } = await params;
   const [categoryResult, booksResult] = await Promise.all([
     getCategoryAction({ id }),
@@ -18,6 +19,7 @@ export async function GET(_request: Request, { params }: Props) {
   const category = categoryResult?.data?.category;
 
   if (!category) {
+    recordDiscoveryFromRequest(request, "category.md", 404);
     return new Response(
       "# Kategória nenájdená\n\nZáznam v katalógu neexistuje.\n",
       {
@@ -28,6 +30,7 @@ export async function GET(_request: Request, { params }: Props) {
   }
 
   const titles = (booksResult?.data?.items ?? []).map((book) => book.title);
+  recordDiscoveryFromRequest(request, "category.md");
 
   return new Response(buildCategoryMarkdown(category, titles), {
     status: 200,

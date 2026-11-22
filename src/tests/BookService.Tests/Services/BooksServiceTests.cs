@@ -5,6 +5,7 @@ using BookService.Models;
 using BookService.Services;
 using BookService.Validators;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using SpstKniznica.Caching;
@@ -32,6 +33,7 @@ public class BooksServiceTests
             _events,
             new CreateBookRequestValidator(_books),
             new UpdateBookRequestValidator(_books),
+            new UpdateBookCopyStatusRequestValidator(),
             NullLogger<BooksService>.Instance);
     }
 
@@ -137,6 +139,144 @@ public class BooksServiceTests
         await act.Should().ThrowAsync<AppValidationException>()
             .Where(ex => ex.Errors.ContainsKey("Copies"));
         _events.Events.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task UpdateCopyStatusAsync_rejects_missing_status_before_loading_the_book()
+    {
+        var act = async () => await _sut.UpdateCopyStatusAsync(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new UpdateBookCopyStatusRequest());
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("Status"));
+        await _books.DidNotReceive().GetByIdAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<bool>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task UpdateCopyStatusAsync_rejects_borrowed_target()
+    {
+        var act = async () => await _sut.UpdateCopyStatusAsync(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new UpdateBookCopyStatusRequest { Status = BookCopyStatus.Borrowed });
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("Status"));
+    }
+
+    [Fact]
+    public async Task UpdateCopyStatusAsync_rejects_copy_that_is_out_on_loan()
+    {
+        var (book, copy) = BookWithCopy(BookCopyStatus.Reserved);
+        _books.GetByIdAsync(book.Id, true, Arg.Any<CancellationToken>()).Returns(book);
+
+        var act = async () => await _sut.UpdateCopyStatusAsync(
+            book.Id,
+            copy.Id,
+            new UpdateBookCopyStatusRequest { Status = BookCopyStatus.Lost });
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("status"));
+        await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+        copy.Status.Should().Be(BookCopyStatus.Reserved);
+    }
+
+    [Fact]
+    public async Task UpdateCopyStatusAsync_marks_available_copy_lost_and_drops_list_cache()
+    {
+        var cache = Substitute.For<IAppCache>();
+        var sut = new BooksService(
+            _unitOfWork,
+            _authors,
+            _categories,
+            cache,
+            _events,
+            new CreateBookRequestValidator(_books),
+            new UpdateBookRequestValidator(_books),
+            new UpdateBookCopyStatusRequestValidator(),
+            NullLogger<BooksService>.Instance);
+        var (book, copy) = BookWithCopy(BookCopyStatus.Available);
+        book.Copies.Add(new BookCopy
+        {
+            Id = Guid.NewGuid(),
+            BookId = book.Id,
+            InventoryNumber = "A-2",
+            Status = BookCopyStatus.Available,
+            CreatedAt = book.CreatedAt,
+            UpdatedAt = book.UpdatedAt,
+        });
+        book.RecalculateCopyCounts();
+        _books.GetByIdAsync(book.Id, true, Arg.Any<CancellationToken>()).Returns(book);
+        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
+
+        var result = await sut.UpdateCopyStatusAsync(
+            book.Id,
+            copy.Id,
+            new UpdateBookCopyStatusRequest { Status = BookCopyStatus.Lost });
+
+        copy.Status.Should().Be(BookCopyStatus.Lost);
+        copy.Version.Should().Be(1);
+        result.AvailableCopies.Should().Be(1);
+        result.TotalCopies.Should().Be(2);
+        _books.Received(1).Update(book);
+        await cache.Received(1).RemoveByPrefixAsync(
+            CacheKeys.BookListPrefix,
+            Arg.Any<CancellationToken>());
+        await cache.Received(1).SetAsync(
+            CacheKeys.Book(book.Id),
+            Arg.Any<BookDetailDto>(),
+            Arg.Any<TimeSpan?>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task UpdateCopyStatusAsync_translates_concurrency_conflict()
+    {
+        var (book, copy) = BookWithCopy(BookCopyStatus.Available);
+        _books.GetByIdAsync(book.Id, true, Arg.Any<CancellationToken>()).Returns(book);
+        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<int>(new DbUpdateConcurrencyException()));
+
+        var act = async () => await _sut.UpdateCopyStatusAsync(
+            book.Id,
+            copy.Id,
+            new UpdateBookCopyStatusRequest { Status = BookCopyStatus.Maintenance });
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("Conflict"));
+    }
+
+    private static (Book Book, BookCopy Copy) BookWithCopy(BookCopyStatus status)
+    {
+        var id = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        var copy = new BookCopy
+        {
+            Id = Guid.NewGuid(),
+            BookId = id,
+            InventoryNumber = "A-1",
+            Status = status,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+        var book = new Book
+        {
+            Id = id,
+            Title = "Výtlačok",
+            AuthorId = Guid.NewGuid(),
+            Author = "Autor",
+            Isbn = "9780131103627",
+            CreatedAt = now,
+            UpdatedAt = now,
+            Copies = [copy],
+        };
+        book.RecalculateCopyCounts();
+        return (book, copy);
     }
 
     private sealed class RecordingEventPublisher : IIntegrationEventPublisher

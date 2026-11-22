@@ -14,6 +14,15 @@ public static class BookIntegrationsSchema
                 cancellationToken);
         }
 
+        // Baselines mark every migration as applied without running it, so existing
+        // databases need the column here as well as in the EF migration.
+        if (!await ColumnExistsAsync(db, "BookCopies", "Version", cancellationToken))
+        {
+            await db.Database.ExecuteSqlRawAsync(
+                """ALTER TABLE "BookCopies" ADD COLUMN "Version" INTEGER NOT NULL DEFAULT 0;""",
+                cancellationToken);
+        }
+
         await SqliteGuidNormalize.LowerGuidColumnsAsync(
             db,
             [

@@ -23,6 +23,7 @@ const TOOL_LINKS = [
   { to: "/tools/import", label: "Importovať" },
   { to: "/tools/gateway", label: "API brána" },
   { to: "/tools/health", label: "Zdravie" },
+  { to: "/tools/seo", label: "SEO / AI" },
   { to: "/tools/services", label: "Služby" },
   { to: "/tools/cache", label: "Vyrovnávacia pamäť", adminOnly: true },
   { to: "/tools/messaging", label: "Správy", adminOnly: true },

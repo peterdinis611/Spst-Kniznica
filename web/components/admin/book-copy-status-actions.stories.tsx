@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   adminBookCopyAvailable,
-  adminBookCopyDamaged,
+  adminBookCopyBorrowed,
+  adminBookCopyLost,
+  adminBookCopyMaintenance,
 } from "@/.storybook/fixtures";
 import { withAdminRecord } from "@/.storybook/admin-decorators";
 import { BookCopyStatusActions } from "./BookCopyStatusActions";
@@ -18,7 +20,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Prepínače stavu výtlačku (dostupný / poškodený / vyradený). `RecordContext` nesie aktuálny copy; PATCH v Storybooku zlyhá — UI tlačidlá podľa stavu.",
+          "Prepínače stavu výtlačku (dostupný / stratený / údržba). Požičaný a rezervovaný výtlačok prepínač nemá — stav mení výpožička. `RecordContext` nesie aktuálny copy; PATCH v Storybooku zlyhá.",
       },
     },
   },
@@ -32,7 +34,17 @@ export const Available: Story = {
   decorators: [withAdminRecord(adminBookCopyAvailable)],
 };
 
-export const Damaged: Story = {
-  name: "Poškodený",
-  decorators: [withAdminRecord(adminBookCopyDamaged)],
+export const Lost: Story = {
+  name: "Stratený",
+  decorators: [withAdminRecord(adminBookCopyLost)],
+};
+
+export const Maintenance: Story = {
+  name: "Údržba",
+  decorators: [withAdminRecord(adminBookCopyMaintenance)],
+};
+
+export const Borrowed: Story = {
+  name: "Požičaný",
+  decorators: [withAdminRecord(adminBookCopyBorrowed)],
 };

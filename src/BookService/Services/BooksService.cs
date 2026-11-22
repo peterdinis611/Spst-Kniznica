@@ -10,6 +10,7 @@ using ClosedXML.Excel;
 using CsvHelper;
 using CsvHelper.Configuration;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Integrations;
 using SpstKniznica.Common.Messaging;
@@ -25,6 +26,7 @@ public partial class BooksService(
     IIntegrationEventPublisher eventPublisher,
     IValidator<CreateBookRequest> createValidator,
     IValidator<UpdateBookRequest> updateValidator,
+    IValidator<UpdateBookCopyStatusRequest> copyStatusValidator,
     ILogger<BooksService> logger) : IBooksService
 {
     public async Task<PagedResult<BookListItemDto>> SearchAsync(
@@ -134,6 +136,25 @@ public partial class BooksService(
             .ToList();
     }
 
+    private async Task SaveChangesOrConflictAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogWarning(ex, "Book save lost a concurrency race");
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["Conflict"] =
+                [
+                    "Záznam medzitým zmenil niekto iný. Obnovte stránku a skúste znova."
+                ]
+            });
+        }
+    }
+
     private Task InvalidateBookCachesAsync(Guid bookId, CancellationToken cancellationToken) =>
         Task.WhenAll(
             cache.RemoveAsync(CacheKeys.Book(bookId), cancellationToken),
@@ -184,16 +205,9 @@ public partial class BooksService(
         UpdateBookCopyStatusRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (request.Status is BookCopyStatus.Borrowed or BookCopyStatus.Reserved)
-        {
-            throw new AppValidationException(new Dictionary<string, string[]>
-            {
-                ["status"] =
-                [
-                    "Stavy požičaný a rezervovaný sa menia len cez výpožičky."
-                ]
-            });
-        }
+        var validation = await copyStatusValidator.ValidateAsync(request, cancellationToken);
+        EnsureValid(validation);
+        var nextStatus = request.Status!.Value;
 
         var book = await unitOfWork.Books.GetByIdAsync(bookId, includeCopies: true, cancellationToken);
         if (book is null)
@@ -214,15 +228,33 @@ public partial class BooksService(
             throw new NotFoundException($"Book copy '{copyId}' was not found on book '{bookId}'.");
         }
 
-        var utcNow = DateTimeOffset.UtcNow;
-        if (copy.Status != request.Status)
+        if (copy.Status is BookCopyStatus.Borrowed or BookCopyStatus.Reserved)
         {
-            copy.Status = request.Status;
+            logger.LogWarning(
+                "Update copy status blocked. Copy {CopyId} is {CopyStatus} and only a loan can change it",
+                copy.Id,
+                copy.Status);
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["status"] =
+                [
+                    "Požičaný alebo rezervovaný výtlačok sa nedá prepísať. Najprv ho vráťte alebo zrušte rezerváciu."
+                ]
+            });
+        }
+
+        var utcNow = DateTimeOffset.UtcNow;
+        if (copy.Status != nextStatus)
+        {
+            // Attach first, then bump Version. Update() copies the current token into
+            // the original value used in WHERE, so the increment must happen after attach.
+            unitOfWork.Books.Update(book);
+            copy.Status = nextStatus;
+            copy.Version++;
             copy.UpdatedAt = utcNow;
             book.RecalculateCopyCounts();
             book.UpdatedAt = utcNow;
-            unitOfWork.Books.Update(book);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await SaveChangesOrConflictAsync(cancellationToken);
 
             var detail = MapDetail(book);
             await cache.SetAsync(
@@ -230,12 +262,13 @@ public partial class BooksService(
                 detail,
                 TimeSpan.FromMinutes(5),
                 cancellationToken);
+            await cache.RemoveByPrefixAsync(CacheKeys.BookListPrefix, cancellationToken);
 
             logger.LogInformation(
                 "Updated copy {CopyId} on book {BookId} → {CopyStatus}. AvailableCopies={AvailableCopies}",
                 copy.Id,
                 bookId,
-                request.Status,
+                nextStatus,
                 book.AvailableCopies);
         }
 
@@ -341,7 +374,7 @@ public partial class BooksService(
         book.RecalculateCopyCounts();
 
         unitOfWork.Books.Update(book);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await SaveChangesOrConflictAsync(cancellationToken);
 
         await eventPublisher.PublishAsync(
             new BookUpdatedEvent(

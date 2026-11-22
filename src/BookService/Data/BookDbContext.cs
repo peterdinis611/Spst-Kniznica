@@ -50,6 +50,7 @@ public class BookDbContext(DbContextOptions<BookDbContext> options) : DbContext(
             entity.Property(c => c.Barcode).HasMaxLength(64);
             entity.Property(c => c.ShelfLocation).HasMaxLength(50);
             entity.Property(c => c.Status).HasConversion<string>().HasMaxLength(20);
+            entity.Property(c => c.Version).IsConcurrencyToken();
 
             entity.HasIndex(c => c.InventoryNumber).IsUnique();
             entity.HasIndex(c => c.Barcode).IsUnique();

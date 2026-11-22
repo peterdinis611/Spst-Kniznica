@@ -190,6 +190,16 @@ export function DeskScanPanel({
 
   async function setCopyStatus(status: 0 | 3 | 4) {
     if (!lookup) return;
+    if (lookup.status === 1 || lookup.status === 2) {
+      setError("Požičaný alebo rezervovaný výtlačok mení len výdaj a vrátenie.");
+      return;
+    }
+    if (status === 3) {
+      const ok = window.confirm(
+        `Označiť ${lookup.inventoryNumber} ako stratený?`,
+      );
+      if (!ok) return;
+    }
     setBusy(true);
     setError(null);
     setMessage(null);
@@ -330,41 +340,47 @@ export function DeskScanPanel({
               Vrátiť
             </Button>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2 border-t border-rule pt-3 dark:border-white/10">
-            {lookup.status !== 3 ? (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busy || updateCopyStatus.isPending}
-                className="h-9 rounded-none border-stair-2 text-stair-2"
-                onClick={() => void setCopyStatus(3)}
-              >
-                Stratený
-              </Button>
-            ) : null}
-            {lookup.status !== 4 ? (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busy || updateCopyStatus.isPending}
-                className="h-9 rounded-none border-amber-700/50 text-amber-800 dark:text-amber-200"
-                onClick={() => void setCopyStatus(4)}
-              >
-                Údržba
-              </Button>
-            ) : null}
-            {lookup.status !== 0 ? (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busy || updateCopyStatus.isPending}
-                className="h-9 rounded-none border-sage text-sage"
-                onClick={() => void setCopyStatus(0)}
-              >
-                Obnoviť dostupný
-              </Button>
-            ) : null}
-          </div>
+          {lookup.status === 1 || lookup.status === 2 ? (
+            <p className="mt-3 border-t border-rule pt-3 text-sm text-muted-foreground dark:border-white/10">
+              Požičaný a rezervovaný stav mení len výdaj alebo vrátenie.
+            </p>
+          ) : (
+            <div className="mt-3 flex flex-wrap gap-2 border-t border-rule pt-3 dark:border-white/10">
+              {lookup.status !== 3 ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={busy || updateCopyStatus.isPending}
+                  className="h-9 rounded-none border-stair-2 text-stair-2"
+                  onClick={() => void setCopyStatus(3)}
+                >
+                  Stratený
+                </Button>
+              ) : null}
+              {lookup.status !== 4 ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={busy || updateCopyStatus.isPending}
+                  className="h-9 rounded-none border-amber-700/50 text-amber-800 dark:text-amber-200"
+                  onClick={() => void setCopyStatus(4)}
+                >
+                  Údržba
+                </Button>
+              ) : null}
+              {lookup.status !== 0 ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={busy || updateCopyStatus.isPending}
+                  className="h-9 rounded-none border-sage text-sage"
+                  onClick={() => void setCopyStatus(0)}
+                >
+                  Obnoviť dostupný
+                </Button>
+              ) : null}
+            </div>
+          )}
         </div>
       ) : null}
     </section>

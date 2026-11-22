@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
+import { headers } from "next/headers";
 import { absoluteUrl } from "@/lib/site";
+import { recordDiscoveryHit } from "@/lib/seo/discovery-monitor";
 
 const PRIVATE_PATHS = [
   "/admin",
@@ -25,7 +27,19 @@ const PUBLIC_AI = [
   "/sitemap.xml",
 ] as const;
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  try {
+    const h = await headers();
+    recordDiscoveryHit({
+      kind: "robots.txt",
+      path: "/robots.txt",
+      userAgent: h.get("user-agent"),
+      referer: h.get("referer"),
+    });
+  } catch {
+    /* headers() unavailable outside request context */
+  }
+
   return {
     rules: [
       {

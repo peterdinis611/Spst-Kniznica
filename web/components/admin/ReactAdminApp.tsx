@@ -60,6 +60,7 @@ import { AuthSettingsPage } from "@/components/admin/tools/AuthSettingsPage";
 import { EmailsToolsPage } from "@/components/admin/tools/EmailsToolsPage";
 import { LifecycleToolsPage } from "@/components/admin/tools/LifecycleToolsPage";
 import { LoanPolicyPage } from "@/components/admin/tools/LoanPolicyPage";
+import { SeoDiscoveryPage } from "@/components/admin/tools/SeoDiscoveryPage";
 import { WaitlistToolsPage } from "@/components/admin/tools/WaitlistToolsPage";
 
 export default function ReactAdminApp() {
@@ -130,6 +131,7 @@ export default function ReactAdminApp() {
             <Route path="/tools/barcode" element={<BarcodeToolsPage />} />
             <Route path="/tools/gateway" element={<GatewayToolsPage />} />
             <Route path="/tools/health" element={<HealthToolsPage />} />
+            <Route path="/tools/seo" element={<SeoDiscoveryPage />} />
             <Route path="/tools/services" element={<ServicesRegistryPage />} />
             {hasAdminRole(permissions) ? (
               <Route path="/tools/cache" element={<CacheToolsPage />} />

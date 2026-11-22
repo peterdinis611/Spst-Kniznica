@@ -10,6 +10,7 @@ import QueueIcon from "@mui/icons-material/Queue";
 import BadgeIcon from "@mui/icons-material/Badge";
 import RouterIcon from "@mui/icons-material/Router";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
+import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import DnsIcon from "@mui/icons-material/Dns";
 import LinkIcon from "@mui/icons-material/Link";
 import PolicyIcon from "@mui/icons-material/Policy";
@@ -58,6 +59,11 @@ export function AdminMenu() {
         to="/tools/health"
         primaryText="Kontrola zdravia"
         leftIcon={<MonitorHeartIcon />}
+      />
+      <Menu.Item
+        to="/tools/seo"
+        primaryText="SEO / AI discovery"
+        leftIcon={<TravelExploreIcon />}
       />
       <Menu.Item
         to="/tools/services"

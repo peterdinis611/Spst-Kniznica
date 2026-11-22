@@ -19,7 +19,7 @@ namespace BookService.Data.Migrations
 
             modelBuilder.Entity("BookService.Models.Book", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
@@ -28,13 +28,13 @@ namespace BookService.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("AuthorId")
+                    b.Property<string>("AuthorId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("AvailableCopies")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("CategoryId")
+                    b.Property<string>("CategoryId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CategoryName")
@@ -114,7 +114,7 @@ namespace BookService.Data.Migrations
 
             modelBuilder.Entity("BookService.Models.BookCopy", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
@@ -122,7 +122,8 @@ namespace BookService.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("BookId")
+                    b.Property<string>("BookId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -144,6 +145,10 @@ namespace BookService.Data.Migrations
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

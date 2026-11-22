@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNotify, useRecordContext } from "react-admin";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
+import Typography from "@mui/material/Typography";
 import { useAdminMutationRefresh } from "@/hooks/use-admin-ops";
 import { adminHttp } from "@/lib/admin/http";
 import { COPY_STATUS_CHOICES } from "@/components/admin/shared";
@@ -31,11 +32,17 @@ export function BookCopyStatusActions({ bookId }: BookCopyStatusActionsProps) {
   const status = Number(copy.status);
   const inventory =
     typeof copy.inventoryNumber === "string" ? copy.inventoryNumber : "";
+  const onLoan = status === 1 || status === 2;
 
   async function apply(next: (typeof STAFF_TARGETS)[number]) {
+    if (onLoan) return;
     const label =
       COPY_STATUS_CHOICES.find((choice) => choice.id === next)?.name ??
       String(next);
+    if (next === 3) {
+      const who = inventory || "tento výtlačok";
+      if (!window.confirm(`Označiť ${who} ako stratený?`)) return;
+    }
     setBusy(true);
     try {
       await adminHttp<UpdateCopyStatusResult>(
@@ -57,6 +64,14 @@ export function BookCopyStatusActions({ bookId }: BookCopyStatusActionsProps) {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (onLoan) {
+    return (
+      <Typography variant="caption" color="text.secondary">
+        Stav mení výpožička
+      </Typography>
+    );
   }
 
   return (

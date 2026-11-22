@@ -9,6 +9,10 @@ public class BookCopy
     public string? Barcode { get; set; }
     public BookCopyStatus Status { get; set; } = BookCopyStatus.Available;
     public string? ShelfLocation { get; set; }
+    /// <summary>
+    /// Incremented on every status write. Two staff saves of the same snapshot cannot both succeed.
+    /// </summary>
+    public uint Version { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
