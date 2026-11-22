@@ -46,11 +46,11 @@ try
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IAuthorService, AuthorAppService>();
     builder.Services.AddHttpClient<IRelationBookCountLookup, RelationBookCountLookup>(client =>
-    {
-        var baseUrl = builder.Configuration["MessagingService:BaseUrl"] ?? "http://localhost:5205";
-        client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
-        client.Timeout = TimeSpan.FromSeconds(5);
-    });
+        {
+            var baseUrl = builder.Configuration["MessagingService:BaseUrl"] ?? "http://localhost:5205";
+            client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+        })
+        .AddSpstResilienceTight();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
     builder.Services.AddSpstIntegrationMessaging(builder.Configuration, clientId: "author-service");
     builder.Services.AddBookServiceEventHttpFallback(builder.Configuration);

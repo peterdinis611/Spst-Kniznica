@@ -36,10 +36,10 @@ try
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddHttpClient("admin-downstream", client =>
-    {
-        client.Timeout = TimeSpan.FromSeconds(3);
-        client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
-    });
+        {
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+        })
+        .AddSpstResilienceTight();
 
     builder.Services.AddDbContext<AdminDbContext>(options =>
         options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "admin.db")

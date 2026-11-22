@@ -61,18 +61,18 @@ try
 
 
     builder.Services.AddHttpClient<ICategoryLookup, CategoryLookupClient>(client =>
-    {
-        var baseUrl = builder.Configuration["CategoryService:BaseUrl"] ?? "http://localhost:5204";
-        client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
-        client.Timeout = TimeSpan.FromSeconds(10);
-    });
+        {
+            var baseUrl = builder.Configuration["CategoryService:BaseUrl"] ?? "http://localhost:5204";
+            client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+        })
+        .AddSpstResilience();
 
     builder.Services.AddHttpClient<IAuthorLookup, AuthorLookupClient>(client =>
-    {
-        var baseUrl = builder.Configuration["AuthorService:BaseUrl"] ?? "http://localhost:5207";
-        client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
-        client.Timeout = TimeSpan.FromSeconds(10);
-    });
+        {
+            var baseUrl = builder.Configuration["AuthorService:BaseUrl"] ?? "http://localhost:5207";
+            client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+        })
+        .AddSpstResilience();
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<BookDbContext>("database");

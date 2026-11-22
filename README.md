@@ -169,6 +169,7 @@ Detaily: [`load/README.md`](load/README.md).
 ```bash
 ./scripts/status.sh                      # health + disk + Redis
 ./scripts/backup-sqlite.sh               # online záloha *.db (WAL-safe)
+./scripts/install-daily-backup.sh        # launchd/cron: denne 20:00 (+ retencia 14 dní)
 ./scripts/restore-sqlite.sh .backups/... # obnova (najprv stop-all)
 ./scripts/check-production-secrets.sh    # Entra / InternalApi / SITE_URL
 ```

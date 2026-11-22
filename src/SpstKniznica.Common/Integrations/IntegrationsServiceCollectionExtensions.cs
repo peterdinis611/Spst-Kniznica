@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SpstKniznica.Common.Hosting;
 
 namespace SpstKniznica.Common.Integrations;
 
@@ -13,18 +14,18 @@ public static class IntegrationsServiceCollectionExtensions
         services.Configure<WorldCatOptions>(configuration.GetSection(WorldCatOptions.SectionName));
         services.Configure<TurnstileOptions>(configuration.GetSection(TurnstileOptions.SectionName));
 
-        services.AddHttpClient<OpenLibraryClient>(c => c.Timeout = TimeSpan.FromSeconds(8));
-        services.AddHttpClient<WorldCatClient>(c => c.Timeout = TimeSpan.FromSeconds(8));
+        services.AddHttpClient<OpenLibraryClient>().AddSpstResilienceExternal();
+        services.AddHttpClient<WorldCatClient>().AddSpstResilienceExternal();
         services.AddHttpClient<WikidataClient>(c =>
-        {
-            c.Timeout = TimeSpan.FromSeconds(8);
-            c.DefaultRequestHeaders.TryAddWithoutValidation(
-                "User-Agent",
-                "SPST-Kniznica/1.0 (school-library)");
-        });
-        services.AddHttpClient<NominatimClient>(c => c.Timeout = TimeSpan.FromSeconds(8));
-        services.AddHttpClient<NagerDateClient>(c => c.Timeout = TimeSpan.FromSeconds(8));
-        services.AddHttpClient<TurnstileVerifier>(c => c.Timeout = TimeSpan.FromSeconds(5));
+            {
+                c.DefaultRequestHeaders.TryAddWithoutValidation(
+                    "User-Agent",
+                    "SPST-Kniznica/1.0 (school-library)");
+            })
+            .AddSpstResilienceExternal();
+        services.AddHttpClient<NominatimClient>().AddSpstResilienceExternal();
+        services.AddHttpClient<NagerDateClient>().AddSpstResilienceExternal();
+        services.AddHttpClient<TurnstileVerifier>().AddSpstResilienceTight();
 
         services.AddSingleton<IsbnCatalogLookup>();
         return services;

@@ -36,10 +36,8 @@ try
 
     builder.Services.Configure<LoanLifecycleOptions>(
         builder.Configuration.GetSection(LoanLifecycleOptions.SectionName));
-    builder.Services.AddHttpClient("loan-lifecycle", client =>
-    {
-        client.Timeout = TimeSpan.FromSeconds(30);
-    });
+    builder.Services.AddHttpClient("loan-lifecycle")
+        .AddSpstResilienceExternal();
     builder.Services.AddSingleton<IOrderJobQueue, ChannelOrderJobQueue>();
     builder.Services.AddHostedService<OrderProcessingHostedService>();
     builder.Services.AddHostedService<LoanLifecycleHostedService>();

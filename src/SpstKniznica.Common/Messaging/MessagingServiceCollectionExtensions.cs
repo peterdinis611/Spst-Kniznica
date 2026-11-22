@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SpstKniznica.Common.Hosting;
 
 namespace SpstKniznica.Common.Messaging;
 
@@ -79,10 +80,10 @@ public static class MessagingServiceCollectionExtensions
                 .TrimEnd('/');
 
             services.AddHttpClient<BookServiceEventHttpNotifier>(client =>
-            {
-                client.BaseAddress = new Uri(baseUrl + "/");
-                client.Timeout = TimeSpan.FromSeconds(10);
-            });
+                {
+                    client.BaseAddress = new Uri(baseUrl + "/");
+                })
+                .AddSpstResilience(attemptTimeoutSeconds: 5, totalTimeoutSeconds: 20, maxRetryAttempts: 3);
         }
 
         // Always register Fanout so callers can decorate it (e.g. BookingService outbox).

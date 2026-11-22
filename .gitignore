@@ -22,6 +22,9 @@ web/.DS_Store
 # Local run artifacts (start-all.sh)
 .run/
 
+# SQLite backups (daily job → .backups/)
+.backups/
+
 # Env (secrets / local overrides) — keep .env.example committed
 .env
 .env.local

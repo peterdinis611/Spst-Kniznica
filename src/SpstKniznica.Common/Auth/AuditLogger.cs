@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SpstKniznica.Common.Hosting;
 
 namespace SpstKniznica.Common.Auth;
 
@@ -208,10 +209,8 @@ public static class AuditLoggingServiceCollectionExtensions
     {
         services.AddSpstAuditLogging();
         services.Configure<AdminAuditOptions>(configuration.GetSection(AdminAuditOptions.SectionName));
-        services.AddHttpClient<HttpAdminAuditSink>(client =>
-        {
-            client.Timeout = TimeSpan.FromSeconds(3);
-        });
+        services.AddHttpClient<HttpAdminAuditSink>()
+            .AddSpstResilienceTight();
         services.AddTransient<IAuditSink>(sp =>
             new SourcedAuditSink(
                 sp.GetRequiredService<HttpAdminAuditSink>(),

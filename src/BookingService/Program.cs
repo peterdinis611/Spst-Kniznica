@@ -58,19 +58,19 @@ try
     builder.Services.Configure<LoanPolicyOptions>(
         builder.Configuration.GetSection(LoanPolicyOptions.SectionName));
     builder.Services.AddHttpClient<IBookCatalogLookup, BookCatalogLookupClient>((sp, client) =>
-    {
-        var bookServiceUrl = sp.GetRequiredService<
-            Microsoft.Extensions.Options.IOptions<BookCatalogOptions>>().Value.BookService;
-        client.BaseAddress = new Uri(bookServiceUrl.TrimEnd('/') + "/");
-        client.Timeout = TimeSpan.FromSeconds(3);
-    });
+        {
+            var bookServiceUrl = sp.GetRequiredService<
+                Microsoft.Extensions.Options.IOptions<BookCatalogOptions>>().Value.BookService;
+            client.BaseAddress = new Uri(bookServiceUrl.TrimEnd('/') + "/");
+        })
+        .AddSpstResilienceTight();
     builder.Services.AddHttpClient<ILoanNotificationSender, HttpLoanNotificationSender>((sp, client) =>
-    {
-        var emailServiceUrl = sp.GetRequiredService<
-            Microsoft.Extensions.Options.IOptions<EmailServiceOptions>>().Value.EmailService;
-        client.BaseAddress = new Uri(emailServiceUrl.TrimEnd('/') + "/");
-        client.Timeout = TimeSpan.FromSeconds(5);
-    });
+        {
+            var emailServiceUrl = sp.GetRequiredService<
+                Microsoft.Extensions.Options.IOptions<EmailServiceOptions>>().Value.EmailService;
+            client.BaseAddress = new Uri(emailServiceUrl.TrimEnd('/') + "/");
+        })
+        .AddSpstResilience();
 
     builder.Services.AddScoped<IBookingRepository, BookingRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
