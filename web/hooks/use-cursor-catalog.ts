@@ -34,10 +34,13 @@ export function useCursorCatalog<
   const [loadingMore, setLoadingMore] = useState(false);
   const filterKey = JSON.stringify(baseInput);
   const baseInputRef = useRef(baseInput);
-  baseInputRef.current = baseInput;
   const first = useRef(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inFlight = useRef(false);
+
+  useEffect(() => {
+    baseInputRef.current = baseInput;
+  });
 
   useEffect(() => {
     setItems(initialItems);

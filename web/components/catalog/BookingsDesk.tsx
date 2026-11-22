@@ -145,9 +145,12 @@ export function BookingsDesk({
 
   const inputKey = JSON.stringify(input);
   const inputRef = useRef(input);
-  inputRef.current = input;
   const executeSearch = search.execute;
   const searchGeneration = useRef(0);
+
+  useEffect(() => {
+    inputRef.current = input;
+  });
 
   const runDebouncedSearch = useDebouncedCallback(
     (payload: typeof input) => {

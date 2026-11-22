@@ -1,8 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { ComponentProps } from "react";
 import { CatalogSkeleton } from "@/components/catalog/CatalogSkeleton";
+import type { MyLibraryProps } from "@/components/catalog/MyLibrary";
 
 const MyLibraryDynamic = dynamic(
   () =>
@@ -13,10 +13,6 @@ const MyLibraryDynamic = dynamic(
     loading: () => <CatalogSkeleton rows={4} variant="library" />,
   },
 );
-
-type MyLibraryProps = ComponentProps<
-  typeof import("@/components/catalog/MyLibrary").MyLibrary
->;
 
 export function MyLibraryLazy(props: MyLibraryProps) {
   return <MyLibraryDynamic {...props} />;

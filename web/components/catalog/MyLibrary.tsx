@@ -38,7 +38,7 @@ import { cn } from "@/lib/utils";
 
 type CatalogRef = { id: string; title: string; author: string };
 
-type MyLibraryProps = {
+export type MyLibraryProps = {
   initialBookings: DeskBooking[];
   catalog: CatalogRef[];
 };

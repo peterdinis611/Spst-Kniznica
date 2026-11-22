@@ -40,23 +40,29 @@ export function AdminStoryShell({ children }: { children: ReactNode }) {
 }
 
 export function withAdminShell(): Decorator {
-  return (Story) => (
-    <AdminStoryShell>
-      <div className="p-6">
-        <Story />
-      </div>
-    </AdminStoryShell>
-  );
+  function AdminShellDecorator(Story: Parameters<Decorator>[0]) {
+    return (
+      <AdminStoryShell>
+        <div className="p-6">
+          <Story />
+        </div>
+      </AdminStoryShell>
+    );
+  }
+  return AdminShellDecorator;
 }
 
 export function withAdminRecord(record: RaRecord): Decorator {
-  return (Story) => (
-    <AdminStoryShell>
-      <div className="p-6">
-        <RecordContextProvider value={record}>
-          <Story />
-        </RecordContextProvider>
-      </div>
-    </AdminStoryShell>
-  );
+  function AdminRecordDecorator(Story: Parameters<Decorator>[0]) {
+    return (
+      <AdminStoryShell>
+        <div className="p-6">
+          <RecordContextProvider value={record}>
+            <Story />
+          </RecordContextProvider>
+        </div>
+      </AdminStoryShell>
+    );
+  }
+  return AdminRecordDecorator;
 }
