@@ -12,6 +12,7 @@ Spoločná logika: `load/k6/lib/` (`config`, `http`, `catalog`, `ops`).
 
 | Príkaz | Čo meria |
 | --- | --- |
+| `./scripts/load-test.sh try` | Krátky beh cez Next + BFF (~45 s) |
 | `./scripts/load-test.sh` / `smoke` | Sanity: batch health + katalóg (~30 s) |
 | `./scripts/load-test.sh catalog` | Ramping browse + summaries/detail (~3 min) |
 | `./scripts/load-test.sh summaries` | Hot path `POST /api/books/summaries` |

@@ -42,6 +42,18 @@ export function bffGet(path, name) {
   });
 }
 
+export function bffPost(path, body, name) {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return http.post(
+    `${WEB_BFF}/api/bff${normalized}`,
+    typeof body === "string" ? body : JSON.stringify(body ?? {}),
+    {
+      headers: authHeaders(),
+      tags: { name: name || `bff_${normalized}` },
+    },
+  );
+}
+
 export function expectOk(res, label = "ok") {
   return check(res, {
     [`${label} 2xx`]: (r) => r.status >= 200 && r.status < 300,
