@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Data;
 using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Integrations;
 using SpstKniznica.Common.Messaging;
@@ -45,7 +46,7 @@ try
     builder.Services.AddSpstIntegrations(builder.Configuration);
 
     builder.Services.AddDbContext<BookingDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "bookings.db")
             .ConfigureSpstMigrations());
 
     builder.Services.Configure<BookCatalogOptions>(

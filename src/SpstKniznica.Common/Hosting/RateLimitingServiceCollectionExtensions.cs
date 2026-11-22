@@ -59,6 +59,7 @@ public static class RateLimitingServiceCollectionExtensions
 
         var redisRef = redis;
         var trustForwardedFor = settings.TrustForwardedFor;
+        var knownProxies = RateLimitClientKey.ParseProxies(settings.KnownProxies);
 
         services.AddRateLimiter(options =>
         {
@@ -93,7 +94,7 @@ public static class RateLimitingServiceCollectionExtensions
 
                     return CreatePartition(
                         redisRef,
-                        "g:" + GetClientKey(httpContext, trustForwardedFor),
+                        "g:" + GetClientKey(httpContext, trustForwardedFor, knownProxies),
                         settings.GlobalPermitLimit,
                         TimeSpan.FromSeconds(Math.Max(1, settings.GlobalWindowSeconds)));
                 });
@@ -102,21 +103,21 @@ public static class RateLimitingServiceCollectionExtensions
             options.AddPolicy(PublicReadPolicy, httpContext =>
                 CreatePartition(
                     redisRef,
-                    "r:" + GetClientKey(httpContext, trustForwardedFor),
+                    "r:" + GetClientKey(httpContext, trustForwardedFor, knownProxies),
                     settings.PublicReadPermitLimit,
                     TimeSpan.FromSeconds(Math.Max(1, settings.PublicReadWindowSeconds))));
 
             options.AddPolicy(SensitiveWritePolicy, httpContext =>
                 CreatePartition(
                     redisRef,
-                    "w:" + GetClientKey(httpContext, trustForwardedFor),
+                    "w:" + GetClientKey(httpContext, trustForwardedFor, knownProxies),
                     settings.SensitiveWritePermitLimit,
                     TimeSpan.FromSeconds(Math.Max(1, settings.SensitiveWriteWindowSeconds))));
 
             options.AddPolicy(DataExportPolicy, httpContext =>
                 CreatePartition(
                     redisRef,
-                    "x:" + GetClientKey(httpContext, trustForwardedFor),
+                    "x:" + GetClientKey(httpContext, trustForwardedFor, knownProxies),
                     settings.DataExportPermitLimit,
                     TimeSpan.FromSeconds(Math.Max(1, settings.DataExportWindowSeconds))));
         });
@@ -163,25 +164,9 @@ public static class RateLimitingServiceCollectionExtensions
            || path.StartsWithSegments("/api/auth/config")
            || path.Value?.EndsWith("/swagger/v1/swagger.json", StringComparison.OrdinalIgnoreCase) == true;
 
-    private static string GetClientKey(HttpContext httpContext, bool trustForwardedFor)
-    {
-        if (httpContext.User.Identity?.IsAuthenticated == true)
-        {
-            return "u:" + (
-                httpContext.User.FindFirst("oid")?.Value
-                ?? httpContext.User.Identity.Name
-                ?? "auth");
-        }
-
-        if (trustForwardedFor)
-        {
-            var forwarded = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-            if (!string.IsNullOrWhiteSpace(forwarded))
-            {
-                return "ip:" + forwarded.Split(',')[0].Trim();
-            }
-        }
-
-        return "ip:" + (httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
-    }
+    private static string GetClientKey(
+        HttpContext httpContext,
+        bool trustForwardedFor,
+        IReadOnlySet<System.Net.IPAddress> knownProxies)
+        => RateLimitClientKey.Resolve(httpContext, trustForwardedFor, knownProxies);
 }

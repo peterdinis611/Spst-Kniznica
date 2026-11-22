@@ -14,8 +14,8 @@ public sealed class SpstForwardedHeadersOptions
     public bool Enabled { get; set; }
 
     /// <summary>
-    /// Known proxy IPs. Empty = clear KnownNetworks/Proxies and accept any
-    /// (only safe on private networks behind a single edge proxy).
+    /// Proxy IPs allowed to supply X-Forwarded-For / X-Forwarded-Proto.
+    /// Empty trusts nobody, including loopback. Set only the school reverse proxy.
     /// </summary>
     public string[] KnownProxies { get; set; } = [];
 }

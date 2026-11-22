@@ -61,6 +61,27 @@ describe("apiGet", () => {
     await expect(apiGet<{ ok: boolean }>("/api/health")).resolves.toEqual({
       ok: true,
     });
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/\/api\/health$/),
+      expect.objectContaining({ cache: "no-store", method: "GET" }),
+    );
+  });
+
+  it("lets the browser reuse a public catalog GET", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ items: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await apiGet("/api/books?page=1");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringMatching(/\/api\/books\?page=1$/),
+      expect.objectContaining({ cache: "default", method: "GET" }),
+    );
   });
 
   it("surfaces API error detail", async () => {

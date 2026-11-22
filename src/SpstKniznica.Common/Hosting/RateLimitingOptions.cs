@@ -21,10 +21,18 @@ public sealed class RateLimitingOptions
     public bool RequireRedis { get; set; }
 
     /// <summary>
-    /// When true, partition anonymous clients by the first <c>X-Forwarded-For</c> hop.
-    /// Only enable behind a trusted reverse proxy that overwrites that header.
+    /// When true, anonymous clients are partitioned by the last <c>X-Forwarded-For</c> hop.
+    /// The header is ignored unless the TCP peer is listed in <see cref="KnownProxies"/>.
+    /// An empty proxy list fails closed and uses the socket address.
     /// </summary>
     public bool TrustForwardedFor { get; set; }
+
+    /// <summary>
+    /// Reverse proxies allowed to supply <c>X-Forwarded-For</c>.
+    /// Downstream services behind the local gateway use <c>127.0.0.1</c> and <c>::1</c>.
+    /// The public gateway stays empty until the school proxy IP is known.
+    /// </summary>
+    public string[] KnownProxies { get; set; } = [];
 
     /// <summary>Optional override; defaults to Cache:ConnectionString.</summary>
     public string? RedisConnectionString { get; set; }

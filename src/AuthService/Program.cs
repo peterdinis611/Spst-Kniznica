@@ -4,6 +4,7 @@ using AuthService.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Data;
 using SpstKniznica.Common.Hosting;
 
 Log.Logger = new LoggerConfiguration()
@@ -37,7 +38,7 @@ try
         builder.Configuration.GetSection(AuthPresentationOptions.SectionName));
 
     builder.Services.AddDbContext<AuthDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "auth.db")
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<IAuthSettingsProvider, AuthSettingsProvider>();

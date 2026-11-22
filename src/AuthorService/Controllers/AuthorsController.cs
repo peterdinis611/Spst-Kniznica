@@ -22,6 +22,7 @@ public class AuthorsController(
 {
     [HttpGet]
     [AllowAnonymous]
+    [PublicCatalogCache]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(PagedResult<AuthorDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -41,6 +42,7 @@ public class AuthorsController(
 
     [HttpGet("cursor")]
     [AllowAnonymous]
+    [PublicCatalogCache]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(CursorPage<AuthorDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -125,6 +127,7 @@ public class AuthorsController(
 
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
+    [PublicCatalogCache]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

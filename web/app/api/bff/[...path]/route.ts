@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { isBffAllowedPath } from "@/lib/api/bff-allowlist";
+import {
+  catalogResponseCacheControl,
+  isPublicCatalogGet,
+} from "@/lib/api/catalog-cache";
 import { SESSION_COOKIE } from "@/lib/auth/session-constants";
 
 const API_BASE = (
@@ -85,7 +89,12 @@ async function proxy(request: Request, pathParts: string[]) {
     const disposition = upstream.headers.get("content-disposition");
     if (disposition) responseHeaders.set("content-disposition", disposition);
     const cacheControl = upstream.headers.get("cache-control");
-    if (cacheControl) responseHeaders.set("cache-control", cacheControl);
+    if (cacheControl) {
+      responseHeaders.set("cache-control", cacheControl);
+    } else if (upstream.ok && isPublicCatalogGet(path, request.method)) {
+      const fallback = catalogResponseCacheControl(path);
+      if (fallback) responseHeaders.set("cache-control", fallback);
+    }
     const pragma = upstream.headers.get("pragma");
     if (pragma) responseHeaders.set("pragma", pragma);
     const nosniff = upstream.headers.get("x-content-type-options");

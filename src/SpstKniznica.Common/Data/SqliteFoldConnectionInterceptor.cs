@@ -33,5 +33,25 @@ public sealed class SqliteFoldConnectionInterceptor : DbConnectionInterceptor
             "fold",
             (string? arg) => TextFold.Fold(arg),
             isDeterministic: true);
+        ApplyWal(sqlite);
+    }
+
+    private static void ApplyWal(SqliteConnection sqlite)
+    {
+        if (SqliteConnectionDefaults.IsMemory(sqlite.DataSource))
+        {
+            return;
+        }
+
+        Execute(sqlite, "PRAGMA journal_mode=WAL;");
+        Execute(sqlite, "PRAGMA busy_timeout=5000;");
+        Execute(sqlite, "PRAGMA synchronous=NORMAL;");
+    }
+
+    private static void Execute(SqliteConnection sqlite, string sql)
+    {
+        using var command = sqlite.CreateCommand();
+        command.CommandText = sql;
+        command.ExecuteScalar();
     }
 }

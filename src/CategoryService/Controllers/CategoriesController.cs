@@ -20,6 +20,7 @@ public class CategoriesController(
 {
     [HttpGet]
     [AllowAnonymous]
+    [PublicCatalogCache]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(PagedResult<CategoryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -40,6 +41,7 @@ public class CategoriesController(
 
     [HttpGet("cursor")]
     [AllowAnonymous]
+    [PublicCatalogCache]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(CursorPage<CategoryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -112,6 +114,7 @@ public class CategoriesController(
 
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
+    [PublicCatalogCache]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

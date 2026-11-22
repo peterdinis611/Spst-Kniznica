@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Data;
 using SpstKniznica.Common.Hosting;
 
 Log.Logger = new LoggerConfiguration()
@@ -40,7 +41,7 @@ try
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "MessagingService");
 
     builder.Services.AddDbContext<MessagingDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "messaging.db")
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<ILibraryRelationService, LibraryRelationService>();

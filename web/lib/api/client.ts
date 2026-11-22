@@ -1,4 +1,5 @@
 import { UNAUTHORIZED_EVENT } from "@/lib/auth/session-constants";
+import { catalogRequestCache } from "@/lib/api/catalog-cache";
 import { ApiHttpError } from "@/lib/api/errors";
 import { parseJsonText } from "@/lib/api/parse-json";
 import {
@@ -153,7 +154,7 @@ async function apiRequest<T>(
       ...init,
       headers,
       body: hasBody ? JSON.stringify(body) : init?.body,
-      cache: "no-store",
+      cache: catalogRequestCache(path, (init?.method ?? "GET").toUpperCase()),
       credentials: isBrowser ? "same-origin" : init?.credentials,
     });
   } catch {

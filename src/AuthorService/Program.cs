@@ -39,8 +39,7 @@ try
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
 
     builder.Services.AddDbContext<AuthorDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-            .AddInterceptors(new SqliteFoldConnectionInterceptor())
+        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "authors.db")
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();

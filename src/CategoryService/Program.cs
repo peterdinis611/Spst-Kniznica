@@ -38,8 +38,7 @@ try
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
 
     builder.Services.AddDbContext<CategoryDbContext>(options =>
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-            .AddInterceptors(new SqliteFoldConnectionInterceptor())
+        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "categories.db")
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

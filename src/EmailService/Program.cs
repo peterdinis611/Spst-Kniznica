@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Data;
 using SpstKniznica.Common.Hosting;
 
 Log.Logger = new LoggerConfiguration()
@@ -41,9 +42,7 @@ try
     builder.Services.AddHttpContextAccessor();
 
     builder.Services.AddDbContext<EmailDbContext>(options =>
-        options.UseSqlite(
-                builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? "Data Source=email.db")
+        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "email.db")
             .ConfigureSpstMigrations());
 
     var smtpEnabled = builder.Configuration.GetValue("Smtp:Enabled", false);

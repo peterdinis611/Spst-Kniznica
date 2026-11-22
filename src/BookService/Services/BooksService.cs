@@ -29,45 +29,61 @@ public partial class BooksService(
     IValidator<UpdateBookCopyStatusRequest> copyStatusValidator,
     ILogger<BooksService> logger) : IBooksService
 {
-    public async Task<PagedResult<BookListItemDto>> SearchAsync(
+    public Task<PagedResult<BookListItemDto>> SearchAsync(
         BookQueryFilter filter,
         CancellationToken cancellationToken = default)
     {
-        logger.LogDebug(
-            "Searching books. Page={Page}, PageSize={PageSize}, Search={Search}, CategoryId={CategoryId}",
-            filter.Page,
-            filter.PageSize,
-            filter.Search,
-            filter.CategoryId);
+        ArgumentNullException.ThrowIfNull(filter);
+        return cache.GetOrSetAsync(
+            BookListCacheKey.Page(filter),
+            async ct =>
+            {
+                logger.LogDebug(
+                    "Searching books. Page={Page}, PageSize={PageSize}, Search={Search}, CategoryId={CategoryId}",
+                    filter.Page,
+                    filter.PageSize,
+                    filter.Search,
+                    filter.CategoryId);
 
-        var result = await unitOfWork.Books.FindAsync(filter, cancellationToken);
+                var result = await unitOfWork.Books.FindAsync(filter, ct);
 
-        logger.LogDebug(
-            "Books search finished. TotalCount={TotalCount}, PageItems={PageItems}",
-            result.TotalCount,
-            result.Items.Count);
+                logger.LogDebug(
+                    "Books search finished. TotalCount={TotalCount}, PageItems={PageItems}",
+                    result.TotalCount,
+                    result.Items.Count);
 
-        return result;
+                return result;
+            },
+            BookListCacheKey.Ttl,
+            cancellationToken);
     }
 
-    public async Task<CursorPage<BookListItemDto>> SearchByCursorAsync(
+    public Task<CursorPage<BookListItemDto>> SearchByCursorAsync(
         BookCursorFilter filter,
         CancellationToken cancellationToken = default)
     {
-        logger.LogDebug(
-            "Cursor-searching books. Limit={Limit}, Cursor={Cursor}, Search={Search}",
-            filter.Limit,
-            filter.Cursor,
-            filter.Search);
+        ArgumentNullException.ThrowIfNull(filter);
+        return cache.GetOrSetAsync(
+            BookListCacheKey.Cursor(filter),
+            async ct =>
+            {
+                logger.LogDebug(
+                    "Cursor-searching books. Limit={Limit}, Cursor={Cursor}, Search={Search}",
+                    filter.Limit,
+                    filter.Cursor,
+                    filter.Search);
 
-        var result = await unitOfWork.Books.FindByCursorAsync(filter, cancellationToken);
+                var result = await unitOfWork.Books.FindByCursorAsync(filter, ct);
 
-        logger.LogDebug(
-            "Books cursor search finished. Items={Count}, HasMore={HasMore}",
-            result.Items.Count,
-            result.HasMore);
+                logger.LogDebug(
+                    "Books cursor search finished. Items={Count}, HasMore={HasMore}",
+                    result.Items.Count,
+                    result.HasMore);
 
-        return result;
+                return result;
+            },
+            BookListCacheKey.Ttl,
+            cancellationToken);
     }
 
     public async Task<BookDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -94,17 +110,85 @@ public partial class BooksService(
         IReadOnlyList<Guid> ids,
         CancellationToken cancellationToken = default)
     {
-        var books = await unitOfWork.Books.GetByIdsAsync(ids, includeCopies: false, cancellationToken);
-        return books
-            .Select(b => new BookCatalogSnapshot
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var ordered = new BookCatalogSnapshot?[ids.Count];
+        var missing = new List<Guid>();
+        var missingAt = new List<int>();
+
+        for (var i = 0; i < ids.Count; i++)
+        {
+            var id = ids[i];
+            if (id == Guid.Empty)
             {
-                BookId = b.Id,
-                Title = b.Title,
-                Author = b.Author,
-                TotalCopies = b.TotalCopies,
-                AvailableCopies = b.AvailableCopies,
-            })
-            .ToList();
+                continue;
+            }
+
+            var cached = await cache.GetAsync<BookCatalogSnapshot>(
+                BookListCacheKey.Summary(id),
+                cancellationToken);
+            if (cached is not null)
+            {
+                ordered[i] = cached;
+                continue;
+            }
+
+            missing.Add(id);
+            missingAt.Add(i);
+        }
+
+        if (missing.Count == 0)
+        {
+            return Materialize(ordered);
+        }
+
+        var books = await unitOfWork.Books.GetByIdsAsync(missing, includeCopies: false, cancellationToken);
+        var byId = new Dictionary<Guid, Book>();
+        foreach (var book in books)
+        {
+            byId[book.Id] = book;
+        }
+        for (var j = 0; j < missing.Count; j++)
+        {
+            if (!byId.TryGetValue(missing[j], out var book))
+            {
+                continue;
+            }
+
+            var snapshot = new BookCatalogSnapshot
+            {
+                BookId = book.Id,
+                Title = book.Title,
+                Author = book.Author,
+                TotalCopies = book.TotalCopies,
+                AvailableCopies = book.AvailableCopies,
+            };
+            await cache.SetAsync(
+                BookListCacheKey.Summary(book.Id),
+                snapshot,
+                BookListCacheKey.Ttl,
+                cancellationToken);
+            ordered[missingAt[j]] = snapshot;
+        }
+
+        return Materialize(ordered);
+    }
+
+    private static IReadOnlyList<BookCatalogSnapshot> Materialize(BookCatalogSnapshot?[] ordered)
+    {
+        var items = new List<BookCatalogSnapshot>(ordered.Length);
+        foreach (var snapshot in ordered)
+        {
+            if (snapshot is not null)
+            {
+                items.Add(snapshot);
+            }
+        }
+
+        return items;
     }
 
     public async Task<IReadOnlyList<BookListItemDto>> GetByIdsAsync(

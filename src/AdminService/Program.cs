@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpstKniznica.Common.Auth;
+using SpstKniznica.Common.Data;
 using SpstKniznica.Common.Hosting;
 
 Log.Logger = new LoggerConfiguration()
@@ -41,9 +42,7 @@ try
     });
 
     builder.Services.AddDbContext<AdminDbContext>(options =>
-        options.UseSqlite(
-                builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? "Data Source=admin.db")
+        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "admin.db")
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<AuditLogService>();

@@ -26,6 +26,7 @@ public class BooksController(
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
+    [PublicCatalogCache]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(PagedResult<BookListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -70,6 +71,7 @@ public class BooksController(
     /// </summary>
     [HttpGet("cursor")]
     [AllowAnonymous]
+    [PublicCatalogCache]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(CursorPage<BookListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -248,6 +250,7 @@ public class BooksController(
     /// </summary>
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
+    [PublicCatalogCache(Private = true)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.PublicReadPolicy)]
     [ProducesResponseType(typeof(BookDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
