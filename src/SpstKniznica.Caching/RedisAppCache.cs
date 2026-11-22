@@ -89,13 +89,32 @@ public sealed class RedisAppCache : IAppCache
             return cached;
         }
 
-        var value = await factory(cancellationToken);
-        if (value is not null)
-        {
-            await SetAsync(key, value, ttl, cancellationToken);
-        }
+        return await CacheSingleFlight.RunAsync(
+            Prefixed(key),
+            async ct =>
+            {
+                var again = await GetAsync<T>(key, ct);
+                if (again is not null)
+                {
+                    return again;
+                }
 
-        return value;
+                await using var lease = await TryAcquireFillLockAsync(key, ct);
+                again = await GetAsync<T>(key, ct);
+                if (again is not null)
+                {
+                    return again;
+                }
+
+                var value = await factory(ct);
+                if (value is not null)
+                {
+                    await SetAsync(key, value, ttl, ct);
+                }
+
+                return value;
+            },
+            cancellationToken);
     }
 
     public async Task<IReadOnlyList<string>> ListKeysAsync(
@@ -114,6 +133,26 @@ public sealed class RedisAppCache : IAppCache
                 : k)
             .OrderBy(k => k, StringComparer.Ordinal)
             .ToList();
+    }
+
+    private async Task<IAsyncDisposable> TryAcquireFillLockAsync(string key, CancellationToken cancellationToken)
+    {
+        var db = _mux.GetDatabase();
+        var lockKey = Prefixed("lock:fill:" + key);
+        var token = Guid.NewGuid().ToString("N");
+        for (var attempt = 0; attempt < 25; attempt++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (await db.StringSetAsync(lockKey, token, TimeSpan.FromSeconds(8), When.NotExists))
+            {
+                return new RedisLockLease(db, lockKey, token);
+            }
+
+            await Task.Delay(40 + (attempt * 10), cancellationToken);
+        }
+
+        // Timed out waiting — compute without exclusive lock (still process-local single-flight).
+        return NoopLease.Instance;
     }
 
     private async Task<List<string>> ScanKeysAsync(string pattern, CancellationToken cancellationToken)
@@ -137,4 +176,34 @@ public sealed class RedisAppCache : IAppCache
     }
 
     private string Prefixed(string key) => _options.InstanceName + key;
+
+    private sealed class RedisLockLease(IDatabase db, RedisKey key, string token) : IAsyncDisposable
+    {
+        private static readonly LuaScript Release = LuaScript.Prepare(
+            """
+            if redis.call('get', @key) == @token then
+              return redis.call('del', @key)
+            end
+            return 0
+            """);
+
+        public async ValueTask DisposeAsync()
+        {
+            try
+            {
+                await db.ScriptEvaluateAsync(Release, new { key, token });
+            }
+            catch
+            {
+                // Lock TTL will expire.
+            }
+        }
+    }
+
+    private sealed class NoopLease : IAsyncDisposable
+    {
+        public static readonly NoopLease Instance = new();
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
 }

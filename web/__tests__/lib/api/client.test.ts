@@ -84,6 +84,25 @@ describe("apiGet", () => {
     );
   });
 
+  it("keeps bookings on no-store", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ items: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await apiGet("/api/bookings", undefined, undefined, {
+      skipStatusRedirect: true,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringMatching(/\/api\/bookings$/),
+      expect.objectContaining({ cache: "no-store", method: "GET" }),
+    );
+  });
+
   it("surfaces API error detail", async () => {
     vi.stubGlobal(
       "fetch",

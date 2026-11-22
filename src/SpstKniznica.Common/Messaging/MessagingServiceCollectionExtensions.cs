@@ -57,7 +57,9 @@ public static class MessagingServiceCollectionExtensions
         => services.AddSpstIntegrationMessaging(configuration, clientId);
 
     /// <summary>
-    /// HTTP push to BookService when no message broker is enabled (or when forced via BookService:HttpEventSync).
+    /// Dual-write booking/catalog events to BookService over HTTP (default on).
+    /// Brokers stay for other consumers; HTTP keeps copy availability in sync without waiting for Kafka.
+    /// Disable with <c>BookService:HttpEventSync=false</c>.
     /// </summary>
     public static IServiceCollection AddBookServiceEventHttpFallback(
         this IServiceCollection services,
@@ -66,26 +68,26 @@ public static class MessagingServiceCollectionExtensions
     {
         var kafkaEnabled = configuration.GetValue($"{KafkaPublisherOptions.SectionName}:Enabled", true);
         var rabbitEnabled = configuration.GetValue($"{RabbitMqPublisherOptions.SectionName}:Enabled", true);
-        var forceHttp = configuration.GetValue("BookService:HttpEventSync", false);
+        var httpSync = configuration.GetValue("BookService:HttpEventSync", true);
 
-        if ((kafkaEnabled || rabbitEnabled) && !forceHttp)
+        if (httpSync)
         {
-            return services;
+            var baseUrl = (bookServiceBaseUrl
+                    ?? configuration["BookService:BaseUrl"]
+                    ?? configuration["Services:BookService"]
+                    ?? "http://127.0.0.1:5203")
+                .TrimEnd('/');
+
+            services.AddHttpClient<BookServiceEventHttpNotifier>(client =>
+            {
+                client.BaseAddress = new Uri(baseUrl + "/");
+                client.Timeout = TimeSpan.FromSeconds(10);
+            });
         }
 
-        var baseUrl = (bookServiceBaseUrl
-                ?? configuration["BookService:BaseUrl"]
-                ?? configuration["Services:BookService"]
-                ?? "http://127.0.0.1:5203")
-            .TrimEnd('/');
-
-        services.AddHttpClient<BookServiceEventHttpNotifier>(client =>
-        {
-            client.BaseAddress = new Uri(baseUrl + "/");
-            client.Timeout = TimeSpan.FromSeconds(10);
-        });
-
-        services.AddSingleton<IIntegrationEventPublisher>(sp =>
+        // Always register Fanout so callers can decorate it (e.g. BookingService outbox).
+        // When HttpEventSync=false the notifier is absent and Fanout skips HTTP.
+        services.AddSingleton<FanoutIntegrationEventPublisher>(sp =>
         {
             var primary = BuildComposite(sp, kafkaEnabled, rabbitEnabled);
             return new FanoutIntegrationEventPublisher(
@@ -93,6 +95,8 @@ public static class MessagingServiceCollectionExtensions
                 sp.GetRequiredService<IServiceScopeFactory>(),
                 sp.GetRequiredService<ILogger<FanoutIntegrationEventPublisher>>());
         });
+        services.AddSingleton<IIntegrationEventPublisher>(sp =>
+            sp.GetRequiredService<FanoutIntegrationEventPublisher>());
 
         return services;
     }

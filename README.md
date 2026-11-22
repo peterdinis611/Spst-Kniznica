@@ -154,12 +154,28 @@ k6 scenáre proti gateway (`load/`, vyžaduje `brew install k6` + bežiaci stack
 
 ```bash
 ./start.sh --detach
-./scripts/load-test.sh          # smoke
+./scripts/load-test.sh try      # Next + BFF (~45 s)
 ./scripts/load-test.sh catalog  # browse load
-./scripts/load-test.sh stress   # vysoká záťaž
+# Prod-like Redis limity (429):
+./start.sh --detach --loadtest
+./scripts/load-test.sh stress
 ```
 
+Padnutá služba na jednom stroji: `./scripts/restart-unhealthy.sh`  
 Detaily: [`load/README.md`](load/README.md).
+
+### Prevádzka / hardening
+
+```bash
+./scripts/status.sh                      # health + disk + Redis
+./scripts/backup-sqlite.sh               # online záloha *.db (WAL-safe)
+./scripts/restore-sqlite.sh .backups/... # obnova (najprv stop-all)
+./scripts/check-production-secrets.sh    # Entra / InternalApi / SITE_URL
+```
+
+Gateway metriky: `GET /metrics` (počty, 429, avg latency).  
+CORS pre priamy katalóg: nastav `SITE_URL` / `NEXT_PUBLIC_SITE_URL` / `Cors__SiteUrl` na verejnú URL školy.  
+Redis down na jednom hoste: `RateLimiting__AllowMemoryFallback=true` (in-process limity).
 
 ## CI
 
@@ -167,6 +183,8 @@ GitHub Actions (`.github/workflows/ci.yml`) na `push` / PR:
 
 - **Backend** — restore, build, test (.NET 10)
 - **Frontend** — `npm ci`, typecheck, lint, vitest
+- **E2E** — Playwright Next-only (bez gateway)
+- **Gateway API smoke** — `workflow_dispatch` s `gateway_url` (bežiaci full stack)
 
 ## Licencia / škola
 

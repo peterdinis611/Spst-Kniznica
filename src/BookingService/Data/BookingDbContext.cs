@@ -10,6 +10,7 @@ public class BookingDbContext(DbContextOptions<BookingDbContext> options) : DbCo
     public DbSet<WaitlistEntry> Waitlist => Set<WaitlistEntry>();
     public DbSet<FavoriteBook> Favorites => Set<FavoriteBook>();
     public DbSet<LoanPolicyStore> LoanPolicyStore => Set<LoanPolicyStore>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,6 +26,12 @@ public class BookingDbContext(DbContextOptions<BookingDbContext> options) : DbCo
             entity.Property(b => b.RenewalCount).HasDefaultValue(0);
             entity.HasIndex(b => b.BookId);
             entity.HasIndex(b => b.BookCopyId);
+            // One open loan/reservation per physical copy (SQLite allows many NULLs).
+            entity.HasIndex(b => b.BookCopyId)
+                .HasDatabaseName("IX_Bookings_BookCopyId_Active")
+                .IsUnique()
+                .HasFilter(
+                    "\"BookCopyId\" IS NOT NULL AND \"Status\" IN ('Reserved', 'Active', 'Overdue')");
             entity.HasIndex(b => b.BorrowerEmail);
             entity.HasIndex(b => b.Status);
             entity.HasIndex(b => b.DueDate);
@@ -55,6 +62,16 @@ public class BookingDbContext(DbContextOptions<BookingDbContext> options) : DbCo
             // Singleton row (Id = 1) — never autoincrement.
             entity.HasKey(s => s.Id);
             entity.Property(s => s.Id).ValueGeneratedNever();
+        });
+
+        modelBuilder.Entity<OutboxMessage>(entity =>
+        {
+            entity.HasKey(o => o.Id);
+            entity.Property(o => o.EventType).HasMaxLength(128).IsRequired();
+            entity.Property(o => o.Payload).IsRequired();
+            entity.Property(o => o.LastError).HasMaxLength(1000);
+            entity.HasIndex(o => o.ProcessedAt);
+            entity.HasIndex(o => o.CreatedAt);
         });
     }
 }

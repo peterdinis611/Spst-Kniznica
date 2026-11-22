@@ -16,7 +16,8 @@ public static class SqliteConnectionDefaults
 
         builder.Cache = SqliteCacheMode.Shared;
         builder.Mode = SqliteOpenMode.ReadWriteCreate;
-        builder.DefaultTimeout = 5;
+        // Contended writers (bookings + mail + audit) wait instead of failing fast.
+        builder.DefaultTimeout = 15;
         return builder.ToString();
     }
 

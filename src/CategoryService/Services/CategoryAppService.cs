@@ -19,33 +19,49 @@ public class CategoryAppService(
     IValidator<UpdateCategoryRequest> updateValidator,
     ILogger<CategoryAppService> logger) : ICategoryService
 {
-    public async Task<PagedResult<CategoryDto>> SearchAsync(
+    public Task<PagedResult<CategoryDto>> SearchAsync(
         CategoryQueryFilter filter,
         CancellationToken cancellationToken = default)
     {
-        logger.LogDebug(
-            "Searching categories. Page={Page}, PageSize={PageSize}, Search={Search}, IsActive={IsActive}",
-            filter.Page,
-            filter.PageSize,
-            filter.Search,
-            filter.IsActive);
+        ArgumentNullException.ThrowIfNull(filter);
+        return cache.GetOrSetAsync(
+            CategoryListCacheKey.Page(filter),
+            async ct =>
+            {
+                logger.LogDebug(
+                    "Searching categories. Page={Page}, PageSize={PageSize}, Search={Search}, IsActive={IsActive}",
+                    filter.Page,
+                    filter.PageSize,
+                    filter.Search,
+                    filter.IsActive);
 
-        var result = await unitOfWork.Categories.FindAsync(filter, cancellationToken);
-        return result.Map(Map);
+                var result = await unitOfWork.Categories.FindAsync(filter, ct);
+                return result.Map(Map);
+            },
+            CategoryListCacheKey.Ttl,
+            cancellationToken);
     }
 
-    public async Task<CursorPage<CategoryDto>> SearchByCursorAsync(
+    public Task<CursorPage<CategoryDto>> SearchByCursorAsync(
         CategoryCursorFilter filter,
         CancellationToken cancellationToken = default)
     {
-        logger.LogDebug(
-            "Cursor-searching categories. Limit={Limit}, Cursor={Cursor}, Search={Search}",
-            filter.Limit,
-            filter.Cursor,
-            filter.Search);
+        ArgumentNullException.ThrowIfNull(filter);
+        return cache.GetOrSetAsync(
+            CategoryListCacheKey.Cursor(filter),
+            async ct =>
+            {
+                logger.LogDebug(
+                    "Cursor-searching categories. Limit={Limit}, Cursor={Cursor}, Search={Search}",
+                    filter.Limit,
+                    filter.Cursor,
+                    filter.Search);
 
-        var result = await unitOfWork.Categories.FindByCursorAsync(filter, cancellationToken);
-        return result.Map(Map);
+                var result = await unitOfWork.Categories.FindByCursorAsync(filter, ct);
+                return result.Map(Map);
+            },
+            CategoryListCacheKey.Ttl,
+            cancellationToken);
     }
 
     public async Task<CategoryDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -94,6 +110,7 @@ public class CategoryAppService(
 
         var dto = Map(category);
         await cache.SetAsync(CacheKeys.Category(category.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
+        await cache.RemoveByPrefixAsync(CacheKeys.CategoryListPrefix, cancellationToken);
 
         logger.LogInformation("Created category {CategoryId} named '{Name}'", category.Id, category.Name);
         return dto;
@@ -127,6 +144,7 @@ public class CategoryAppService(
 
         var dto = Map(category);
         await cache.SetAsync(CacheKeys.Category(category.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
+        await cache.RemoveByPrefixAsync(CacheKeys.CategoryListPrefix, cancellationToken);
 
         logger.LogInformation("Updated category {CategoryId} named '{Name}'", category.Id, category.Name);
         return dto;
@@ -140,6 +158,7 @@ public class CategoryAppService(
 
         await eventPublisher.PublishAsync(new CategoryDeletedEvent(id), cancellationToken);
         await cache.RemoveAsync(CacheKeys.Category(id), cancellationToken);
+        await cache.RemoveByPrefixAsync(CacheKeys.CategoryListPrefix, cancellationToken);
         logger.LogInformation("Deleted category {CategoryId} named '{Name}'", id, category.Name);
     }
 

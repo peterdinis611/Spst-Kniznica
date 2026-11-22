@@ -15,7 +15,7 @@ public class SqliteConnectionDefaultsTests
         parsed.DataSource.Should().Be("books.db");
         parsed.Cache.Should().Be(SqliteCacheMode.Shared);
         parsed.Mode.Should().Be(SqliteOpenMode.ReadWriteCreate);
-        parsed.DefaultTimeout.Should().Be(5);
+        parsed.DefaultTimeout.Should().Be(15);
     }
 
     [Fact]

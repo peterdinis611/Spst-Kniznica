@@ -17,8 +17,16 @@ public sealed class RateLimitingOptions
     /// <summary>
     /// When true with <see cref="UseRedis"/>, startup fails if Redis cannot be connected
     /// (fail-closed). Recommended for Production.
+    /// Set <see cref="AllowMemoryFallback"/> to start anyway with in-process limits.
     /// </summary>
     public bool RequireRedis { get; set; }
+
+    /// <summary>
+    /// When true, Redis connection failure falls back to in-memory rate limits instead of
+    /// aborting startup — even if <see cref="RequireRedis"/> is true. Use to survive a
+    /// frozen Redis on a single host; counters will not be shared across processes.
+    /// </summary>
+    public bool AllowMemoryFallback { get; set; }
 
     /// <summary>
     /// When true, anonymous clients are partitioned by the last <c>X-Forwarded-For</c> hop.

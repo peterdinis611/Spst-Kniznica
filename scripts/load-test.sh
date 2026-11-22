@@ -20,6 +20,9 @@
 #   TOKEN         Bearer JWT for authenticated / desk
 #   PROFILE       smoke | load | stress (thresholds)
 #   SOAK_MINUTES  soak duration (default 10)
+#
+# Prod-like limits (Redis 429): start stack with ./start.sh --detach --loadtest
+# then run this script. Plain Development keeps rate limits practically off.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

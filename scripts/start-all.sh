@@ -14,6 +14,8 @@ SKIP_DOCKER=0
 SKIP_BUILD=0
 SKIP_STORYBOOK=0
 NO_STOP=0
+# Development = soft rate limits; LoadTest = Redis limits like production (for k6).
+DOTNET_ENV="${ASPNETCORE_ENVIRONMENT:-Development}"
 
 usage() {
   cat <<EOF
@@ -30,6 +32,7 @@ Options:
   --skip-build       nespúšťaj dotnet build (použi existujúci build)
   --skip-storybook   nespúšťaj Storybook (port 6006)
   --no-stop          pred štartom nezastavuj bežiace procesy
+  --loadtest         ASPNETCORE_ENVIRONMENT=LoadTest (Redis rate limits, cache on)
   -h, --help         táto nápoveda
 
 Stop:  $ROOT/scripts/stop-all.sh
@@ -45,6 +48,7 @@ for arg in "$@"; do
     --skip-build) SKIP_BUILD=1 ;;
     --skip-storybook) SKIP_STORYBOOK=1 ;;
     --no-stop) NO_STOP=1 ;;
+    --loadtest) DOTNET_ENV="LoadTest" ;;
     -h|--help) usage; exit 0 ;;
     *)
       echo "Neznámy argument: $arg" >&2
@@ -122,9 +126,9 @@ start_dotnet() {
     (
       cd "$project_dir"
       nohup env \
-        ASPNETCORE_ENVIRONMENT=Development \
+        ASPNETCORE_ENVIRONMENT="$DOTNET_ENV" \
         ASPNETCORE_URLS="$url" \
-        DOTNET_ENVIRONMENT=Development \
+        DOTNET_ENVIRONMENT="$DOTNET_ENV" \
         dotnet run --project "$SRC/$project" --no-build --no-launch-profile \
         >"$logfile" 2>&1 &
       echo $! >"$pidfile"
@@ -132,9 +136,9 @@ start_dotnet() {
   else
     (
       cd "$project_dir"
-      ASPNETCORE_ENVIRONMENT=Development \
+      ASPNETCORE_ENVIRONMENT="$DOTNET_ENV" \
       ASPNETCORE_URLS="$url" \
-      DOTNET_ENVIRONMENT=Development \
+      DOTNET_ENVIRONMENT="$DOTNET_ENV" \
         dotnet run --project "$SRC/$project" --no-build --no-launch-profile \
         >"$logfile" 2>&1
     ) &
@@ -226,7 +230,7 @@ wait_http() {
   return 0
 }
 
-echo "==> SPST Knižnica – štart celého projektu ($MODE)"
+echo "==> SPST Knižnica – štart celého projektu ($MODE, env=$DOTNET_ENV)"
 echo "    root: $ROOT"
 echo
 

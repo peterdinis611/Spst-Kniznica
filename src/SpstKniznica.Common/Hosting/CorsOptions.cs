@@ -10,6 +10,12 @@ public class CorsOptions
     /// </summary>
     public bool AllowAnyOrigin { get; set; }
 
+    /// <summary>
+    /// Public site origin (school URL). Merged into <see cref="AllowedOrigins"/> at startup
+    /// so <c>NEXT_PUBLIC_CATALOG_DIRECT</c> browser calls to the gateway succeed.
+    /// </summary>
+    public string? SiteUrl { get; set; }
+
     public string[] AllowedOrigins { get; set; } =
     [
         "http://localhost:3000",

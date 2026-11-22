@@ -19,33 +19,49 @@ public class AuthorAppService(
     IValidator<UpdateAuthorRequest> updateValidator,
     ILogger<AuthorAppService> logger) : IAuthorService
 {
-    public async Task<PagedResult<AuthorDto>> SearchAsync(
+    public Task<PagedResult<AuthorDto>> SearchAsync(
         AuthorQueryFilter filter,
         CancellationToken cancellationToken = default)
     {
-        logger.LogDebug(
-            "Searching authors. Page={Page}, PageSize={PageSize}, Search={Search}, IsActive={IsActive}",
-            filter.Page,
-            filter.PageSize,
-            filter.Search,
-            filter.IsActive);
+        ArgumentNullException.ThrowIfNull(filter);
+        return cache.GetOrSetAsync(
+            AuthorListCacheKey.Page(filter),
+            async ct =>
+            {
+                logger.LogDebug(
+                    "Searching authors. Page={Page}, PageSize={PageSize}, Search={Search}, IsActive={IsActive}",
+                    filter.Page,
+                    filter.PageSize,
+                    filter.Search,
+                    filter.IsActive);
 
-        var result = await unitOfWork.Authors.FindAsync(filter, cancellationToken);
-        return result.Map(Map);
+                var result = await unitOfWork.Authors.FindAsync(filter, ct);
+                return result.Map(Map);
+            },
+            AuthorListCacheKey.Ttl,
+            cancellationToken);
     }
 
-    public async Task<CursorPage<AuthorDto>> SearchByCursorAsync(
+    public Task<CursorPage<AuthorDto>> SearchByCursorAsync(
         AuthorCursorFilter filter,
         CancellationToken cancellationToken = default)
     {
-        logger.LogDebug(
-            "Cursor-searching authors. Limit={Limit}, Cursor={Cursor}, Search={Search}",
-            filter.Limit,
-            filter.Cursor,
-            filter.Search);
+        ArgumentNullException.ThrowIfNull(filter);
+        return cache.GetOrSetAsync(
+            AuthorListCacheKey.Cursor(filter),
+            async ct =>
+            {
+                logger.LogDebug(
+                    "Cursor-searching authors. Limit={Limit}, Cursor={Cursor}, Search={Search}",
+                    filter.Limit,
+                    filter.Cursor,
+                    filter.Search);
 
-        var result = await unitOfWork.Authors.FindByCursorAsync(filter, cancellationToken);
-        return result.Map(Map);
+                var result = await unitOfWork.Authors.FindByCursorAsync(filter, ct);
+                return result.Map(Map);
+            },
+            AuthorListCacheKey.Ttl,
+            cancellationToken);
     }
 
     public async Task<AuthorDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -99,6 +115,7 @@ public class AuthorAppService(
 
         var dto = Map(author);
         await cache.SetAsync(CacheKeys.Author(author.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
+        await cache.RemoveByPrefixAsync(CacheKeys.AuthorListPrefix, cancellationToken);
 
         logger.LogInformation("Created author {AuthorId} named '{Name}'", author.Id, author.Name);
         return dto;
@@ -136,6 +153,7 @@ public class AuthorAppService(
 
         var dto = Map(author);
         await cache.SetAsync(CacheKeys.Author(author.Id), dto, TimeSpan.FromMinutes(10), cancellationToken);
+        await cache.RemoveByPrefixAsync(CacheKeys.AuthorListPrefix, cancellationToken);
 
         logger.LogInformation("Updated author {AuthorId} named '{Name}'", author.Id, author.Name);
         return dto;
@@ -149,6 +167,7 @@ public class AuthorAppService(
 
         await eventPublisher.PublishAsync(new AuthorDeletedEvent(id), cancellationToken);
         await cache.RemoveAsync(CacheKeys.Author(id), cancellationToken);
+        await cache.RemoveByPrefixAsync(CacheKeys.AuthorListPrefix, cancellationToken);
         logger.LogInformation("Deleted author {AuthorId} named '{Name}'", id, author.Name);
     }
 

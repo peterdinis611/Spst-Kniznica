@@ -16,8 +16,30 @@ public sealed class FanoutIntegrationEventPublisher(
         CancellationToken cancellationToken = default)
         where TEvent : IntegrationEvent
     {
-        await primary.PublishAsync(integrationEvent, cancellationToken);
+        // Booking copy sync: HTTP first so the catalog AvailableCopies updates before the UI refreshes.
+        // Brokers still get the event for mail/audit and other consumers.
+        var preferHttpFirst = integrationEvent is BookingCreatedEvent
+            or BookingUpdatedEvent
+            or BookingDeletedEvent;
 
+        if (preferHttpFirst)
+        {
+            // Fail the publish (outbox retries) when copy denorm cannot be applied.
+            await TryHttpNotifyAsync(integrationEvent, throwOnFailure: true, cancellationToken);
+            await primary.PublishAsync(integrationEvent, cancellationToken);
+            return;
+        }
+
+        await primary.PublishAsync(integrationEvent, cancellationToken);
+        await TryHttpNotifyAsync(integrationEvent, throwOnFailure: false, cancellationToken);
+    }
+
+    private async Task TryHttpNotifyAsync<TEvent>(
+        TEvent integrationEvent,
+        bool throwOnFailure,
+        CancellationToken cancellationToken)
+        where TEvent : IntegrationEvent
+    {
         try
         {
             using var scope = scopeFactory.CreateScope();
@@ -33,8 +55,12 @@ public sealed class FanoutIntegrationEventPublisher(
         {
             logger.LogWarning(
                 ex,
-                "HTTP fan-out failed for {EventType} (primary publish already completed)",
+                "HTTP fan-out failed for {EventType}",
                 integrationEvent.EventType);
+            if (throwOnFailure)
+            {
+                throw;
+            }
         }
     }
 }

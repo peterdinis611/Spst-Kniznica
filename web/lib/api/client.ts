@@ -1,5 +1,8 @@
 import { UNAUTHORIZED_EVENT } from "@/lib/auth/session-constants";
-import { catalogRequestCache } from "@/lib/api/catalog-cache";
+import {
+  catalogRequestCache,
+  isPublicCatalogGet,
+} from "@/lib/api/catalog-cache";
 import { ApiHttpError } from "@/lib/api/errors";
 import { parseJsonText } from "@/lib/api/parse-json";
 import {
@@ -24,10 +27,18 @@ export type ApiRequestOptions = {
   skipStatusRedirect?: boolean;
 };
 
-/** Browser → same-origin BFF; server → gateway directly. */
-export function apiUrl(path: string): string {
+/**
+ * Browser → BFF by default (cookies / session).
+ * Public catalog GETs can skip BFF and hit the gateway (set NEXT_PUBLIC_CATALOG_DIRECT=0 to force BFF).
+ * Server → gateway directly.
+ */
+export function apiUrl(path: string, method = "GET"): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;
   if (isBrowser) {
+    const catalogDirect = process.env.NEXT_PUBLIC_CATALOG_DIRECT !== "0";
+    if (catalogDirect && isPublicCatalogGet(normalized, method)) {
+      return `${API_BASE}${normalized}`;
+    }
     return `/api/bff${normalized}`;
   }
   return `${API_BASE}${normalized}`;
@@ -148,14 +159,27 @@ async function apiRequest<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
+  const method = (init?.method ?? (hasBody ? "POST" : "GET")).toUpperCase();
+  const url = apiUrl(path, method);
+  const catalogDirect =
+    isBrowser &&
+    process.env.NEXT_PUBLIC_CATALOG_DIRECT !== "0" &&
+    isPublicCatalogGet(path, method);
+
   let response: Response;
   try {
-    response = await fetch(apiUrl(path), {
+    response = await fetch(url, {
       ...init,
+      method,
       headers,
       body: hasBody ? JSON.stringify(body) : init?.body,
-      cache: catalogRequestCache(path, (init?.method ?? "GET").toUpperCase()),
-      credentials: isBrowser ? "same-origin" : init?.credentials,
+      cache: catalogRequestCache(path, method),
+      // Cross-origin gateway catalog reads are anonymous; keep cookies on same-origin BFF.
+      credentials: catalogDirect
+        ? "omit"
+        : isBrowser
+          ? "same-origin"
+          : init?.credentials,
     });
   } catch {
     handleStatusNavigation(502, path, skipStatusRedirect);

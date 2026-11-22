@@ -32,6 +32,7 @@ try
     builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
     builder.Services.AddSpstForwardedHeaders(builder.Configuration);
+    builder.Services.AddSpstRequestMetrics();
 
     builder.Services
         .AddReverseProxy()
@@ -93,6 +94,7 @@ try
     app.UseSpstForwardedHeaders();
     app.UseSpstHstsWhenPublic(app.Environment);
     app.UseSpstRequestLogging();
+    app.UseSpstRequestMetrics();
     app.UseSpstCors();
 
     if (app.Environment.ShouldExposeSwagger())
@@ -125,6 +127,7 @@ try
     app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();
+    app.MapSpstMetrics("GatewayService");
 
     // Liveness: process is up (does not require Book/Booking).
     app.MapHealthChecks("/health", new HealthCheckOptions

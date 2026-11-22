@@ -29,4 +29,22 @@ public static class EventJson
 
     public static TEvent? Deserialize<TEvent>(string payload) where TEvent : IntegrationEvent
         => JsonSerializer.Deserialize<TEvent>(payload, Options);
+
+    public static IntegrationEvent? DeserializeByTypeName(string eventType, string payload) =>
+        eventType switch
+        {
+            nameof(BookingCreatedEvent) => Deserialize<BookingCreatedEvent>(payload),
+            nameof(BookingUpdatedEvent) => Deserialize<BookingUpdatedEvent>(payload),
+            nameof(BookingDeletedEvent) => Deserialize<BookingDeletedEvent>(payload),
+            nameof(LoanDueReminderEvent) => Deserialize<LoanDueReminderEvent>(payload),
+            nameof(WaitlistPickupReadyEvent) => Deserialize<WaitlistPickupReadyEvent>(payload),
+            nameof(CategoryUpdatedEvent) => Deserialize<CategoryUpdatedEvent>(payload),
+            nameof(CategoryDeletedEvent) => Deserialize<CategoryDeletedEvent>(payload),
+            nameof(AuthorUpdatedEvent) => Deserialize<AuthorUpdatedEvent>(payload),
+            nameof(AuthorDeletedEvent) => Deserialize<AuthorDeletedEvent>(payload),
+            nameof(BookCreatedEvent) => Deserialize<BookCreatedEvent>(payload),
+            nameof(BookUpdatedEvent) => Deserialize<BookUpdatedEvent>(payload),
+            nameof(BookDeletedEvent) => Deserialize<BookDeletedEvent>(payload),
+            _ => null,
+        };
 }

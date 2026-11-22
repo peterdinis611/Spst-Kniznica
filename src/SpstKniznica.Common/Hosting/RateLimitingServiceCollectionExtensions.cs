@@ -36,23 +36,34 @@ public static class RateLimitingServiceCollectionExtensions
             try
             {
                 redis = ConnectionMultiplexer.Connect(redisCs);
-                if (!redis.IsConnected && settings.RequireRedis)
+                if (!redis.IsConnected && settings.RequireRedis && !settings.AllowMemoryFallback)
                 {
                     redis.Dispose();
                     throw new InvalidOperationException(
                         "RateLimiting:UseRedis is true and RequireRedis is true, but Redis is not connected.");
                 }
 
-                services.AddSingleton(redis);
+                if (redis.IsConnected)
+                {
+                    services.AddSingleton(redis);
+                }
+                else
+                {
+                    redis.Dispose();
+                    redis = null;
+                }
             }
-            catch (Exception ex) when (settings.RequireRedis)
+            catch (Exception ex) when (settings.RequireRedis && !settings.AllowMemoryFallback)
             {
                 throw new InvalidOperationException(
-                    "RateLimiting requires Redis but connection failed. Set RequireRedis=false only for local fallback.",
+                    "RateLimiting requires Redis but connection failed. " +
+                    "Set RateLimiting:AllowMemoryFallback=true to start with in-process limits, " +
+                    "or RequireRedis=false for local fallback.",
                     ex);
             }
             catch
             {
+                redis?.Dispose();
                 redis = null;
             }
         }

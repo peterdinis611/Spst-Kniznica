@@ -1,6 +1,7 @@
 using BookingService.Clients;
 using BookingService.Data;
 using BookingService.Interfaces;
+using BookingService.Messaging;
 using BookingService.Middleware;
 using BookingService.Options;
 using BookingService.Repositories;
@@ -42,6 +43,7 @@ try
         builder.Environment,
         requireAuthenticatedByDefault: true);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
+    builder.Services.AddSpstRequestMetrics();
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "BookingService");
     builder.Services.AddSpstIntegrations(builder.Configuration);
 
@@ -82,6 +84,7 @@ try
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
     builder.Services.AddSpstIntegrationMessaging(builder.Configuration, clientId: "booking-service");
     builder.Services.AddBookServiceEventHttpFallback(builder.Configuration);
+    builder.Services.AddBookingIntegrationOutbox();
 
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
 
@@ -103,6 +106,7 @@ try
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();
+    app.UseSpstRequestMetrics();
     app.UseSpstCors();
     if (app.Environment.ShouldExposeSwagger())
     {
@@ -118,9 +122,10 @@ try
     app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();
+    app.MapSpstMetrics("BookingService");
     app.MapHealthChecks("/health").AllowAnonymous();
 
-    Log.Information("BookingService is ready. Health: /health");
+    Log.Information("BookingService is ready. Health: /health · Metrics: /metrics");
     await app.RunAsync();
 }
 catch (Exception ex)

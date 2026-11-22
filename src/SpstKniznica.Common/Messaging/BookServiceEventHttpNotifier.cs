@@ -42,10 +42,9 @@ public sealed class BookServiceEventHttpNotifier(
             using var response = await httpClient.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning(
-                    "BookService HTTP sync returned {Status} for {EventType}",
-                    (int)response.StatusCode,
-                    integrationEvent.EventType);
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                throw new HttpRequestException(
+                    $"BookService HTTP sync returned {(int)response.StatusCode} for {integrationEvent.EventType}: {body}");
             }
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
@@ -54,6 +53,7 @@ public sealed class BookServiceEventHttpNotifier(
                 ex,
                 "BookService HTTP sync failed for {EventType}",
                 integrationEvent.EventType);
+            throw;
         }
     }
 

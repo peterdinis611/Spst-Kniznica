@@ -6,7 +6,8 @@ Spoločná logika: `load/k6/lib/` (`config`, `http`, `catalog`, `ops`).
 ## Predpoklady
 
 - [k6](https://k6.io/) — `brew install k6`
-- Bežiaci stack: `./start.sh --detach` (+ `./scripts/ci-gateway-smoke.sh`)
+- Bežiaci stack: `./start.sh --detach`
+- **Prod-like limity (429 / Redis):** `./start.sh --detach --loadtest` — načíta `appsettings.LoadTest.json` (rate limiting + Redis cache). Bežný Development limity prakticky vypína.
 
 ## Scenáre
 
@@ -57,4 +58,12 @@ Named thresholds (príklady): `books_summaries` p95 `< 400–500 ms`, `desk_dail
 ## Rate limiting
 
 V Development sú limity prakticky vypnuté.  
-Pre prod-like beh použi Production `RateLimiting` + Redis a sleduj 429.
+Pre prod-like beh:
+
+```bash
+./start.sh --detach --loadtest
+./scripts/load-test.sh stress
+```
+
+Školský NAT (jedna verejná IP): Production gateway má vyššie `PublicReadPermitLimit` (2400/min).  
+Za reverse proxy nastav `ForwardedHeaders:KnownProxies` + `RateLimiting:TrustForwardedFor=true` a `RateLimiting:KnownProxies` na IP proxy, potom môžeš limity znížiť.

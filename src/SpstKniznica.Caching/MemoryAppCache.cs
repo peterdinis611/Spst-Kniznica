@@ -93,13 +93,25 @@ public sealed class MemoryAppCache : IAppCache
             return cached;
         }
 
-        var value = await factory(cancellationToken);
-        if (value is not null)
-        {
-            await SetAsync(key, value, ttl, cancellationToken);
-        }
+        return await CacheSingleFlight.RunAsync(
+            Prefixed(key),
+            async ct =>
+            {
+                var again = await GetAsync<T>(key, ct);
+                if (again is not null)
+                {
+                    return again;
+                }
 
-        return value;
+                var value = await factory(ct);
+                if (value is not null)
+                {
+                    await SetAsync(key, value, ttl, ct);
+                }
+
+                return value;
+            },
+            cancellationToken);
     }
 
     public Task<IReadOnlyList<string>> ListKeysAsync(

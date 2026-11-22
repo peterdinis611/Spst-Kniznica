@@ -16,3 +16,11 @@ else
   echo "  ✗ ready failed — BookService or BookingService not healthy"
   exit 1
 fi
+
+echo "==> Gateway metrics ${BASE}/metrics"
+if curl -fsS --max-time 5 "${BASE}/metrics" >/dev/null; then
+  echo "  ✓ metrics"
+else
+  echo "  ✗ metrics missing"
+  exit 1
+fi

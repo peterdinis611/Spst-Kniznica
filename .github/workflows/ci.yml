@@ -4,6 +4,12 @@ on:
   push:
     branches: [main, master]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      gateway_url:
+        description: "Optional running gateway URL for API smoke (e.g. http://127.0.0.1:5200)"
+        required: false
+        default: ""
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -84,10 +90,24 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run smoke E2E
-        # Next-only: no gateway/microservices in CI yet.
-        # Local full-stack: ./start.sh && PLAYWRIGHT_NO_WEB_SERVER=1 PLAYWRIGHT_REQUIRE_GATEWAY=1 npm run test:e2e
+        # Next-only: no gateway/microservices in default CI.
+        # Full-stack locally: ./scripts/start-all.sh && PLAYWRIGHT_NO_WEB_SERVER=1 PLAYWRIGHT_REQUIRE_GATEWAY=1 npm run test:e2e
+        # Or workflow_dispatch with gateway_url → gateway-api-smoke job.
         run: npm run test:e2e -- e2e/smoke.spec.ts e2e/seo-smoke.spec.ts
         env:
           CI: "true"
           PLAYWRIGHT_REQUIRE_GATEWAY: "0"
           NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+
+  gateway-api-smoke:
+    name: Gateway API smoke (manual / external stack)
+    if: github.event_name == 'workflow_dispatch' && inputs.gateway_url != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gateway live + ready
+        run: ./scripts/ci-gateway-smoke.sh "${{ inputs.gateway_url }}"
+
+      - name: Gateway metrics endpoint
+        run: curl -fsS --max-time 5 "${{ inputs.gateway_url }}/metrics" | head -c 200

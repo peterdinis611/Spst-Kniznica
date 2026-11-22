@@ -14,7 +14,11 @@ public static class CacheKeys
     public static string RelationSummary() => "relation:summary";
 
     public const string CategoryPrefix = "category:";
+    /// <summary>Category page/cursor lists — dropped on every category mutate.</summary>
+    public const string CategoryListPrefix = "categories:list:";
     public const string AuthorPrefix = "author:";
+    /// <summary>Author page/cursor lists — dropped on every author mutate.</summary>
+    public const string AuthorListPrefix = "authors:list:";
     public const string BookPrefix = "book:";
     /// <summary>Page, cursor, and per-book summary keys. Dropped on every book or copy change.</summary>
     public const string BookListPrefix = "books:list:";

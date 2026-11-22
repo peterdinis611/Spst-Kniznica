@@ -77,6 +77,51 @@ public static class LibraryOpsSchema
             """ALTER TABLE "Bookings" ADD COLUMN "LastReminderAt" TEXT NULL;""",
             cancellationToken);
 
+        // One open reservation/loan per copy. Skip if legacy duplicates still exist.
+        try
+        {
+            await db.Database.ExecuteSqlRawAsync(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS "IX_Bookings_BookCopyId_Active"
+                ON "Bookings" ("BookCopyId")
+                WHERE "BookCopyId" IS NOT NULL
+                  AND "Status" IN ('Reserved', 'Active', 'Overdue');
+                """,
+                cancellationToken);
+        }
+        catch
+        {
+            // Duplicate active rows for the same copy — resolve manually, then restart.
+        }
+
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            CREATE TABLE IF NOT EXISTS "OutboxMessages" (
+                "Id" TEXT NOT NULL CONSTRAINT "PK_OutboxMessages" PRIMARY KEY,
+                "EventType" TEXT NOT NULL,
+                "Payload" TEXT NOT NULL,
+                "CreatedAt" TEXT NOT NULL,
+                "ProcessedAt" TEXT NULL,
+                "AttemptCount" INTEGER NOT NULL DEFAULT 0,
+                "LastError" TEXT NULL
+            );
+            """,
+            cancellationToken);
+
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            CREATE INDEX IF NOT EXISTS "IX_OutboxMessages_ProcessedAt"
+            ON "OutboxMessages" ("ProcessedAt");
+            """,
+            cancellationToken);
+
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            CREATE INDEX IF NOT EXISTS "IX_OutboxMessages_CreatedAt"
+            ON "OutboxMessages" ("CreatedAt");
+            """,
+            cancellationToken);
+
         await SqliteGuidNormalize.LowerGuidColumnsAsync(
             db,
             [

@@ -4,6 +4,8 @@ using BookingService.Interfaces;
 using BookingService.Models;
 using BookingService.Options;
 using FluentValidation;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using SpstKniznica.Caching;
 using SpstKniznica.Common.Messaging;
 using SpstKniznica.Common.Pagination;
@@ -100,7 +102,7 @@ public class BookingAppService(
         };
 
         await unitOfWork.Bookings.AddAsync(booking, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await SaveBookingOrConflictAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
         await eventPublisher.PublishAsync(
@@ -163,7 +165,7 @@ public class BookingAppService(
         ApplyStatusTimestamps(booking, previousStatus, request.Status, now);
 
         unitOfWork.Bookings.Update(booking);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await SaveBookingOrConflictAsync(cancellationToken);
 
         await eventPublisher.PublishAsync(
             new BookingUpdatedEvent(
@@ -381,11 +383,46 @@ public class BookingAppService(
 
         if (await unitOfWork.Bookings.HasActiveBookingForCopyAsync(bookCopyId.Value, excludeBookingId, cancellationToken))
         {
-            throw new AppValidationException(new Dictionary<string, string[]>
-            {
-                ["BookCopyId"] = ["This book copy already has an active reservation or loan."]
-            });
+            throw CopyAlreadyTaken();
         }
+    }
+
+    private async Task SaveBookingOrConflictAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (IsActiveCopyUniqueViolation(ex))
+        {
+            throw CopyAlreadyTaken();
+        }
+    }
+
+    private static AppValidationException CopyAlreadyTaken() =>
+        new(new Dictionary<string, string[]>
+        {
+            ["BookCopyId"] = ["This book copy already has an active reservation or loan."]
+        });
+
+    private static bool IsActiveCopyUniqueViolation(DbUpdateException ex)
+    {
+        for (var inner = ex.InnerException; inner is not null; inner = inner.InnerException)
+        {
+            if (inner is SqliteException sqlite
+                && sqlite.SqliteErrorCode == 19
+                && sqlite.Message.Contains("IX_Bookings_BookCopyId_Active", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            if (inner.Message.Contains("IX_Bookings_BookCopyId_Active", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async Task EnsureBookCanAcceptReservationAsync(
