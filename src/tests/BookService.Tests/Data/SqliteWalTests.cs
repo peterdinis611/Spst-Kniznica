@@ -30,7 +30,7 @@ public class SqliteWalTests
 
                 command.CommandText = "PRAGMA busy_timeout;";
                 var timeout = Convert.ToInt32(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
-                timeout.Should().Be(5000);
+                timeout.Should().Be(15000);
 
                 command.CommandText = "PRAGMA synchronous;";
                 var synchronous = Convert.ToInt32(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);

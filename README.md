@@ -174,9 +174,9 @@ Detaily: [`load/README.md`](load/README.md).
 ./scripts/check-production-secrets.sh    # Entra / InternalApi / SITE_URL
 ```
 
-Gateway metriky: `GET /metrics` (počty, 429, avg latency).  
+Gateway metriky: `GET /metrics` (JSON) alebo `GET /metrics?format=prom` (Prometheus text).  
 CORS pre priamy katalóg: nastav `SITE_URL` / `NEXT_PUBLIC_SITE_URL` / `Cors__SiteUrl` na verejnú URL školy.  
-Redis down na jednom hoste: `RateLimiting__AllowMemoryFallback=true` (in-process limity).
+Redis down: `RateLimiting__AllowMemoryFallback=true` / `Cache__AllowMemoryFallback=true` (single-host only; Production default fail-closed).
 
 ## CI
 

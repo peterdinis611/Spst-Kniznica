@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SpstKniznica.Common.Hosting;
 using SpstKniznica.Common.Messaging;
 
 namespace BookingService.Messaging;
@@ -47,6 +48,7 @@ public sealed class OutboxDispatchHostedService(
     {
         await using var scope = scopeFactory.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
+        var metrics = scope.ServiceProvider.GetService<RequestMetrics>();
 
         var pending = await db.OutboxMessages
             .Where(m => m.ProcessedAt == null && m.AttemptCount < MaxAttempts)
@@ -54,10 +56,7 @@ public sealed class OutboxDispatchHostedService(
             .Take(BatchSize)
             .ToListAsync(cancellationToken);
 
-        if (pending.Count == 0)
-        {
-            return;
-        }
+        metrics?.SetGauge("outbox_pending", pending.Count);
 
         foreach (var row in pending)
         {
@@ -67,6 +66,7 @@ public sealed class OutboxDispatchHostedService(
             {
                 row.AttemptCount = MaxAttempts;
                 row.LastError = $"Unsupported EventType '{row.EventType}'";
+                metrics?.IncrementCounter("outbox_dead_letter");
                 continue;
             }
 
@@ -76,6 +76,7 @@ public sealed class OutboxDispatchHostedService(
                 row.ProcessedAt = DateTimeOffset.UtcNow;
                 row.LastError = null;
                 row.AttemptCount += 1;
+                metrics?.IncrementCounter("outbox_published");
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -87,9 +88,31 @@ public sealed class OutboxDispatchHostedService(
                     row.EventType,
                     row.Id,
                     row.AttemptCount);
+                if (row.AttemptCount >= MaxAttempts)
+                {
+                    metrics?.IncrementCounter("outbox_dead_letter");
+                    logger.LogError(
+                        "Outbox dead-letter {OutboxId} ({EventType}) after {Attempts} attempts: {Error}",
+                        row.Id,
+                        row.EventType,
+                        row.AttemptCount,
+                        row.LastError);
+                }
             }
         }
 
         await db.SaveChangesAsync(cancellationToken);
+
+        var dead = await db.OutboxMessages.CountAsync(
+            m => m.ProcessedAt == null && m.AttemptCount >= MaxAttempts,
+            cancellationToken);
+        metrics?.SetGauge("outbox_dead_letter", dead);
+        if (dead > 0)
+        {
+            logger.LogError(
+                "Booking outbox has {Count} dead-letter rows (max attempts {MaxAttempts})",
+                dead,
+                MaxAttempts);
+        }
     }
 }

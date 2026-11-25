@@ -147,20 +147,16 @@ public sealed class HttpAdminAuditSink(
             request.Headers.TryAddWithoutValidation(InternalApiOptions.HeaderName, key);
         }
 
-        try
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+        if (!response.IsSuccessStatusCode)
         {
-            using var response = await httpClient.SendAsync(request, cancellationToken);
-            if (!response.IsSuccessStatusCode)
-            {
-                logger.LogDebug(
-                    "Admin audit ingest returned {Status} for {Action}",
-                    (int)response.StatusCode,
-                    entry.Action);
-            }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            logger.LogDebug(ex, "Admin audit ingest unreachable for {Action}", entry.Action);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            logger.LogWarning(
+                "Admin audit ingest returned {Status} for {Action}",
+                (int)response.StatusCode,
+                entry.Action);
+            throw new HttpRequestException(
+                $"Admin audit ingest returned {(int)response.StatusCode}: {body}");
         }
     }
 }
@@ -209,12 +205,17 @@ public static class AuditLoggingServiceCollectionExtensions
     {
         services.AddSpstAuditLogging();
         services.Configure<AdminAuditOptions>(configuration.GetSection(AdminAuditOptions.SectionName));
+        services.AddSingleton<FileAuditOutbox>();
         services.AddHttpClient<HttpAdminAuditSink>()
             .AddSpstResilienceTight();
         services.AddTransient<IAuditSink>(sp =>
             new SourcedAuditSink(
-                sp.GetRequiredService<HttpAdminAuditSink>(),
+                new DurableHttpAuditSink(
+                    sp.GetRequiredService<HttpAdminAuditSink>(),
+                    sp.GetRequiredService<FileAuditOutbox>(),
+                    sp.GetRequiredService<ILogger<DurableHttpAuditSink>>()),
                 sourceService));
+        services.AddHostedService<AuditOutboxDispatchHostedService>();
         return services;
     }
 }

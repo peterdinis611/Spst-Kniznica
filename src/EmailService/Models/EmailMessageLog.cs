@@ -30,6 +30,9 @@ public sealed class EmailMessageLog
 
     public string? Error { get; set; }
 
+    /// <summary>Dispatch + automatic retry attempts (Failed → retry worker).</summary>
+    public int AttemptCount { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset? SentAt { get; set; }

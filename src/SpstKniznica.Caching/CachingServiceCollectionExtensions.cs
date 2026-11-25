@@ -19,8 +19,10 @@ public static class CachingServiceCollectionExtensions
             services.PostConfigure<CacheOptions>(options => options.InstanceName = instanceName);
         }
 
-        // Cache:Enabled=false → in-process memory (dev-friendly). true → Redis with memory fallback.
-        var useRedis = configuration.GetValue($"{CacheOptions.SectionName}:Enabled", true);
+        // Cache:Enabled=false → in-process memory (dev-friendly).
+        var options = configuration.GetSection(CacheOptions.SectionName).Get<CacheOptions>()
+            ?? new CacheOptions();
+        var useRedis = options.Enabled;
         if (!useRedis)
         {
             services.AddMemoryCache();
@@ -28,32 +30,50 @@ public static class CachingServiceCollectionExtensions
             return services;
         }
 
-        var connectionString = configuration[$"{CacheOptions.SectionName}:ConnectionString"] ?? "localhost:6379";
+        var connectionString = options.ConnectionString;
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            connectionString = "localhost:6379";
+        }
+
         if (!connectionString.Contains("abortConnect", StringComparison.OrdinalIgnoreCase))
         {
             connectionString += ",abortConnect=false,connectTimeout=5000";
         }
 
         IConnectionMultiplexer? multiplexer = null;
+        Exception? connectError = null;
         try
         {
             multiplexer = ConnectionMultiplexer.Connect(connectionString);
             _ = multiplexer.GetDatabase().Ping();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            connectError = ex;
             multiplexer?.Dispose();
             multiplexer = null;
         }
 
         if (multiplexer is null)
         {
+            if (options.RequireRedis && !options.AllowMemoryFallback)
+            {
+                throw new InvalidOperationException(
+                    "Cache:Enabled requires Redis but connection failed. " +
+                    "Set Cache:AllowMemoryFallback=true for single-host emergency, " +
+                    "or Cache:Enabled=false for explicit in-process cache.",
+                    connectError);
+            }
+
             services.AddMemoryCache();
             services.AddSingleton<IAppCache>(sp =>
             {
                 sp.GetRequiredService<ILoggerFactory>()
                     .CreateLogger("SpstKniznica.Caching")
-                    .LogWarning("Redis unavailable at startup — using in-process MemoryAppCache");
+                    .LogWarning(
+                        connectError,
+                        "Redis unavailable at startup — using in-process MemoryAppCache (split-brain risk with multiple instances)");
                 return ActivatorUtilities.CreateInstance<MemoryAppCache>(sp);
             });
             return services;

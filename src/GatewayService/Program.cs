@@ -51,6 +51,10 @@ try
         ?? "http://localhost:5207";
     var categoryBase = builder.Configuration["Services:CategoryService"]?.TrimEnd('/')
         ?? "http://localhost:5204";
+    var emailBase = builder.Configuration["Services:EmailService"]?.TrimEnd('/')
+        ?? "http://localhost:5212";
+    var authBase = builder.Configuration["Services:AuthService"]?.TrimEnd('/')
+        ?? "http://localhost:5210";
 
     builder.Services.AddHealthChecks()
         .AddCheck("self", () => HealthCheckResult.Healthy("GatewayService"), tags: ["live"])
@@ -85,7 +89,28 @@ try
                 $"{categoryBase}/health",
                 sp.GetRequiredService<IHttpClientFactory>()),
             failureStatus: HealthStatus.Degraded,
-            tags: ["ready", "catalog"]));
+            tags: ["ready", "catalog"]))
+        .Add(new HealthCheckRegistration(
+            "email",
+            sp => new DownstreamReadyCheck(
+                "EmailService",
+                $"{emailBase}/health",
+                sp.GetRequiredService<IHttpClientFactory>()),
+            failureStatus: HealthStatus.Degraded,
+            tags: ["ready", "ops"]))
+        .Add(new HealthCheckRegistration(
+            "auth",
+            sp => new DownstreamReadyCheck(
+                "AuthService",
+                $"{authBase}/health",
+                sp.GetRequiredService<IHttpClientFactory>()),
+            failureStatus: HealthStatus.Degraded,
+            tags: ["ready", "ops"]))
+        .Add(new HealthCheckRegistration(
+            "redis",
+            sp => new RedisReadyCheck(sp.GetRequiredService<IConfiguration>()),
+            failureStatus: HealthStatus.Degraded,
+            tags: ["ready", "ops"]));
 
     var app = builder.Build();
 

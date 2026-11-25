@@ -84,6 +84,7 @@ public sealed class EmailDispatchService(
             logger.LogError(ex, "Failed to dispatch email {EmailId} to {To}", log.Id, log.ToAddress);
             log.Status = EmailDeliveryStatus.Failed;
             log.Error = Truncate(ex.Message, 2000);
+            log.AttemptCount = Math.Max(1, log.AttemptCount + 1);
             await db.SaveChangesAsync(cancellationToken);
             WriteSendAudit(log, failed: true);
             throw;
@@ -146,13 +147,12 @@ public sealed class EmailDispatchService(
         CancellationToken cancellationToken = default)
     {
         var limit = Math.Clamp(take, 1, 100);
-        // SQLite EF cannot translate DateTimeOffset ORDER BY — sort/take on the client.
-        var items = await db.Messages.AsNoTracking().ToListAsync(cancellationToken);
-        return items
-            .OrderByDescending(x => x.CreatedAt)
+        // UtcTicks pushes ORDER BY/LIMIT to SQLite instead of loading the full table.
+        var items = await db.Messages.AsNoTracking()
+            .OrderByDescending(x => x.CreatedAt.UtcTicks)
             .Take(limit)
-            .Select(ToDto)
-            .ToList();
+            .ToListAsync(cancellationToken);
+        return items.Select(ToDto).ToList();
     }
 
     public async Task<EmailMessageDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -179,6 +179,45 @@ public sealed class EmailDispatchService(
                 CorrelationId = existing.CorrelationId ?? existing.Id.ToString("N"),
             },
             cancellationToken);
+    }
+
+    public async Task<bool> RetryFailedInPlaceAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var log = await db.Messages.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        if (log is null || log.Status != EmailDeliveryStatus.Failed)
+        {
+            return false;
+        }
+
+        try
+        {
+            await transport.SendAsync(
+                new OutboundEmail(
+                    log.ToAddress,
+                    log.ToName,
+                    log.Subject,
+                    log.BodyText,
+                    log.BodyHtml),
+                cancellationToken);
+
+            log.Status = transport.IsLive
+                ? EmailDeliveryStatus.Sent
+                : EmailDeliveryStatus.LoggedOnly;
+            log.SentAt = DateTimeOffset.UtcNow;
+            log.Error = null;
+            log.AttemptCount += 1;
+            await db.SaveChangesAsync(cancellationToken);
+            WriteSendAudit(log, failed: false);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            log.AttemptCount += 1;
+            log.Error = Truncate(ex.Message, 2000);
+            await db.SaveChangesAsync(cancellationToken);
+            logger.LogWarning(ex, "In-place email retry failed for {EmailId}", id);
+            return false;
+        }
     }
 
     public async Task<EmailServiceStatusDto> GetStatusAsync(CancellationToken cancellationToken = default)

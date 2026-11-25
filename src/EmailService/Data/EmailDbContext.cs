@@ -19,8 +19,10 @@ public sealed class EmailDbContext(DbContextOptions<EmailDbContext> options) : D
         message.Property(x => x.TemplateKey).HasMaxLength(100);
         message.Property(x => x.CorrelationId).HasMaxLength(100);
         message.Property(x => x.Error).HasMaxLength(2000);
+        message.Property(x => x.AttemptCount).HasDefaultValue(0);
         message.Property(x => x.Status).HasConversion<int>();
         message.HasIndex(x => x.CreatedAt);
+        message.HasIndex(x => x.Status);
         message.HasIndex(x => x.ToAddress);
         message.HasIndex(x => x.TemplateKey);
     }

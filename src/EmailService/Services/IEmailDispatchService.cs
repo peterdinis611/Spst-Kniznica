@@ -20,5 +20,8 @@ public interface IEmailDispatchService
 
     Task<EmailMessageDto> ResendAsync(Guid id, CancellationToken cancellationToken = default);
 
+    /// <summary>Re-attempt SMTP for an existing Failed row (durable retry worker).</summary>
+    Task<bool> RetryFailedInPlaceAsync(Guid id, CancellationToken cancellationToken = default);
+
     Task<EmailServiceStatusDto> GetStatusAsync(CancellationToken cancellationToken = default);
 }

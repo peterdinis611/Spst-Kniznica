@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
 using SpstKniznica.Common.Auth;
 using SpstKniznica.Common.Hosting;
@@ -23,7 +24,7 @@ try
         {
             Title = "WorkersService API",
             Version = "v1",
-            Description = "SPST knižnica – .NET worker pre async order joby (Channel queue + BackgroundService)."
+            Description = "SPST knižnica – .NET worker pre async order joby (persistent queue + BackgroundService)."
         });
     });
     builder.Services.AddSpstCors(builder.Configuration, builder.Environment);
@@ -38,16 +39,19 @@ try
         builder.Configuration.GetSection(LoanLifecycleOptions.SectionName));
     builder.Services.AddHttpClient("loan-lifecycle")
         .AddSpstResilienceExternal();
-    builder.Services.AddSingleton<IOrderJobQueue, ChannelOrderJobQueue>();
+    builder.Services.AddSingleton<IOrderJobQueue, FileBackedOrderJobQueue>();
     builder.Services.AddHostedService<OrderProcessingHostedService>();
     builder.Services.AddHostedService<LoanLifecycleHostedService>();
-    builder.Services.AddHealthChecks();
+    builder.Services.AddSpstRequestMetrics();
+    builder.Services.AddHealthChecks()
+        .AddCheck<OrderQueueHealthCheck>("order-queue");
 
     var app = builder.Build();
 
     Log.Information("Starting WorkersService in {Environment} environment", app.Environment.EnvironmentName);
 
     app.UseSpstRequestLogging();
+    app.UseSpstRequestMetrics();
     app.UseSpstCors();
     if (app.Environment.ShouldExposeSwagger())
     {
@@ -63,6 +67,7 @@ try
     app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();
+    app.MapSpstMetrics("WorkersService");
     app.MapHealthChecks("/health").AllowAnonymous();
 
     Log.Information("WorkersService is ready. Health: /health, Enqueue: POST /api/orders/enqueue");
@@ -75,4 +80,17 @@ catch (Exception ex)
 finally
 {
     await Log.CloseAndFlushAsync();
+}
+
+file sealed class OrderQueueHealthCheck(IOrderJobQueue queue) : IHealthCheck
+{
+    public Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var pending = queue.PendingCount;
+        var data = new Dictionary<string, object> { ["pending"] = pending };
+        return Task.FromResult(
+            HealthCheckResult.Healthy($"order queue pending={pending}", data));
+    }
 }

@@ -44,7 +44,8 @@ public sealed class SqliteFoldConnectionInterceptor : DbConnectionInterceptor
         }
 
         Execute(sqlite, "PRAGMA journal_mode=WAL;");
-        Execute(sqlite, "PRAGMA busy_timeout=5000;");
+        // Keep in sync with SqliteConnectionDefaults.DefaultTimeout (15s).
+        Execute(sqlite, "PRAGMA busy_timeout=15000;");
         Execute(sqlite, "PRAGMA synchronous=NORMAL;");
     }
 

@@ -73,7 +73,9 @@ try
     }
 
     builder.Services.AddScoped<IEmailDispatchService, EmailDispatchService>();
+    builder.Services.AddHostedService<EmailRetryHostedService>();
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "EmailService");
+    builder.Services.AddSpstRequestMetrics();
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<EmailDbContext>("database");
@@ -85,9 +87,12 @@ try
         app.Environment.EnvironmentName,
         smtpEnabled);
 
-    await app.Services.MigrateSpstDatabaseAsync<EmailDbContext>("EmailService");
+    await app.Services.MigrateSpstDatabaseAsync<EmailDbContext>(
+        "EmailService",
+        async (db, ct) => await EmailSchema.EnsureAsync(db, ct));
 
     app.UseSpstRequestLogging();
+    app.UseSpstRequestMetrics();
     app.UseSpstCors();
     if (app.Environment.ShouldExposeSwagger())
     {
@@ -103,6 +108,7 @@ try
     app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers().RequireRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy);
+    app.MapSpstMetrics("EmailService");
     app.MapHealthChecks("/health").AllowAnonymous();
 
     await app.RunAsync();

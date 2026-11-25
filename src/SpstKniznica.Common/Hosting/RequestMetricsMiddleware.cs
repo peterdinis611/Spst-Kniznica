@@ -44,7 +44,21 @@ public static class RequestMetricsExtensions
 
     public static IEndpointRouteBuilder MapSpstMetrics(this IEndpointRouteBuilder endpoints, string serviceName)
     {
-        endpoints.MapGet("/metrics", (RequestMetrics metrics) => Results.Json(metrics.Snapshot(serviceName)))
+        endpoints.MapGet("/metrics", (HttpRequest request, RequestMetrics metrics) =>
+            {
+                var accept = request.Headers.Accept.ToString();
+                var wantProm = request.Query.ContainsKey("format")
+                        && string.Equals(request.Query["format"], "prom", StringComparison.OrdinalIgnoreCase)
+                    || accept.Contains("text/plain", StringComparison.OrdinalIgnoreCase)
+                    || accept.Contains("openmetrics", StringComparison.OrdinalIgnoreCase);
+
+                if (wantProm)
+                {
+                    return Results.Text(metrics.ToPrometheus(serviceName), "text/plain; version=0.0.4; charset=utf-8");
+                }
+
+                return Results.Json(metrics.Snapshot(serviceName));
+            })
             .AllowAnonymous()
             .WithTags("Observability");
         return endpoints;

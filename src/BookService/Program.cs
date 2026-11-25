@@ -53,6 +53,7 @@ try
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
     builder.Services.AddSpstIntegrationMessaging(builder.Configuration, clientId: "book-service");
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
+    builder.Services.AddSpstRequestMetrics();
     builder.Services.AddHostedService<CategorySyncHostedService>();
     builder.Services.AddHostedService<BookingCopySyncHostedService>();
     builder.Services.AddHostedService<CatalogSyncRabbitHostedService>();
@@ -99,6 +100,7 @@ try
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();
+    app.UseSpstRequestMetrics();
     app.UseSpstCors();
     if (app.Environment.ShouldExposeSwagger())
     {
@@ -115,9 +117,10 @@ try
     app.UseSpstAuthentication();
     app.UseAuthorization();
     app.MapControllers();
+    app.MapSpstMetrics("BookService");
     app.MapHealthChecks("/health").AllowAnonymous();
 
-    Log.Information("BookService is ready. Health: /health");
+    Log.Information("BookService is ready. Health: /health · Metrics: /metrics");
     await app.RunAsync();
 }
 catch (Exception ex)
