@@ -48,26 +48,26 @@ public class HttpAdminAuditSinkTests
     }
 
     [Fact]
-    public async Task WriteAsync_does_not_throw_on_non_success_status()
+    public async Task WriteAsync_throws_on_non_success_status_for_durable_outbox()
     {
         var handler = new RecordingHandler(HttpStatusCode.ServiceUnavailable);
         var sut = CreateSink(handler, enabled: true, baseUrl: "http://admin.test");
 
         var act = async () => await sut.WriteAsync(SampleEntry());
 
-        await act.Should().NotThrowAsync();
+        await act.Should().ThrowAsync<HttpRequestException>();
         handler.Calls.Should().ContainSingle();
     }
 
     [Fact]
-    public async Task WriteAsync_does_not_throw_when_transport_fails()
+    public async Task WriteAsync_throws_when_transport_fails_for_durable_outbox()
     {
         var handler = new ThrowingHandler();
         var sut = CreateSink(handler, enabled: true, baseUrl: "http://admin.test");
 
         var act = async () => await sut.WriteAsync(SampleEntry());
 
-        await act.Should().NotThrowAsync();
+        await act.Should().ThrowAsync<HttpRequestException>();
     }
 
     private static HttpAdminAuditSink CreateSink(

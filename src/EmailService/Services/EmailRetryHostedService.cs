@@ -47,13 +47,15 @@ public sealed class EmailRetryHostedService(
         var emails = scope.ServiceProvider.GetRequiredService<IEmailDispatchService>();
         var metrics = scope.ServiceProvider.GetService<RequestMetrics>();
 
-        var failed = await db.Messages
-            .AsNoTracking()
-            .Where(m => m.Status == EmailDeliveryStatus.Failed && m.AttemptCount < MaxAttempts)
-            .OrderBy(m => m.CreatedAt.UtcTicks)
+        var failed = (await db.Messages
+                .AsNoTracking()
+                .Where(m => m.Status == EmailDeliveryStatus.Failed && m.AttemptCount < MaxAttempts)
+                .Take(BatchSize * 4)
+                .ToListAsync(cancellationToken))
+            .OrderBy(m => m.CreatedAt)
             .Take(BatchSize)
             .Select(m => m.Id)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         metrics?.SetGauge("email_failed_pending", failed.Count);
         if (failed.Count == 0)

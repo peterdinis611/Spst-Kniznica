@@ -147,12 +147,15 @@ public sealed class EmailDispatchService(
         CancellationToken cancellationToken = default)
     {
         var limit = Math.Clamp(take, 1, 100);
-        // UtcTicks pushes ORDER BY/LIMIT to SQLite instead of loading the full table.
+        // Cap client materialization — EF SQLite cannot ORDER BY DateTimeOffset.
         var items = await db.Messages.AsNoTracking()
-            .OrderByDescending(x => x.CreatedAt.UtcTicks)
-            .Take(limit)
+            .Take(Math.Max(limit * 20, 500))
             .ToListAsync(cancellationToken);
-        return items.Select(ToDto).ToList();
+        return items
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(limit)
+            .Select(ToDto)
+            .ToList();
     }
 
     public async Task<EmailMessageDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

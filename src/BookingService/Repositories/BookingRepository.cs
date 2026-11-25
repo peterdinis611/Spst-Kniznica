@@ -59,29 +59,48 @@ public class BookingRepository(BookingDbContext db) : IBookingRepository
                 (b.Notes != null && EF.Functions.Like(b.Notes, $"%{search}%")));
         }
 
-        // Prefer SQL ORDER BY via UtcTicks (SQLite-friendly) + Skip/Take in DB.
-        var totalCount = await query.CountAsync(cancellationToken);
-        query = ApplySort(query, filter.SortBy, filter.IsDescending);
-        var items = await query
-            .Skip((filter.Page - 1) * filter.PageSize)
-            .Take(filter.PageSize)
-            .ToListAsync(cancellationToken);
+        // Non-date sorts stay in SQL. DateTimeOffset sorts: filter in SQL, sort/page in memory
+        // (EF SQLite cannot translate DateTimeOffset ORDER BY / UtcTicks).
+        var sortKey = filter.SortBy.Trim().ToLowerInvariant();
+        var dateSort = sortKey is "reservedat" or "borrowedat" or "createdat" or "updatedat" or "duedate"
+            or "" or "due";
 
+        if (!dateSort)
+        {
+            var totalCount = await query.CountAsync(cancellationToken);
+            query = ApplySqlSort(query, sortKey, filter.IsDescending);
+            var items = await query
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync(cancellationToken);
+            return new PagedResult<Booking>
+            {
+                Items = items,
+                Page = filter.Page,
+                PageSize = filter.PageSize,
+                TotalCount = totalCount
+            };
+        }
+
+        var filtered = await query.ToListAsync(cancellationToken);
+        var sorted = SortDatesInMemory(filtered, sortKey, filter.IsDescending);
         return new PagedResult<Booking>
         {
-            Items = items,
+            Items = sorted
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToList(),
             Page = filter.Page,
             PageSize = filter.PageSize,
-            TotalCount = totalCount
+            TotalCount = sorted.Count
         };
     }
 
-    private static IQueryable<Booking> ApplySort(
+    private static IQueryable<Booking> ApplySqlSort(
         IQueryable<Booking> query,
         string sortBy,
         bool descending)
-    {
-        return sortBy.Trim().ToLowerInvariant() switch
+        => sortBy switch
         {
             "status" => descending
                 ? query.OrderByDescending(b => b.Status)
@@ -92,22 +111,26 @@ public class BookingRepository(BookingDbContext db) : IBookingRepository
             "borroweremail" => descending
                 ? query.OrderByDescending(b => b.BorrowerEmail)
                 : query.OrderBy(b => b.BorrowerEmail),
-            "reservedat" => descending
-                ? query.OrderByDescending(b => b.ReservedAt.UtcTicks)
-                : query.OrderBy(b => b.ReservedAt.UtcTicks),
-            "borrowedat" => descending
-                ? query.OrderByDescending(b => b.BorrowedAt)
-                : query.OrderBy(b => b.BorrowedAt),
-            "createdat" => descending
-                ? query.OrderByDescending(b => b.CreatedAt.UtcTicks)
-                : query.OrderBy(b => b.CreatedAt.UtcTicks),
-            "updatedat" => descending
-                ? query.OrderByDescending(b => b.UpdatedAt.UtcTicks)
-                : query.OrderBy(b => b.UpdatedAt.UtcTicks),
-            _ => descending
-                ? query.OrderByDescending(b => b.DueDate.UtcTicks)
-                : query.OrderBy(b => b.DueDate.UtcTicks),
+            _ => query.OrderBy(b => b.Id),
         };
+
+    private static List<Booking> SortDatesInMemory(
+        IReadOnlyList<Booking> items,
+        string sortBy,
+        bool descending)
+    {
+        Func<Booking, long> key = sortBy switch
+        {
+            "reservedat" => b => b.ReservedAt.UtcTicks,
+            "borrowedat" => b => b.BorrowedAt?.UtcTicks ?? long.MinValue,
+            "createdat" => b => b.CreatedAt.UtcTicks,
+            "updatedat" => b => b.UpdatedAt.UtcTicks,
+            _ => b => b.DueDate.UtcTicks,
+        };
+
+        return descending
+            ? items.OrderByDescending(key).ToList()
+            : items.OrderBy(key).ToList();
     }
 
     public Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
