@@ -98,25 +98,55 @@ public static class DatabaseMigrationExtensions
             serviceName,
             all.Count);
 
-        await db.Database.ExecuteSqlRawAsync(
-            """
-            CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
-                "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
-                "ProductVersion" TEXT NOT NULL
-            );
-            """,
-            cancellationToken);
+        var isNpgsql = db.Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true;
+        if (isNpgsql)
+        {
+            await db.Database.ExecuteSqlRawAsync(
+                """
+                CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+                    "MigrationId" character varying(150) NOT NULL,
+                    "ProductVersion" character varying(32) NOT NULL,
+                    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+                );
+                """,
+                cancellationToken);
+        }
+        else
+        {
+            await db.Database.ExecuteSqlRawAsync(
+                """
+                CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+                    "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+                    "ProductVersion" TEXT NOT NULL
+                );
+                """,
+                cancellationToken);
+        }
 
         var productVersion = typeof(DbContext).Assembly.GetName().Version?.ToString(3) ?? "10.0.0";
         foreach (var migrationId in all)
         {
-            await db.Database.ExecuteSqlRawAsync(
-                """
-                INSERT OR IGNORE INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-                VALUES ({0}, {1});
-                """,
-                new object[] { migrationId, productVersion },
-                cancellationToken);
+            if (isNpgsql)
+            {
+                await db.Database.ExecuteSqlRawAsync(
+                    """
+                    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+                    VALUES ({0}, {1})
+                    ON CONFLICT ("MigrationId") DO NOTHING;
+                    """,
+                    new object[] { migrationId, productVersion },
+                    cancellationToken);
+            }
+            else
+            {
+                await db.Database.ExecuteSqlRawAsync(
+                    """
+                    INSERT OR IGNORE INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+                    VALUES ({0}, {1});
+                    """,
+                    new object[] { migrationId, productVersion },
+                    cancellationToken);
+            }
         }
     }
 }

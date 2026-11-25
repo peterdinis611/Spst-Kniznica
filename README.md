@@ -8,7 +8,7 @@
 | --- | --- |
 | Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind, react-admin, TanStack Virtual |
 | API | ASP.NET Core (.NET 10), YARP gateway, mikroslužby |
-| Dáta | SQLite (dev), Redis, Kafka, RabbitMQ (voliteľná Docker infra) |
+| Dáta | SQLite (dev default) alebo PostgreSQL (`Database__Provider`), Redis, Kafka, RabbitMQ |
 | Auth | Microsoft Entra ID (MSAL) · CASL oprávnenia |
 
 ## Štruktúra
@@ -171,8 +171,12 @@ Detaily: [`load/README.md`](load/README.md).
 ./scripts/backup-sqlite.sh               # online záloha *.db (WAL-safe)
 ./scripts/install-daily-backup.sh        # launchd/cron: denne 20:00 (+ retencia 14 dní)
 ./scripts/restore-sqlite.sh .backups/... # obnova (najprv stop-all)
+./scripts/pg-backup.sh                   # pg_dump všetkých spst_* DB
 ./scripts/check-production-secrets.sh    # Entra / InternalApi / SITE_URL
 ```
+
+PostgreSQL: `docker compose up -d postgres` → v `.env` nastav `Database__Provider=PostgreSql` → reštart stacku.  
+Detaily: [`deploy/postgres/README.md`](deploy/postgres/README.md).
 
 Gateway metriky: `GET /metrics` (JSON) alebo `GET /metrics?format=prom` (Prometheus text).  
 CORS pre priamy katalóg: nastav `SITE_URL` / `NEXT_PUBLIC_SITE_URL` / `Cors__SiteUrl` na verejnú URL školy.  

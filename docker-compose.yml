@@ -1,14 +1,33 @@
-# Local broker stack only (Redis / RabbitMQ / Kafka).
+# Local infra: Redis / RabbitMQ / Kafka / PostgreSQL.
 #
 # Microservice apps (Gateway, Book, Booking, Auth, …) and Next.js are NOT
 # containerized here — run them with ./start.sh (or `dotnet run` / `npm run dev`).
-# A future `docker-compose.apps.yml` / profile `apps` can wrap those images;
-# until then treat this file as infra-only.
+#
+# Postgres: set Database__Provider=PostgreSql + per-service ConnectionStrings
+# (see .env.example / deploy/postgres/). Init script creates one DB per service.
 #
 # Do not publish these ports or use guest/plaintext credentials outside loopback.
 # Production: set RABBITMQ_DEFAULT_USER/PASS, enable Kafka SASL/TLS, and set
 # Kafka:/RabbitMq:SigningSecret (+ RequireSigning=true) in service overlays.
 services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: spst-postgres
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-spst}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-spst}
+      POSTGRES_DB: postgres
+    volumes:
+      - spst-postgres-data:/var/lib/postgresql/data
+      - ./deploy/postgres/init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-spst} -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   redis:
     image: redis:7.4-alpine
     container_name: spst-redis
@@ -67,3 +86,6 @@ services:
       timeout: 10s
       retries: 10
       start_period: 20s
+
+volumes:
+  spst-postgres-data:

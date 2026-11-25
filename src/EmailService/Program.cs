@@ -42,7 +42,7 @@ try
     builder.Services.AddHttpContextAccessor();
 
     builder.Services.AddDbContext<EmailDbContext>(options =>
-        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "email.db")
+        options.UseSpstDatabase(builder.Configuration, "email.db")
             .ConfigureSpstMigrations());
 
     var smtpEnabled = builder.Configuration.GetValue("Smtp:Enabled", false);

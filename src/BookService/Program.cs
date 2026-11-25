@@ -42,7 +42,7 @@ try
     builder.Services.AddSpstIntegrations(builder.Configuration);
 
     builder.Services.AddDbContext<BookDbContext>(options =>
-        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "books.db")
+        options.UseSpstDatabase(builder.Configuration, "books.db")
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<IBookRepository, BookRepository>();

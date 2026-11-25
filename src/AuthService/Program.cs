@@ -38,7 +38,7 @@ try
         builder.Configuration.GetSection(AuthPresentationOptions.SectionName));
 
     builder.Services.AddDbContext<AuthDbContext>(options =>
-        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "auth.db")
+        options.UseSpstDatabase(builder.Configuration, "auth.db")
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<IAuthSettingsProvider, AuthSettingsProvider>();

@@ -283,10 +283,11 @@ if [[ "$SKIP_DOCKER" -eq 0 ]]; then
     echo "    Spusti Docker Desktop a znova ./start.sh, alebo použij --skip-docker."
     echo
   else
-    echo "==> Docker Compose up -d (Redis / Kafka / RabbitMQ)"
+    echo "==> Docker Compose up -d (Redis / Kafka / RabbitMQ / Postgres)"
     if (cd "$ROOT" && docker compose up -d); then
       echo "  · čakám na healthchecky..."
       DOCKER_FAILED=0
+      wait_docker_healthy "postgres" 40 || DOCKER_FAILED=1
       wait_docker_healthy "redis" 40 || DOCKER_FAILED=1
       wait_docker_healthy "rabbitmq" 60 || DOCKER_FAILED=1
       wait_docker_healthy "kafka" 90 || DOCKER_FAILED=1
@@ -294,6 +295,9 @@ if [[ "$SKIP_DOCKER" -eq 0 ]]; then
         echo "  ! Niektoré kontajnery ešte nie sú healthy – pokračujem (log: docker compose ps)"
       else
         echo "  ✓ Infra ready"
+      fi
+      if [[ "${Database__Provider:-Sqlite}" =~ ^[Pp]ostgre ]]; then
+        echo "  · Database__Provider=PostgreSql — služby použijú spst_* databázy"
       fi
     else
       echo "  ! docker compose up -d zlyhalo – pokračujem bez infra"

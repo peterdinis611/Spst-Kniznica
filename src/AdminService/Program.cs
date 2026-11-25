@@ -42,7 +42,7 @@ try
         .AddSpstResilienceTight();
 
     builder.Services.AddDbContext<AdminDbContext>(options =>
-        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "admin.db")
+        options.UseSpstDatabase(builder.Configuration, "admin.db")
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<AuditLogService>();

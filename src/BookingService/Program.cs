@@ -48,7 +48,7 @@ try
     builder.Services.AddSpstIntegrations(builder.Configuration);
 
     builder.Services.AddDbContext<BookingDbContext>(options =>
-        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "bookings.db")
+        options.UseSpstDatabase(builder.Configuration, "bookings.db")
             .ConfigureSpstMigrations());
 
     builder.Services.Configure<BookCatalogOptions>(

@@ -41,7 +41,7 @@ try
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "MessagingService");
 
     builder.Services.AddDbContext<MessagingDbContext>(options =>
-        options.UseSpstSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), "messaging.db")
+        options.UseSpstDatabase(builder.Configuration, "messaging.db")
             .ConfigureSpstMigrations());
 
     builder.Services.AddScoped<ILibraryRelationService, LibraryRelationService>();
