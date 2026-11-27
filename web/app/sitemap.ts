@@ -4,7 +4,6 @@ import { absoluteUrl } from "@/lib/site";
 import { recordDiscoveryHit } from "@/lib/seo/discovery-monitor";
 import { fetchSitemapCatalog } from "@/lib/seo/sitemap-data";
 
-export const revalidate = 3600;
 
 function entry(
   path: string,

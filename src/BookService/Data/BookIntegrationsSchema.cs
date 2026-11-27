@@ -7,6 +7,12 @@ public static class BookIntegrationsSchema
 {
     public static async Task EnsureAsync(BookDbContext db, CancellationToken cancellationToken = default)
     {
+        // PostgreSQL schema comes from EF migrations — skip SQLite PRAGMA patches.
+        if (SqliteGuidNormalize.IsNpgsql(db))
+        {
+            return;
+        }
+
         if (!await ColumnExistsAsync(db, "Books", "CoverUrl", cancellationToken))
         {
             await db.Database.ExecuteSqlRawAsync(

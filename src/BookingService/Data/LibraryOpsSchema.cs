@@ -5,11 +5,21 @@ namespace BookingService.Data;
 
 /// <summary>
 /// Idempotent SQLite schema patches when a full EF migration has not been applied yet.
+/// No-op on PostgreSQL (EF migrations own the schema).
 /// </summary>
 public static class LibraryOpsSchema
 {
     public static async Task EnsureAsync(BookingDbContext db, CancellationToken cancellationToken = default)
     {
+        // Outbox lives in the EF model but has no migration yet — ensure on every provider.
+        await EnsureOutboxAsync(db, cancellationToken);
+
+        if (SqliteGuidNormalize.IsNpgsql(db))
+        {
+            // Waitlist/Favorites/indexes come from EF migrations on PostgreSQL.
+            return;
+        }
+
         await db.Database.ExecuteSqlRawAsync(
             """
             CREATE TABLE IF NOT EXISTS "Waitlist" (
@@ -94,6 +104,25 @@ public static class LibraryOpsSchema
             // Duplicate active rows for the same copy — resolve manually, then restart.
         }
 
+        await SqliteGuidNormalize.LowerGuidColumnsAsync(
+            db,
+            [
+                ("Bookings", "Id"),
+                ("Bookings", "BookId"),
+                ("Bookings", "BookCopyId"),
+                ("Waitlist", "Id"),
+                ("Waitlist", "BookId"),
+                ("Favorites", "Id"),
+                ("Favorites", "BookId"),
+            ],
+            cancellationToken);
+    }
+
+    private static async Task EnsureOutboxAsync(
+        BookingDbContext db,
+        CancellationToken cancellationToken)
+    {
+        // TEXT works on both SQLite and PostgreSQL; timestamps stored as text/ISO for SQLite compat.
         await db.Database.ExecuteSqlRawAsync(
             """
             CREATE TABLE IF NOT EXISTS "OutboxMessages" (
@@ -120,19 +149,6 @@ public static class LibraryOpsSchema
             CREATE INDEX IF NOT EXISTS "IX_OutboxMessages_CreatedAt"
             ON "OutboxMessages" ("CreatedAt");
             """,
-            cancellationToken);
-
-        await SqliteGuidNormalize.LowerGuidColumnsAsync(
-            db,
-            [
-                ("Bookings", "Id"),
-                ("Bookings", "BookId"),
-                ("Bookings", "BookCopyId"),
-                ("Waitlist", "Id"),
-                ("Waitlist", "BookId"),
-                ("Favorites", "Id"),
-                ("Favorites", "BookId"),
-            ],
             cancellationToken);
     }
 

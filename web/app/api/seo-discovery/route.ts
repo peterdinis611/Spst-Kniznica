@@ -29,18 +29,23 @@ async function requireStaff(): Promise<AuthUser | null> {
 
 /** Staff-only snapshot of SEO / llms.txt discovery hits (process-local). */
 export async function GET(request: Request) {
-  if (!isSameOriginRequest(request)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  try {
+    if (!isSameOriginRequest(request)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-  const staff = await requireStaff();
-  if (!staff) {
+    const staff = await requireStaff();
+    if (!staff) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    return NextResponse.json(getDiscoverySnapshot(), {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch {
+    // Never 500 anonymous probes — treat as unauthorized.
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  return NextResponse.json(getDiscoverySnapshot(), {
-    headers: {
-      "Cache-Control": "no-store",
-    },
-  });
 }

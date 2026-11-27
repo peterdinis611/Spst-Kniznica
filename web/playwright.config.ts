@@ -24,7 +24,8 @@ export default defineConfig({
     {
       name: "mobile-chrome",
       use: { ...devices["Pixel 7"] },
-      testMatch: /smoke\.spec\.ts/,
+      // Exact smoke.spec.ts only — do not also match seo-smoke.spec.ts
+      testMatch: /(^|\/)smoke\.spec\.ts$/,
     },
   ],
   webServer: process.env.PLAYWRIGHT_NO_WEB_SERVER

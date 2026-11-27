@@ -6,7 +6,6 @@ import { recordDiscoveryFromRequest } from "@/lib/seo/discovery-monitor";
 import { buildAuthorMarkdown } from "@/lib/seo/entity-markdown";
 import { LLM_TXT_HEADERS } from "@/lib/seo/llms-txt";
 
-export const revalidate = 3600;
 
 type Props = { params: Promise<{ id: string }> };
 

@@ -12,6 +12,7 @@ public class CategoryDbContext(DbContextOptions<CategoryDbContext> options) : Db
     {
         modelBuilder.ConfigureSpstDbFunctions();
         modelBuilder.ApplyLowercaseGuidText();
+        modelBuilder.ApplyForNpgsql(this);
 
         modelBuilder.Entity<Category>(entity =>
         {

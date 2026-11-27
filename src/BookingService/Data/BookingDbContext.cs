@@ -15,6 +15,7 @@ public class BookingDbContext(DbContextOptions<BookingDbContext> options) : DbCo
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyLowercaseGuidText();
+        modelBuilder.ApplyForNpgsql(this);
 
         modelBuilder.Entity<Booking>(entity =>
         {

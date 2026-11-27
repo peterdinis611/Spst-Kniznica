@@ -7,6 +7,11 @@ public static class AuthorIntegrationsSchema
 {
     public static async Task EnsureAsync(AuthorDbContext db, CancellationToken cancellationToken = default)
     {
+        if (SqliteGuidNormalize.IsNpgsql(db))
+        {
+            return;
+        }
+
         await EnsureColumnAsync(db, "WikidataId", """ALTER TABLE "Authors" ADD COLUMN "WikidataId" TEXT NULL;""", cancellationToken);
         await EnsureColumnAsync(db, "ViafId", """ALTER TABLE "Authors" ADD COLUMN "ViafId" TEXT NULL;""", cancellationToken);
         await EnsureColumnAsync(db, "ProfileUrl", """ALTER TABLE "Authors" ADD COLUMN "ProfileUrl" TEXT NULL;""", cancellationToken);

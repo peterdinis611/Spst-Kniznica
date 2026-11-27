@@ -12,6 +12,7 @@ public class AuthorDbContext(DbContextOptions<AuthorDbContext> options) : DbCont
     {
         modelBuilder.ConfigureSpstDbFunctions();
         modelBuilder.ApplyLowercaseGuidText();
+        modelBuilder.ApplyForNpgsql(this);
 
         modelBuilder.Entity<Author>(entity =>
         {

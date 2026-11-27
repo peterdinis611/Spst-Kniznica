@@ -5,13 +5,18 @@ import {
 } from "@/lib/auth/access-token";
 
 describe("resolveActionAccessToken", () => {
-  it("returns token when present", async () => {
+  it("syncs session via getAccessToken but never returns Bearer to callers", async () => {
+    let called = false;
     await expect(
       resolveActionAccessToken({
         entraEnabled: true,
-        getAccessToken: async () => "tok-123",
+        getAccessToken: async () => {
+          called = true;
+          return "tok-123";
+        },
       }),
-    ).resolves.toBe("tok-123");
+    ).resolves.toBeUndefined();
+    expect(called).toBe(true);
   });
 
   it("throws when Entra is on and token is missing", async () => {

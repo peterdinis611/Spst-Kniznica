@@ -232,26 +232,52 @@ jobs:
           set -euo pipefail
           mkdir -p "$GITHUB_WORKSPACE/.run/logs"
           # DB names come from each service appsettings (spst_book / spst_booking).
+          # Stagger starts so MigrateAsync + fold() DDL do not stampede Postgres.
           dotnet run --project BookService -c Release --no-build --urls http://127.0.0.1:5203 \
             >"$GITHUB_WORKSPACE/.run/logs/book.log" 2>&1 &
           echo $! >"$GITHUB_WORKSPACE/.run/book.pid"
-          dotnet run --project BookingService -c Release --no-build --urls http://127.0.0.1:5208 \
-            >"$GITHUB_WORKSPACE/.run/logs/booking.log" 2>&1 &
-          echo $! >"$GITHUB_WORKSPACE/.run/booking.pid"
-          dotnet run --project GatewayService -c Release --no-build --urls http://127.0.0.1:5200 \
-            >"$GITHUB_WORKSPACE/.run/logs/gateway.log" 2>&1 &
-          echo $! >"$GITHUB_WORKSPACE/.run/gateway.pid"
-          for i in $(seq 1 90); do
-            if curl -fsS http://127.0.0.1:5200/health >/dev/null 2>&1 \
-              && curl -fsS http://127.0.0.1:5203/health >/dev/null 2>&1 \
-              && curl -fsS http://127.0.0.1:5208/health >/dev/null 2>&1; then
-              echo "services ready"
-              exit 0
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:5203/health >/dev/null 2>&1 && break
+            if ! kill -0 "$(cat "$GITHUB_WORKSPACE/.run/book.pid")" 2>/dev/null; then
+              echo "BookService exited early" >&2
+              tail -n 160 "$GITHUB_WORKSPACE/.run/logs/book.log" || true
+              exit 1
             fi
             sleep 2
           done
-          echo "timeout waiting for services" >&2
-          tail -n 120 "$GITHUB_WORKSPACE/.run/logs/"*.log || true
+          curl -fsS http://127.0.0.1:5203/health >/dev/null
+
+          dotnet run --project BookingService -c Release --no-build --urls http://127.0.0.1:5208 \
+            >"$GITHUB_WORKSPACE/.run/logs/booking.log" 2>&1 &
+          echo $! >"$GITHUB_WORKSPACE/.run/booking.pid"
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:5208/health >/dev/null 2>&1 && break
+            if ! kill -0 "$(cat "$GITHUB_WORKSPACE/.run/booking.pid")" 2>/dev/null; then
+              echo "BookingService exited early" >&2
+              tail -n 160 "$GITHUB_WORKSPACE/.run/logs/booking.log" || true
+              exit 1
+            fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:5208/health >/dev/null
+
+          dotnet run --project GatewayService -c Release --no-build --urls http://127.0.0.1:5200 \
+            >"$GITHUB_WORKSPACE/.run/logs/gateway.log" 2>&1 &
+          echo $! >"$GITHUB_WORKSPACE/.run/gateway.pid"
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:5200/health >/dev/null 2>&1; then
+              echo "services ready"
+              exit 0
+            fi
+            if ! kill -0 "$(cat "$GITHUB_WORKSPACE/.run/gateway.pid")" 2>/dev/null; then
+              echo "GatewayService exited early" >&2
+              tail -n 160 "$GITHUB_WORKSPACE/.run/logs/gateway.log" || true
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "timeout waiting for gateway" >&2
+          tail -n 160 "$GITHUB_WORKSPACE/.run/logs/"*.log || true
           exit 1
 
       - name: Gateway smoke

@@ -13,6 +13,7 @@ public class BookDbContext(DbContextOptions<BookDbContext> options) : DbContext(
     {
         modelBuilder.ConfigureSpstDbFunctions();
         modelBuilder.ApplyLowercaseGuidText();
+        modelBuilder.ApplyForNpgsql(this);
 
         modelBuilder.Entity<Book>(entity =>
         {
