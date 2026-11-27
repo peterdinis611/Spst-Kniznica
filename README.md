@@ -188,10 +188,11 @@ Audit outbox + order jobs: Redis list (multi-host); file JSONL len ako fallback 
 
 GitHub Actions (`.github/workflows/ci.yml`) na `push` / PR:
 
+- **Hardening** — Production overlay gate + secrets script (soft v Development)
 - **Backend** — restore, build, test (.NET 10)
 - **Frontend** — `npm ci`, typecheck, lint, vitest
 - **E2E** — Playwright Next-only (bez gateway)
-- **Stack smoke** — Book + Booking + Gateway + Redis
+- **Stack smoke** — Book + Booking + Gateway + Redis + **Postgres**
 - **Gateway API smoke** — `workflow_dispatch` s `gateway_url`
 - **Load smoke (k6)** — `workflow_dispatch` s `run_load_smoke=true` + `gateway_url`
 

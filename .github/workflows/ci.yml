@@ -153,9 +153,9 @@ jobs:
         run: ./scripts/load-test.sh smoke "${{ inputs.gateway_url }}"
 
   stack-smoke:
-    name: Stack smoke (Book + Booking + Gateway + Redis)
+    name: Stack smoke (Book + Booking + Gateway + Redis + Postgres)
     runs-on: ubuntu-latest
-    needs: backend
+    needs: [backend, hardening]
     services:
       redis:
         image: redis:7
@@ -165,6 +165,19 @@ jobs:
           --health-cmd "redis-cli ping"
           --health-interval 5s
           --health-timeout 3s
+          --health-retries 10
+      postgres:
+        image: postgres:17-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: spst
+          POSTGRES_PASSWORD: spst
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd "pg_isready -U spst -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
           --health-retries 10
     steps:
       - uses: actions/checkout@v4
@@ -178,10 +191,28 @@ jobs:
         working-directory: src
         run: dotnet build SpstKniznica.sln -c Release
 
+      - name: Init Postgres databases
+        env:
+          PGPASSWORD: spst
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+          for db in spst_book spst_booking; do
+            psql -h 127.0.0.1 -U spst -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='$db'" | grep -q 1 \
+              || psql -h 127.0.0.1 -U spst -d postgres -c "CREATE DATABASE $db OWNER spst;"
+          done
+
       - name: Start Book / Booking / Gateway
         working-directory: src
         env:
           ASPNETCORE_ENVIRONMENT: Development
+          Database__Provider: PostgreSql
+          Database__Postgres__Host: 127.0.0.1
+          Database__Postgres__Port: "5432"
+          Database__Postgres__Username: spst
+          Database__Postgres__Password: spst
+          Database__Postgres__SslMode: Disable
           Kafka__Enabled: "false"
           RabbitMq__Enabled: "false"
           Cache__Enabled: "true"
@@ -189,6 +220,7 @@ jobs:
           Cache__RequireRedis: "false"
           Cache__AllowMemoryFallback: "true"
           RateLimiting__UseRedis: "false"
+          Metrics__RequireKey: "false"
           InternalApi__SharedKey: spst-dev-internal-key-change-me
           InternalApi__AllowInsecureDefaultKey: "true"
           BookService__HttpEventSync: "true"
@@ -199,6 +231,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$GITHUB_WORKSPACE/.run/logs"
+          # DB names come from each service appsettings (spst_book / spst_booking).
           dotnet run --project BookService -c Release --no-build --urls http://127.0.0.1:5203 \
             >"$GITHUB_WORKSPACE/.run/logs/book.log" 2>&1 &
           echo $! >"$GITHUB_WORKSPACE/.run/book.pid"
@@ -208,7 +241,7 @@ jobs:
           dotnet run --project GatewayService -c Release --no-build --urls http://127.0.0.1:5200 \
             >"$GITHUB_WORKSPACE/.run/logs/gateway.log" 2>&1 &
           echo $! >"$GITHUB_WORKSPACE/.run/gateway.pid"
-          for i in $(seq 1 60); do
+          for i in $(seq 1 90); do
             if curl -fsS http://127.0.0.1:5200/health >/dev/null 2>&1 \
               && curl -fsS http://127.0.0.1:5203/health >/dev/null 2>&1 \
               && curl -fsS http://127.0.0.1:5208/health >/dev/null 2>&1; then
@@ -218,7 +251,7 @@ jobs:
             sleep 2
           done
           echo "timeout waiting for services" >&2
-          tail -n 80 "$GITHUB_WORKSPACE/.run/logs/"*.log || true
+          tail -n 120 "$GITHUB_WORKSPACE/.run/logs/"*.log || true
           exit 1
 
       - name: Gateway smoke
@@ -226,6 +259,13 @@ jobs:
 
       - name: Prometheus metrics text
         run: curl -fsS "http://127.0.0.1:5200/metrics?format=prom" | head -n 20
+
+      - name: Booking lendability path (catalog availability)
+        run: |
+          set -euo pipefail
+          # Anonymous catalog list proves BookService↔PG is live
+          curl -fsS "http://127.0.0.1:5200/api/books?page=1&pageSize=1" | head -c 200
+          echo
 
       - name: Stop services
         if: always()

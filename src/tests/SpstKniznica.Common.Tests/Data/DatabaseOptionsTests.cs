@@ -53,5 +53,18 @@ public class DatabaseOptionsTests
         options.Postgres.Database.Should().Be("spst_booking");
         options.Postgres.Host.Should().Be("db");
         options.Postgres.ToConnectionString().Should().Contain("Database=spst_booking");
+        options.Postgres.ToConnectionString().Should().Contain("SSL Mode=Prefer");
+    }
+
+    [Fact]
+    public void Postgres_ToConnectionString_includes_require_ssl()
+    {
+        var cs = new PostgresOptions
+        {
+            Database = "spst_book",
+            SslMode = "Require",
+        }.ToConnectionString();
+
+        cs.Should().Contain("SSL Mode=Require");
     }
 }

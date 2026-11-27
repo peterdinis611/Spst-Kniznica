@@ -34,10 +34,13 @@ const connectSrc = isProd
       "https://challenges.cloudflare.com",
     ];
 
+// Enforce keeps 'unsafe-inline' while cacheComponents/partial prefetch are on —
+// nonce CSP would force dynamic rendering. Report-Only (below) tracks violations
+// so we can switch to nonces once that tradeoff is accepted.
 const scriptSrc = isProd
   ? [
       "'self'",
-      "'unsafe-inline'", // Next still needs inline for bootstrapping; no unsafe-eval in prod
+      "'unsafe-inline'",
       "https://challenges.cloudflare.com",
     ]
   : [

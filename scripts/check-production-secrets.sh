@@ -55,23 +55,23 @@ else
   ok "SITE_URL=$SITE"
 fi
 
-for pair in "Kafka__SigningSecret|Kafka" "RabbitMq__SigningSecret|RabbitMq"; do
-  var="${pair%%|*}"
-  label="${pair##*|}"
-  val="${!var:-}"
-  require="${label}__RequireSigning"
-  # shellcheck disable=SC2086
-  req_val="$(eval echo \${${label}__RequireSigning:-true})"
-  if [[ "$ENV_NAME" == "Production" && "$req_val" != "false" ]]; then
+check_signing() {
+  local var="$1"
+  local require_var="$2"
+  local val="${!var:-}"
+  local req="${!require_var:-true}"
+  if [[ "$ENV_NAME" == "Production" && "$req" != "false" ]]; then
     if [[ -z "$val" || ${#val} -lt 32 ]]; then
       warn "${var} chýba alebo je krátky (min. 32 znakov pri RequireSigning)"
     else
       ok "$var nastavený"
     fi
   else
-    ok "$var (skip — RequireSigning off / non-Production)"
+    ok "$var (skip — non-Production / RequireSigning off)"
   fi
-done
+}
+check_signing Kafka__SigningSecret Kafka__RequireSigning
+check_signing RabbitMq__SigningSecret RabbitMq__RequireSigning
 
 METRICS_REQ="${Metrics__RequireKey:-}"
 if [[ "$ENV_NAME" == "Production" && "$METRICS_REQ" == "false" ]]; then
