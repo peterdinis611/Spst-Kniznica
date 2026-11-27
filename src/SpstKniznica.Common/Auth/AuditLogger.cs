@@ -3,9 +3,11 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SpstKniznica.Common.Hosting;
+using StackExchange.Redis;
 
 namespace SpstKniznica.Common.Auth;
 
@@ -197,6 +199,7 @@ public static class AuditLoggingServiceCollectionExtensions
 
     /// <summary>
     /// Forward staff audit events to AdminService (SQLite audit log store).
+    /// Uses Redis list when available; falls back to single-host JSONL file.
     /// </summary>
     public static IServiceCollection AddSpstAuditLoggingToAdmin(
         this IServiceCollection services,
@@ -205,17 +208,51 @@ public static class AuditLoggingServiceCollectionExtensions
     {
         services.AddSpstAuditLogging();
         services.Configure<AdminAuditOptions>(configuration.GetSection(AdminAuditOptions.SectionName));
-        services.AddSingleton<FileAuditOutbox>();
+        services.AddSingleton<IAuditOutbox>(sp =>
+        {
+            var env = sp.GetRequiredService<IHostEnvironment>();
+            var logger = sp.GetRequiredService<ILoggerFactory>()
+                .CreateLogger("SpstKniznica.Common.Auth.AuditOutbox");
+
+            var existing = sp.GetService<IConnectionMultiplexer>();
+            if (existing is { IsConnected: true })
+            {
+                logger.LogInformation("Audit outbox using shared Redis multiplexer");
+                return new RedisAuditOutbox(existing, BuildRedisKey(sourceService));
+            }
+
+            var mux = SpstRedisConnector.TryConnect(configuration, logger);
+            if (mux is not null)
+            {
+                logger.LogInformation("Audit outbox using Redis at {Sink}", $"redis:{BuildRedisKey(sourceService)}");
+                return new RedisAuditOutbox(mux, BuildRedisKey(sourceService));
+            }
+
+            var file = new FileAuditOutbox(env);
+            logger.LogWarning(
+                "Audit outbox falling back to file {Path} (single-host only)",
+                file.Describe);
+            return file;
+        });
         services.AddHttpClient<HttpAdminAuditSink>()
             .AddSpstResilienceTight();
         services.AddTransient<IAuditSink>(sp =>
             new SourcedAuditSink(
                 new DurableHttpAuditSink(
                     sp.GetRequiredService<HttpAdminAuditSink>(),
-                    sp.GetRequiredService<FileAuditOutbox>(),
+                    sp.GetRequiredService<IAuditOutbox>(),
                     sp.GetRequiredService<ILogger<DurableHttpAuditSink>>()),
                 sourceService));
         services.AddHostedService<AuditOutboxDispatchHostedService>();
+        services.AddSingleton<AuditOutboxHealthCheck>();
         return services;
+    }
+
+    private static string BuildRedisKey(string? sourceService)
+    {
+        var suffix = string.IsNullOrWhiteSpace(sourceService)
+            ? "default"
+            : sourceService.Trim().ToLowerInvariant();
+        return $"spst:audit-outbox:{suffix}";
     }
 }

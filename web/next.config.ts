@@ -47,6 +47,31 @@ const scriptSrc = isProd
       "https://challenges.cloudflare.com",
     ];
 
+/** Stricter observe-only policy — collects what would break without 'unsafe-inline'. */
+const scriptSrcReportOnly = isProd
+  ? ["'self'", "https://challenges.cloudflare.com"]
+  : ["'self'", "'unsafe-eval'", "https://challenges.cloudflare.com"];
+
+const cspDirectives = (scripts: string[]) =>
+  [
+    "default-src 'self'",
+    `script-src ${scripts.join(" ")}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data:",
+    `connect-src ${connectSrc.join(" ")}`,
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    "object-src 'none'",
+    "frame-src 'self' https://login.microsoftonline.com https://www.openstreetmap.org https://challenges.cloudflare.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "report-uri /api/csp-report",
+    "report-to csp-endpoint",
+    ...(isProd ? ["upgrade-insecure-requests"] : []),
+  ].join("; ");
+
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -61,23 +86,16 @@ const securityHeaders = [
       "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()",
   },
   {
+    key: "Reporting-Endpoints",
+    value: 'csp-endpoint="/api/csp-report")',
+  },
+  {
     key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      `script-src ${scriptSrc.join(" ")}`,
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
-      `connect-src ${connectSrc.join(" ")}`,
-      "worker-src 'self' blob:",
-      "manifest-src 'self'",
-      "object-src 'none'",
-      "frame-src 'self' https://login.microsoftonline.com https://www.openstreetmap.org https://challenges.cloudflare.com",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      ...(isProd ? ["upgrade-insecure-requests"] : []),
-    ].join("; "),
+    value: cspDirectives(scriptSrc),
+  },
+  {
+    key: "Content-Security-Policy-Report-Only",
+    value: cspDirectives(scriptSrcReportOnly),
   },
   ...(isProd
     ? [

@@ -58,6 +58,7 @@ try
     builder.Services.AddHostedService<BookingCopySyncHostedService>();
     builder.Services.AddHostedService<CatalogSyncRabbitHostedService>();
     builder.Services.AddHostedService<BookingCopySyncRabbitHostedService>();
+    builder.Services.AddHostedService<AvailableCopiesReconcileHostedService>();
 
 
 
@@ -76,7 +77,8 @@ try
         .AddSpstResilience();
 
     builder.Services.AddHealthChecks()
-        .AddDbContextCheck<BookDbContext>("database");
+        .AddDbContextCheck<BookDbContext>("database")
+        .AddCheck<AuditOutboxHealthCheck>("audit-outbox");
 
     var app = builder.Build();
 

@@ -267,6 +267,11 @@ public class BookRepository(BookDbContext db) : IBookRepository
                 cancellationToken);
     }
 
+    public Task<BookCopy?> FindCopyByIdAsync(Guid copyId, CancellationToken cancellationToken = default)
+        => db.BookCopies
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == copyId, cancellationToken);
+
     private static IQueryable<Book> ApplyFilters(IQueryable<Book> query, BookQueryFilter filter)
     {
         if (!string.IsNullOrWhiteSpace(filter.Title))

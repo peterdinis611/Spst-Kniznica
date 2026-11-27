@@ -121,11 +121,11 @@ public sealed class LoanLifecycleService(
     public async Task<BookingDto?> PromoteWaitlistAsync(Guid bookId, CancellationToken cancellationToken = default)
     {
         var snapshot = await bookCatalog.GetBookAsync(bookId, cancellationToken);
-        var capacity = snapshot?.TotalCopies ?? 1;
         var activeCount = await unitOfWork.Bookings.CountActiveBookingsForBookAsync(
             bookId,
             excludeId: null,
             cancellationToken);
+        var capacity = BookingAppService.ResolveLoanCapacity(snapshot, activeCount);
         if (activeCount >= capacity) return null;
 
         var next = await waitlist.DequeueNextAsync(bookId, cancellationToken);

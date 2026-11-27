@@ -7,9 +7,10 @@ using SpstKniznica.Common.Hosting;
 namespace SpstKniznica.Common.Auth;
 
 /// <summary>
-/// Durable JSONL backlog when Admin audit HTTP ingest is down.
+/// Single-host JSONL backlog when Admin audit HTTP ingest is down.
+/// Prefer <see cref="RedisAuditOutbox"/> when Redis is available.
 /// </summary>
-public sealed class FileAuditOutbox
+public sealed class FileAuditOutbox : IAuditOutbox
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -26,7 +27,7 @@ public sealed class FileAuditOutbox
         _path = Path.Combine(dir, "audit-outbox.jsonl");
     }
 
-    public string FilePath => _path;
+    public string Describe => _path;
 
     public void Enqueue(AuditEntry entry)
     {
@@ -37,21 +38,57 @@ public sealed class FileAuditOutbox
         }
     }
 
-    public IReadOnlyList<AuditEntry> ReadAll()
+    public IReadOnlyList<AuditEntry> DequeueBatch(int max)
+    {
+        if (max <= 0)
+        {
+            return [];
+        }
+
+        lock (_gate)
+        {
+            var all = ReadAllUnlocked();
+            if (all.Count == 0)
+            {
+                return [];
+            }
+
+            var batch = all.Take(max).ToList();
+            ReplaceAllUnlocked(all.Skip(max).ToList());
+            return batch;
+        }
+    }
+
+    public void Requeue(IEnumerable<AuditEntry> entries)
+    {
+        foreach (var entry in entries)
+        {
+            Enqueue(entry);
+        }
+    }
+
+    public int Count()
+    {
+        lock (_gate)
+        {
+            if (!File.Exists(_path))
+            {
+                return 0;
+            }
+
+            return File.ReadLines(_path).Count(l => !string.IsNullOrWhiteSpace(l));
+        }
+    }
+
+    private List<AuditEntry> ReadAllUnlocked()
     {
         if (!File.Exists(_path))
         {
             return [];
         }
 
-        string[] lines;
-        lock (_gate)
-        {
-            lines = File.ReadAllLines(_path);
-        }
-
-        var list = new List<AuditEntry>(lines.Length);
-        foreach (var line in lines)
+        var list = new List<AuditEntry>();
+        foreach (var line in File.ReadAllLines(_path))
         {
             if (string.IsNullOrWhiteSpace(line))
             {
@@ -68,55 +105,39 @@ public sealed class FileAuditOutbox
             }
             catch
             {
-                // Drop corrupt lines on next rewrite.
+                // Drop corrupt lines on rewrite.
             }
         }
 
         return list;
     }
 
-    public void ReplaceAll(IReadOnlyList<AuditEntry> remaining)
+    private void ReplaceAllUnlocked(IReadOnlyList<AuditEntry> remaining)
     {
-        lock (_gate)
+        if (remaining.Count == 0)
         {
-            if (remaining.Count == 0)
+            if (File.Exists(_path))
             {
-                if (File.Exists(_path))
-                {
-                    File.Delete(_path);
-                }
-
-                return;
+                File.Delete(_path);
             }
 
-            var tmp = _path + ".tmp";
-            File.WriteAllLines(
-                tmp,
-                remaining.Select(e => JsonSerializer.Serialize(e, JsonOptions)));
-            File.Move(tmp, _path, overwrite: true);
-        }
-    }
-
-    public int Count()
-    {
-        if (!File.Exists(_path))
-        {
-            return 0;
+            return;
         }
 
-        lock (_gate)
-        {
-            return File.ReadLines(_path).Count(l => !string.IsNullOrWhiteSpace(l));
-        }
+        var tmp = _path + ".tmp";
+        File.WriteAllLines(
+            tmp,
+            remaining.Select(e => JsonSerializer.Serialize(e, JsonOptions)));
+        File.Move(tmp, _path, overwrite: true);
     }
 }
 
 /// <summary>
-/// Tries Admin HTTP first; on failure persists to <see cref="FileAuditOutbox"/>.
+/// Tries Admin HTTP first; on failure persists to <see cref="IAuditOutbox"/>.
 /// </summary>
 public sealed class DurableHttpAuditSink(
     HttpAdminAuditSink inner,
-    FileAuditOutbox outbox,
+    IAuditOutbox outbox,
     ILogger<DurableHttpAuditSink> logger) : IAuditSink
 {
     public async Task WriteAsync(AuditEntry entry, CancellationToken cancellationToken = default)
@@ -127,21 +148,22 @@ public sealed class DurableHttpAuditSink(
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            logger.LogWarning(ex, "Audit HTTP failed — queued to {Path}", outbox.FilePath);
+            logger.LogWarning(ex, "Audit HTTP failed — queued to {Sink}", outbox.Describe);
             outbox.Enqueue(entry);
         }
     }
 }
 
 /// <summary>
-/// Drains <see cref="FileAuditOutbox"/> back to AdminService.
+/// Drains <see cref="IAuditOutbox"/> back to AdminService.
 /// </summary>
 public sealed class AuditOutboxDispatchHostedService(
-    FileAuditOutbox outbox,
+    IAuditOutbox outbox,
     IServiceScopeFactory scopeFactory,
     ILogger<AuditOutboxDispatchHostedService> logger) : BackgroundService
 {
     private static readonly TimeSpan Interval = TimeSpan.FromSeconds(20);
+    private const int BatchSize = 50;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -169,7 +191,7 @@ public sealed class AuditOutboxDispatchHostedService(
 
     private async Task DrainAsync(CancellationToken cancellationToken)
     {
-        var pending = outbox.ReadAll();
+        var pending = outbox.DequeueBatch(BatchSize);
         if (pending.Count == 0)
         {
             return;
@@ -178,7 +200,7 @@ public sealed class AuditOutboxDispatchHostedService(
         await using var scope = scopeFactory.CreateAsyncScope();
         var sink = scope.ServiceProvider.GetRequiredService<HttpAdminAuditSink>();
         var metrics = scope.ServiceProvider.GetService<RequestMetrics>();
-        metrics?.SetGauge("audit_outbox_pending", pending.Count);
+        metrics?.SetGauge("audit_outbox_pending", outbox.Count() + pending.Count);
 
         var remaining = new List<AuditEntry>();
         var flushed = 0;
@@ -196,19 +218,24 @@ public sealed class AuditOutboxDispatchHostedService(
             }
         }
 
-        outbox.ReplaceAll(remaining);
-        metrics?.SetGauge("audit_outbox_pending", remaining.Count);
+        if (remaining.Count > 0)
+        {
+            outbox.Requeue(remaining);
+        }
+
+        var backlog = outbox.Count();
+        metrics?.SetGauge("audit_outbox_pending", backlog);
         if (flushed > 0)
         {
             metrics?.IncrementCounter("audit_outbox_flushed", flushed);
         }
 
-        if (remaining.Count > 100)
+        if (backlog > 100)
         {
             logger.LogError(
-                "Audit outbox backlog is large: {Count} entries in {Path}",
-                remaining.Count,
-                outbox.FilePath);
+                "Audit outbox backlog is large: {Count} entries in {Sink}",
+                backlog,
+                outbox.Describe);
         }
     }
 }

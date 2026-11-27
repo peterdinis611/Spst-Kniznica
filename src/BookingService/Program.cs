@@ -90,7 +90,9 @@ try
 
 
     builder.Services.AddHealthChecks()
-        .AddDbContextCheck<BookingDbContext>("database");
+        .AddDbContextCheck<BookingDbContext>("database")
+        .AddCheck<OutboxHealthCheck>("integration-outbox")
+        .AddCheck<AuditOutboxHealthCheck>("audit-outbox");
 
     var app = builder.Build();
 

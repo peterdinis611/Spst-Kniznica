@@ -26,6 +26,14 @@ internal sealed class BookCatalogLookupClient(
         public int AvailableCopies { get; set; }
     }
 
+    private sealed class BookCopyLendabilityResponse
+    {
+        public Guid CopyId { get; set; }
+        public Guid BookId { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public bool IsLendable { get; set; }
+    }
+
     public async Task<BookAvailabilitySnapshot?> GetBookAsync(
         Guid bookId,
         CancellationToken cancellationToken = default)
@@ -116,6 +124,54 @@ internal sealed class BookCatalogLookupClient(
         {
             logger.LogWarning(ex, "Batch book catalog lookup failed for {Count} ids", ids.Length);
             return await FallbackOneByOneAsync(ids, cancellationToken);
+        }
+    }
+
+    public async Task<BookCopyLendability?> GetCopyLendabilityAsync(
+        Guid copyId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"api/internal/books/copies/{copyId}/lendability");
+
+            AttachInternalKey(request);
+
+            using var response = await httpClient.SendAsync(request, cancellationToken);
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            if (response.StatusCode is System.Net.HttpStatusCode.Unauthorized
+                or System.Net.HttpStatusCode.Forbidden)
+            {
+                logger.LogWarning(
+                    "Internal copy lendability unauthorized for {CopyId} — check InternalApi:SharedKey",
+                    copyId);
+                return null;
+            }
+
+            response.EnsureSuccessStatusCode();
+            var body = await response.Content.ReadFromJsonAsync<BookCopyLendabilityResponse>(
+                cancellationToken: cancellationToken);
+            if (body is null || body.CopyId == Guid.Empty)
+            {
+                return null;
+            }
+
+            return new BookCopyLendability(
+                body.CopyId,
+                body.BookId,
+                body.Status ?? string.Empty,
+                body.IsLendable);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            logger.LogWarning(ex, "Book copy lendability lookup failed for {CopyId}", copyId);
+            return null;
         }
     }
 

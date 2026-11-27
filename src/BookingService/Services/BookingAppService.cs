@@ -73,7 +73,11 @@ public class BookingAppService(
         await using var transaction =
             await unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        await EnsureCopyAvailableAsync(request.BookCopyId, null, cancellationToken);
+        await EnsureCopyAvailableAsync(
+            request.BookCopyId,
+            null,
+            cancellationToken,
+            expectedBookId: request.BookId);
         await EnsureBookCanAcceptReservationAsync(
             request.BookId,
             borrowerEmail,
@@ -138,11 +142,16 @@ public class BookingAppService(
         EnsureValid(await updateValidator.ValidateAsync(context, cancellationToken));
 
         var booking = await GetRequiredAsync(id, tracked: true, cancellationToken);
-        await EnsureCopyAvailableAsync(request.BookCopyId, id, cancellationToken);
 
         var nextStatus = request.Status;
         if (nextStatus is BookingStatus.Reserved or BookingStatus.Active or BookingStatus.Overdue)
         {
+            // Catalog lendability only for open loans — returning a Borrowed copy must not fail IsLendable.
+            await EnsureCopyAvailableAsync(
+                request.BookCopyId,
+                id,
+                cancellationToken,
+                expectedBookId: request.BookId);
             await EnsureBookCanAcceptReservationAsync(
                 request.BookId,
                 NormalizeEmail(request.BorrowerEmail),
@@ -374,7 +383,8 @@ public class BookingAppService(
     private async Task EnsureCopyAvailableAsync(
         Guid? bookCopyId,
         Guid? excludeBookingId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Guid? expectedBookId = null)
     {
         if (!bookCopyId.HasValue)
         {
@@ -384,6 +394,39 @@ public class BookingAppService(
         if (await unitOfWork.Bookings.HasActiveBookingForCopyAsync(bookCopyId.Value, excludeBookingId, cancellationToken))
         {
             throw CopyAlreadyTaken();
+        }
+
+        var lendability = await bookCatalog.GetCopyLendabilityAsync(bookCopyId.Value, cancellationToken);
+        if (lendability is null)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["BookCopyId"] =
+                [
+                    "Exemplár sa nepodarilo overiť v katalógu (neexistuje alebo BookService je nedostupný)."
+                ]
+            });
+        }
+
+        if (expectedBookId.HasValue
+            && lendability.BookId != Guid.Empty
+            && lendability.BookId != expectedBookId.Value)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["BookCopyId"] = ["Exemplár nepatrí k zvolenému titulu."]
+            });
+        }
+
+        if (!lendability.IsLendable)
+        {
+            throw new AppValidationException(new Dictionary<string, string[]>
+            {
+                ["BookCopyId"] =
+                [
+                    $"Exemplár nie je požičateľný (stav: {lendability.Status})."
+                ]
+            });
         }
     }
 
@@ -447,11 +490,11 @@ public class BookingAppService(
         }
 
         var snapshot = await bookCatalog.GetBookAsync(bookId, cancellationToken);
-        var capacity = snapshot?.TotalCopies ?? 1;
         var activeCount = await unitOfWork.Bookings.CountActiveBookingsForBookAsync(
             bookId,
             excludeBookingId,
             cancellationToken);
+        var capacity = ResolveLoanCapacity(snapshot, activeCount);
 
         if (activeCount >= capacity)
         {
@@ -463,6 +506,22 @@ public class BookingAppService(
                 ]
             });
         }
+    }
+
+    /// <summary>
+    /// Physical ceiling is TotalCopies; Lost/Maintenance shrink effective capacity via AvailableCopies.
+    /// </summary>
+    internal static int ResolveLoanCapacity(BookAvailabilitySnapshot? snapshot, int activeCount)
+    {
+        if (snapshot is null)
+        {
+            // Catalog unreachable — keep a conservative single-slot soft fallback.
+            return 1;
+        }
+
+        var physical = Math.Max(snapshot.TotalCopies, 0);
+        var effective = Math.Min(physical, Math.Max(0, snapshot.AvailableCopies) + Math.Max(0, activeCount));
+        return effective;
     }
 
     private async Task EnsureReaderUnderLoanLimitAsync(

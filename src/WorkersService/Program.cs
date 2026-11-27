@@ -39,12 +39,14 @@ try
         builder.Configuration.GetSection(LoanLifecycleOptions.SectionName));
     builder.Services.AddHttpClient("loan-lifecycle")
         .AddSpstResilienceExternal();
-    builder.Services.AddSingleton<IOrderJobQueue, FileBackedOrderJobQueue>();
+    builder.Services.AddSingleton<IOrderJobQueue>(sp =>
+        OrderJobQueueFactory.Create(sp, builder.Configuration));
     builder.Services.AddHostedService<OrderProcessingHostedService>();
     builder.Services.AddHostedService<LoanLifecycleHostedService>();
     builder.Services.AddSpstRequestMetrics();
     builder.Services.AddHealthChecks()
-        .AddCheck<OrderQueueHealthCheck>("order-queue");
+        .AddCheck<OrderQueueHealthCheck>("order-queue")
+        .AddCheck<AuditOutboxHealthCheck>("audit-outbox");
 
     var app = builder.Build();
 
@@ -91,6 +93,20 @@ file sealed class OrderQueueHealthCheck(IOrderJobQueue queue) : IHealthCheck
     {
         var pending = queue.PendingCount;
         var data = new Dictionary<string, object> { ["pending"] = pending };
+        if (pending > 200)
+        {
+            return Task.FromResult(HealthCheckResult.Unhealthy(
+                $"order queue pending={pending}",
+                data: data));
+        }
+
+        if (pending > 50)
+        {
+            return Task.FromResult(HealthCheckResult.Degraded(
+                $"order queue pending={pending}",
+                data: data));
+        }
+
         return Task.FromResult(
             HealthCheckResult.Healthy($"order queue pending={pending}", data));
     }

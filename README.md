@@ -8,7 +8,7 @@
 | --- | --- |
 | Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind, react-admin, TanStack Virtual |
 | API | ASP.NET Core (.NET 10), YARP gateway, mikroslužby |
-| Dáta | SQLite (dev default) alebo PostgreSQL (`Database__Provider`), Redis, Kafka, RabbitMQ |
+| Dáta | SQLite (Development) · PostgreSQL v `appsettings.Production.json` · Redis · Kafka · RabbitMQ |
 | Auth | Microsoft Entra ID (MSAL) · CASL oprávnenia |
 
 ## Štruktúra
@@ -175,12 +175,14 @@ Detaily: [`load/README.md`](load/README.md).
 ./scripts/check-production-secrets.sh    # Entra / InternalApi / SITE_URL
 ```
 
-PostgreSQL: `docker compose up -d postgres` → v `.env` nastav `Database__Provider=PostgreSql` → reštart stacku.  
+PostgreSQL: Production už má `Database:Provider=PostgreSql`. Lokálne: `docker compose up -d postgres` → `.env` `Database__Provider=PostgreSql` → reštart.  
 Detaily: [`deploy/postgres/README.md`](deploy/postgres/README.md).
 
 Gateway metriky: `GET /metrics` (JSON) alebo `GET /metrics?format=prom` (Prometheus text).  
+Outbox / audit backlog: Book/Booking/Workers `/health` (degraded pri dead-letter / veľkom backlogs).  
 CORS pre priamy katalóg: nastav `SITE_URL` / `NEXT_PUBLIC_SITE_URL` / `Cors__SiteUrl` na verejnú URL školy.  
-Redis down: `RateLimiting__AllowMemoryFallback=true` / `Cache__AllowMemoryFallback=true` (single-host only; Production default fail-closed).
+Redis down: `RateLimiting__AllowMemoryFallback=true` / `Cache__AllowMemoryFallback=true` (single-host only; Production fail-closed).  
+Audit outbox + order jobs: Redis list (multi-host); file JSONL len ako fallback bez Redis.
 
 ## CI
 
@@ -189,7 +191,9 @@ GitHub Actions (`.github/workflows/ci.yml`) na `push` / PR:
 - **Backend** — restore, build, test (.NET 10)
 - **Frontend** — `npm ci`, typecheck, lint, vitest
 - **E2E** — Playwright Next-only (bez gateway)
-- **Gateway API smoke** — `workflow_dispatch` s `gateway_url` (bežiaci full stack)
+- **Stack smoke** — Book + Booking + Gateway + Redis
+- **Gateway API smoke** — `workflow_dispatch` s `gateway_url`
+- **Load smoke (k6)** — `workflow_dispatch` s `run_load_smoke=true` + `gateway_url`
 
 ## Licencia / škola
 

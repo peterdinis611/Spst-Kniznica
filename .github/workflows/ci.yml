@@ -10,6 +10,11 @@ on:
         description: "Optional running gateway URL for API smoke (e.g. http://127.0.0.1:5200)"
         required: false
         default: ""
+      run_load_smoke:
+        description: "Run k6 smoke against gateway_url (requires live stack)"
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -111,6 +116,27 @@ jobs:
 
       - name: Gateway metrics endpoint
         run: curl -fsS --max-time 5 "${{ inputs.gateway_url }}/metrics" | head -c 200
+
+  load-smoke:
+    name: Load smoke (k6 / manual)
+    if: github.event_name == 'workflow_dispatch' && inputs.run_load_smoke && inputs.gateway_url != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: k6 smoke
+        env:
+          BASE_URL: ${{ inputs.gateway_url }}
+          PROFILE: smoke
+        run: ./scripts/load-test.sh smoke "${{ inputs.gateway_url }}"
 
   stack-smoke:
     name: Stack smoke (Book + Booking + Gateway + Redis)

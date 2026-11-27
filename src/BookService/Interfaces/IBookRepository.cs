@@ -21,4 +21,5 @@ public interface IBookRepository
     Task<bool> InventoryNumberExistsAsync(string inventoryNumber, CancellationToken cancellationToken = default);
     Task<bool> BarcodeExistsAsync(string barcode, CancellationToken cancellationToken = default);
     Task<BookCopy?> FindCopyByCodeAsync(string code, CancellationToken cancellationToken = default);
+    Task<BookCopy?> FindCopyByIdAsync(Guid copyId, CancellationToken cancellationToken = default);
 }

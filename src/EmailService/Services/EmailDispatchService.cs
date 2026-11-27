@@ -46,6 +46,12 @@ public sealed class EmailDispatchService(
         string? bodyHtml = null;
         if (!string.IsNullOrWhiteSpace(request.BodyHtml))
         {
+            if (!policy.AllowBodyHtml)
+            {
+                throw new ArgumentException(
+                    "BodyHtml is disabled. Set EmailDispatch:AllowBodyHtml=true only when intentionally sending HTML.");
+            }
+
             if (!HtmlSafety.IsSafeHtmlFragment(request.BodyHtml))
             {
                 throw new ArgumentException(

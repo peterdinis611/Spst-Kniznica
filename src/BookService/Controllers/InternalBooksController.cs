@@ -49,6 +49,17 @@ public class InternalBooksController(IBooksService books) : ControllerBase
         return Ok(items);
     }
 
+    [HttpGet("copies/{copyId:guid}/lendability")]
+    [ProducesResponseType(typeof(BookCopyLendabilityDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<BookCopyLendabilityDto>> GetCopyLendability(
+        Guid copyId,
+        CancellationToken cancellationToken)
+    {
+        var copy = await books.GetCopyLendabilityAsync(copyId, cancellationToken);
+        return copy is null ? NotFound() : Ok(copy);
+    }
+
     private static BookCatalogSnapshot ToSnapshot(BookDetailDto book) => new()
     {
         BookId = book.Id,

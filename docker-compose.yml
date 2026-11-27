@@ -6,9 +6,13 @@
 # Postgres: set Database__Provider=PostgreSql + per-service ConnectionStrings
 # (see .env.example / deploy/postgres/). Init script creates one DB per service.
 #
-# Do not publish these ports or use guest/plaintext credentials outside loopback.
-# Production: set RABBITMQ_DEFAULT_USER/PASS, enable Kafka SASL/TLS, and set
-# Kafka:/RabbitMq:SigningSecret (+ RequireSigning=true) in service overlays.
+# Loopback-only local infra. Defaults are intentionally weak for laptop DX —
+# never expose these ports or reuse guest/spst passwords off-machine.
+# Production / shared host checklist:
+#   - strong POSTGRES_PASSWORD, RABBITMQ_DEFAULT_USER/PASS (no guest)
+#   - Kafka SASL/TLS (not PLAINTEXT)
+#   - Kafka:/RabbitMq:SigningSecret + RequireSigning=true on services
+#   - ASPNETCORE_ENVIRONMENT=Production (Postgres + Redis fail-closed)
 services:
   postgres:
     image: postgres:17-alpine
@@ -17,6 +21,7 @@ services:
       - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-spst}
+      # Override in .env for anything beyond a personal laptop.
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-spst}
       POSTGRES_DB: postgres
     volumes:

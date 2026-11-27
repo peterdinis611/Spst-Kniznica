@@ -6,6 +6,12 @@ public sealed record BookAvailabilitySnapshot(
     string Title = "",
     string Author = "");
 
+public sealed record BookCopyLendability(
+    Guid CopyId,
+    Guid BookId,
+    string Status,
+    bool IsLendable);
+
 public interface IBookCatalogLookup
 {
     Task<BookAvailabilitySnapshot?> GetBookAsync(
@@ -14,5 +20,9 @@ public interface IBookCatalogLookup
 
     Task<IReadOnlyDictionary<Guid, BookAvailabilitySnapshot>> GetBooksAsync(
         IEnumerable<Guid> bookIds,
+        CancellationToken cancellationToken = default);
+
+    Task<BookCopyLendability?> GetCopyLendabilityAsync(
+        Guid copyId,
         CancellationToken cancellationToken = default);
 }

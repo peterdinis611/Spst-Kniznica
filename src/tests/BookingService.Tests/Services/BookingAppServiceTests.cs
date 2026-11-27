@@ -48,6 +48,13 @@ public class BookingAppServiceTests : IAsyncLifetime
                     .Distinct()
                     .ToDictionary(id => id, _ => new BookAvailabilitySnapshot(3, 2, "Test Book", "Test Author"));
             });
+        // Default: any copy is lendable; BookId is filled by individual tests that assert ownership.
+        _bookCatalog.GetCopyLendabilityAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var copyId = callInfo.ArgAt<Guid>(0);
+                return new BookCopyLendability(copyId, Guid.Empty, "Available", IsLendable: true);
+            });
         _bookings.CountActiveBookingsForBookAsync(
                 Arg.Any<Guid>(),
                 Arg.Any<Guid?>(),
@@ -226,6 +233,41 @@ public class BookingAppServiceTests : IAsyncLifetime
 
         await act.Should().ThrowAsync<AppValidationException>()
             .Where(ex => ex.Errors.ContainsKey("BookCopyId"));
+    }
+
+    [Fact]
+    public async Task CreateAsync_rejects_non_lendable_catalog_copy()
+    {
+        var bookId = Guid.NewGuid();
+        var copyId = Guid.NewGuid();
+        _bookCatalog.GetCopyLendabilityAsync(copyId, Arg.Any<CancellationToken>())
+            .Returns(new BookCopyLendability(copyId, bookId, "Lost", IsLendable: false));
+
+        var act = async () => await _sut.CreateAsync(new CreateBookingRequest
+        {
+            BookId = bookId,
+            BookCopyId = copyId,
+            BorrowerName = "Eva",
+            BorrowerEmail = "eva@spst.sk",
+            DueDate = DateTimeOffset.UtcNow.AddDays(7)
+        });
+
+        await act.Should().ThrowAsync<AppValidationException>()
+            .Where(ex => ex.Errors.ContainsKey("BookCopyId"));
+    }
+
+    [Fact]
+    public void ResolveLoanCapacity_shrinks_when_copies_are_lost()
+    {
+        // 3 physical, 0 available, 0 active → no new loans
+        BookingAppService.ResolveLoanCapacity(
+            new BookAvailabilitySnapshot(3, 0),
+            activeCount: 0).Should().Be(0);
+
+        // 3 physical, 1 available, 2 active → room for the already-active + leftover available
+        BookingAppService.ResolveLoanCapacity(
+            new BookAvailabilitySnapshot(3, 1),
+            activeCount: 2).Should().Be(3);
     }
 
     [Fact]

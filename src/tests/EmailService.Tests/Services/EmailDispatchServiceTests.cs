@@ -249,8 +249,26 @@ public class EmailDispatchServiceTests : IAsyncLifetime
             NullLogger<EmailDispatchService>.Instance);
 
     [Fact]
-    public async Task SendAsync_rejects_scriptable_body_html()
+    public async Task SendAsync_rejects_body_html_when_disabled()
     {
+        var request = ValidRequest();
+        request.BodyHtml = "<p>Hi</p>";
+
+        var act = async () => await _sut.SendAsync(request);
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*BodyHtml*");
+    }
+
+    [Fact]
+    public async Task SendAsync_rejects_scriptable_body_html_when_allowed()
+    {
+        _sut = CreateSut(new EmailDispatchOptions
+        {
+            RequireTemplateKeyForRawSend = false,
+            AllowBodyHtml = true,
+            MaxSendsPerMinute = 100,
+        });
         var request = ValidRequest();
         request.BodyHtml = "<p>Hi</p><script>alert(1)</script>";
 

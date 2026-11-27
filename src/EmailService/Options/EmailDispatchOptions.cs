@@ -18,4 +18,10 @@ public sealed class EmailDispatchOptions
     /// (blocks free-form phishing bodies). Template endpoints set this automatically.
     /// </summary>
     public bool RequireTemplateKeyForRawSend { get; set; } = true;
+
+    /// <summary>
+    /// When false (Production default), client-supplied BodyHtml is rejected.
+    /// Templates use plain BodyText only — reduces HTML email XSS / phishing surface.
+    /// </summary>
+    public bool AllowBodyHtml { get; set; }
 }

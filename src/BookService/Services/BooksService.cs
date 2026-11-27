@@ -283,6 +283,25 @@ public partial class BooksService(
         };
     }
 
+    public async Task<BookCopyLendabilityDto?> GetCopyLendabilityAsync(
+        Guid copyId,
+        CancellationToken cancellationToken = default)
+    {
+        var copy = await unitOfWork.Books.FindCopyByIdAsync(copyId, cancellationToken);
+        if (copy is null)
+        {
+            return null;
+        }
+
+        return new BookCopyLendabilityDto
+        {
+            CopyId = copy.Id,
+            BookId = copy.BookId,
+            Status = copy.Status.ToString(),
+            IsLendable = copy.Status == BookCopyStatus.Available,
+        };
+    }
+
     public async Task<UpdateBookCopyStatusResult> UpdateCopyStatusAsync(
         Guid bookId,
         Guid copyId,
