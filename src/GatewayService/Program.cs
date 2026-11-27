@@ -32,7 +32,7 @@ try
     builder.Services.AddSpstEntraAuthentication(builder.Configuration, builder.Environment);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
     builder.Services.AddSpstForwardedHeaders(builder.Configuration);
-    builder.Services.AddSpstRequestMetrics();
+    builder.Services.AddSpstRequestMetrics(builder.Configuration);
 
     builder.Services
         .AddReverseProxy()

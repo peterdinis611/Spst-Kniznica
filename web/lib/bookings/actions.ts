@@ -10,9 +10,9 @@ import { mapBooking, type DeskBooking } from "./map-booking";
 import { BOOKING_STATUS } from "./status";
 import type { BookingDto } from "./types";
 
-async function resolveServerToken(explicit?: string): Promise<string | undefined> {
-  const fromCookie = await readSessionAccessToken();
-  return fromCookie ?? explicit?.trim() ?? undefined;
+/** Cookie-only — ignore client-supplied Bearer to prevent token exfil via action args. */
+async function resolveServerToken(_explicit?: string): Promise<string | undefined> {
+  return (await readSessionAccessToken()) ?? undefined;
 }
 
 const optionalText = z

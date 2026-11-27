@@ -55,6 +55,40 @@ else
   ok "SITE_URL=$SITE"
 fi
 
+for pair in "Kafka__SigningSecret|Kafka" "RabbitMq__SigningSecret|RabbitMq"; do
+  var="${pair%%|*}"
+  label="${pair##*|}"
+  val="${!var:-}"
+  require="${label}__RequireSigning"
+  # shellcheck disable=SC2086
+  req_val="$(eval echo \${${label}__RequireSigning:-true})"
+  if [[ "$ENV_NAME" == "Production" && "$req_val" != "false" ]]; then
+    if [[ -z "$val" || ${#val} -lt 32 ]]; then
+      warn "${var} chýba alebo je krátky (min. 32 znakov pri RequireSigning)"
+    else
+      ok "$var nastavený"
+    fi
+  else
+    ok "$var (skip — RequireSigning off / non-Production)"
+  fi
+done
+
+METRICS_REQ="${Metrics__RequireKey:-}"
+if [[ "$ENV_NAME" == "Production" && "$METRICS_REQ" == "false" ]]; then
+  warn "Metrics__RequireKey=false v Production — /metrics bude verejné"
+else
+  ok "Metrics__RequireKey=${METRICS_REQ:-true (overlay)}"
+fi
+
+SSL="${Database__Postgres__SslMode:-}"
+if [[ "$ENV_NAME" == "Production" && -n "${Database__Provider:-}" && "${Database__Provider}" =~ [Pp]ostgre ]]; then
+  if [[ -z "$SSL" || "$SSL" == "Disable" || "$SSL" == "Prefer" ]]; then
+    echo "  · tip: pre managed Postgres nastav Database__Postgres__SslMode=Require (aktuálne: ${SSL:-unset})"
+  else
+    ok "Database__Postgres__SslMode=$SSL"
+  fi
+fi
+
 HTTPS="${ASPNETCORE_URLS:-}"
 if [[ "$ENV_NAME" == "Production" && "$HTTPS" != *"https"* ]]; then
   echo "  · tip: nastav HTTPS (proxy/HSTS) — ASPNETCORE_URLS=$HTTPS"

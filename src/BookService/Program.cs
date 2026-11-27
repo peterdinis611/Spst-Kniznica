@@ -53,7 +53,7 @@ try
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
     builder.Services.AddSpstIntegrationMessaging(builder.Configuration, clientId: "book-service");
     builder.Services.AddSpstCaching(builder.Configuration, instanceName: "spst:");
-    builder.Services.AddSpstRequestMetrics();
+    builder.Services.AddSpstRequestMetrics(builder.Configuration);
     builder.Services.AddHostedService<CategorySyncHostedService>();
     builder.Services.AddHostedService<BookingCopySyncHostedService>();
     builder.Services.AddHostedService<CatalogSyncRabbitHostedService>();

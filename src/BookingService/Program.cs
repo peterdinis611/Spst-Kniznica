@@ -43,7 +43,7 @@ try
         builder.Environment,
         requireAuthenticatedByDefault: true);
     builder.Services.AddSpstApiRateLimiting(builder.Configuration);
-    builder.Services.AddSpstRequestMetrics();
+    builder.Services.AddSpstRequestMetrics(builder.Configuration);
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "BookingService");
     builder.Services.AddSpstIntegrations(builder.Configuration);
 

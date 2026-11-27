@@ -35,19 +35,20 @@ async function proxy(request: Request, pathParts: string[]) {
   const contentType = request.headers.get("content-type");
   if (contentType) headers.set("content-type", contentType);
 
-  // Prefer explicit Authorization (login bootstrap); else HttpOnly session cookie.
-  const incomingAuth = request.headers.get("authorization");
-  if (incomingAuth) {
-    headers.set("Authorization", incomingAuth);
+  // Prefer HttpOnly session cookie; Authorization is only a login-bootstrap fallback
+  // when the cookie is not yet set (never prefer browser-supplied Bearer over cookie).
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const match = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${SESSION_COOKIE}=`));
+  const cookieToken = match?.slice(SESSION_COOKIE.length + 1);
+  if (cookieToken) {
+    headers.set("Authorization", `Bearer ${decodeURIComponent(cookieToken)}`);
   } else {
-    const cookieHeader = request.headers.get("cookie") ?? "";
-    const match = cookieHeader
-      .split(";")
-      .map((part) => part.trim())
-      .find((part) => part.startsWith(`${SESSION_COOKIE}=`));
-    const token = match?.slice(SESSION_COOKIE.length + 1);
-    if (token) {
-      headers.set("Authorization", `Bearer ${decodeURIComponent(token)}`);
+    const incomingAuth = request.headers.get("authorization");
+    if (incomingAuth) {
+      headers.set("Authorization", incomingAuth);
     }
   }
 

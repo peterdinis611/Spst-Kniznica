@@ -43,7 +43,7 @@ try
         OrderJobQueueFactory.Create(sp, builder.Configuration));
     builder.Services.AddHostedService<OrderProcessingHostedService>();
     builder.Services.AddHostedService<LoanLifecycleHostedService>();
-    builder.Services.AddSpstRequestMetrics();
+    builder.Services.AddSpstRequestMetrics(builder.Configuration);
     builder.Services.AddHealthChecks()
         .AddCheck<OrderQueueHealthCheck>("order-queue")
         .AddCheck<AuditOutboxHealthCheck>("audit-outbox");

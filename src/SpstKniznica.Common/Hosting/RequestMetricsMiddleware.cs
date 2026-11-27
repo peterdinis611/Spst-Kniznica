@@ -2,7 +2,10 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using SpstKniznica.Common.Auth;
 
 namespace SpstKniznica.Common.Hosting;
 
@@ -33,8 +36,20 @@ public sealed class RequestMetricsMiddleware(RequestDelegate next, RequestMetric
 
 public static class RequestMetricsExtensions
 {
+    public const string MetricsKeyHeader = "X-Metrics-Key";
+
     public static IServiceCollection AddSpstRequestMetrics(this IServiceCollection services)
     {
+        services.Configure<MetricsOptions>(_ => { });
+        services.AddSingleton<RequestMetrics>();
+        return services;
+    }
+
+    public static IServiceCollection AddSpstRequestMetrics(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<MetricsOptions>(configuration.GetSection(MetricsOptions.SectionName));
         services.AddSingleton<RequestMetrics>();
         return services;
     }
@@ -44,8 +59,17 @@ public static class RequestMetricsExtensions
 
     public static IEndpointRouteBuilder MapSpstMetrics(this IEndpointRouteBuilder endpoints, string serviceName)
     {
-        endpoints.MapGet("/metrics", (HttpRequest request, RequestMetrics metrics) =>
+        endpoints.MapGet("/metrics", (
+                HttpRequest request,
+                RequestMetrics metrics,
+                IOptions<MetricsOptions> metricsOptions,
+                IOptions<InternalApiOptions> internalApi) =>
             {
+                if (!IsMetricsAuthorized(request, metricsOptions.Value, internalApi.Value))
+                {
+                    return Results.Unauthorized();
+                }
+
                 var accept = request.Headers.Accept.ToString();
                 var wantProm = request.Query.ContainsKey("format")
                         && string.Equals(request.Query["format"], "prom", StringComparison.OrdinalIgnoreCase)
@@ -62,5 +86,41 @@ public static class RequestMetricsExtensions
             .AllowAnonymous()
             .WithTags("Observability");
         return endpoints;
+    }
+
+    private static bool IsMetricsAuthorized(
+        HttpRequest request,
+        MetricsOptions metricsOptions,
+        InternalApiOptions internalApi)
+    {
+        if (!metricsOptions.RequireKey)
+        {
+            return true;
+        }
+
+        var expected = metricsOptions.ApiKey?.Trim();
+        if (string.IsNullOrEmpty(expected))
+        {
+            expected = internalApi.SharedKey?.Trim();
+        }
+
+        if (string.IsNullOrEmpty(expected))
+        {
+            return false;
+        }
+
+        if (request.Headers.TryGetValue(MetricsKeyHeader, out var metricsKey)
+            && string.Equals(metricsKey.ToString(), expected, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (request.Headers.TryGetValue(InternalApiOptions.HeaderName, out var internalKey)
+            && string.Equals(internalKey.ToString(), expected, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

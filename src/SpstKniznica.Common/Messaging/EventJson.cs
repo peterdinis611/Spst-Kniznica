@@ -27,6 +27,26 @@ public static class EventJson
         }
     }
 
+    public static Guid? TryGetEventId(string payload)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(payload);
+            if (document.RootElement.TryGetProperty("eventId", out var id)
+                && id.ValueKind == JsonValueKind.String
+                && Guid.TryParse(id.GetString(), out var guid))
+            {
+                return guid;
+            }
+        }
+        catch
+        {
+            // ignore malformed payloads
+        }
+
+        return null;
+    }
+
     public static TEvent? Deserialize<TEvent>(string payload) where TEvent : IntegrationEvent
         => JsonSerializer.Deserialize<TEvent>(payload, Options);
 

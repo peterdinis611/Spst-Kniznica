@@ -30,10 +30,24 @@ Späť na SQLite: `Database__Provider=Sqlite` alebo vyhoď riadok.
 ./scripts/pg-restore.sh .backups/pg-YYYYMMDD-HHMMSS
 ```
 
+## Migrácia dát zo SQLite
+
+```bash
+./stop.sh
+docker compose up -d postgres
+# vytvor schému: krátky štart s Database__Provider=PostgreSql, alebo EF Migrate
+./scripts/sqlite-to-postgres.sh   # vyžaduje pgloader (brew) alebo Docker
+# .env → Database__Provider=PostgreSql
+./start.sh
+```
+
+`pgloader` skopíruje riadky do existujúcich DB (`spst_book`, …). Ak cieľová tabuľka ešte neexistuje, nechaj najprv bežať služby raz (Migrate), potom ETL.
+
 ## Produkcia
 
 - Managed Postgres alebo vlastný server
-- Silné heslo, TLS (`SSL Mode=Require`)
+- Silné heslo, TLS: `Database__Postgres__SslMode=Require` (overlay default)
 - `Database__Provider=PostgreSql`
 - Denný backup + PITR podľa hostingu
 - Jedna DB na službu — žiadne cross-service JOIN-y
+- Pred deploy: `./scripts/check-production-secrets.sh` + `./scripts/check-production-overlays.sh`

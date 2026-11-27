@@ -21,6 +21,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  hardening:
+    name: Production overlays + secrets script
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Static Production overlay gate
+        run: ./scripts/check-production-overlays.sh
+
+      - name: Secrets script (Development soft mode)
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+        run: ./scripts/check-production-secrets.sh
+
   backend:
     name: Backend (.NET)
     runs-on: ubuntu-latest

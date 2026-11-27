@@ -14,9 +14,9 @@ import {
 } from "./map-booking";
 import type { BookingDto } from "./types";
 
-async function resolveServerToken(explicit?: string): Promise<string | undefined> {
-  const fromCookie = await readSessionAccessToken();
-  return fromCookie ?? explicit?.trim() ?? undefined;
+/** Cookie-only — ignore client-supplied Bearer to prevent token exfil via action args. */
+async function resolveServerToken(_explicit?: string): Promise<string | undefined> {
+  return (await readSessionAccessToken()) ?? undefined;
 }
 
 async function runOps<T>(task: () => Promise<T>): Promise<T> {

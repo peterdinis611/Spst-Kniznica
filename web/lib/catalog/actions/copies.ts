@@ -27,7 +27,7 @@ export const lookupBookCopyAction = actionClient
   .inputSchema(lookupSchema)
   .action(async ({ parsedInput }): Promise<BookCopyLookup> => {
     const token =
-      (await readSessionAccessToken()) ?? parsedInput.accessToken?.trim();
+      await readSessionAccessToken();
 
     let raw: BookCopyLookupDto;
     try {
@@ -83,7 +83,7 @@ export const updateBookCopyStatusAction = actionClient
   .inputSchema(updateCopyStatusSchema)
   .action(async ({ parsedInput }): Promise<BookCopyStatusUpdate> => {
     const token =
-      (await readSessionAccessToken()) ?? parsedInput.accessToken?.trim();
+      await readSessionAccessToken();
 
     const raw = await apiPatch<UpdateBookCopyStatusResultDto>(
       `/api/books/${parsedInput.bookId}/copies/${parsedInput.copyId}`,

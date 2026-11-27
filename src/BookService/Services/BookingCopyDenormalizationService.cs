@@ -20,6 +20,19 @@ public sealed class BookingCopyDenormalizationService(
         string payload,
         CancellationToken cancellationToken = default)
     {
+        // Cross-bus (HTTP + Kafka + Rabbit) at-least-once: skip duplicate EventId for a day.
+        var eventId = EventJson.TryGetEventId(payload);
+        if (eventId is Guid eid)
+        {
+            var dedupeKey = $"evt-seen:{eid:N}";
+            if (await cache.GetAsync<string>(dedupeKey, cancellationToken) is not null)
+            {
+                logger.LogDebug("Skipping duplicate integration event {EventId} ({EventType})", eid, eventType);
+                return;
+            }
+        }
+
+        var applied = false;
         switch (eventType)
         {
             case nameof(BookingCreatedEvent):
@@ -31,7 +44,8 @@ public sealed class BookingCopyDenormalizationService(
                     created.BookCopyId,
                     created.Status,
                     cancellationToken);
-                return;
+                applied = true;
+                break;
             }
             case nameof(BookingUpdatedEvent):
             {
@@ -42,15 +56,22 @@ public sealed class BookingCopyDenormalizationService(
                     updated.BookCopyId,
                     updated.Status,
                     cancellationToken);
-                return;
+                applied = true;
+                break;
             }
             case nameof(BookingDeletedEvent):
             {
                 var deleted = EventJson.Deserialize<BookingDeletedEvent>(payload);
                 if (deleted is null) return;
                 await ApplyStatusAsync(deleted.BookId, deleted.BookCopyId, "Free", cancellationToken);
-                return;
+                applied = true;
+                break;
             }
+        }
+
+        if (applied && eventId is Guid seen)
+        {
+            await cache.SetAsync($"evt-seen:{seen:N}", "1", TimeSpan.FromHours(24), cancellationToken);
         }
     }
 

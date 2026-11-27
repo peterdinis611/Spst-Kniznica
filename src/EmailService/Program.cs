@@ -75,7 +75,7 @@ try
     builder.Services.AddScoped<IEmailDispatchService, EmailDispatchService>();
     builder.Services.AddHostedService<EmailRetryHostedService>();
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "EmailService");
-    builder.Services.AddSpstRequestMetrics();
+    builder.Services.AddSpstRequestMetrics(builder.Configuration);
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<EmailDbContext>("database");

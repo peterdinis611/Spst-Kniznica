@@ -155,9 +155,6 @@ async function apiRequest<T>(
   if (hasBody && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
 
   const method = (init?.method ?? (hasBody ? "POST" : "GET")).toUpperCase();
   const url = apiUrl(path, method);
@@ -165,6 +162,11 @@ async function apiRequest<T>(
     isBrowser &&
     process.env.NEXT_PUBLIC_CATALOG_DIRECT !== "0" &&
     isPublicCatalogGet(path, method);
+  // Browser BFF relies on HttpOnly cookie — do not also attach MSAL Bearer (XSS blast radius).
+  const usesBff = isBrowser && url.startsWith("/api/bff");
+  if (token && !usesBff) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
 
   let response: Response;
   try {
