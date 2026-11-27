@@ -20,28 +20,45 @@ const connectSrc = isProd
       "https://login.microsoftonline.com",
       "https://*.microsoftonline.com",
       "https://graph.microsoft.com",
+      "https://challenges.cloudflare.com",
     ]
   : [
       "'self'",
       apiOrigin,
+      "http://127.0.0.1:*",
       "http://localhost:*",
       "https://localhost:*",
       "https://login.microsoftonline.com",
       "https://*.microsoftonline.com",
       "https://graph.microsoft.com",
+      "https://challenges.cloudflare.com",
     ];
 
 const scriptSrc = isProd
-  ? ["'self'", "'unsafe-inline'"] // Next still needs inline for bootstrapping; no unsafe-eval in prod
-  : ["'self'", "'unsafe-inline'", "'unsafe-eval'"];
+  ? [
+      "'self'",
+      "'unsafe-inline'", // Next still needs inline for bootstrapping; no unsafe-eval in prod
+      "https://challenges.cloudflare.com",
+    ]
+  : [
+      "'self'",
+      "'unsafe-inline'",
+      "'unsafe-eval'",
+      "https://challenges.cloudflare.com",
+    ];
 
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "X-DNS-Prefetch-Control", value: "off" },
+  { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), payment=()",
+    value:
+      "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()",
   },
   {
     key: "Content-Security-Policy",
@@ -52,6 +69,9 @@ const securityHeaders = [
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       `connect-src ${connectSrc.join(" ")}`,
+      "worker-src 'self' blob:",
+      "manifest-src 'self'",
+      "object-src 'none'",
       "frame-src 'self' https://login.microsoftonline.com https://www.openstreetmap.org https://challenges.cloudflare.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",

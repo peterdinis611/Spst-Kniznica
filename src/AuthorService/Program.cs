@@ -77,6 +77,7 @@ try
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSpstRequestLogging();
+    app.UseSpstSecurityHeaders();
     app.UseSpstCors();
     if (app.Environment.ShouldExposeSwagger())
     {

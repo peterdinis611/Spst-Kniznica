@@ -1,3 +1,5 @@
+import { isSafeHttpUrl } from "@/lib/security/safe-url";
+
 /** Open Library cover URL helper (mirrors backend OpenLibraryCovers). */
 export function openLibraryCoverUrl(
   isbn: string | null | undefined,
@@ -13,6 +15,7 @@ export function resolveBookCoverUrl(book: {
   coverUrl?: string | null;
   isbn?: string | null;
 }): string | null {
-  if (book.coverUrl?.trim()) return book.coverUrl.trim();
+  const cover = book.coverUrl?.trim();
+  if (cover && isSafeHttpUrl(cover)) return cover;
   return openLibraryCoverUrl(book.isbn);
 }

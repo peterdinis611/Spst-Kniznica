@@ -22,6 +22,8 @@ public static class NetworkIsolationExtensions
 {
     public static WebApplicationBuilder UseSpstNetworkIsolation(this WebApplicationBuilder builder)
     {
+        builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
+
         var network = builder.Configuration.GetSection(NetworkOptions.SectionName).Get<NetworkOptions>()
             ?? new NetworkOptions();
 

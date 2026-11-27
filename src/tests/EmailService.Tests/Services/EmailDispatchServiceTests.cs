@@ -248,6 +248,18 @@ public class EmailDispatchServiceTests : IAsyncLifetime
             _audit,
             NullLogger<EmailDispatchService>.Instance);
 
+    [Fact]
+    public async Task SendAsync_rejects_scriptable_body_html()
+    {
+        var request = ValidRequest();
+        request.BodyHtml = "<p>Hi</p><script>alert(1)</script>";
+
+        var act = async () => await _sut.SendAsync(request);
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*BodyHtml*");
+    }
+
     private static SendEmailRequest ValidRequest(
         string to = "reader@spst.sk",
         string? templateKey = "ops.notice") => new()

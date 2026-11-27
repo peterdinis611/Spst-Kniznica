@@ -112,4 +112,24 @@ public class BookValidationRulesTests
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == "Title");
     }
+
+    [Fact]
+    public async Task CreateBookRequestValidator_rejects_html_in_title_and_unsafe_cover()
+    {
+        var books = Substitute.For<IBookRepository>();
+        var validator = new CreateBookRequestValidator(books);
+
+        var result = await validator.ValidateAsync(new CreateBookRequest
+        {
+            Title = "</script><script>alert(1)</script>",
+            AuthorId = Guid.NewGuid(),
+            CoverUrl = "javascript:alert(1)",
+            TotalCopies = 1,
+            AvailableCopies = 1,
+        });
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "Title");
+        result.Errors.Should().Contain(e => e.PropertyName == "CoverUrl");
+    }
 }

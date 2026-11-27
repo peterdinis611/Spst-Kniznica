@@ -79,6 +79,7 @@ try
     await app.Services.MigrateSpstDatabaseAsync<MessagingDbContext>("MessagingService");
 
     app.UseSpstRequestLogging();
+    app.UseSpstSecurityHeaders();
     app.UseSpstCors();
     if (app.Environment.ShouldExposeSwagger())
     {

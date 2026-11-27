@@ -57,6 +57,7 @@ try
     await app.Services.MigrateSpstDatabaseAsync<AuthDbContext>("AuthService");
 
     app.UseSpstRequestLogging();
+    app.UseSpstSecurityHeaders();
     app.UseSpstCors();
     if (app.Environment.ShouldExposeSwagger())
     {

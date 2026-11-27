@@ -17,6 +17,17 @@ describe("cover size strategy", () => {
     expect(resolveBookCoverUrl({ coverUrl: "   " })).toBeNull();
   });
 
+  it("ignores non-http cover URLs", () => {
+    expect(
+      resolveBookCoverUrl({ coverUrl: "javascript:alert(1)", isbn: null }),
+    ).toBeNull();
+    expect(
+      resolveBookCoverUrl({
+        coverUrl: "https://covers.openlibrary.org/b/isbn/9780131103627-L.jpg",
+      }),
+    ).toBe("https://covers.openlibrary.org/b/isbn/9780131103627-L.jpg");
+  });
+
   it("accepts ISBN-10 with X check digit", () => {
     expect(openLibraryCoverUrl("0-306-40615-X")).toBe(
       "https://covers.openlibrary.org/b/isbn/030640615X-L.jpg",

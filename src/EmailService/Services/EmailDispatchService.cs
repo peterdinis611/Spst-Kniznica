@@ -38,6 +38,23 @@ public sealed class EmailDispatchService(
         EnsureRecipientAllowed(to, policy);
         await EnsureWithinSendQuotaAsync(policy, cancellationToken);
 
+        if (!HtmlSafety.IsPlainText(subject) || !HtmlSafety.IsPlainText(body))
+        {
+            throw new ArgumentException("Email subject/body must be plain text (no HTML markup).");
+        }
+
+        string? bodyHtml = null;
+        if (!string.IsNullOrWhiteSpace(request.BodyHtml))
+        {
+            if (!HtmlSafety.IsSafeHtmlFragment(request.BodyHtml))
+            {
+                throw new ArgumentException(
+                    "BodyHtml contains disallowed active content (script/iframe/event handlers).");
+            }
+
+            bodyHtml = request.BodyHtml;
+        }
+
         var log = new EmailMessageLog
         {
             Id = Guid.NewGuid(),
@@ -47,9 +64,7 @@ public sealed class EmailDispatchService(
                 : request.ToName.Trim(),
             Subject = subject,
             BodyText = body,
-            BodyHtml = string.IsNullOrWhiteSpace(request.BodyHtml)
-                ? null
-                : request.BodyHtml,
+            BodyHtml = bodyHtml,
             TemplateKey = templateKey,
             CorrelationId = string.IsNullOrWhiteSpace(request.CorrelationId)
                 ? null

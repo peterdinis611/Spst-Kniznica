@@ -1,5 +1,6 @@
 using CategoryService.DTOs;
 using FluentValidation;
+using SpstKniznica.Common.Text;
 
 namespace CategoryService.Validators;
 
@@ -9,10 +10,12 @@ public static class CategoryRequestRules
     {
         validator.RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required.")
-            .MaximumLength(100);
+            .MaximumLength(100)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Name must be plain text (no HTML).");
 
         validator.RuleFor(x => x.Description)
-            .MaximumLength(1000);
+            .MaximumLength(1000)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Description must be plain text (no HTML).");
 
         validator.RuleFor(x => x.Color)
             .MaximumLength(32)

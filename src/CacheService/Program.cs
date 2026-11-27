@@ -46,6 +46,7 @@ try
         redisConnection);
 
     app.UseSpstRequestLogging();
+    app.UseSpstSecurityHeaders();
     app.UseSpstCors();
     if (app.Environment.ShouldExposeSwagger())
     {

@@ -1,5 +1,6 @@
 using BookingService.DTOs;
 using FluentValidation;
+using SpstKniznica.Common.Text;
 
 namespace BookingService.Validators;
 
@@ -16,7 +17,8 @@ public static class BookingRequestRules
 
         validator.RuleFor(x => x.BorrowerName)
             .NotEmpty().WithMessage("BorrowerName is required.")
-            .MaximumLength(200);
+            .MaximumLength(200)
+            .Must(HtmlSafety.IsPlainText).WithMessage("BorrowerName must be plain text (no HTML).");
 
         validator.RuleFor(x => x.BorrowerEmail)
             .NotEmpty().WithMessage("BorrowerEmail is required.")
@@ -30,6 +32,7 @@ public static class BookingRequestRules
             .NotEmpty().WithMessage("DueDate is required.");
 
         validator.RuleFor(x => x.Notes)
-            .MaximumLength(1000);
+            .MaximumLength(1000)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Notes must be plain text (no HTML).");
     }
 }

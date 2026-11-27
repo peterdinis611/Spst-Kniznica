@@ -1,6 +1,7 @@
 using BookService.Interfaces;
 using BookService.Models;
 using FluentValidation;
+using SpstKniznica.Common.Text;
 
 namespace BookService.Validators;
 
@@ -25,29 +26,40 @@ public static class BookValidationRules
     {
         validator.RuleFor(x => x.Title)
             .NotEmpty().WithMessage("Title is required.")
-            .MaximumLength(300);
+            .MaximumLength(300)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Title must be plain text (no HTML).");
 
         validator.RuleFor(x => x.Subtitle)
-            .MaximumLength(300);
+            .MaximumLength(300)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Subtitle must be plain text (no HTML).");
 
         validator.RuleFor(x => x.AuthorId)
             .NotEmpty().WithMessage("AuthorId is required.");
 
         validator.RuleFor(x => x.Publisher)
-            .MaximumLength(200);
+            .MaximumLength(200)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Publisher must be plain text (no HTML).");
 
         validator.RuleFor(x => x.Language)
-            .MaximumLength(50);
+            .MaximumLength(50)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Language must be plain text (no HTML).");
 
         validator.RuleFor(x => x.CategoryId)
             .Must(id => id is null || id != Guid.Empty)
             .WithMessage("CategoryId must be a valid non-empty GUID.");
 
         validator.RuleFor(x => x.Description)
-            .MaximumLength(4000);
+            .MaximumLength(4000)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Description must be plain text (no HTML).");
+
+        validator.RuleFor(x => x.CoverUrl)
+            .MaximumLength(500)
+            .Must(url => HtmlSafety.IsSafeHttpUrl(url))
+            .WithMessage("CoverUrl must be an absolute http(s) URL.");
 
         validator.RuleFor(x => x.ShelfLocation)
-            .MaximumLength(50);
+            .MaximumLength(50)
+            .Must(HtmlSafety.IsPlainText).WithMessage("ShelfLocation must be plain text (no HTML).");
 
         validator.RuleFor(x => x.PageCount)
             .GreaterThan(0)

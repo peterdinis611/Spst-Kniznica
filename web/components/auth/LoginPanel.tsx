@@ -11,6 +11,7 @@ import {
 } from "@/components/security/TurnstileWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { resolveUserDisplayName } from "@/lib/auth/display-name";
+import { safeNextPath } from "@/lib/routing/safe-next-path";
 import { cn } from "@/lib/utils";
 
 function initials(name: string, email?: string | null): string {
@@ -34,11 +35,6 @@ function roleLabel(roles: string[]): string {
   if (roles.some((r) => r.toLowerCase() === "admin")) return "Administrátor";
   if (roles.some((r) => r.toLowerCase() === "librarian")) return "Knižník";
   return roles[0] ?? "Čitateľ";
-}
-
-function safeNextPath(raw: string | null): string | null {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
-  return raw;
 }
 
 const unlocks = [

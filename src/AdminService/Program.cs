@@ -65,6 +65,7 @@ try
     await app.Services.MigrateSpstDatabaseAsync<AdminDbContext>("AdminService");
 
     app.UseSpstRequestLogging();
+    app.UseSpstSecurityHeaders();
     app.UseSpstCors();
     if (app.Environment.ShouldExposeSwagger())
     {

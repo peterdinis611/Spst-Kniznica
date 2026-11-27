@@ -1,5 +1,6 @@
 using AuthorService.DTOs;
 using FluentValidation;
+using SpstKniznica.Common.Text;
 
 namespace AuthorService.Validators;
 
@@ -9,13 +10,16 @@ public static class AuthorRequestRules
     {
         validator.RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required.")
-            .MaximumLength(200);
+            .MaximumLength(200)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Name must be plain text (no HTML).");
 
         validator.RuleFor(x => x.Biography)
-            .MaximumLength(4000);
+            .MaximumLength(4000)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Biography must be plain text (no HTML).");
 
         validator.RuleFor(x => x.Nationality)
-            .MaximumLength(100);
+            .MaximumLength(100)
+            .Must(HtmlSafety.IsPlainText).WithMessage("Nationality must be plain text (no HTML).");
 
         var maxYear = DateTime.UtcNow.Year;
         validator.RuleFor(x => x.BirthYear)

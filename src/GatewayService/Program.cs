@@ -118,6 +118,7 @@ try
 
     app.UseSpstForwardedHeaders();
     app.UseSpstHstsWhenPublic(app.Environment);
+    app.UseSpstSecurityHeaders();
     app.UseSpstRequestLogging();
     app.UseSpstRequestMetrics();
     app.UseSpstCors();

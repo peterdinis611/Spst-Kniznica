@@ -93,6 +93,7 @@ try
 
     app.UseSpstRequestLogging();
     app.UseSpstRequestMetrics();
+    app.UseSpstSecurityHeaders();
     app.UseSpstCors();
     if (app.Environment.ShouldExposeSwagger())
     {

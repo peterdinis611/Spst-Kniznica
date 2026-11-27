@@ -6,14 +6,14 @@ import {
   HttpStatusPageShell,
   HttpStatusPanel,
 } from "@/components/routing/HttpStatusPanel";
+import { safeNextPath } from "@/lib/routing/safe-next-path";
 
 function Status401Inner() {
   const searchParams = useSearchParams();
-  const next = searchParams.get("next");
-  const loginHref =
-    next && next.startsWith("/") && !next.startsWith("//")
-      ? `/login?next=${encodeURIComponent(next)}`
-      : "/login";
+  const next = safeNextPath(searchParams.get("next"));
+  const loginHref = next
+    ? `/login?next=${encodeURIComponent(next)}`
+    : "/login";
 
   return <HttpStatusPanel code={401} primaryHref={loginHref} />;
 }
