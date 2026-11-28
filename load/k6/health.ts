@@ -4,11 +4,12 @@
  *   ./scripts/load-test.sh health
  */
 import { check, sleep } from "k6";
-import { apiThresholds, think } from "./lib/config.js";
-import { getHealth, getReady } from "./lib/catalog.js";
-import { apiGet } from "./lib/http.js";
+import type { Options } from "k6/options";
+import { apiThresholds, think } from "./lib/config.ts";
+import { getHealth, getReady } from "./lib/catalog.ts";
+import { apiGet } from "./lib/http.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     live: {
       executor: "constant-arrival-rate",
@@ -41,17 +42,17 @@ export const options = {
   },
 };
 
-export function liveProbe() {
+export function liveProbe(): void {
   getHealth();
   sleep(think(0.05, 0.15));
 }
 
-export function readyProbe() {
+export function readyProbe(): void {
   getReady();
   sleep(think(0.3, 0.8));
 }
 
-export function metricsProbe() {
+export function metricsProbe(): void {
   const res = apiGet("/metrics?format=prom", "metrics_prom");
   check(res, {
     "metrics 200/401": (r) => r.status === 200 || r.status === 401,

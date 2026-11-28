@@ -1,14 +1,15 @@
 /**
  * Stress — vyššia záťaž na katalóg (nájdenie limitu / degradácie).
  *
- *   k6 run load/k6/stress.js
- *   PROFILE=stress k6 run load/k6/stress.js
+ *   k6 run load/k6/stress.ts
+ *   PROFILE=stress k6 run load/k6/stress.ts
  */
 import { sleep } from "k6";
-import { stressThresholds, think } from "./lib/config.js";
-import { browseCatalog } from "./lib/catalog.js";
+import type { Options } from "k6/options";
+import { stressThresholds, think } from "./lib/config.ts";
+import { browseCatalog } from "./lib/catalog.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     stress: {
       executor: "ramping-arrival-rate",
@@ -29,7 +30,7 @@ export const options = {
   thresholds: stressThresholds,
 };
 
-export default function () {
+export default function (): void {
   browseCatalog();
   sleep(think(0.02, 0.08));
 }

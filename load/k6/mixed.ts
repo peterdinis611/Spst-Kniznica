@@ -1,17 +1,28 @@
 /**
  * Mixed — katalóg + summaries + health v jednom behu (realistickejší mix).
  *
- *   k6 run load/k6/mixed.js
- *   TOKEN=… k6 run load/k6/mixed.js   # zapne aj reader/staff VUs
+ *   k6 run load/k6/mixed.ts
+ *   TOKEN=… k6 run load/k6/mixed.ts   # zapne aj reader/staff VUs
  */
 import { sleep } from "k6";
-import { TOKEN, apiThresholds, think } from "./lib/config.js";
-import { browseCatalog, getHealth, getReady, warmCatalogBatch } from "./lib/catalog.js";
-import { readerOpsFlow, staffOpsFlow } from "./lib/ops.js";
+import type { Options } from "k6/options";
+import { TOKEN, apiThresholds, think } from "./lib/config.ts";
+import {
+  browseCatalog,
+  browseSearch,
+  getHealth,
+  getReady,
+  warmCatalogBatch,
+} from "./lib/catalog.ts";
+import {
+  readerOpsFlow,
+  readerExtrasFlow,
+  staffOpsFlow,
+} from "./lib/ops.ts";
 
 const hasAuth = Boolean(TOKEN) || __ENV.SPST_DEV_ADMIN === "1";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     public_browse: {
       executor: "ramping-vus",
@@ -32,14 +43,14 @@ export const options = {
     ...(hasAuth
       ? {
           readers: {
-            executor: "constant-vus",
+            executor: "constant-vus" as const,
             vus: 3,
             duration: "1m20s",
             exec: "readerFlow",
             startTime: "10s",
           },
           staff: {
-            executor: "constant-vus",
+            executor: "constant-vus" as const,
             vus: 2,
             duration: "1m",
             exec: "staffFlow",
@@ -54,7 +65,7 @@ export const options = {
   },
 };
 
-export function setup() {
+export function setup(): Record<string, never> {
   warmCatalogBatch();
   if (!hasAuth) {
     console.log("mixed: no TOKEN — public + health only");
@@ -62,24 +73,26 @@ export function setup() {
   return {};
 }
 
-export function publicFlow() {
-  browseCatalog();
+export function publicFlow(): void {
+  if (Math.random() < 0.35) browseSearch();
+  else browseCatalog();
   sleep(think(0.3, 0.9));
 }
 
-export function healthFlow() {
+export function healthFlow(): void {
   getHealth();
   getReady();
   sleep(2);
 }
 
-export function readerFlow() {
+export function readerFlow(): void {
   browseCatalog();
   readerOpsFlow();
+  readerExtrasFlow();
   sleep(think(0.6, 1.2));
 }
 
-export function staffFlow() {
+export function staffFlow(): void {
   staffOpsFlow();
   sleep(think(1, 2));
 }

@@ -1,22 +1,29 @@
 /**
  * Authenticated — výpožičky + staff export / desk (vyžaduje TOKEN alebo DevAuth).
  *
- *   TOKEN=… k6 run load/k6/authenticated.js
+ *   TOKEN=… k6 run load/k6/authenticated.ts
  *   SPST_DEV_ADMIN=1 + Entra:Enabled=false → TOKEN môže byť prázdny
  */
 import { sleep } from "k6";
 import http from "k6/http";
-import { BASE_URL, TOKEN, authHeaders, apiThresholds, think } from "./lib/config.js";
-import { browseCatalog } from "./lib/catalog.js";
+import type { Options } from "k6/options";
+import {
+  BASE_URL,
+  TOKEN,
+  authHeaders,
+  apiThresholds,
+  think,
+} from "./lib/config.ts";
+import { browseCatalog } from "./lib/catalog.ts";
 import {
   readerOpsFlow,
   staffOpsFlow,
   booksExport,
   emailsStatus,
   ordersQueue,
-} from "./lib/ops.js";
+} from "./lib/ops.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     reader_bookings: {
       executor: "ramping-vus",
@@ -43,7 +50,7 @@ export const options = {
   },
 };
 
-export function setup() {
+export function setup(): Record<string, never> {
   const probe = http.get(`${BASE_URL}/api/bookings?page=1&pageSize=5`, {
     headers: authHeaders(),
   });
@@ -59,13 +66,13 @@ export function setup() {
   return {};
 }
 
-export function readerFlow() {
+export function readerFlow(): void {
   browseCatalog();
   readerOpsFlow();
   sleep(think(0.5, 1.2));
 }
 
-export function staffFlow() {
+export function staffFlow(): void {
   staffOpsFlow();
   booksExport(50);
   emailsStatus();

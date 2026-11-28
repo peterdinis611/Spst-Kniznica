@@ -1,14 +1,15 @@
 /**
  * Catalog load — verejné čítanie cez gateway (ramping VUs).
  *
- *   k6 run load/k6/catalog.js
- *   PROFILE=load k6 run -e BASE_URL=http://127.0.0.1:5200 load/k6/catalog.js
+ *   k6 run load/k6/catalog.ts
+ *   PROFILE=load k6 run -e BASE_URL=http://127.0.0.1:5200 load/k6/catalog.ts
  */
 import { sleep } from "k6";
-import { apiThresholds, think } from "./lib/config.js";
-import { browseCatalog, getHealth, getReady } from "./lib/catalog.js";
+import type { Options } from "k6/options";
+import { apiThresholds, think } from "./lib/config.ts";
+import { browseCatalog, getHealth, getReady } from "./lib/catalog.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     catalog: {
       executor: "ramping-vus",
@@ -36,12 +37,12 @@ export const options = {
   },
 };
 
-export default function () {
+export default function (): void {
   browseCatalog();
   sleep(think(0.3, 1));
 }
 
-export function healthProbe() {
+export function healthProbe(): void {
   getHealth();
   getReady();
   sleep(1);

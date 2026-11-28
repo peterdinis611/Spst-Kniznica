@@ -10,6 +10,9 @@ logs/
 *.db
 categories.db
 
+# k6 load tests (TypeScript editor types)
+load/node_modules/
+
 # Next.js (web/)
 web/node_modules/
 web/.next/

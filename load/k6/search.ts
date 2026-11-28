@@ -4,10 +4,11 @@
  *   ./scripts/load-test.sh search
  */
 import { sleep } from "k6";
-import { apiThresholds, think } from "./lib/config.js";
-import { browseSearch } from "./lib/catalog.js";
+import type { Options } from "k6/options";
+import { apiThresholds, think } from "./lib/config.ts";
+import { browseSearch } from "./lib/catalog.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     search: {
       executor: "ramping-arrival-rate",
@@ -30,7 +31,7 @@ export const options = {
   },
 };
 
-export default function () {
+export default function (): void {
   browseSearch();
   sleep(think(0.1, 0.4));
 }

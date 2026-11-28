@@ -5,6 +5,16 @@
 #   ./scripts/load-test.sh                  # smoke
 #   ./scripts/load-test.sh try              # ~45s through the Next app + BFF
 #   ./scripts/load-test.sh catalog
+#   ./scripts/load-test.sh authors
+#   ./scripts/load-test.sh categories
+#   ./scripts/load-test.sh search
+#   ./scripts/load-test.sh health
+#   ./scripts/load-test.sh rate-limit      # needs --loadtest for 429
+#   ./scripts/load-test.sh bff
+#   ./scripts/load-test.sh seo
+#   ./scripts/load-test.sh favorites
+#   ./scripts/load-test.sh breakpoint
+#   ./scripts/load-test.sh chaos-read
 #   ./scripts/load-test.sh stress
 #   ./scripts/load-test.sh spike
 #   ./scripts/load-test.sh soak
@@ -17,7 +27,7 @@
 # Env:
 #   BASE_URL      gateway (default http://127.0.0.1:5200)
 #   WEB_URL       Next.js (default http://127.0.0.1:3000)
-#   TOKEN         Bearer JWT for authenticated / desk
+#   TOKEN         Bearer JWT for authenticated / desk / favorites
 #   PROFILE       smoke | load | stress (thresholds)
 #   SOAK_MINUTES  soak duration (default 10)
 #
@@ -35,20 +45,32 @@ DEFAULT_PROFILE="load"
 NEED_GATEWAY=1
 NEED_WEB=0
 case "$SCENARIO" in
-  smoke) SCRIPT="$ROOT/load/k6/smoke.js"; DEFAULT_PROFILE=smoke ;;
-  try) SCRIPT="$ROOT/load/k6/try.js"; NEED_WEB=1 ;;
-  catalog) SCRIPT="$ROOT/load/k6/catalog.js" ;;
-  stress) SCRIPT="$ROOT/load/k6/stress.js"; DEFAULT_PROFILE=stress ;;
-  spike) SCRIPT="$ROOT/load/k6/spike.js"; DEFAULT_PROFILE=stress ;;
-  soak) SCRIPT="$ROOT/load/k6/soak.js" ;;
-  summaries|summary) SCRIPT="$ROOT/load/k6/summaries.js" ;;
-  authenticated|auth) SCRIPT="$ROOT/load/k6/authenticated.js" ;;
-  desk) SCRIPT="$ROOT/load/k6/desk.js" ;;
-  web) SCRIPT="$ROOT/load/k6/web.js"; NEED_GATEWAY=0; NEED_WEB=1 ;;
-  mixed) SCRIPT="$ROOT/load/k6/mixed.js" ;;
+  smoke) SCRIPT="$ROOT/load/k6/smoke.ts"; DEFAULT_PROFILE=smoke ;;
+  try) SCRIPT="$ROOT/load/k6/try.ts"; NEED_WEB=1 ;;
+  catalog) SCRIPT="$ROOT/load/k6/catalog.ts" ;;
+  authors) SCRIPT="$ROOT/load/k6/authors.ts" ;;
+  categories) SCRIPT="$ROOT/load/k6/categories.ts" ;;
+  search) SCRIPT="$ROOT/load/k6/search.ts" ;;
+  health) SCRIPT="$ROOT/load/k6/health.ts" ;;
+  rate-limit|ratelimit) SCRIPT="$ROOT/load/k6/rate-limit.ts"; DEFAULT_PROFILE=stress ;;
+  bff) SCRIPT="$ROOT/load/k6/bff.ts"; NEED_WEB=1 ;;
+  seo) SCRIPT="$ROOT/load/k6/seo.ts"; NEED_GATEWAY=0; NEED_WEB=1 ;;
+  favorites|fav) SCRIPT="$ROOT/load/k6/favorites.ts" ;;
+  breakpoint|break) SCRIPT="$ROOT/load/k6/breakpoint.ts"; DEFAULT_PROFILE=stress ;;
+  chaos-read|chaos) SCRIPT="$ROOT/load/k6/chaos-read.ts" ;;
+  stress) SCRIPT="$ROOT/load/k6/stress.ts"; DEFAULT_PROFILE=stress ;;
+  spike) SCRIPT="$ROOT/load/k6/spike.ts"; DEFAULT_PROFILE=stress ;;
+  soak) SCRIPT="$ROOT/load/k6/soak.ts" ;;
+  summaries|summary) SCRIPT="$ROOT/load/k6/summaries.ts" ;;
+  authenticated|auth) SCRIPT="$ROOT/load/k6/authenticated.ts" ;;
+  desk) SCRIPT="$ROOT/load/k6/desk.ts" ;;
+  web) SCRIPT="$ROOT/load/k6/web.ts"; NEED_GATEWAY=0; NEED_WEB=1 ;;
+  mixed) SCRIPT="$ROOT/load/k6/mixed.ts" ;;
   *)
     echo "Unknown scenario: $SCENARIO"
-    echo "Use: try | smoke | catalog | stress | spike | soak | summaries | authenticated | desk | web | mixed"
+    echo "Use: try | smoke | catalog | authors | categories | search | health |"
+    echo "     rate-limit | bff | seo | favorites | breakpoint | chaos-read |"
+    echo "     stress | spike | soak | summaries | authenticated | desk | web | mixed"
     exit 1
     ;;
 esac

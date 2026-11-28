@@ -5,22 +5,23 @@
  */
 import http from "k6/http";
 import { sleep } from "k6";
+import type { Options } from "k6/options";
 import {
   BASE_URL,
   TOKEN,
   authHeaders,
   apiThresholds,
   think,
-} from "./lib/config.js";
+} from "./lib/config.ts";
 import {
   listFavorites,
   waitlistMine,
   authMe,
   readerExtrasFlow,
-} from "./lib/ops.js";
-import { browseCatalog } from "./lib/catalog.js";
+} from "./lib/ops.ts";
+import { browseCatalog } from "./lib/catalog.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     favorites: {
       executor: "ramping-vus",
@@ -38,7 +39,7 @@ export const options = {
   },
 };
 
-export function setup() {
+export function setup(): Record<string, never> {
   const probe = http.get(`${BASE_URL}/api/bookings/favorites`, {
     headers: authHeaders(),
   });
@@ -48,7 +49,7 @@ export function setup() {
   return {};
 }
 
-export default function () {
+export default function (): void {
   authMe();
   listFavorites();
   waitlistMine();

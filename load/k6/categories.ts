@@ -4,10 +4,11 @@
  *   ./scripts/load-test.sh categories
  */
 import { sleep } from "k6";
-import { apiThresholds, think } from "./lib/config.js";
-import { browseCategories, getHealth } from "./lib/catalog.js";
+import type { Options } from "k6/options";
+import { apiThresholds, think } from "./lib/config.ts";
+import { browseCategories, getHealth } from "./lib/catalog.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     categories: {
       executor: "ramping-vus",
@@ -26,7 +27,7 @@ export const options = {
   },
 };
 
-export default function () {
+export default function (): void {
   if (Math.random() < 0.05) getHealth();
   browseCategories();
   sleep(think(0.2, 0.8));

@@ -5,10 +5,11 @@
  *   PROFILE=stress ./scripts/load-test.sh breakpoint
  */
 import { sleep } from "k6";
-import { stressThresholds, think } from "./lib/config.js";
-import { browseCatalog, getHealth } from "./lib/catalog.js";
+import type { Options } from "k6/options";
+import { stressThresholds, think } from "./lib/config.ts";
+import { browseCatalog, getHealth } from "./lib/catalog.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     climb: {
       executor: "ramping-arrival-rate",
@@ -32,7 +33,7 @@ export const options = {
   },
 };
 
-export default function () {
+export default function (): void {
   if (Math.random() < 0.02) getHealth();
   browseCatalog();
   sleep(think(0.01, 0.08));

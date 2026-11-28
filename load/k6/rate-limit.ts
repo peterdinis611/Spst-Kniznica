@@ -7,13 +7,14 @@
  */
 import { check, sleep } from "k6";
 import { Counter, Rate } from "k6/metrics";
-import { think } from "./lib/config.js";
-import { apiGet } from "./lib/http.js";
+import type { Options } from "k6/options";
+import { think } from "./lib/config.ts";
+import { apiGet } from "./lib/http.ts";
 
 const limited = new Counter("spst_http_429");
 const limitedRate = new Rate("spst_rate_limited");
 
-export const options = {
+export const options: Options = {
   scenarios: {
     burst: {
       executor: "constant-arrival-rate",
@@ -32,7 +33,7 @@ export const options = {
   },
 };
 
-export default function () {
+export default function (): void {
   const res = apiGet("/api/books?page=1&pageSize=10", "books_burst");
   const is429 = res.status === 429;
   if (is429) limited.add(1);

@@ -4,10 +4,11 @@
  *   ./scripts/load-test.sh authors
  */
 import { sleep } from "k6";
-import { apiThresholds, think } from "./lib/config.js";
-import { browseAuthors, getHealth } from "./lib/catalog.js";
+import type { Options } from "k6/options";
+import { apiThresholds, think } from "./lib/config.ts";
+import { browseAuthors, getHealth } from "./lib/catalog.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     authors: {
       executor: "ramping-vus",
@@ -26,7 +27,7 @@ export const options = {
   },
 };
 
-export default function () {
+export default function (): void {
   if (Math.random() < 0.05) getHealth();
   browseAuthors();
   sleep(think(0.25, 0.9));

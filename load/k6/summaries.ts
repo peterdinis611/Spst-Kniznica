@@ -1,13 +1,18 @@
 /**
  * Summaries — záťaž na POST /api/books/summaries (library/desk hot path).
  *
- *   k6 run load/k6/summaries.js
+ *   k6 run load/k6/summaries.ts
  */
 import { check, sleep } from "k6";
-import { apiThresholds, think, safeJson, itemsOf } from "./lib/config.js";
-import { getBooksPage, postBookSummaries, warmCatalogBatch } from "./lib/catalog.js";
+import type { Options } from "k6/options";
+import { apiThresholds, think, safeJson, itemsOf } from "./lib/config.ts";
+import {
+  getBooksPage,
+  postBookSummaries,
+  warmCatalogBatch,
+} from "./lib/catalog.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     summaries: {
       executor: "ramping-vus",
@@ -27,19 +32,19 @@ export const options = {
   },
 };
 
-let cachedIds = [];
+type SummariesData = { ids: string[] };
 
-export function setup() {
+export function setup(): SummariesData {
   warmCatalogBatch();
   const page = getBooksPage(1, 50);
-  cachedIds = itemsOf(safeJson(page))
+  const ids = itemsOf(safeJson(page))
     .map((i) => i.id || i.Id)
-    .filter(Boolean);
-  console.log(`summaries setup: ${cachedIds.length} book ids`);
-  return { ids: cachedIds };
+    .filter((x): x is string => Boolean(x));
+  console.log(`summaries setup: ${ids.length} book ids`);
+  return { ids };
 }
 
-export default function (data) {
+export default function (data: SummariesData): void {
   const pool = data.ids || [];
   if (!pool.length) {
     getBooksPage(1, 20);

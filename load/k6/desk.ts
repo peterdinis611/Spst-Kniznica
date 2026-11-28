@@ -1,16 +1,24 @@
 /**
  * Desk / library-ops — denná tabuľa, waitlist, policy, bookings (staff).
  *
- *   TOKEN=… k6 run load/k6/desk.js
+ *   TOKEN=… k6 run load/k6/desk.ts
  */
 import http from "k6/http";
 import { sleep } from "k6";
-import { BASE_URL, TOKEN, authHeaders, apiThresholds, think } from "./lib/config.js";
-import { staffOpsFlow, listBookings, deskDaily, loanPolicy } from "./lib/ops.js";
-import { postBookSummaries } from "./lib/catalog.js";
-import { safeJson, itemsOf } from "./lib/config.js";
+import type { Options } from "k6/options";
+import {
+  BASE_URL,
+  TOKEN,
+  authHeaders,
+  apiThresholds,
+  think,
+  safeJson,
+  itemsOf,
+} from "./lib/config.ts";
+import { staffOpsFlow, listBookings, deskDaily, loanPolicy } from "./lib/ops.ts";
+import { postBookSummaries } from "./lib/catalog.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     desk: {
       executor: "ramping-vus",
@@ -30,7 +38,7 @@ export const options = {
   },
 };
 
-export function setup() {
+export function setup(): Record<string, never> {
   const probe = http.get(`${BASE_URL}/api/bookings/desk/daily`, {
     headers: authHeaders(),
   });
@@ -40,13 +48,13 @@ export function setup() {
   return {};
 }
 
-export function deskFlow() {
+export function deskFlow(): void {
   deskDaily();
   loanPolicy();
   const list = listBookings(1, 30);
   const ids = itemsOf(safeJson(list))
     .map((b) => b.bookId || b.BookId)
-    .filter(Boolean)
+    .filter((x): x is string => Boolean(x))
     .slice(0, 25);
   if (ids.length) postBookSummaries(ids);
   staffOpsFlow();

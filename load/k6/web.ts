@@ -1,14 +1,15 @@
 /**
  * Frontend smoke load — Next.js pages (SSR/assets) + BFF probe.
  *
- *   k6 run load/k6/web.js
+ *   k6 run load/k6/web.ts
  */
 import http from "k6/http";
 import { check, sleep } from "k6";
-import { WEB_URL, webThresholds, think } from "./lib/config.js";
-import { bffGet } from "./lib/http.js";
+import type { Options } from "k6/options";
+import { WEB_URL, webThresholds, think } from "./lib/config.ts";
+import { bffGet } from "./lib/http.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     pages: {
       executor: "constant-vus",
@@ -29,7 +30,7 @@ export const options = {
 
 const PATHS = ["/", "/books", "/authors", "/categories", "/library", "/bookings"];
 
-export function pageFlow() {
+export function pageFlow(): void {
   const path = PATHS[Math.floor(Math.random() * PATHS.length)];
   const res = http.get(`${WEB_URL}${path}`, {
     tags: { name: `web_${path === "/" ? "home" : path.slice(1)}` },
@@ -41,7 +42,7 @@ export function pageFlow() {
   sleep(think(0.5, 1.2));
 }
 
-export function bffFlow() {
+export function bffFlow(): void {
   const res = bffGet("/api/books?page=1&pageSize=10", "bff_books");
   check(res, {
     "bff books ok": (r) => r.status === 200,

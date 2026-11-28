@@ -5,9 +5,10 @@
  */
 import http from "k6/http";
 import { check, sleep } from "k6";
-import { WEB_URL, webThresholds, think } from "./lib/config.js";
+import type { Options } from "k6/options";
+import { WEB_URL, webThresholds, think } from "./lib/config.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     seo: {
       executor: "constant-vus",
@@ -18,7 +19,13 @@ export const options = {
   thresholds: webThresholds,
 };
 
-const PATHS = [
+type SeoPath = {
+  path: string;
+  name: string;
+  expect: "xml" | "text" | "md" | "auth";
+};
+
+const PATHS: SeoPath[] = [
   { path: "/sitemap.xml", name: "seo_sitemap", expect: "xml" },
   { path: "/robots.txt", name: "seo_robots", expect: "text" },
   { path: "/llms.txt", name: "seo_llms", expect: "md" },
@@ -27,7 +34,7 @@ const PATHS = [
   { path: "/api/seo-discovery", name: "seo_discovery", expect: "auth" },
 ];
 
-export default function () {
+export default function (): void {
   const pick = PATHS[Math.floor(Math.random() * PATHS.length)];
   const res = http.get(`${WEB_URL}${pick.path}`, {
     tags: { name: pick.name },

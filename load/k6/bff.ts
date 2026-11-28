@@ -4,10 +4,11 @@
  *   ./scripts/load-test.sh bff
  */
 import { check, sleep } from "k6";
-import { webThresholds, think } from "./lib/config.js";
-import { bffGet, apiGet } from "./lib/http.js";
+import type { Options } from "k6/options";
+import { webThresholds, think } from "./lib/config.ts";
+import { bffGet, apiGet } from "./lib/http.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     bff_read: {
       executor: "ramping-vus",
@@ -41,8 +42,8 @@ export const options = {
   },
 };
 
-export function bffRead() {
-  const paths = [
+export function bffRead(): void {
+  const paths: Array<[string, string]> = [
     ["/api/books?page=1&pageSize=10", "bff_books"],
     ["/api/authors?page=1&pageSize=10", "bff_authors"],
     ["/api/categories?page=1&pageSize=10", "bff_categories"],
@@ -54,7 +55,7 @@ export function bffRead() {
   sleep(think(0.3, 0.9));
 }
 
-export function bffGuard() {
+export function bffGuard(): void {
   const denied = bffGet("/api/internal/emails/send", "bff_denied_internal");
   check(denied, {
     "bff blocks internal": (r) => r.status === 403 || r.status === 404,
@@ -67,7 +68,7 @@ export function bffGuard() {
   sleep(think(0.8, 1.5));
 }
 
-export function bffVsGateway() {
+export function bffVsGateway(): void {
   const g = apiGet("/api/books?page=1&pageSize=5", "gw_books_cmp");
   const b = bffGet("/api/books?page=1&pageSize=5", "bff_books_cmp");
   check(g, { "gateway books 200": (r) => r.status === 200 });

@@ -1,13 +1,14 @@
 /**
  * Spike — náhly skok záťaže (burst) a návrat.
  *
- *   k6 run load/k6/spike.js
+ *   k6 run load/k6/spike.ts
  */
 import { sleep } from "k6";
-import { stressThresholds, think } from "./lib/config.js";
-import { browseCatalog, warmCatalogBatch } from "./lib/catalog.js";
+import type { Options } from "k6/options";
+import { stressThresholds, think } from "./lib/config.ts";
+import { browseCatalog, warmCatalogBatch } from "./lib/catalog.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: {
     spike: {
       executor: "ramping-arrival-rate",
@@ -30,12 +31,12 @@ export const options = {
   },
 };
 
-export function setup() {
+export function setup(): Record<string, never> {
   warmCatalogBatch();
   return {};
 }
 
-export default function () {
+export default function (): void {
   browseCatalog();
   sleep(think(0.01, 0.05));
 }
