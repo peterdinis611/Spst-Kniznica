@@ -24,6 +24,7 @@ public class BookingAppService(
     ILoanPolicyProvider loanPolicy,
     LoanLifecycleService lifecycle,
     SchoolCalendarService schoolCalendar,
+    ILoanNotificationSender notifications,
     ILogger<BookingAppService> logger) : IBookingService
 {
     public async Task<PagedResult<BookingDto>> SearchAsync(
@@ -245,7 +246,7 @@ public class BookingAppService(
             });
         }
 
-        return await UpdateAsync(
+        var updated = await UpdateAsync(
             id,
             new UpdateBookingRequest
             {
@@ -258,6 +259,12 @@ public class BookingAppService(
                 Notes = booking.Notes,
             },
             cancellationToken);
+
+        await NotifyLoanAsync(
+            updated,
+            borrowed: true,
+            cancellationToken);
+        return updated;
     }
 
     public async Task<BookingDto> ReturnAsync(Guid id, CancellationToken cancellationToken = default)
@@ -271,7 +278,7 @@ public class BookingAppService(
             });
         }
 
-        return await UpdateAsync(
+        var updated = await UpdateAsync(
             id,
             new UpdateBookingRequest
             {
@@ -284,6 +291,40 @@ public class BookingAppService(
                 Notes = booking.Notes,
             },
             cancellationToken);
+
+        await NotifyLoanAsync(
+            updated,
+            borrowed: false,
+            cancellationToken);
+        return updated;
+    }
+
+    private async Task NotifyLoanAsync(
+        BookingDto booking,
+        bool borrowed,
+        CancellationToken cancellationToken)
+    {
+        var snap = await bookCatalog.GetBookAsync(booking.BookId, cancellationToken);
+        var message = new LoanNotificationMessage(
+            booking.Id,
+            booking.BookId,
+            booking.BorrowerEmail,
+            booking.BorrowerName,
+            booking.DueDate,
+            BookTitle: string.IsNullOrWhiteSpace(booking.BookTitle)
+                ? snap?.Title
+                : booking.BookTitle,
+            BorrowedAt: booking.BorrowedAt,
+            ReturnedAt: booking.ReturnedAt);
+
+        if (borrowed)
+        {
+            await notifications.SendLoanBorrowedAsync(message, cancellationToken);
+        }
+        else
+        {
+            await notifications.SendLoanReturnedAsync(message, cancellationToken);
+        }
     }
 
     public async Task<BookingDto> RenewAsync(

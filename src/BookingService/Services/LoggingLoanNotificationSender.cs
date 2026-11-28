@@ -6,6 +6,33 @@ namespace BookingService.Services;
 public sealed class LoggingLoanNotificationSender(ILogger<LoggingLoanNotificationSender> logger)
     : Interfaces.ILoanNotificationSender
 {
+    public Task SendLoanBorrowedAsync(
+        Interfaces.LoanNotificationMessage message,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogInformation(
+            "Loan borrowed: booking {BookingId}, book {BookId} ({Title}), borrower {Email}, due {DueDate:o}",
+            message.BookingId,
+            message.BookId,
+            message.BookTitle,
+            message.BorrowerEmail,
+            message.DueDate);
+        return Task.CompletedTask;
+    }
+
+    public Task SendLoanReturnedAsync(
+        Interfaces.LoanNotificationMessage message,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogInformation(
+            "Loan returned: booking {BookingId}, book {BookId} ({Title}), borrower {Email}",
+            message.BookingId,
+            message.BookId,
+            message.BookTitle,
+            message.BorrowerEmail);
+        return Task.CompletedTask;
+    }
+
     public Task SendDueReminderAsync(
         Interfaces.LoanNotificationMessage message,
         CancellationToken cancellationToken = default)

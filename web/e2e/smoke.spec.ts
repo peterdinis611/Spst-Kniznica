@@ -12,8 +12,14 @@ test.describe("public smoke", () => {
     const offlineHeading = page.getByRole("heading", {
       name: /Katalóg kníh nedostupný/i,
     });
+    // Next-only CI: BFF cannot reach gateway → hard navigate to /502|/503.
+    const gatewayDownHeading = page.getByRole("heading", {
+      name: /API brána neodpovedá|Služba dočasne mimo/i,
+    });
 
-    await expect(catalogHeading.or(offlineHeading)).toBeVisible({
+    await expect(
+      catalogHeading.or(offlineHeading).or(gatewayDownHeading),
+    ).toBeVisible({
       timeout: 45_000,
     });
 

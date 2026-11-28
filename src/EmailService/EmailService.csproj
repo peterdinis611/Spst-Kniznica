@@ -26,4 +26,8 @@
     <ProjectReference Include="..\SpstKniznica.Common\SpstKniznica.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Templates\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

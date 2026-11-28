@@ -14,6 +14,7 @@ SKIP_DOCKER=0
 SKIP_BUILD=0
 SKIP_STORYBOOK=0
 NO_STOP=0
+WITH_OBSERVABILITY=0
 # Development = soft rate limits; LoadTest = Redis limits like production (for k6).
 DOTNET_ENV="${ASPNETCORE_ENVIRONMENT:-Development}"
 
@@ -33,6 +34,7 @@ Options:
   --skip-storybook   nespúšťaj Storybook (port 6006)
   --no-stop          pred štartom nezastavuj bežiace procesy
   --loadtest         ASPNETCORE_ENVIRONMENT=LoadTest (Redis rate limits, cache on)
+  --observability    docker compose --profile observability (Prometheus + Grafana)
   -h, --help         táto nápoveda
 
 Stop:  $ROOT/scripts/stop-all.sh
@@ -49,6 +51,7 @@ for arg in "$@"; do
     --skip-storybook) SKIP_STORYBOOK=1 ;;
     --no-stop) NO_STOP=1 ;;
     --loadtest) DOTNET_ENV="LoadTest" ;;
+    --observability) WITH_OBSERVABILITY=1 ;;
     -h|--help) usage; exit 0 ;;
     *)
       echo "Neznámy argument: $arg" >&2
@@ -283,14 +286,24 @@ if [[ "$SKIP_DOCKER" -eq 0 ]]; then
     echo "    Spusti Docker Desktop a znova ./start.sh, alebo použij --skip-docker."
     echo
   else
-    echo "==> Docker Compose up -d (Redis / Kafka / RabbitMQ / Postgres)"
-    if (cd "$ROOT" && docker compose up -d); then
+    COMPOSE_ARGS=(up -d)
+    if [[ "${WITH_OBSERVABILITY:-0}" -eq 1 ]]; then
+      COMPOSE_ARGS=(--profile observability up -d)
+      echo "==> Docker Compose up -d (+ Prometheus / Grafana)"
+    else
+      echo "==> Docker Compose up -d (Redis / Kafka / RabbitMQ / Postgres)"
+    fi
+    if (cd "$ROOT" && docker compose "${COMPOSE_ARGS[@]}"); then
       echo "  · čakám na healthchecky..."
       DOCKER_FAILED=0
       wait_docker_healthy "postgres" 40 || DOCKER_FAILED=1
       wait_docker_healthy "redis" 40 || DOCKER_FAILED=1
       wait_docker_healthy "rabbitmq" 60 || DOCKER_FAILED=1
       wait_docker_healthy "kafka" 90 || DOCKER_FAILED=1
+      if [[ "${WITH_OBSERVABILITY:-0}" -eq 1 ]]; then
+        wait_docker_healthy "prometheus" 40 || DOCKER_FAILED=1
+        wait_docker_healthy "grafana" 60 || DOCKER_FAILED=1
+      fi
       if [[ "$DOCKER_FAILED" -ne 0 ]]; then
         echo "  ! Niektoré kontajnery ešte nie sú healthy – pokračujem (log: docker compose ps)"
       else
@@ -403,6 +416,16 @@ ${STORYBOOK_LINE}
 
   Infra        Redis :6379 · Kafka :9092 · RabbitMQ :5672
   Rabbit UI    http://127.0.0.1:15672  (guest/guest)
+EOF
+
+if [[ "${WITH_OBSERVABILITY:-0}" -eq 1 ]]; then
+  cat <<EOF
+  Grafana      http://127.0.0.1:3001  (admin/admin)
+  Prometheus   http://127.0.0.1:9090
+EOF
+fi
+
+cat <<EOF
 
   Logy         $LOG_DIR
   Stop         ./scripts/stop-all.sh

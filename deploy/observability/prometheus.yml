@@ -1,0 +1,60 @@
+# Scrapes host-run SPST services (./start.sh) from Docker Desktop / Compose.
+# Development: Metrics__RequireKey defaults off. Production: set bearer token below.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: spst-gateway
+    metrics_path: /metrics
+    params:
+      format: [prom]
+    static_configs:
+      - targets: ["host.docker.internal:5200"]
+        labels:
+          stack: spst
+
+  - job_name: spst-book
+    metrics_path: /metrics
+    params:
+      format: [prom]
+    static_configs:
+      - targets: ["host.docker.internal:5203"]
+        labels:
+          stack: spst
+
+  - job_name: spst-booking
+    metrics_path: /metrics
+    params:
+      format: [prom]
+    static_configs:
+      - targets: ["host.docker.internal:5208"]
+        labels:
+          stack: spst
+
+  - job_name: spst-workers
+    metrics_path: /metrics
+    params:
+      format: [prom]
+    static_configs:
+      - targets: ["host.docker.internal:5209"]
+        labels:
+          stack: spst
+
+  - job_name: spst-email
+    metrics_path: /metrics
+    params:
+      format: [prom]
+    static_configs:
+      - targets: ["host.docker.internal:5212"]
+        labels:
+          stack: spst
+
+  # Uncomment when Metrics__RequireKey=true (Production / locked local):
+  #   authorization:
+  #     type: Bearer
+  #     credentials: "${METRICS_SCRAPE_TOKEN}"
+  # Or use:
+  #   headers:
+  #     X-Metrics-Key: "${METRICS_SCRAPE_TOKEN}"

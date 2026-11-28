@@ -85,12 +85,14 @@ public sealed class LoanLifecycleService(
             await unitOfWork.SaveChangesAsync(cancellationToken);
             await cache.RemoveAsync(CacheKeys.Booking(tracked.Id), cancellationToken);
 
+            var titleSnap = await bookCatalog.GetBookAsync(tracked.BookId, cancellationToken);
             var message = new LoanNotificationMessage(
                 tracked.Id,
                 tracked.BookId,
                 tracked.BorrowerEmail,
                 tracked.BorrowerName,
-                tracked.DueDate);
+                tracked.DueDate,
+                BookTitle: titleSnap?.Title);
 
             await eventPublisher.PublishAsync(
                 new LoanDueReminderEvent(
@@ -169,7 +171,8 @@ public sealed class LoanLifecycleService(
             booking.BookId,
             booking.BorrowerEmail,
             booking.BorrowerName,
-            booking.DueDate);
+            booking.DueDate,
+            BookTitle: snapshot?.Title);
 
         await eventPublisher.PublishAsync(
             new WaitlistPickupReadyEvent(

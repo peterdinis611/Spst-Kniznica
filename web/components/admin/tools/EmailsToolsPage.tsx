@@ -134,7 +134,13 @@ export function EmailsToolsPage() {
     }
   }
 
-  async function sendTemplate(kind: "loan-due-reminder" | "waitlist-promotion") {
+  async function sendTemplate(
+    kind:
+      | "loan-borrowed"
+      | "loan-returned"
+      | "loan-due-reminder"
+      | "waitlist-promotion",
+  ) {
     setBusy(true);
     try {
       const bookingId = crypto.randomUUID();
@@ -270,6 +276,22 @@ export function EmailsToolsPage() {
           <Button
             variant="contained"
             color="secondary"
+            disabled={busy || !to.trim()}
+            onClick={() => void sendTemplate("loan-borrowed")}
+            sx={{ borderRadius: 0 }}
+          >
+            Požičanie
+          </Button>
+          <Button
+            variant="outlined"
+            disabled={busy || !to.trim()}
+            onClick={() => void sendTemplate("loan-returned")}
+            sx={{ borderRadius: 0 }}
+          >
+            Vrátenie
+          </Button>
+          <Button
+            variant="outlined"
             disabled={busy || !to.trim()}
             onClick={() => void sendTemplate("loan-due-reminder")}
             sx={{ borderRadius: 0 }}

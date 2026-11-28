@@ -2,6 +2,7 @@ using EmailService.Data;
 using EmailService.DTOs;
 using EmailService.Models;
 using EmailService.Options;
+using EmailService.Templating;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SpstKniznica.Common.Auth;
@@ -14,12 +15,19 @@ public sealed class EmailDispatchService(
     IEmailTransport transport,
     IOptions<SmtpOptions> smtpOptions,
     IOptions<EmailDispatchOptions> dispatchOptions,
+    LoanEmailHtmlRenderer htmlTemplates,
     IAuditLogger audit,
     ILogger<EmailDispatchService> logger) : IEmailDispatchService
 {
-    public async Task<EmailMessageDto> SendAsync(
+    public Task<EmailMessageDto> SendAsync(
         SendEmailRequest request,
         CancellationToken cancellationToken = default)
+        => SendAsync(request, cancellationToken, trustServerHtml: false);
+
+    private async Task<EmailMessageDto> SendAsync(
+        SendEmailRequest request,
+        CancellationToken cancellationToken,
+        bool trustServerHtml)
     {
         var policy = dispatchOptions.Value;
         var to = NormalizeEmail(request.To);
@@ -46,7 +54,7 @@ public sealed class EmailDispatchService(
         string? bodyHtml = null;
         if (!string.IsNullOrWhiteSpace(request.BodyHtml))
         {
-            if (!policy.AllowBodyHtml)
+            if (!trustServerHtml && !policy.AllowBodyHtml)
             {
                 throw new ArgumentException(
                     "BodyHtml is disabled. Set EmailDispatch:AllowBodyHtml=true only when intentionally sending HTML.");
@@ -114,28 +122,67 @@ public sealed class EmailDispatchService(
         return ToDto(log);
     }
 
+    public Task<EmailMessageDto> SendLoanBorrowedAsync(
+        LoanEmailTemplateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var name = DisplayName(request.BorrowerName);
+        var title = BookTitle(request.BookTitle);
+        var due = FormatDate(request.DueDate);
+        var borrowed = FormatDate(request.BorrowedAt ?? DateTimeOffset.UtcNow);
+
+        return SendTemplatedAsync(
+            request,
+            templateKey: "loan-borrowed",
+            subject: $"Požičané: {title} (vráť do {due})",
+            bodyText:
+                $"Ahoj {name},\n\n" +
+                $"kniha „{title}“ je požičaná.\n" +
+                $"Vydané: {borrowed}\n" +
+                $"Vrátiť do: {due}\n\n" +
+                "SPST Knižnica",
+            tokens: LoanTokens(request, name, title, due, borrowedAt: borrowed),
+            cancellationToken);
+    }
+
+    public Task<EmailMessageDto> SendLoanReturnedAsync(
+        LoanEmailTemplateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var name = DisplayName(request.BorrowerName);
+        var title = BookTitle(request.BookTitle);
+        var returned = FormatDate(request.ReturnedAt ?? DateTimeOffset.UtcNow);
+
+        return SendTemplatedAsync(
+            request,
+            templateKey: "loan-returned",
+            subject: $"Vrátené: {title}",
+            bodyText:
+                $"Ahoj {name},\n\n" +
+                $"ďakujeme za vrátenie knihy „{title}“ ({returned}).\n\n" +
+                "SPST Knižnica",
+            tokens: LoanTokens(request, name, title, FormatDate(request.DueDate), returnedAt: returned),
+            cancellationToken);
+    }
+
     public Task<EmailMessageDto> SendLoanDueReminderAsync(
         LoanEmailTemplateRequest request,
         CancellationToken cancellationToken = default)
     {
         var name = DisplayName(request.BorrowerName);
-        var title = string.IsNullOrWhiteSpace(request.BookTitle) ? "titul" : request.BookTitle.Trim();
-        var due = request.DueDate.ToLocalTime().ToString("d. M. yyyy");
+        var title = BookTitle(request.BookTitle);
+        var due = FormatDate(request.DueDate);
 
-        return SendAsync(
-            new SendEmailRequest
-            {
-                To = request.BorrowerEmail,
-                ToName = name,
-                Subject = $"Pripomienka: termín vrátenia ({due})",
-                BodyText =
-                    $"Ahoj {name},\n\n" +
-                    $"pripomíname termín vrátenia knihy „{title}“: {due}.\n\n" +
-                    "Ak potrebuješ predĺženie, požiadaj oň v Mojej knižnici.\n\n" +
-                    "SPST Knižnica",
-                TemplateKey = "loan-due-reminder",
-                CorrelationId = request.BookingId.ToString("N"),
-            },
+        return SendTemplatedAsync(
+            request,
+            templateKey: "loan-due-reminder",
+            subject: $"Pripomienka: termín vrátenia ({due})",
+            bodyText:
+                $"Ahoj {name},\n\n" +
+                $"pripomíname termín vrátenia knihy „{title}“: {due}.\n\n" +
+                "Ak potrebuješ predĺženie, požiadaj oň v Mojej knižnici.\n\n" +
+                "SPST Knižnica",
+            tokens: LoanTokens(request, name, title, due),
             cancellationToken);
     }
 
@@ -144,23 +191,66 @@ public sealed class EmailDispatchService(
         CancellationToken cancellationToken = default)
     {
         var name = DisplayName(request.BorrowerName);
-        var title = string.IsNullOrWhiteSpace(request.BookTitle) ? "titul" : request.BookTitle.Trim();
-        var due = request.DueDate.ToLocalTime().ToString("d. M. yyyy");
+        var title = BookTitle(request.BookTitle);
+        var due = FormatDate(request.DueDate);
+
+        return SendTemplatedAsync(
+            request,
+            templateKey: "waitlist-promotion",
+            subject: $"Kniha je pripravená: {title}",
+            bodyText:
+                $"Ahoj {name},\n\n" +
+                $"titul „{title}“ je pre teba rezervovaný. Vyzdvihni ho do {due}.\n\n" +
+                "SPST Knižnica",
+            tokens: LoanTokens(request, name, title, due),
+            cancellationToken);
+    }
+
+    private Task<EmailMessageDto> SendTemplatedAsync(
+        LoanEmailTemplateRequest request,
+        string templateKey,
+        string subject,
+        string bodyText,
+        IReadOnlyDictionary<string, string> tokens,
+        CancellationToken cancellationToken)
+    {
+        // Trusted react-email HTML — bypasses AllowBodyHtml (client BodyHtml still gated).
+        var bodyHtml = htmlTemplates.TryRender(templateKey, tokens);
 
         return SendAsync(
             new SendEmailRequest
             {
                 To = request.BorrowerEmail,
-                ToName = name,
-                Subject = $"Kniha je pripravená: {title}",
-                BodyText =
-                    $"Ahoj {name},\n\n" +
-                    $"titul „{title}“ je pre teba rezervovaný. Vyzdvihni ho do {due}.\n\n" +
-                    "SPST Knižnica",
-                TemplateKey = "waitlist-promotion",
+                ToName = DisplayName(request.BorrowerName),
+                Subject = subject,
+                BodyText = bodyText,
+                BodyHtml = bodyHtml,
+                TemplateKey = templateKey,
                 CorrelationId = request.BookingId.ToString("N"),
             },
-            cancellationToken);
+            cancellationToken,
+            trustServerHtml: bodyHtml is not null);
+    }
+
+    private Dictionary<string, string> LoanTokens(
+        LoanEmailTemplateRequest request,
+        string name,
+        string title,
+        string due,
+        string? borrowedAt = null,
+        string? returnedAt = null)
+    {
+        var site = (dispatchOptions.Value.PublicSiteUrl ?? "http://localhost:3000").TrimEnd('/');
+        return new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["BorrowerName"] = name,
+            ["BookTitle"] = title,
+            ["DueDate"] = due,
+            ["BorrowedAt"] = borrowedAt ?? FormatDate(request.BorrowedAt ?? DateTimeOffset.UtcNow),
+            ["ReturnedAt"] = returnedAt ?? FormatDate(request.ReturnedAt ?? DateTimeOffset.UtcNow),
+            ["CatalogUrl"] = $"{site}/books",
+            ["MyLibraryUrl"] = $"{site}/bookings",
+        };
     }
 
     public async Task<IReadOnlyList<EmailMessageDto>> ListRecentAsync(
@@ -202,8 +292,12 @@ public sealed class EmailDispatchService(
                 TemplateKey = existing.TemplateKey ?? "resend",
                 CorrelationId = existing.CorrelationId ?? existing.Id.ToString("N"),
             },
-            cancellationToken);
+            cancellationToken,
+            trustServerHtml: IsKnownLoanTemplate(existing.TemplateKey));
     }
+
+    private static bool IsKnownLoanTemplate(string? templateKey) => templateKey is
+        "loan-borrowed" or "loan-returned" or "loan-due-reminder" or "waitlist-promotion";
 
     public async Task<bool> RetryFailedInPlaceAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -282,6 +376,8 @@ public sealed class EmailDispatchService(
 
     private static string ResolveSuccessAction(string? templateKey) => templateKey switch
     {
+        "loan-borrowed" => "email.template.loan-borrowed",
+        "loan-returned" => "email.template.loan-returned",
         "loan-due-reminder" => "email.template.loan-due-reminder",
         "waitlist-promotion" => "email.template.waitlist-promotion",
         _ => "email.send",
@@ -352,6 +448,12 @@ public sealed class EmailDispatchService(
 
     private static string DisplayName(string? name)
         => string.IsNullOrWhiteSpace(name) ? "čitateľ" : name.Trim();
+
+    private static string BookTitle(string? title)
+        => string.IsNullOrWhiteSpace(title) ? "titul" : title.Trim();
+
+    private static string FormatDate(DateTimeOffset value)
+        => value.ToLocalTime().ToString("d. M. yyyy");
 
     private static string Truncate(string value, int max)
         => value.Length <= max ? value : value[..max];

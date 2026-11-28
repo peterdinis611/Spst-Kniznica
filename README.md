@@ -178,7 +178,12 @@ Detaily: [`load/README.md`](load/README.md).
 PostgreSQL: Production už má `Database:Provider=PostgreSql`. Lokálne: `docker compose up -d postgres` → `.env` `Database__Provider=PostgreSql` → reštart.  
 Detaily: [`deploy/postgres/README.md`](deploy/postgres/README.md).
 
+E-mail šablóny (react-email): `cd web && npm run emails:dev` (preview) / `npm run emails:build` → `src/EmailService/Templates/`.  
+Požičanie / vrátenie / pripomienka / waitlist posielajú HTML + plain text. Detaily: [`web/emails/README.md`](web/emails/README.md).
+
 Gateway metriky: `GET /metrics` (JSON) alebo `GET /metrics?format=prom` (Prometheus text).  
+Lokálny monitoring: `docker compose --profile observability up -d` → Grafana [http://127.0.0.1:3001](http://127.0.0.1:3001) (`admin`/`admin`) + Prometheus `:9090`.  
+Detaily: [`deploy/observability/README.md`](deploy/observability/README.md).  
 Outbox / audit backlog: Book/Booking/Workers `/health` (degraded pri dead-letter / veľkom backlogs).  
 CORS pre priamy katalóg: nastav `SITE_URL` / `NEXT_PUBLIC_SITE_URL` / `Cors__SiteUrl` na verejnú URL školy.  
 Redis down: `RateLimiting__AllowMemoryFallback=true` / `Cache__AllowMemoryFallback=true` (single-host only; Production fail-closed).  

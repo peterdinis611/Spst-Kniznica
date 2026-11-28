@@ -46,6 +46,10 @@ public sealed class LoanEmailTemplateRequest
 
     [MaxLength(300)]
     public string? BookTitle { get; set; }
+
+    public DateTimeOffset? BorrowedAt { get; set; }
+
+    public DateTimeOffset? ReturnedAt { get; set; }
 }
 
 public sealed class EmailMessageDto

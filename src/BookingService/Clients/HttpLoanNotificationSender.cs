@@ -29,7 +29,19 @@ internal sealed class HttpLoanNotificationSender(
         public string BorrowerName { get; set; } = string.Empty;
         public DateTimeOffset DueDate { get; set; }
         public string? BookTitle { get; set; }
+        public DateTimeOffset? BorrowedAt { get; set; }
+        public DateTimeOffset? ReturnedAt { get; set; }
     }
+
+    public Task SendLoanBorrowedAsync(
+        LoanNotificationMessage message,
+        CancellationToken cancellationToken = default)
+        => PostTemplateAsync("api/internal/emails/templates/loan-borrowed", message, cancellationToken);
+
+    public Task SendLoanReturnedAsync(
+        LoanNotificationMessage message,
+        CancellationToken cancellationToken = default)
+        => PostTemplateAsync("api/internal/emails/templates/loan-returned", message, cancellationToken);
 
     public Task SendDueReminderAsync(
         LoanNotificationMessage message,
@@ -68,6 +80,9 @@ internal sealed class HttpLoanNotificationSender(
                 BorrowerEmail = message.BorrowerEmail,
                 BorrowerName = message.BorrowerName,
                 DueDate = message.DueDate,
+                BookTitle = message.BookTitle,
+                BorrowedAt = message.BorrowedAt,
+                ReturnedAt = message.ReturnedAt,
             });
 
             using var response = await httpClient.SendAsync(request, cancellationToken);

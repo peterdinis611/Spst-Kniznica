@@ -114,6 +114,7 @@ public class BookingAppServiceTests : IAsyncLifetime
             loanPolicy,
             lifecycle,
             calendar,
+            new RecordingLoanNotificationSender(),
             NullLogger<BookingAppService>.Instance);
     }
 

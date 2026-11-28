@@ -1,6 +1,7 @@
 using EmailService.Data;
 using EmailService.Options;
 using EmailService.Services;
+using EmailService.Templating;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -72,6 +73,7 @@ try
         builder.Services.AddSingleton<IEmailTransport, LoggingEmailTransport>();
     }
 
+    builder.Services.AddSingleton<LoanEmailHtmlRenderer>();
     builder.Services.AddScoped<IEmailDispatchService, EmailDispatchService>();
     builder.Services.AddHostedService<EmailRetryHostedService>();
     builder.Services.AddSpstAuditLoggingToAdmin(builder.Configuration, sourceService: "EmailService");

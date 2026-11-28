@@ -7,8 +7,6 @@ import {
 } from "@/lib/auth/session";
 import { getDiscoverySnapshot } from "@/lib/seo/discovery-monitor";
 
-export const dynamic = "force-dynamic";
-
 async function requireStaff(): Promise<AuthUser | null> {
   const token = await readSessionAccessToken();
   if (!token) return null;

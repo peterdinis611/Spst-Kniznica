@@ -6,6 +6,14 @@ public interface IEmailDispatchService
 {
     Task<EmailMessageDto> SendAsync(SendEmailRequest request, CancellationToken cancellationToken = default);
 
+    Task<EmailMessageDto> SendLoanBorrowedAsync(
+        LoanEmailTemplateRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<EmailMessageDto> SendLoanReturnedAsync(
+        LoanEmailTemplateRequest request,
+        CancellationToken cancellationToken = default);
+
     Task<EmailMessageDto> SendLoanDueReminderAsync(
         LoanEmailTemplateRequest request,
         CancellationToken cancellationToken = default);

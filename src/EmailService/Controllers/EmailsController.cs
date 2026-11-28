@@ -66,51 +66,58 @@ public class EmailsController(IEmailDispatchService emails, IAuditLogger audit) 
         }
     }
 
+    [HttpPost("templates/loan-borrowed")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(typeof(EmailMessageDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public Task<ActionResult<EmailMessageDto>> LoanBorrowed(
+        [FromBody] LoanEmailTemplateRequest request,
+        CancellationToken cancellationToken)
+        => SendStaffTemplate(request, "loan-borrowed", emails.SendLoanBorrowedAsync, cancellationToken);
+
+    [HttpPost("templates/loan-returned")]
+    [Authorize(Policy = AuthPolicies.Staff)]
+    [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
+    [ProducesResponseType(typeof(EmailMessageDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public Task<ActionResult<EmailMessageDto>> LoanReturned(
+        [FromBody] LoanEmailTemplateRequest request,
+        CancellationToken cancellationToken)
+        => SendStaffTemplate(request, "loan-returned", emails.SendLoanReturnedAsync, cancellationToken);
+
     [HttpPost("templates/loan-due-reminder")]
     [Authorize(Policy = AuthPolicies.Staff)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(typeof(EmailMessageDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<EmailMessageDto>> LoanDueReminder(
+    public Task<ActionResult<EmailMessageDto>> LoanDueReminder(
         [FromBody] LoanEmailTemplateRequest request,
         CancellationToken cancellationToken)
-    {
-        try
-        {
-            var sent = await emails.SendLoanDueReminderAsync(request, cancellationToken);
-            audit.StaffAction(
-                User,
-                "email.template.loan-due-reminder",
-                "EmailMessage",
-                sent.Id.ToString(),
-                new { sent.TemplateKey, Status = sent.Status.ToString() });
-            return Ok(sent);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { detail = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return StatusCode(StatusCodes.Status429TooManyRequests, new { detail = ex.Message });
-        }
-    }
+        => SendStaffTemplate(request, "loan-due-reminder", emails.SendLoanDueReminderAsync, cancellationToken);
 
     [HttpPost("templates/waitlist-promotion")]
     [Authorize(Policy = AuthPolicies.Staff)]
     [EnableRateLimiting(RateLimitingServiceCollectionExtensions.SensitiveWritePolicy)]
     [ProducesResponseType(typeof(EmailMessageDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<EmailMessageDto>> WaitlistPromotion(
+    public Task<ActionResult<EmailMessageDto>> WaitlistPromotion(
         [FromBody] LoanEmailTemplateRequest request,
+        CancellationToken cancellationToken)
+        => SendStaffTemplate(request, "waitlist-promotion", emails.SendWaitlistPromotionAsync, cancellationToken);
+
+    private async Task<ActionResult<EmailMessageDto>> SendStaffTemplate(
+        LoanEmailTemplateRequest request,
+        string auditAction,
+        Func<LoanEmailTemplateRequest, CancellationToken, Task<EmailMessageDto>> send,
         CancellationToken cancellationToken)
     {
         try
         {
-            var sent = await emails.SendWaitlistPromotionAsync(request, cancellationToken);
+            var sent = await send(request, cancellationToken);
             audit.StaffAction(
                 User,
-                "email.template.waitlist-promotion",
+                $"email.template.{auditAction}",
                 "EmailMessage",
                 sent.Id.ToString(),
                 new { sent.TemplateKey, Status = sent.Status.ToString() });

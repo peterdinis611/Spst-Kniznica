@@ -21,7 +21,12 @@ public sealed class EmailDispatchOptions
 
     /// <summary>
     /// When false (Production default), client-supplied BodyHtml is rejected.
-    /// Templates use plain BodyText only — reduces HTML email XSS / phishing surface.
+    /// Built-in react-email templates still attach trusted HTML from <c>Templates/</c>.
     /// </summary>
     public bool AllowBodyHtml { get; set; }
+
+    /// <summary>
+    /// Public web origin for CTA links in HTML templates (e.g. http://localhost:3000).
+    /// </summary>
+    public string PublicSiteUrl { get; set; } = "http://localhost:3000";
 }
