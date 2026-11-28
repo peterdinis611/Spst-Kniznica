@@ -43,22 +43,106 @@ export function getBookDetail(id) {
   return res;
 }
 
-export function getAuthorsPage(page = 1, pageSize = 40) {
-  const res = apiGet(
-    `/api/authors?page=${page}&pageSize=${pageSize}`,
-    "authors_page",
-  );
+export function getAuthorsPage(page = 1, pageSize = 40, search = "") {
+  const qs = search
+    ? `page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`
+    : `page=${page}&pageSize=${pageSize}`;
+  const res = apiGet(`/api/authors?${qs}`, "authors_page");
   check(res, { "authors 200": (r) => r.status === 200 });
   return res;
 }
 
-export function getCategoriesPage(page = 1, pageSize = 40) {
-  const res = apiGet(
-    `/api/categories?page=${page}&pageSize=${pageSize}`,
-    "categories_page",
-  );
+export function getAuthorDetail(id) {
+  const res = apiGet(`/api/authors/${id}`, "authors_detail");
+  check(res, { "author detail 200": (r) => r.status === 200 });
+  return res;
+}
+
+export function getAuthorsCursor(limit = 20, cursor, search = "") {
+  const parts = [`limit=${limit}`, "sortBy=name"];
+  if (cursor) parts.push(`cursor=${encodeURIComponent(cursor)}`);
+  if (search) parts.push(`search=${encodeURIComponent(search)}`);
+  const res = apiGet(`/api/authors/cursor?${parts.join("&")}`, "authors_cursor");
+  check(res, { "authors cursor 200": (r) => r.status === 200 });
+  return res;
+}
+
+export function getCategoriesPage(page = 1, pageSize = 40, search = "") {
+  const qs = search
+    ? `page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`
+    : `page=${page}&pageSize=${pageSize}`;
+  const res = apiGet(`/api/categories?${qs}`, "categories_page");
   check(res, { "categories 200": (r) => r.status === 200 });
   return res;
+}
+
+export function getCategoryDetail(id) {
+  const res = apiGet(`/api/categories/${id}`, "categories_detail");
+  check(res, { "category detail 200": (r) => r.status === 200 });
+  return res;
+}
+
+const SEARCH_TERMS = [
+  "python",
+  "elektronika",
+  "matematika",
+  "history",
+  "a",
+  "škola",
+  "program",
+  "network",
+];
+
+export function randomSearchTerm() {
+  return SEARCH_TERMS[Math.floor(Math.random() * SEARCH_TERMS.length)];
+}
+
+/** Books list with search / filters (query string). */
+export function searchBooks(term = randomSearchTerm(), page = 1, pageSize = 20) {
+  const res = apiGet(
+    `/api/books?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(term)}`,
+    "books_search",
+  );
+  check(res, {
+    "books search 200": (r) => r.status === 200,
+  });
+  return res;
+}
+
+export function getBooksCursorSearch(term = randomSearchTerm(), limit = 20) {
+  const res = apiGet(
+    `/api/books/cursor?limit=${limit}&sortBy=title&search=${encodeURIComponent(term)}`,
+    "books_cursor_search",
+  );
+  check(res, { "books cursor search 200": (r) => r.status === 200 });
+  return res;
+}
+
+/** Weighted search-heavy mix. */
+export function browseSearch() {
+  const term = randomSearchTerm();
+  const roll = Math.random();
+  if (roll < 0.45) return searchBooks(term, 1 + Math.floor(Math.random() * 2), 20);
+  if (roll < 0.7) return getBooksCursorSearch(term, 20);
+  if (roll < 0.85) return getAuthorsPage(1, 20, term);
+  return getCategoriesPage(1, 20, term);
+}
+
+/** Authors browse: page → detail → cursor. */
+export function browseAuthors() {
+  const page = getAuthorsPage(1 + Math.floor(Math.random() * 2), 40);
+  const id = firstId(safeJson(page));
+  if (id && Math.random() < 0.6) return getAuthorDetail(id);
+  if (Math.random() < 0.4) return getAuthorsCursor(20);
+  return page;
+}
+
+/** Categories browse: page → detail. */
+export function browseCategories() {
+  const page = getCategoriesPage(1, 40);
+  const id = firstId(safeJson(page));
+  if (id && Math.random() < 0.7) return getCategoryDetail(id);
+  return page;
 }
 
 export function getRelationsSummary() {

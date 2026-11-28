@@ -81,6 +81,48 @@ export function booksExport(take = 50) {
   return res;
 }
 
+export function listFavorites() {
+  const res = apiGet("/api/bookings/favorites", "favorites_list");
+  expectNotAuthError(res, "favorites");
+  check(res, {
+    "favorites ok/forbidden": (r) =>
+      r.status === 200 || r.status === 401 || r.status === 403,
+  });
+  return res;
+}
+
+export function waitlistMine() {
+  const res = apiGet("/api/bookings/waitlist/mine", "waitlist_mine");
+  expectNotAuthError(res, "waitlist_mine");
+  return res;
+}
+
+export function deskDailyCsv() {
+  const res = apiGet("/api/bookings/desk/daily.csv", "desk_daily_csv");
+  expectNotAuthError(res, "desk_csv");
+  check(res, {
+    "desk csv ok/forbidden": (r) =>
+      r.status === 200 || r.status === 401 || r.status === 403,
+  });
+  return res;
+}
+
+export function authMe() {
+  const res = apiGet("/api/auth/me", "auth_me");
+  check(res, {
+    "auth me reachable": (r) =>
+      r.status === 200 || r.status === 401 || r.status === 403,
+  });
+  return res;
+}
+
+/** Soft reader extras: favorites + my waitlist + me. */
+export function readerExtrasFlow() {
+  authMe();
+  listFavorites();
+  waitlistMine();
+}
+
 /** Reader-ish flow: catalog → bookings → soft create. */
 export function readerOpsFlow() {
   const books = getBooksPage(1, 5);
