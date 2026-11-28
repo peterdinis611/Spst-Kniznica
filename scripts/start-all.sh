@@ -16,6 +16,8 @@ SKIP_STORYBOOK=0
 NO_STOP=0
 WITH_OBSERVABILITY=0
 PRODUCTION=0
+TEST_MODE=0
+FRESH_SQLITE=0
 # Development = soft rate limits; LoadTest = Redis limits like production (for k6).
 DOTNET_ENV="${ASPNETCORE_ENVIRONMENT:-Development}"
 DOTNET_CONFIG="Debug"
@@ -35,6 +37,8 @@ Options:
   --skip-build       nespúšťaj dotnet build (použi existujúci build)
   --skip-storybook   nespúšťaj Storybook (port 6006)
   --no-stop          pred štartom nezastavuj bežiace procesy
+  --test             Test mode: vynúti SQLite, Development, DevAuth (bez Entra), bez Storybook
+  --fresh            s --test: zmaž lokálne *.db pred štartom (čistý seed)
   --loadtest         ASPNETCORE_ENVIRONMENT=LoadTest (Redis rate limits, cache on)
   --observability    docker compose --profile observability (Prometheus + Grafana)
   --production       Production host: Release build, Next start, deploy-ready gate, no Storybook
@@ -42,6 +46,8 @@ Options:
 
 Stop:  $ROOT/scripts/stop-all.sh
 Logs:  $LOG_DIR/
+
+Test mode shortcut: $ROOT/scripts/start-test.sh [--detach] [--fresh] …
 EOF
 }
 
@@ -53,6 +59,8 @@ for arg in "$@"; do
     --skip-build) SKIP_BUILD=1 ;;
     --skip-storybook) SKIP_STORYBOOK=1 ;;
     --no-stop) NO_STOP=1 ;;
+    --test) TEST_MODE=1 ;;
+    --fresh) FRESH_SQLITE=1 ;;
     --loadtest) DOTNET_ENV="LoadTest" ;;
     --observability) WITH_OBSERVABILITY=1 ;;
     --production) PRODUCTION=1 ;;
@@ -64,6 +72,19 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+if [[ "$TEST_MODE" -eq 1 && "$PRODUCTION" -eq 1 ]]; then
+  echo "Nemôžeš kombinovať --test a --production." >&2
+  exit 1
+fi
+if [[ "$TEST_MODE" -eq 1 && "$DOTNET_ENV" == "LoadTest" ]]; then
+  echo "Nemôžeš kombinovať --test a --loadtest." >&2
+  exit 1
+fi
+if [[ "$FRESH_SQLITE" -eq 1 && "$TEST_MODE" -ne 1 ]]; then
+  echo "--fresh vyžaduje --test (aby sa omylom nezmazali DB mimo test módu)." >&2
+  exit 1
+fi
 
 mkdir -p "$LOG_DIR" "$PID_DIR"
 PIDS=()
@@ -100,6 +121,40 @@ if [[ "$PRODUCTION" -eq 1 ]]; then
   export SPST_FORCE_ENVIRONMENT=Production
   echo "==> Production mode (Release + Next start)"
   bash "$ROOT/scripts/check-deploy-ready.sh" "${SPST_ENV_FILE:-$ROOT/.env.production}"
+fi
+
+if [[ "$TEST_MODE" -eq 1 ]]; then
+  # Po načítaní .env — prepíš Postgres / Entra overrides pre lokálny test.
+  DOTNET_ENV="Development"
+  DOTNET_CONFIG="Debug"
+  SKIP_STORYBOOK=1
+  export ASPNETCORE_ENVIRONMENT=Development
+  export DOTNET_ENVIRONMENT=Development
+  export Database__Provider=Sqlite
+  export Entra__Enabled=false
+  export SPST_DEV_ADMIN=1
+  # Soft messaging/cache — stack beží aj bez Dockeru; Redis stále preferovaný ak je.
+  export RateLimiting__UseRedis=false
+  export RateLimiting__EnableGlobalLimiter=false
+  export Cache__RequireRedis=false
+  export Cache__AllowMemoryFallback=true
+  export Metrics__RequireKey=false
+  export InternalApi__AllowInsecureDefaultKey=true
+  if [[ -z "${InternalApi__SharedKey:-}" ]]; then
+    export InternalApi__SharedKey=spst-dev-internal-key-change-me
+  fi
+
+  echo "==> Test mode (SQLite + Development + DevAuth)"
+  echo "  · Database__Provider=Sqlite (prepísané aj keď .env má PostgreSql)"
+  echo "  · Entra__Enabled=false · SPST_DEV_ADMIN=1 (staff bez MSAL)"
+  echo "  · Storybook vypnutý"
+
+  if [[ "$FRESH_SQLITE" -eq 1 ]]; then
+    echo "==> --fresh: mažem lokálne SQLite súbory v src/*/"
+    find "$SRC" -maxdepth 2 -type f \( \
+      -name '*.db' -o -name '*.db-shm' -o -name '*.db-wal' \
+    \) -print -delete 2>/dev/null || true
+  fi
 fi
 
 need_cmd() {
@@ -345,8 +400,12 @@ if [[ "$SKIP_DOCKER" -eq 0 ]]; then
       else
         echo "  ✓ Infra ready"
       fi
-      if [[ "${Database__Provider:-Sqlite}" =~ ^[Pp]ostgre ]]; then
+      if [[ "${TEST_MODE:-0}" -eq 1 ]]; then
+        echo "  · Test mode: Postgres kontajner môže bežať, služby ale používajú SQLite"
+      elif [[ "${Database__Provider:-Sqlite}" =~ ^[Pp]ostgre ]]; then
         echo "  · Database__Provider=PostgreSql — služby použijú spst_* databázy"
+      else
+        echo "  · Database__Provider=Sqlite"
       fi
     else
       echo "  ! docker compose up -d zlyhalo – pokračujem bez infra"
@@ -438,6 +497,11 @@ if [[ "$SKIP_STORYBOOK" -eq 0 ]]; then
   STORYBOOK_LINE="  Storybook    http://localhost:6006"
 fi
 
+DB_LINE="  Database     ${Database__Provider:-Sqlite}"
+if [[ "${TEST_MODE:-0}" -eq 1 ]]; then
+  DB_LINE="  Database     Sqlite (test mode) · DevAuth staff"
+fi
+
 cat <<EOF
 ==> Stack beží
 
@@ -449,6 +513,7 @@ ${STORYBOOK_LINE}
   Email        http://localhost:5212/swagger
   Booking      http://localhost:5208/swagger
   Ready        http://localhost:5200/health/ready
+${DB_LINE}
 
   Infra        Redis :6379 · Kafka :9092 · RabbitMQ :5672
   Rabbit UI    http://127.0.0.1:15672  (guest/guest)

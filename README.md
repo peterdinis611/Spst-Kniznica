@@ -68,6 +68,17 @@ Užitočné voľby:
 ./scripts/status.sh         # stav procesov
 ```
 
+### Test mode (SQLite)
+
+Aj keď máš v `.env` `Database__Provider=PostgreSql`, test mode vynúti **SQLite** + DevAuth (bez Entra):
+
+```bash
+./start-test.sh                 # Development + Sqlite + staff bez MSAL
+./start-test.sh --detach
+./start-test.sh --fresh         # zmaž *.db a nechaj seed od nuly
+./start.sh --test --fresh       # rovnaké cez start-all
+```
+
 ### Seed dát
 
 Pri štarte služieb sa do **prázdnych** (alebo chýbajúcich) záznamov doplní seed:
