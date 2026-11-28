@@ -4,8 +4,11 @@ using EmailService.DTOs;
 using EmailService.Models;
 using EmailService.Options;
 using EmailService.Services;
+using EmailService.Templating;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using SpstKniznica.Common.Auth;
@@ -245,8 +248,20 @@ public class EmailDispatchServiceTests : IAsyncLifetime
                 Port = 25,
             }),
             Microsoft.Extensions.Options.Options.Create(dispatch),
+            new LoanEmailHtmlRenderer(
+                new TestHostEnvironment(),
+                NullLogger<LoanEmailHtmlRenderer>.Instance),
             _audit,
             NullLogger<EmailDispatchService>.Instance);
+
+    private sealed class TestHostEnvironment : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = Environments.Development;
+        public string ApplicationName { get; set; } = "EmailService.Tests";
+        public string ContentRootPath { get; set; } = Path.GetTempPath();
+        public IFileProvider ContentRootFileProvider { get; set; } =
+            new NullFileProvider();
+    }
 
     [Fact]
     public async Task SendAsync_rejects_body_html_when_disabled()

@@ -10,10 +10,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { render } from "@react-email/render";
 import { createElement, type ComponentType } from "react";
-import LoanBorrowed from "./LoanBorrowed.tsx";
-import LoanDueReminder from "./LoanDueReminder.tsx";
-import LoanReturned from "./LoanReturned.tsx";
-import WaitlistReady from "./WaitlistReady.tsx";
+import LoanBorrowed from "./LoanBorrowed";
+import LoanDueReminder from "./LoanDueReminder";
+import LoanReturned from "./LoanReturned";
+import WaitlistReady from "./WaitlistReady";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.resolve(here, "../../src/EmailService/Templates");
