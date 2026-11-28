@@ -28,4 +28,6 @@ web/.DS_Store
 # Env (secrets / local overrides) — keep .env.example committed
 .env
 .env.local
+.env.production
 !.env.example
+!deploy/env.production.example

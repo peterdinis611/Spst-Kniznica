@@ -3,7 +3,8 @@
 Školský knižničný stack: **Next.js BFF** + **YARP gateway** nad **.NET 10** mikroslužbami.  
 Lokálne SQLite; Production PostgreSQL (DB-per-service). Infra v Docker Compose (Redis, Kafka, RabbitMQ, Postgres).
 
-Tento dokument je mapa systému. Pre UI/tokeny pozri [`design.md`](./design.md). Pre quickstart pozri root [`README.md`](../README.md).
+Tento dokument je mapa systému. Pre UI/tokeny pozri [`design.md`](./design.md).  
+Deploy (VPS + Caddy): [`../deploy/README.md`](../deploy/README.md). Quickstart: root [`README.md`](../README.md).
 
 ---
 

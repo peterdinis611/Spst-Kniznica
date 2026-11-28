@@ -5,11 +5,29 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if [[ -f "$ROOT/.env" ]]; then
+# Optional override file (deploy): SPST_ENV_FILE=/etc/spst/kniznica.env
+ENV_FILE="${SPST_ENV_FILE:-}"
+if [[ -n "$ENV_FILE" && -f "$ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+elif [[ -f "$ROOT/.env.production" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$ROOT/.env.production"
+  set +a
+elif [[ -f "$ROOT/.env" ]]; then
   set -a
   # shellcheck disable=SC1091
   source "$ROOT/.env"
   set +a
+fi
+
+# Deploy gate can pin Production even if a local .env says Development.
+if [[ -n "${SPST_FORCE_ENVIRONMENT:-}" ]]; then
+  ASPNETCORE_ENVIRONMENT="$SPST_FORCE_ENVIRONMENT"
+  DOTNET_ENVIRONMENT="$SPST_FORCE_ENVIRONMENT"
 fi
 
 FAILED=0
@@ -22,6 +40,8 @@ echo
 ENV_NAME="${ASPNETCORE_ENVIRONMENT:-Production}"
 if [[ "$ENV_NAME" == "Development" || "$ENV_NAME" == "LoadTest" ]]; then
   echo "  · ASPNETCORE_ENVIRONMENT=$ENV_NAME (soft mode — warnings only for placeholders)"
+else
+  echo "  · ASPNETCORE_ENVIRONMENT=$ENV_NAME (hard mode)"
 fi
 
 KEY="${InternalApi__SharedKey:-}"

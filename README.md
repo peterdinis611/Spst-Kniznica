@@ -2,7 +2,7 @@
 
 Školský knižničný katalóg **Strednej priemyselnej školy technickej** v Bardejove — knihy, autori, kategórie, výpožičný pult a správcovský panel.
 
-Dokumentácia: [`docs/architecture.md`](docs/architecture.md) · [`docs/design.md`](docs/design.md)
+Dokumentácia: [`docs/architecture.md`](docs/architecture.md) · [`docs/design.md`](docs/design.md) · [`deploy/README.md`](deploy/README.md) (školský VPS)
 
 ## Stack
 

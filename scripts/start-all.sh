@@ -15,8 +15,10 @@ SKIP_BUILD=0
 SKIP_STORYBOOK=0
 NO_STOP=0
 WITH_OBSERVABILITY=0
+PRODUCTION=0
 # Development = soft rate limits; LoadTest = Redis limits like production (for k6).
 DOTNET_ENV="${ASPNETCORE_ENVIRONMENT:-Development}"
+DOTNET_CONFIG="Debug"
 
 usage() {
   cat <<EOF
@@ -35,6 +37,7 @@ Options:
   --no-stop          pred štartom nezastavuj bežiace procesy
   --loadtest         ASPNETCORE_ENVIRONMENT=LoadTest (Redis rate limits, cache on)
   --observability    docker compose --profile observability (Prometheus + Grafana)
+  --production       Production host: Release build, Next start, deploy-ready gate, no Storybook
   -h, --help         táto nápoveda
 
 Stop:  $ROOT/scripts/stop-all.sh
@@ -52,6 +55,7 @@ for arg in "$@"; do
     --no-stop) NO_STOP=1 ;;
     --loadtest) DOTNET_ENV="LoadTest" ;;
     --observability) WITH_OBSERVABILITY=1 ;;
+    --production) PRODUCTION=1 ;;
     -h|--help) usage; exit 0 ;;
     *)
       echo "Neznámy argument: $arg" >&2
@@ -64,8 +68,20 @@ done
 mkdir -p "$LOG_DIR" "$PID_DIR"
 PIDS=()
 
-# Root .env → ASP.NET (__ keys) + Docker Compose + NEXT_PUBLIC_* pre web.
-if [[ -f "$ROOT/.env" ]]; then
+# Env: Production preferuje .env.production / SPST_ENV_FILE; inak .env.
+if [[ -n "${SPST_ENV_FILE:-}" && -f "$SPST_ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$SPST_ENV_FILE"
+  set +a
+  echo "==> Načítané $SPST_ENV_FILE"
+elif [[ "$PRODUCTION" -eq 1 && -f "$ROOT/.env.production" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$ROOT/.env.production"
+  set +a
+  echo "==> Načítané $ROOT/.env.production"
+elif [[ -f "$ROOT/.env" ]]; then
   set -a
   # shellcheck disable=SC1091
   source "$ROOT/.env"
@@ -73,6 +89,17 @@ if [[ -f "$ROOT/.env" ]]; then
   echo "==> Načítané $ROOT/.env"
 elif [[ -f "$ROOT/.env.example" ]]; then
   echo "==> Tip: skopíruj .env.example → .env (lokálne overrides)"
+fi
+
+if [[ "$PRODUCTION" -eq 1 ]]; then
+  DOTNET_ENV="Production"
+  DOTNET_CONFIG="Release"
+  SKIP_STORYBOOK=1
+  export ASPNETCORE_ENVIRONMENT=Production
+  export DOTNET_ENVIRONMENT=Production
+  export SPST_FORCE_ENVIRONMENT=Production
+  echo "==> Production mode (Release + Next start)"
+  bash "$ROOT/scripts/check-deploy-ready.sh" "${SPST_ENV_FILE:-$ROOT/.env.production}"
 fi
 
 need_cmd() {
@@ -132,7 +159,7 @@ start_dotnet() {
         ASPNETCORE_ENVIRONMENT="$DOTNET_ENV" \
         ASPNETCORE_URLS="$url" \
         DOTNET_ENVIRONMENT="$DOTNET_ENV" \
-        dotnet run --project "$SRC/$project" --no-build --no-launch-profile \
+        dotnet run --project "$SRC/$project" -c "$DOTNET_CONFIG" --no-build --no-launch-profile \
         >"$logfile" 2>&1 &
       echo $! >"$pidfile"
     )
@@ -142,7 +169,7 @@ start_dotnet() {
       ASPNETCORE_ENVIRONMENT="$DOTNET_ENV" \
       ASPNETCORE_URLS="$url" \
       DOTNET_ENVIRONMENT="$DOTNET_ENV" \
-        dotnet run --project "$SRC/$project" --no-build --no-launch-profile \
+        dotnet run --project "$SRC/$project" -c "$DOTNET_CONFIG" --no-build --no-launch-profile \
         >"$logfile" 2>&1
     ) &
     echo $! >"$pidfile"
@@ -169,14 +196,23 @@ start_frontend() {
   echo "  · web  →  http://localhost:3000"
   : >"$logfile"
 
+  local web_cmd
+  if [[ "$PRODUCTION" -eq 1 ]]; then
+    echo "  · web  →  npm run build (Production)…"
+    (cd "$WEB" && npm run build) >>"$logfile" 2>&1
+    web_cmd="npm run start -- --hostname 127.0.0.1 --port 3000"
+  else
+    web_cmd="npm run dev -- --hostname 127.0.0.1 --port 3000"
+  fi
+
   if [[ "$MODE" == "detach" ]]; then
-    nohup bash -lc "cd \"$WEB\" && npm run dev -- --hostname 127.0.0.1 --port 3000" \
+    nohup bash -lc "cd \"$WEB\" && $web_cmd" \
       >"$logfile" 2>&1 &
     echo $! >"$pidfile"
   else
     (
       cd "$WEB"
-      npm run dev -- --hostname 127.0.0.1 --port 3000 >"$logfile" 2>&1
+      bash -lc "$web_cmd" >"$logfile" 2>&1
     ) &
     echo $! >"$pidfile"
   fi
@@ -324,10 +360,10 @@ else
 fi
 
 if [[ "$SKIP_BUILD" -eq 0 ]]; then
-  echo "==> Build .NET solution"
+  echo "==> Build .NET solution (-c $DOTNET_CONFIG)"
   (
     cd "$SRC"
-    dotnet build SpstKniznica.sln -c Debug --nologo -v q
+    dotnet build SpstKniznica.sln -c "$DOTNET_CONFIG" --nologo -v q
   )
   echo
 else

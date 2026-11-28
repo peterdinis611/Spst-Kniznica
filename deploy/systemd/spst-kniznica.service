@@ -1,0 +1,23 @@
+[Unit]
+Description=SPST Knižnica stack (infra + .NET + Next)
+Documentation=file:///opt/spst-kniznica/deploy/README.md
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=spst
+Group=spst
+WorkingDirectory=/opt/spst-kniznica
+EnvironmentFile=-/etc/spst/kniznica.env
+Environment=SPST_ENV_FILE=/etc/spst/kniznica.env
+# Production host runner (Release build, Next start, no Storybook)
+ExecStart=/opt/spst-kniznica/scripts/run-production.sh --detach
+ExecStop=/opt/spst-kniznica/scripts/stop-all.sh
+TimeoutStartSec=300
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target
